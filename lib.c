@@ -262,6 +262,8 @@ void del_level(level_t* lg) {
   assert(lg->level != NULL);
   free(lg->level);
   lg->level = NULL;
+
+  assert(lg->partial != NULL);
   free(lg->partial);
   lg->partial = NULL;
   free(lg);
@@ -381,12 +383,12 @@ void write_level_c(FILE *f, level_t *lg, coord_t *cg) {
 wcrs_t *new_wcrs(crs0_t *g) {
   assert(g != NULL);
 
-  wcrs_t *wg = (wcrs_t*) malloc(sizeof(wcrs_t));
+  wcrs_t *wg = (wcrs_t*) malloc(sizeof(*wg));
   assert(wg != NULL);
 
   wg->g = g;
-  wg->wv = (int*) malloc(sizeof(int) * g->n);
-  wg->we = (int*) malloc(sizeof(int) * 2 * g->ptr[g->n]);
+  wg->wv = (int*) malloc(sizeof(*wg->wv) * g->n);
+  wg->we = (int*) malloc(sizeof(*wg->we) * 2 * g->ptr[g->n]);
 
   assert(wg->wv != NULL);
   assert(wg->we != NULL);
