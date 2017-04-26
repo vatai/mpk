@@ -195,6 +195,7 @@ part_t *new_part(crs0_t *g) {
   pg->g = g;
   pg->n_part = -1;
   pg->part = (int*) malloc(sizeof(int) * g->n);
+  assert(pg->part != NULL);
 
   return pg;
 }
