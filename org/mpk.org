@@ -1,0 +1,212 @@
+# -*- mode: org; mode: flyspell; -*-
+# * COMMENT Options
+#+LATEX_HEADER: \newcommand{\ie}{i.e.\ }
+#+LATEX_HEADER: \usepackage{tikz}
+# #+LATEX_HEADER: \usepackage{tikz-qtree,tikz-qtree-compat}
+#+LATEX_CLASS_OPTIONS: [a4paper]
+# #+LATEX_COMPILER: xelatex
+#+TITLE: Matrix Power Kernel
+#+AUTHOR: emil
+
+* Notes
+** Files dependency:
+
+  #+BEGIN_EXPORT latex
+  \begin{tikzpicture}
+  \draw 
+  node(typ){type}
+  %node[left of=typ](np){$np$}
+  node[right of=typ](nam){name}
+  node[below of=typ](gen){gen}
+  node[below of=gen](dat){data}
+  node[left of=dat](np){$np$}
+  node[below of=dat](met){metis}
+  node[below of=met](par){.part.np}
+  node[right of=met](dc){data.c}
+  node[below of=par](com){comp}
+  node[right of=com](pc){part\_c}
+  node[below of=pc](lc){level\_c}
+  node[left of=com](wl){$w_{n}$.level}
+  node[below of=lc](w){$w_{n+1}$}
+  ;
+  \path[->] 
+  (typ) edge (gen) (nam) edge (gen)
+  (gen) edge (dat)
+  (dat) edge (met) (np) edge (met)
+  (met) edge (par)
+  (par) edge (com) (dc) edge (com)
+  (com) edge (w) (com) edge[bend left] (wl) (com) edge (pc) (com) edge (lc)
+  (w.west) edge[bend left] (met.west)
+  (wl) edge[bend left] (com)
+  ;
+  \end{tikzpicture}
+  #+END_EXPORT
+
+** Arguments and the corresponding files, variables and procedures
+   | $i$ | Arg[$i$]             | File var. | Variable      | Procedure  | Description                  |
+   |-----+----------------------+-----------+---------------+------------+------------------------------|
+   |   1 | command              |           |               | =main()=   | Tells the program what to do |
+   |   2 | data                 | fi        | $g$           | =_crs()=   | Adjacency matrix             |
+   |   3 | data.c               | fc        | $cg(g)$       | =_coord()= | Coordinates                  |
+   |   4 | data.w_{N}.part.$np$ | fp        | $pg(g)$       | =_part()=  | Partition labels             |
+   |   5 | data.w_{N-1}.level   | fl        | $lf\_org(pg)$ | =_level()= | Level of each node           |
+   |   6 | data.w_{N}.level     | fo        | none          | =write_()= | Output file                  |
+
+** Level's achieved 
+   | w$N$ | min(level) | max(level) |
+   |    0 |          0 |         18 |
+   |    1 |          1 |         27 |
+   |    2 |          5 |         34 |
+   |    3 |          8 |         45 |
+   |    4 |         15 |         45 |
+   |    5 |         19 |         59 |
+   |    6 |         24 |         59 |
+
+** Calling metis from a C program
+*** Header
+   First, the header should be included: ~#include "path/to/metis.h"~.
+   I don't see advantage over giving the include directory to =gcc=
+   just to include the one =#include <metis.h>= file.
+*** The library and the linker
+    If Metis is installed as instructed in the =BUILD.txt= file, there
+    should be a static library =libmetis.a= somewhere in a =libmetis=
+    directory. =gcc= should be invoked as follows:
+    : gcc prog.c -lm -Lpath/to/libmetis/ -lmetis -o prog
+    Here =prog= is the name of the output executable, =prog.c= is the
+    source; =-Lpath/to/libmetis/= points to the directory which
+    contains =libmetis.a=, while =-lmetis= tells the linker to use
+    it. =-lm= enables the =<math.h>= library, which is used by Metis,
+    and make sure to put the =prog.c= source file *before* the =-L=
+    and =-l= linker options!
+* MPK mathematical formulation
+  Let $n$ be the size of the vector $\mathbf{b}$, and $A \in
+  \mathbb{R}^{n\times n}$.  Let $S$ be a partitioning of $\{1, 2,
+  \ldots, n\}$, \ie $S=\{S_1, S_2, \ldots, S_p\}$ such that
+  $\bigcup_{i=1}^p S_i=\{1,2,\ldots,n\}$, $S_i \cap S_j = \emptyset$
+  if $i\neq j$ and $S_i \neq \emptyset$ (for any $i=1,2,\ldots,p$).  
+
+  If $\mathbf{b} = (b_1, b_2, \ldots, b_n)^T$, then let
+  $\mathbf{b}(S_i) = (b^{(i)}_1, b^{(i)}_2, \ldots, b^{(i)}_n)^T$
+  where $b^{(i)}_{j} = b_j$ if $j \in S_i$ or $0$ otherwise.
+  Therefore $\mathbf{b} = \sum_{i=1}^p \mathbf{b}^{(i)}$.
+
+  Let $A$ be a tridiagonal matrix, then
+  #+BEGIN_EXPORT latex
+  \[
+  A = \begin{pmatrix}
+  C & v & 0 & 0 \\
+  h^T & d & \delta & 0 \\
+  0 & \delta' & d' & h'^T \\
+  0 & 0 & v' & C'
+  \end{pmatrix}
+  \text{ and }
+  r = \begin{pmatrix} b \\ c \\ c' \\ b'\end{pmatrix}
+  \]
+  #+END_EXPORT
+  This leads to the decomposition:
+  #+BEGIN_EXPORT latex
+  \begin{align*}
+  Ar =& (C+v+h^T+d+\delta)\cdot(b,c) \\
+  =& Cb + v^Tb + \underbrace{h^Tb}_{=0} + \underbrace{db}_{=0} + \underbrace{\delta b}_{=0} \\
+  & \underbrace{Cc}_{=0} + v^Tc + \underbrace{h^Tb}_{=0} + dc + \delta c \\
+  =& Cb + v^Tb + v^Tc + dc + \delta c
+  \end{align*}
+  #+END_EXPORT
+  or in vector form
+  #+BEGIN_EXPORT latex
+  \begin{align*}
+  Av &= \begin{pmatrix} 
+  Cb + v^Tc \\
+  h^Tb + dc + \delta c' \\
+  h'^Tb' + d'c' + \delta' c \\
+  C'b' + v'^Tc'
+  \end{pmatrix} = %%%%%%%%%%%%%%%%%%%
+  \begin{pmatrix}
+  Cb + v^Tc \\
+  h^Tb + dc \\
+  h'^Tb' + d'c' \\
+  C'b' + v'^Tc'
+  \end{pmatrix} 
+  +
+  \begin{pmatrix}
+  0 \\ \delta c' \\ \delta' c \\ 0
+  \end{pmatrix}  \\
+  &= %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \begin{pmatrix}
+  C \\
+  h^T \\
+  h'^{T} \\
+  C'
+  \end{pmatrix}
+  \begin{pmatrix}
+  h'^Tb' + d'c' \\
+  C'b' + v'^Tc'
+  \end{pmatrix} 
+  +
+  \begin{pmatrix}
+  Cb + v^Tc \\
+  h^Tb + dc \\
+  h'^Tb' + d'c' \\
+  C'b' + v'^Tc'
+  \end{pmatrix} 
+  +
+  \begin{pmatrix}
+  0 \\ \delta c' \\ \delta' c \\ 0
+  \end{pmatrix}  = 
+  \end{align*}
+  #+END_EXPORT
+* Variable permutation
+  Lets examine the data structures. Let $N=n \times n$, and
+  $\mathbf{b} \in \mathbb{R}^{N}$ and $A \in \mathbb{R}^{N \times N}$.
+  The vector $\mathbf{b}$ (which has elements corresponding to the
+  graph) is partitioned into $p$ partitions (numbered from $1$ to
+  $p$), this is stored in the $P_i$ array, so that for each $1 \le i
+  \le N$, $1 \le P_i \le p$ \ie $P_i$ is the partition which belongs
+  to the \(i\)-th element/vertex. 
+** Data structures
+   #+BEGIN_SRC C
+   typedef struct {
+     crs0_t *g;
+     idx_t *wv;
+     idx_t *we;
+   } wcrs_t;
+   #+END_SRC
+
+   #+BEGIN_SRC C
+   typedef struct {
+     part_t *pg;
+     idx_t *level;           /* n */
+     unsigned char *partial; /* n */
+   } level_t;
+   #+END_SRC
+
+   #+BEGIN_SRC C
+   typedef struct {
+     crs0_t *g;
+     idx_t n_part;
+     idx_t *part; /* n */
+   } part_t;
+   #+END_SRC
+
+   #+BEGIN_SRC C
+   typedef struct {
+     idx_t n;
+     idx_t *ptr; /* n (+1) */
+     idx_t *col; /* 2*ne */
+     fp_t diag;
+     fp_t other;
+   } crs0_t;
+   #+END_SRC
+* COMMENT The problem
+  Solve $A\mathbf{x}=\mathbf{b}$ for $\mathbf{x}$ for a given $A$ and
+  $\mathbf{b}$.  However the matrix $A$ is derived from the numerical
+  solution of a differential equation and thus sparse, so the CG
+  method is used to solve.  Furthermore, the solver is executed on
+  multiple nodes and we want communication to be avoided as much as
+  possible.
+
+  For this purpose, the matrix $A$, which in reality represents a
+  mesh, \ie a graph, is partitioned into non-empty partitions of the
+  same size.  TODO Here a partition is a special case of a TODOend.
+  Each node's value is represented by a value in the vector
+  $\mathbf{b}$.  The 
