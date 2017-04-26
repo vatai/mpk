@@ -75,7 +75,7 @@ void print_levels(level_t *lg) {
   printf("level min=%d max=%d\n", min, max);
 }
 
-void debug(level_t* lg, fp_t* bb, idx_t k_steps, int t)
+void misc_info(level_t* lg, fp_t* bb, idx_t k_steps, int t)
 {
   part_t *pg = lg->pg;
   int n = (int) sqrt(pg->g->n);

@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     iwrite("part", argv[1], t, (void*)pg);
 
     mpk2(k_steps, lg, bb); /* MPK !!!!  */
-    debug(lg, bb, k_steps, t);
+    misc_info(lg, bb, k_steps, t);
     level2wcrs(lg, wg); //// !!!!
     wpartition(pg, wg); //// !!!!
   }
