@@ -697,7 +697,6 @@ void mpk2(int level, level_t *lg, fp_t *bb) {
 	  lg->partial[i]=0; // no partials in new level
 	  contp = 1;
 	}
-	if(i==4) printf(">>> ll %d, level %d\n", ll[i], lg->level[i]);
       } else contp = 1;
     }
     for (i = 0; i < nn; i++) lg->level[i] = ll[i];
