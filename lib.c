@@ -464,6 +464,41 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
   }
 }
 
+perm_t *new_perm(part_t *pg)
+{
+  perm_t *pr = (perm_t*) malloc(sizeof(*pr));
+  assert(pr != NULL);
+
+  pr->pg = pg;
+
+  pr->part_size = (idx_t*) malloc(sizeof(*pr->part_size) * pr->pg->n_part);
+  assert(pr->part_size != NULL);
+  
+  return pr;
+};
+
+void del_perm(perm_t *pr)
+{
+  assert(pr != NULL);
+
+  assert(pr->part_size != NULL);
+  free(pr->part_size);
+  pr->part_size = NULL;
+
+  free(pr);
+}
+
+void comp_perm(perm_t* pr)
+{
+  int i;
+  int n = pr->pg->g->n;
+  int n_part = pr->pg->n_part;
+  idx_t *part_size = pr->part_size;
+  idx_t *part = pr->pg->part;
+  for (i = 0; i < n_part; i++) part_size[i] = 0;
+  for (i = 0; i < n; i++) part_size[part[i]]++;
+}
+
 skirt_t *new_skirt(part_t *pg) {
   assert(pg != NULL);
 

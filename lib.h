@@ -70,6 +70,15 @@ void level2wcrs(level_t*, wcrs_t*);
 
 typedef struct {
   part_t *pg;
+  idx_t *part_size;
+} perm_t;
+
+perm_t *new_perm(part_t *pg);
+void del_perm(perm_t *pr);
+void comp_perm(perm_t* pr);
+
+typedef struct {
+  part_t *pg;
   int *levels;
 } skirt_t;
 

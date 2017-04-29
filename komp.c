@@ -50,23 +50,25 @@ int main(int argc, char **argv) {
 
   /* Partition and write ITER0 */
   partition(pg,num_part); /// !!!!
-
-  prn_lvl(lg, bb, 0);
+  perm_t *pr = new_perm(pg);
+  
+  // prn_lvl(lg, bb, 0);
   for (int t = 0; t < num_iter; t++) {
     iwrite("part", argv[1], t, (void*)pg);
-
+    comp_perm(pr);
+    prn_part_size(pr);
     mpk2(k_steps, lg, bb); /* MPK !!!!  */
-    misc_info(lg, bb, k_steps, t);
+    // misc_info(lg, bb, k_steps, t);
     level2wcrs(lg, wg); //// !!!!
     wpartition(pg, wg); //// !!!!
   }
-
   
   octave_check("check.m", bb, g->n, k_steps);
   del_wcrs(wg);
   del_level(lg);
   del_part(pg);
   del_crs(g);
+  del_perm(pr);
   free(bb);
   free(b);
   return 0;
