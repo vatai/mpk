@@ -471,8 +471,15 @@ perm_t *new_perm(part_t *pg)
 
   pr->pg = pg;
 
-  pr->part_size = (idx_t*) malloc(sizeof(*pr->part_size) * pr->pg->n_part);
-  assert(pr->part_size != NULL);
+  pr->part_start = (idx_t*) malloc((pr->pg->n_part+1) *
+				   sizeof(*pr->part_start));
+  assert(pr->part_start != NULL);
+
+  int n = pr->pg->g->n;
+  pr->perm = (idx_t*) malloc(n * sizeof(*pr->perm));
+  assert(pr->perm);
+
+  for (int i = 0; i < n; i++) pr->perm[i] = i;
   
   return pr;
 };
@@ -481,22 +488,100 @@ void del_perm(perm_t *pr)
 {
   assert(pr != NULL);
 
-  assert(pr->part_size != NULL);
-  free(pr->part_size);
-  pr->part_size = NULL;
+  assert(pr->part_start != NULL);
+  free(pr->part_start);
+  pr->part_start = NULL;
 
+  assert(pr->perm != NULL);
+  free(pr->perm);
+  pr->perm = NULL;
+  
   free(pr);
 }
 
-void comp_perm(perm_t* pr)
+void comp_perm(perm_t* pr, fp_t* bp, fp_t* bb)
 {
   int i;
-  int n = pr->pg->g->n;
-  int n_part = pr->pg->n_part;
-  idx_t *part_size = pr->part_size;
+  idx_t *part_start = pr->part_start;
+  idx_t *perm = pr->perm;
+
   idx_t *part = pr->pg->part;
-  for (i = 0; i < n_part; i++) part_size[i] = 0;
-  for (i = 0; i < n; i++) part_size[part[i]]++;
+  int n_part = pr->pg->n_part;
+
+  int n = pr->pg->g->n;
+  idx_t *col = pr->pg->g->col;
+  idx_t *ptr = pr->pg->g->ptr;
+  int ne2 = pr->pg->g->ptr[n];
+
+  /* DEBUG BASE */
+  printf("original idx[]\n");
+  for (i = 0; i < n; i++)
+    printf(i%10==9?"%4d\n":"%4d", part[i]); printf("\n\n");
+
+  // prepare part_start
+  // init to 0
+  for (i = 0; i < n_part+1; i++) part_start[i] = 0;
+  // calc number of each part
+  for (i = 0; i < n; i++) part_start[part[i]+1]++;
+  // prefix sum (scan)
+  for (i = 0; i < n_part; i++) part_start[i+1] += part_start[i]; 
+
+  idx_t *new_perm = malloc(n * sizeof(*new_perm));
+  idx_t *new_ptr = malloc((n+1) * sizeof(*new_ptr));
+  idx_t *new_col = malloc(ne2 * sizeof(*new_col));
+  idx_t *this_perm = malloc(n * sizeof(*this_perm));
+  idx_t *iter = (idx_t*) calloc(n_part, sizeof(*iter));
+
+  for (i = 0; i < n; i++) {
+    idx_t part_num = part[i];
+    // new index
+    idx_t j = part_start[part_num] + iter[part_num];
+    this_perm[j] = i;
+    iter[part_num]++; // adjust for next iteration
+  }
+
+  printf("CSR:::\n");
+  // for (i = 0; i < n+1; i++) printf("%5d", ptr[i]); printf("\n\n");
+  for (i = 0; i < ne2; i++) printf("%4d", col[i]); printf("\n\n");
+
+  /**
+   * This is the main permutation loop: 
+   */
+
+  idx_t k = 0;
+  for (i = 0; i < n; i++) {
+    idx_t j = this_perm[i];
+    new_perm[i] = perm[j];
+
+    new_ptr[i+1] = ptr[j+1] - ptr[j];
+    for (idx_t t = ptr[j]; t < ptr[j+1]; t++)
+      new_col[k++] = this_perm[col[t]];
+  }
+
+  // prefix sum
+  for (i = 0; i < n; i++) new_ptr[i+1] += new_ptr[i] ;
+
+  printf("CSR2:::\n");
+  //for (i = 0; i < n+1; i++) printf("%5d", new_ptr[i]); printf("\n\n");
+  for (i = 0; i < ne2; i++) printf("%4d", new_col[i]); printf("\n\n");
+
+
+  // for (i = 0; i < ne2; i++) col[i] = this_perm[col[i]];
+  //printf("this_perm\n");
+  //for (i = 0; i < n+1; i++)
+  //printf(i%10==9?"%4d\n":"%4d", ptr[i]); printf("\n\n");
+    
+  pr->perm = new_perm; free(perm); 
+  pr->pg->g->ptr = new_ptr; free(ptr);
+  pr->pg->g->col = new_col; free(col);
+
+  /*/
+  printf("CSR n: %d, ne2: %d\n",n,ne2);
+  for (i = 0; i < ne2; i++) printf("%d ", col[i]); printf("\n---\n");
+  for (i = 0; i < n; i++) printf("%d ", ptr[i]); printf("\n\n");
+  //*/
+  free(this_perm);
+  free(iter);
 }
 
 skirt_t *new_skirt(part_t *pg) {
@@ -740,4 +825,3 @@ void mpk2(int level, level_t *lg, fp_t *bb) {
   }
   free(ll);
 }
-

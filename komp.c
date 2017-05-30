@@ -51,11 +51,12 @@ int main(int argc, char **argv) {
   /* Partition and write ITER0 */
   partition(pg,num_part); /// !!!!
   perm_t *pr = new_perm(pg);
+  fp_t *bp = malloc(g->n * k_steps * pg->n_part * sizeof(*bp));
   
   // prn_lvl(lg, bb, 0);
   for (int t = 0; t < num_iter; t++) {
     iwrite("part", argv[1], t, (void*)pg);
-    comp_perm(pr);
+    comp_perm(pr,bp,bb);
     prn_part_size(pr);
     mpk2(k_steps, lg, bb); /* MPK !!!!  */
     // misc_info(lg, bb, k_steps, t);
@@ -71,5 +72,6 @@ int main(int argc, char **argv) {
   del_perm(pr);
   free(bb);
   free(b);
+  free(bp);
   return 0;
 }
