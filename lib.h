@@ -69,14 +69,15 @@ void wpartition(part_t*,wcrs_t*);
 void level2wcrs(level_t*, wcrs_t*);
 
 typedef struct {
-  part_t *pg;
+  level_t *lg;
   idx_t *part_start;
   idx_t *perm; // Global permutation
 } perm_t;
 
-perm_t *new_perm(part_t *pg);
+perm_t *new_perm(level_t *lg);
 void del_perm(perm_t *pr);
-void comp_perm(perm_t* pr, fp_t* bp, fp_t* bb);
+void permutation(perm_t* pr, fp_t** bb, idx_t k_step);
+void inverse_permutation(perm_t* pr, fp_t** bb, idx_t k_steps);
 
 typedef struct {
   part_t *pg;
@@ -95,6 +96,5 @@ fp_t *new_bvect(int nn);
 void mul(part_t *pg, fp_t *b);
 void mpk(int level, level_t *lg, fp_t *b);
 void mpk2(int level, level_t *lg, fp_t *bb);
-void mpk3(int level, level_t *lg, fp_t *bb);
 
 #endif // _LIB_H_

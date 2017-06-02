@@ -100,13 +100,3 @@ void misc_info(level_t* lg, fp_t* bb, idx_t k_steps, int t)
 
 
 }
-
-void prn_part_size(perm_t* pr)
-{
-  int i;
-  int n_part = pr->pg->n_part;
-  idx_t *part_size = pr->part_start;
-  printf("part_size[]");
-  for (i = 0; i < n_part; i++) printf("%d ", part_size[i]);
-  printf("\n");
-}

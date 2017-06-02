@@ -9,7 +9,5 @@ void prn_prt(part_t *pg);
 void octave_check(char*fn, fp_t* b, int N, int k);
 void print_levels(level_t *lg);
 void misc_info(level_t* lg, fp_t* bb, idx_t k_steps, int t);
-void prn_part_size(perm_t* pr);
-
 
 #endif // _UTIL_H_
