@@ -928,7 +928,7 @@ void mul(part_t *pg, fp_t *b){
 }
 
 
-void mpk2(int level, level_t *lg, fp_t *bb) {
+void mpk1(int level, level_t *lg, fp_t *bb) {
   int i,j,k,nn;
   nn = lg->pg->g->n;
   //int n = sqrt(nn);
@@ -958,6 +958,60 @@ void mpk2(int level, level_t *lg, fp_t *bb) {
 	  // if needed == not done
 	  if (((1 << diff) & lg->partial[i]) == 0) {
 	    if (part[i] == part[k] && lvl <= ll[k] ){ 
+	      bb[i] += b[k] * lg->pg->g->other;
+	      lg->partial[i] |= (1 << diff);
+	    } else i_is_complete = 0;
+	  } 
+	} // end for each ajd node
+	if(i_is_complete){
+	  ll[i]++; // level up
+	  lg->partial[i]=0; // no partials in new level
+	  contp = 1;
+	}
+      } else contp = 1;
+    }
+    for (i = 0; i < nn; i++) lg->level[i] = ll[i];
+    b = bb;
+    bb += nn;
+  }
+  free(ll);
+}
+
+void mpk2(int level, perm_t *pr, fp_t *bb) {
+
+  level_t *lg = pr->lg;
+  int i,j,k,nn;
+  nn = lg->pg->g->n;
+  //int n = sqrt(nn);
+  idx_t* ptr = lg->pg->g->ptr;
+  idx_t* col = lg->pg->g->col;
+  idx_t* part = lg->pg->part;
+
+  fp_t* b = bb;
+  bb += nn;
+  idx_t* ll = malloc(nn * sizeof(*ll));
+  for (i = 0; i < nn; i++) ll[i] = lg->level[i];
+  int lvl = 0;
+  int contp = 1;
+  
+  for(lvl = 0; contp && /**/ lvl < level-1; lvl++) { // for each level
+    contp = 0;
+    for (i = 0; i < nn; i++) { // for each node
+      if (lvl == lg->level[i]){
+	int i_is_complete = 1;
+	if (lg->partial[i] == 0)
+	  bb[i] = b[i] * lg->pg->g->diag;
+	idx_t end_part = pr->part_start[part[i]+1];
+	idx_t end = ptr[i+1];
+	for (j = ptr[i]; j < end; j++) { // for each adj node
+	  int diff = end - j;
+	  assert(0 <= diff && diff<8);
+	  k = col[j];
+	  int same_part = (0 <=  end_part - k);
+	  // if needed == not done
+	  if (((1 << diff) & lg->partial[i]) == 0) {
+	    if (same_part && lvl <= ll[k] ){ 
+	      // if (part[i] == part[k] && lvl <= ll[k] ){ 
 	      bb[i] += b[k] * lg->pg->g->other;
 	      lg->partial[i] |= (1 << diff);
 	    } else i_is_complete = 0;

@@ -97,7 +97,7 @@ void read_level(FILE *f, level_t *lg);
 void iwrite(char*, char*, int, void*);
 fp_t *new_bvect(int nn);
 void mul(part_t *pg, fp_t *b);
-void mpk(int level, level_t *lg, fp_t *b);
-void mpk2(int level, level_t *lg, fp_t *bb);
+void mpk1(int level, level_t *lg, fp_t *b);
+void mpk2(int level, perm_t *pr, fp_t *bb);
 
 #endif // _LIB_H_

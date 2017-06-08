@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     iwrite("part", argv[1], t, (void*)pg);
     update_perm(pr);
     permutation(pr, &bb, k_steps);
-    mpk2(k_steps, lg, bb); /* MPK !!!!  */
+    mpk2(k_steps, pr, bb); /* MPK !!!!  */
     //misc_info(lg, bb, k_steps, t);
     level2wcrs(lg, wg); //// !!!!
     wpartition(pg, wg); //// !!!!
