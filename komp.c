@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
   // prn_lvl(lg, bb, 0);
   for (int t = 0; t < num_iter; t++) {
     iwrite("part", argv[1], t, (void*)pg);
+    update_perm(pr);
     permutation(pr, &bb, k_steps);
     mpk2(k_steps, lg, bb); /* MPK !!!!  */
     //misc_info(lg, bb, k_steps, t);

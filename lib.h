@@ -72,10 +72,13 @@ typedef struct {
   level_t *lg;
   idx_t *part_start;
   idx_t *perm; // Global permutation
+  idx_t *this_perm;
+  idx_t *inv_perm;
 } perm_t;
 
 perm_t *new_perm(level_t *lg);
 void del_perm(perm_t *pr);
+void update_perm(perm_t* pr);
 void permutation(perm_t* pr, fp_t** bb, idx_t k_step);
 void inverse_permutation(perm_t* pr, fp_t** bb, idx_t k_steps);
 

@@ -479,6 +479,12 @@ perm_t *new_perm(level_t *lg)
   pr->perm = (idx_t*) malloc(n * sizeof(*pr->perm));
   assert(pr->perm);
 
+  pr->this_perm = (idx_t*) malloc(n * sizeof(*pr->this_perm));
+  assert(pr->this_perm);
+
+  pr->inv_perm = (idx_t*) malloc(n * sizeof(*pr->inv_perm));
+  assert(pr->inv_perm);
+
   for (int i = 0; i < n; i++) pr->perm[i] = i;
   
   return pr;
@@ -495,48 +501,26 @@ void del_perm(perm_t *pr)
   assert(pr->perm != NULL);
   free(pr->perm);
   pr->perm = NULL;
+  free(pr->this_perm);
+  pr->this_perm = NULL;
+  free(pr->inv_perm);
+  pr->inv_perm = NULL;
   
   free(pr);
 }
 
-void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
+void update_perm(perm_t* pr)
 {
-  // checklist to permute
-  // - perm[], part[], levels[], partials[]
-  // - matrix col[] and ptr[]
-  // - bb[] vector (k_step times)
 
   int i = 0;
   int n = pr->lg->pg->g->n;
-  int ne2 = pr->lg->pg->g->ptr[n];
   int n_part = pr->lg->pg->n_part;
-
-  // this should probably be deleted or better yet
-  // other arrays should also work like this
   idx_t *part_start = pr->part_start; 
-
-  // perm[], part[], level[], partal[] arrays.
-  idx_t *perm = pr->perm;
   idx_t *part = pr->lg->pg->part;
-  idx_t *level = pr->lg->level;
-  unsigned char *partial = pr->lg->partial;
-  idx_t *new_perm = malloc(n * sizeof(*new_perm));
-  idx_t *new_part = malloc(n * sizeof(*new_part));
-  idx_t *new_level = malloc(n * sizeof(*new_level));
-  unsigned char *new_partial = malloc(n * sizeof(*new_partial));
+  idx_t *this_perm = pr->this_perm;
+  idx_t *inv_perm = pr->inv_perm;
 
-  // matrix is ptr[] and col[].
-  idx_t *ptr = pr->lg->pg->g->ptr;
-  idx_t *col = pr->lg->pg->g->col;
-  idx_t *new_ptr = malloc((n+1) * sizeof(*new_ptr));
-  idx_t *new_col = malloc(ne2 * sizeof(*new_col));
-
-  // memory for bb[] permutation.
-  fp_t *new_bb = malloc(n * k_steps * sizeof(*new_bb));
-  
   // local arrays.
-  idx_t *this_perm = malloc(n * sizeof(*this_perm));
-  idx_t *inv_perm = malloc(n * sizeof(*this_perm));
   idx_t *iter = (idx_t*) calloc(n_part, sizeof(*iter));
 
   // prepare part_start
@@ -554,6 +538,44 @@ void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
     inv_perm[i] = j;
     iter[p]++; // adjust for next iteration
   }
+
+  free(iter);
+}
+
+void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
+{
+  // checklist to permute
+  // - perm[], part[], levels[], partials[]
+  // - matrix col[] and ptr[]
+  // - bb[] vector (k_step times)
+
+  int i = 0;
+  int n = pr->lg->pg->g->n;
+  int ne2 = pr->lg->pg->g->ptr[n];
+
+  // perm[], part[], level[], partal[] arrays.
+  idx_t *perm = pr->perm;
+  idx_t *part = pr->lg->pg->part;
+  idx_t *level = pr->lg->level;
+  unsigned char *partial = pr->lg->partial;
+  idx_t *tmp_perm = malloc(n * sizeof(*tmp_perm));
+  idx_t *tmp_part = malloc(n * sizeof(*tmp_part));
+  idx_t *tmp_level = malloc(n * sizeof(*tmp_level));
+  unsigned char *tmp_partial = malloc(n * sizeof(*tmp_partial));
+
+  // matrix is ptr[] and col[].
+  idx_t *ptr = pr->lg->pg->g->ptr;
+  idx_t *col = pr->lg->pg->g->col;
+  idx_t *tmp_ptr = malloc((n+1) * sizeof(*tmp_ptr));
+  idx_t *tmp_col = malloc(ne2 * sizeof(*tmp_col));
+
+  // memory for bb[] permutation.
+  fp_t *tmp_bb = malloc(n * k_steps * sizeof(*tmp_bb));
+  
+  // local arrays.
+  idx_t *this_perm = pr->this_perm;
+  idx_t *inv_perm = pr->inv_perm;
+
 
   //// DEBUG 1 ////
   // printf("D1: 1. perm[], 2. part[i],  3. this_perm[], 4. partial[] and base\n");
@@ -574,19 +596,19 @@ void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
     idx_t j = this_perm[i];
 
     // perm[], part[], level[] and partial[] array swaps.
-    new_perm[i] = perm[j];
-    new_part[i] = part[j];
-    new_level[i] = level[j];
-    new_partial[i] = partial[j];
+    tmp_perm[i] = perm[j];
+    tmp_part[i] = part[j];
+    tmp_level[i] = level[j];
+    tmp_partial[i] = partial[j];
     
     // matrix ptr and col arrays
-    new_ptr[i+1] = ptr[j+1] - ptr[j];
+    tmp_ptr[i+1] = ptr[j+1] - ptr[j];
     for (idx_t t = ptr[j]; t < ptr[j+1]; t++)
-      new_col[k++] = inv_perm[col[t]];
+      tmp_col[k++] = inv_perm[col[t]];
 
     // bb[] array permutation (for each level)
     fp_t *bptr = *bb;
-    fp_t *new_bptr = new_bb;
+    fp_t *new_bptr = tmp_bb;
     for (idx_t t = 0; t < k_steps; t++) {
       new_bptr[i] = bptr[j];
       new_bptr += n;
@@ -595,9 +617,9 @@ void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
   }
 
   // prefix sum of ptr[] and col[] renaming
-  new_ptr[0] = 0;
+  tmp_ptr[0] = 0;
   for (i = 0; i < n; i++)
-    new_ptr[i+1] += new_ptr[i];
+    tmp_ptr[i+1] += tmp_ptr[i];
   
   //// DEBUG 2 ////
   // printf("D2: 1. new_perm[i], 2. new_part[i],  3. this_perm[], 4. new_partial[]\n");
@@ -612,29 +634,25 @@ void permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
   // for (i = 0; i < ne2; i++) printf("%3d", new_col[i]); printf("\n");
 
   // perm[], part[], level[] and partial[] array cleanup.
-  pr->perm = new_perm;
-  pr->lg->pg->part = new_part;
-  pr->lg->level = new_level;
-  pr->lg->partial = new_partial;
+  pr->perm = tmp_perm;
+  pr->lg->pg->part = tmp_part;
+  pr->lg->level = tmp_level;
+  pr->lg->partial = tmp_partial;
   free(perm);
   free(part);
   free(level);
   free(partial);
 
   // Matrix ptr[] and col[] array cleanup.
-  pr->lg->pg->g->ptr = new_ptr;
-  pr->lg->pg->g->col = new_col;
+  pr->lg->pg->g->ptr = tmp_ptr;
+  pr->lg->pg->g->col = tmp_col;
   free(ptr);
   free(col);
 
   // bb[] array cleanup! CAUTION!
   // CAUTION: reverse deallocation, because pointer to pointer
   free(*bb);
-  *bb = new_bb;
-  
-  free(this_perm);
-  free(inv_perm);
-  free(iter);
+  *bb = tmp_bb;
 }
 
 void inverse_permutation(perm_t* pr, fp_t** bb, idx_t k_steps)
