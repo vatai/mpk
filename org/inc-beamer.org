@@ -1,0 +1,45 @@
+#+OPTIONS: H:2 -:t tags:nil ^:nil toc:nil email:t ':t
+#+STARTUP: beamer
+#+BEAMER_THEME: AnnArbor
+#+BEAMER_HEADER: \usecolortheme{default}
+
+# comment the next line to make article (OPTIONS are set in the first line)
+#+BEGIN_COMMENT
+#+OPTIONS: toc:t
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage[]{beamerarticle}
+#+BEGIN_COMMENT
+#+END_COMMENT
+#+LATEX_CLASS_OPTIONS: [a4paper]
+
+
+#+AUTHOR: Emil Vatai
+#+EMAIL: vatai@inf.elte.hu
+#+CREATOR: Emil Vatai
+#+LANGUAGE: en
+
+#+LATEX_HEADER: \usepackage[]{lmodern}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
+#+LATEX_HEADER: \usepackage[]{babel}
+
+#+LATEX_HEADER: \usepackage[]{mathtools,amssymb}
+#+LATEX_HEADER: \usepackage[]{tikz}
+#+LATEX_HEADER: \usetikzlibrary{arrows}
+#+LATEX_HEADER: \usetikzlibrary{calc}
+
+
+#+LATEX_HEADER: \def\etc{etc.\ }
+#+LATEX_HEADER: \def\ie{i.e.\ }
+#+LATEX_HEADER: \def\eg{e.g.\ }
+#+LATEX_HEADER: \def\Eg{E.g.\ }
+
+#+LATEX_HEADER: \def\iff{\Leftrightarrow}
+#+LATEX_HEADER: \def\N{\mathbb{N}}
+#+LATEX_HEADER: \def\Z{\mathbb{Z}}
+#+LATEX_HEADER: \def\Q{\mathbb{Q}}
+#+LATEX_HEADER: \def\R{\mathbb{R}}
+#+LATEX_HEADER: \def\C{\mathbb{C}}
+#+LATEX_HEADER: \DeclareMathOperator{\dmn}{dmn}
+#+LATEX_HEADER: \DeclareMathOperator{\rng}{rng}
+#+LATEX_HEADER: \newcommand{\card}[1]{\left\lvert #1 \right\rvert}

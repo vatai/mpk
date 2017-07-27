@@ -1,0 +1,514 @@
+# -*- mode: org; mode: flyspell -*-
+#+SETUPFILE: inc-beamer.org
+
+#+TITLE: Communication avoiding Matrix Powers Kernel
+
+* Basic introduction
+  #+BEGIN_EXPORT latex
+  \def\commfig#1#2{
+    \begin{center}\begin{tikzpicture}
+    [scale=6,line width=3mm,line cap =round]
+    \def \m {#1};
+    \def \n {#2};
+    \fill[fill=yellow] (0,0) rectangle (\m/\n,\n/\m);
+    \foreach \i in {0,...,\m} \draw ({\i/\n},0) -- (\i/\n,{\n/\m});
+    \foreach \j in {0,...,\n} \draw (0,\j/\m) -- (\m/\n,\j/\m);
+    \end{tikzpicture}\end{center}
+  }
+  #+END_EXPORT
+** Linear solvers
+*** Original problem
+    Given the *sparse* matrix $A$ and (dense) vector $\mathbf{b}$ find
+    the vector $\mathbf{x}$ for which $$A \mathbf{x} = \mathbf{b}$$
+
+    *Well known solution*: iterative methods
+*** New problem
+    Communication bottle neck - especially on supercomputers
+** Communication
+   :PROPERTIES:
+   :BEAMER_OPT: fragile
+   :END:
+   #+LaTeX: \commfig{4}{3}
+** Communication
+   :PROPERTIES:
+   :BEAMER_OPT: fragile
+   :END:
+   #+LaTeX: \commfig{8}{6}
+** Communication
+   :PROPERTIES:
+   :BEAMER_OPT: fragile
+   :END:
+   #+LaTeX: \commfig{12}{9}
+** Communication
+   :PROPERTIES:
+   :BEAMER_OPT: fragile
+   :END:
+   #+LaTeX: \commfig{16}{12}
+* MPK: Matrix Powers Kernels
+** Conjugate gradient
+   CG is a Krylov subspace projection method.
+*** Classic CG method
+    - In each iteration:
+      - A the Krylov subspace is expanded by *1 dimension*
+      - The best approximate solution is found in the expanded Krylov
+        subspace
+*** Modified CG method
+    - In each iteration:
+      - A the Krylov subspace is expanded by *$k$ dimensions* ($k>1$)
+      - The best approximate solution is found in the expanded Krylov
+        subspace
+** Octave/Matlab code
+   #+BEGIN_SRC octave
+     r = b - A * x;
+     p = r;  rsold = r' * r;
+
+     for i = 1:length(b)
+       Ap = A * p; # expanding the Krylov subspace
+       alpha = rsold / (p' * Ap);
+       x = x + alpha * p;
+       r = r - alpha * Ap;
+       rsnew = r' * r;
+       if sqrt(rsnew) < 1e-10 break; end
+       p = r + (rsnew / rsold) * p;
+       rsold = rsnew;
+     end
+   #+END_SRC
+** Krylov subspace and Matrix Powers Kernels
+*** Krylov subspace $\mathcal{K}_m(A,v)$
+    $$\mathcal{K}_m(A,v) = \{ A^kv : k=0, \ldots, m-1 \}$$
+*** Matrix Powers Kernels
+    A program which calculates the following vectors:
+    $$v, Av, A^2v, \ldots, A^{m-1}v$$
+* Motivation
+  #+BEGIN_EXPORT latex
+  \tikzset{reg/.style={fill=white,minimum width=6mm,circle,draw,inner sep=0}}
+  \tikzset{p1/.style={reg,fill=cyan}}
+  \tikzset{p2/.style={reg,fill=orange}}
+  \tikzset{p3/.style={reg,fill=yellow}}
+  \tikzset{p4/.style={reg,fill=pink}}
+  \tikzset{p5/.style={reg,fill=green}}
+  \tikzset{pp/.style={reg,fill=gray}}
+  \tikzset{sepline/.style={very thick, double, color=red}}
+  \tikzset{sepdash/.style={thick, dashed, color=red}}
+
+  \def\tdgrid{
+  \def\m{5}
+  \def\n{12}
+  \foreach \i in {1,...,\n} \draw (\i,1) -- (\i,\m);
+  \foreach \k in {2,...,\m} {
+    \foreach \i in {2,...,\n} \draw (\i-1,\k-1) -- (\i,\k);
+    \foreach \i in {2,...,\n} \draw (\i,\k-1) -- (\i-1,\k);
+  }
+  \foreach \k in {1,...,\m}{ 
+    \pgfmathtruncatemacro\kk{(\k-1)}
+    \path (0,\k) node {$A^{\kk}$};
+  }
+  \pgfmathsetmacro\mh{ceil(\m/2)}
+  \pgfmathsetmacro\nh{ceil(\n/2)}
+  \pgfmathsetmacro\slbot{0.5}
+  \pgfmathsetmacro\sltop{\m+0.5}
+  }
+
+  \def\tdlabels{
+    \foreach \k in {1,...,\m}
+      \foreach \i in {1,...,\n}
+        \path (\i,\k) node {\small $v_{\i}$};
+  }
+  #+END_EXPORT
+** Introductory example - tridiagonal matrix
+   $$Av = (a_{1,1}v_1+a_{1,2}v_2, \quad a_{1,2}v_1 + a_{2,2}v_2 +
+   a_{2,3}v_3, \quad \ldots)^T$$
+   #+BEGIN_EXPORT latex
+   \begin{tikzpicture}
+   \tdgrid
+   \pgfmathsetmacro\mh{ceil(\m/2)}
+   \pgfmathsetmacro\nh{ceil(\n/2)}
+   \foreach \k in {1,...,\m}
+     \foreach \i in {1,...,\n}
+       \path (\i,\k) node[reg] {};
+   \foreach \k in {1,...,\mh}{
+     \pgfmathtruncatemacro\sone{\k}
+     \pgfmathtruncatemacro\fone{\nh-\k+1}
+     \foreach \i in {\sone,...,\fone}
+       \path (\i,\k) node[p1] {};
+     \pgfmathtruncatemacro\stwo{\k+\nh}
+     \pgfmathtruncatemacro\ftwo{\nh-\k+1+\nh}
+     \foreach \i in {\stwo,...,\ftwo}
+       \path (\i,\k) node[p2] {};
+   }
+   \draw[sepline] ({\nh+0.5},\slbot) -- ({\nh+0.5},\sltop);
+   \tdlabels
+   \end{tikzpicture}
+   #+END_EXPORT
+** Tridiagonal - stencil method
+   #+BEGIN_EXPORT latex
+   \begin{tikzpicture}
+   \tdgrid
+   \foreach \k in {1,...,\mh}{
+     \pgfmathtruncatemacro\sone{\k}
+     \pgfmathtruncatemacro\fone{\nh-\k+1}
+     \foreach \i in {\sone,...,\fone}
+       \path (\i,\k) node[p1] {};
+     \pgfmathtruncatemacro\stwo{\k+\nh}
+     \pgfmathtruncatemacro\ftwo{\nh-\k+1+\nh}
+     \foreach \i in {\stwo,...,\ftwo}
+       \path (\i,\k) node[p2] {};
+   }
+   \foreach \k in {2,...,\m}{
+     \pgfmathtruncatemacro\fone{\k-1}
+     \foreach \i in {1,...,\fone}
+       \path (\i,\k) node[p3] {};
+     \pgfmathtruncatemacro\sone{max(\nh-\k+2+\nh,\nh+\k)}
+     \foreach \i in {\sone,...,\n}
+       \path (\i,\k) node[p4] {};
+     \pgfmathtruncatemacro\stwo{max(\k,\nh-\k+2)}
+     \pgfmathtruncatemacro\ftwo{\nh+\k-1}
+     \foreach \i in {\stwo,...,\ftwo}
+       \path (\i,\k) node[p5] {};
+   }
+   \tdlabels
+   \draw[sepline] (0.5,1) -- (\m,\m+0.5);
+   \draw[sepline] (\nh+0.5,1) -- (\nh+\m,\m+0.5);
+   \end{tikzpicture}
+   #+END_EXPORT
+** Tridiagonal - general method
+   #+BEGIN_EXPORT latex
+   \begin{tikzpicture}
+   \tdgrid
+   \foreach \k in {1,...,\mh}{
+     \pgfmathtruncatemacro\a{\k}
+     \pgfmathtruncatemacro\b{\nh-\k+1}
+     \foreach \i in {\a,...,\b}
+       \path (\i,\k) node[p1] {};
+     \pgfmathtruncatemacro\a{\k+\nh}
+     \pgfmathtruncatemacro\b{\nh-\k+1+\nh}
+     \foreach \i in {\a,...,\b}
+       \path (\i,\k) node[p2] {};
+   }
+   \foreach \k in {2,...,\m}{
+     \pgfmathtruncatemacro\a{min(\nh-\k,\k-1)}
+     \foreach \i in {1,...,\a}
+       \path (\i,\k) node[p3] {};
+
+     \pgfmathtruncatemacro\a{max(\nh-\k+2+\nh,\nh+\k+1)}
+     \foreach \i in {\a,...,\n}
+       \path (\i,\k) node[p4] {};
+
+     \pgfmathtruncatemacro\a{max(\k+1,\nh-\k+2)}
+     \pgfmathtruncatemacro\b{min(\nh+\k-1,\n-\k)}
+     \foreach \i in {\a,...,\b}
+       \path (\i,\k) node[p5] {};
+   }
+
+   \pgfmathtruncatemacro\mm{\mh+1}
+   \foreach \k in {\mm,...,\m}{
+     \pgfmathtruncatemacro\a{\nh-\k+1}
+     \pgfmathtruncatemacro\b{max(\k,\nh-\k+1)}
+     \foreach \i in {\a,...,\b}
+       \path (\i,\k) node[reg] {};
+     \pgfmathtruncatemacro\a{min(\nh+\k-1,\n-\k+1)}
+     \pgfmathtruncatemacro\b{\nh+\k}
+     \foreach \i in {\a,...,\b}
+       \path (\i,\k) node[reg] {};
+   }
+   \draw[sepline] (3.5,\slbot) -- (3.5,\sltop);
+   \draw[sepline] (9.5,\slbot) -- (9.5,\sltop);
+   \draw[sepdash] ({\nh+0.5},\slbot) -- ({\nh+0.5},\sltop);
+   \tdlabels
+   \end{tikzpicture}
+   #+END_EXPORT
+
+** Tridiagonal - partial nodes
+   #+BEGIN_EXPORT latex
+   \begin{tikzpicture}
+   \tdgrid
+   \foreach \k in {1,...,\mh}{
+     \pgfmathtruncatemacro\sone{\k}
+     \pgfmathtruncatemacro\fone{\nh-\k+1}
+     \foreach \i in {\sone,...,\fone}
+       \path (\i,\k) node[p1] {};
+     \pgfmathtruncatemacro\stwo{\k+\nh}
+     \pgfmathtruncatemacro\ftwo{\nh-\k+1+\nh}
+     \foreach \i in {\stwo,...,\ftwo}
+       \path (\i,\k) node[p2] {};
+   }
+   \foreach \k in {2,...,\m}{
+     \pgfmathtruncatemacro\fone{min(\nh-\k,\k-1)}
+     \foreach \i in {1,...,\fone}
+       \path (\i,\k) node[p3] {};
+
+     \pgfmathtruncatemacro\sone{max(\nh-\k+2+\nh,\nh+\k+1)}
+     \foreach \i in {\sone,...,\n}
+       \path (\i,\k) node[p4] {};
+
+     \pgfmathtruncatemacro\stwo{max(\k+1,\nh-\k+2)}
+     \pgfmathtruncatemacro\ftwo{min(\nh+\k-1,\n-\k)}
+     \foreach \i in {\stwo,...,\ftwo}
+       \path (\i,\k) node[p5] {};
+   }
+
+   \pgfmathtruncatemacro\a{2}
+   \pgfmathtruncatemacro\b{\nh-1}
+   \foreach \i in {\a,...,\b}
+     \path (\i,\m) node[reg] {};
+   \pgfmathtruncatemacro\a{\nh+2}
+   \pgfmathtruncatemacro\b{\n-1}
+   \foreach \i in {\a,...,\b}
+     \path (\i,\m) node[reg] {};
+
+
+   \path (\m-2,4) node[pp] {};
+   \path (4,4) node[pp] {};
+   \path (\nh+\m-4+2,4) node[pp] {};
+   \path (4+\nh,4) node[pp] {};
+
+   \tdlabels
+
+   \draw[sepline] (3.5,\slbot) -- (3.5,\sltop);
+   \draw[sepline] (9.5,\slbot) -- (9.5,\sltop);
+   \draw[sepdash] ({\nh+0.5},\slbot) -- ({\nh+0.5},\sltop);
+   \end{tikzpicture}
+   #+END_EXPORT
+** Matrix = Graph
+*** Tridiagonal
+    The graph of tridiagonal matrices are very simple!
+    
+    #+BEGIN_EXPORT latex
+    \begin{center}\begin{tikzpicture}
+    [->,>=stealth',auto]
+    \foreach \i in {1,...,5}
+    \path (2*\i,0) node[draw,circle] (node\i) {$v_{\i}$};
+    \foreach \i in {1,...,4}{
+    \pgfmathtruncatemacro\ipo{\i+1}
+    \path 
+    (node\i) edge[bend left] node[above]{$a_{\i,\ipo}$} (node\ipo) 
+    (node\ipo) edge[bend left] node[below]{$a_{\ipo,\i}$} (node\i)
+    (node\i) edge[loop above] node[above]{$a_{\i,\i}$} (node\i);
+    }
+    \path (node5) edge[loop above] node[above]{$a_{5,5}$} (node5);
+    \end{tikzpicture}\end{center}
+    #+END_EXPORT
+    or if the matrix is symmetric and diagonal elements are $\neq 0$,
+    then simply:
+    #+BEGIN_EXPORT latex
+    \begin{center}\begin{tikzpicture}
+    \foreach \i in {1,...,5}
+    \path (2*\i,0) node[draw,circle] (node\i) {$v_{\i}$};
+    \foreach \i in {1,...,4}{
+    \pgfmathtruncatemacro\ipo{\i+1}
+    \path 
+    (node\i) edge (node\ipo);
+    }
+    \end{tikzpicture}\end{center}
+    #+END_EXPORT
+** A more complicated example
+*** Mesh from the finite difference method
+    #+BEGIN_EXPORT latex
+    $\begin{pmatrix}
+    4  & -1 & 0  & 1  & 0  & 0  & 0  & 0  & 0 \\
+    -1 & 4 & -1  & 0  & 1  & 0  & 0  & 0  & 0 \\
+    0  & -1 &  4 & 0  & 0  & 1  & 0  & 0  & 0 \\
+
+    1  & 0  & 0  & 4  & -1 & 0  & 1  & 0  & 0  \\
+    0  &  1 &  0 & -1 & 4  & -1 & 0  & 1  & 0  \\
+    0  &  0 &  1 & 0  & -1 & 4  & 0  & 0  & 1  \\
+
+    0  & 0  & 0  & 1  & 0  & 0  & 4  & -1 & 0  \\
+    0  & 0  & 0  & 0  &  1 &  0 & -1 & 4  & -1 \\
+    0  & 0  & 0  & 0  &  0 &  1 & 0  & -1 & 4  \\
+    \end{pmatrix}$ or 
+    \begin{tikzpicture}
+    \def\n{3}
+    \foreach \k in {1,...,\n}{
+      \draw (\k,1) -- (\k,\n);
+      \draw (1,\k) -- (\n,\k);
+    }
+    \foreach \k in {1,...,\n}{
+      \foreach \i in {1,...,\n}{
+        \pgfmathtruncatemacro\myidx{\n*(3-\k)+\i}
+        \path (\i,\k) node[reg] {$v_{\myidx}$};
+      }
+    }
+    \end{tikzpicture}
+    #+END_EXPORT
+** Skirt = Mountains
+*** 
+    #+ATTR_LATEX: :width 5cm
+    [[./fig.png]]
+* Mode of operation
+** General case
+*** Matrix multiplication
+    Let $v\in\mathbb{R}^{n}$ be a vector and $A \in \mathbb{R}^{n
+    \times n}$ a matrix (as defined above).
+    
+    Given $A$ and $v$, define $G$ as follows: 
+    - $G$ is a graph, with $n$ vertices: $v_1,\ldots,v_n$, where $v_i$
+      is the \(i\)-th coordinate of the $v$ vector.
+    - the vertices $v_i$ and $v_j$ are connected in $G$ if and only if
+      $a_{i,j} \neq 0$, and the weight of the edge is $a_{i,j}$ (\ie
+      the \(i\)-th row and \(j\)-th column of $A$).
+
+    Considering this definition, to calculate the \(i\)-th element of
+    $Av$, we need to multiply each vertex adjacent to $v_i$ with the
+    weight of it's edge in $G$. That is
+    $$(Av)_i = \sum_{k=1}^n a_{i,k}v_k$$
+** Matrix multiplication in the graph
+*** Back to the tridiagonal
+    #+BEGIN_EXPORT latex
+    \tikzset{every node/.style={fill=white,circle,draw,inner sep=0,
+    minimum width=10mm, font=\small}}
+    \begin{tikzpicture}[scale=0.75]
+    \draw 
+    (-1,0) -- (5,0) 
+    (-1,2) -- (5,2);
+    \path 
+    (0,0) node (a1) {$v_{i-1}$}
+    (2,0) node (b1) {$v_{i}$}
+    (4,0) node (c1) {$v_{i+1}$}
+    (0,2) node (a2) {$Av_{i-1}$}
+    (2,2) node (b2) {$Av_{i}$}
+    (4,2) node (c2) {$Av_{i+1}$}
+    ;
+    \path [color=gray,dashed]
+    (a1) edge (a2)
+    (b1) edge (a2)
+    (b1) edge (c2)
+    (c1) edge (c2)
+    ;
+    \path[->,>=stealth']
+    (a1) edge (b2)
+    (b1) edge (b2)
+    (c1) edge (b2)
+    ;
+    %\tikzset{every node/.style={fill=white,circle,draw,inner sep=0, minimum width=10mm, font=\small}}
+    \begin{scope}[shift={(8,0)}]
+    \newcommand\mh{1}
+    \draw (-1,\mh) -- (5,\mh);
+    \path[->,>=stealth'] 
+    (0,\mh) node (a) {$v_{i-1}$}
+    (2,\mh) node[very thick] (b) {$v_{i}$}
+    (4,\mh) node (c) {$v_{i+1}$}
+    (a) edge (b)
+    (c) edge (b)
+    ;
+    \end{scope}
+    \end{tikzpicture}
+    #+END_EXPORT
+*** Mesh
+    #+BEGIN_EXPORT latex
+    \tikzset{every node/.style={fill=white,circle,draw,inner sep=0,
+    minimum width=5mm, font=\small}}
+    \begin{center}\begin{tikzpicture}
+    \def\n{3}
+    \draw[densely dotted] (1,1) -- (1,3) (1,3) -- (3,3) 
+    (3,1) -- (3,3) (1,1) -- (3,1);
+
+    \foreach \k in {1,...,\n}{
+      \foreach \i in {1,...,\n}{
+        \pgfmathtruncatemacro\myidx{\n*(3-\k)+\i}
+        \path (\i,\k) node[reg] (n\myidx) {$v_{\myidx}$};
+      }
+    }
+    \path[->,>=stealth'] 
+    (n2) edge (n5) (n4) edge (n5) (n6) edge (n5) (n8) edge (n5) ;
+    \end{tikzpicture}\end{center}
+    #+END_EXPORT
+** Problems with communication avoiding
+*** Vertices at the border cannot be computed
+    - Possible solution: overlapping 
+    - Our Solution: partial results
+    #+BEGIN_EXPORT latex
+    \tikzset{every node/.style=
+    {draw,circle,fill=white,minimum width=6mm,font=\tiny}}
+    \tikzset{donline/.style={very thick,blue}}
+    \tikzset{nedline/.style={thin,cyan,densely dotted}}
+    \tikzset{newline/.style={very thick,green}}
+    \tikzset{sepline/.style={double,red}}
+    \begin{tikzpicture}
+    \newcommand\fournodes{\path (0,0) node {$a$} (1,0) node {$b$} (0,1) node {$c$} (1,1) node {$d$};}
+    \newcommand\donlines{\draw[donline]
+    (0,-0.5) -- (0,1.5) (1,-0.5) -- (1,1.5) (-0.5,0) -- (0,0)
+    (-0.5,1) -- (0,1) (1,0) -- (1.5,0) (1,1) -- (1.5,1);
+    }
+    \donlines
+    \draw[nedline] (0,0) -- (1,0) (0,1) -- (1,1);
+    \draw[sepline] (0.5,-0.5) -- (0.5,1.5);
+    \fournodes
+    \begin{scope}[shift={(3,0)}]
+    \tikzset{donline/.append style={black}};
+    \draw[dashed,orange] (0.5,-0.5) -- (0.5,1.5);
+    \donlines
+    \draw[newline] (0,0) -- (1,0) (0,1) -- (1,1);
+    \draw[sepline] (-0.5,0.5) -- (1.5,0.5);
+    \fournodes
+    \end{scope}
+    \end{tikzpicture}
+    #+END_EXPORT
+** Solution
+*** Algorithm IO
+    - Input: $A$, $v$, $k$
+    - Output: $v, Av, \ldots, A^{k-1}v$
+*** Special library used
+    - Metis - open source graph partitioner
+*** Administration
+    - =level[]=: how high is the skirt built
+    - =partial[]=: which adjacent vertices were used
+** The program
+   #+BEGIN_SRC C
+     partition(pg,num_part);
+
+     // prn_lvl(lg, bb, 0);
+     for (int t = 0; t < num_iter; t++) {
+       iwrite("part", argv[1], t, (void*)pg);
+       permutation(pr, &bb, k_steps); // later
+       mpk2(k_steps, lg, bb); // MPK !!!!  
+       level2wcrs(lg, wg);
+       wpartition(pg, wg);
+     }
+   #+END_SRC
+** ~MPK()~'s loop
+   #+BEGIN_SRC C
+     for(lvl = 0; contp && lvl < level-1; lvl++) { // for each level
+       contp = 0;
+       for (i = 0; i < nn; i++) // for each node
+	 if (lvl == lg->level[i]){
+	   int i_is_complete = 1;
+	   if (lg->partial[i] == 0) bb[i] = b[i]*lg->pg->g->diag;
+	   idx_t end = ptr[i+1];
+	   /* for each adjacent node loop */
+	   if(i_is_complete){
+	     ll[i]++; // level up
+	     lg->partial[i]=0; // no partials in new level
+	     contp = 1;
+	   }
+	 } else contp = 1; // end of for each node
+       for (i = 0; i < nn; i++) lg->level[i]=ll[i]; b=bb; bb+=nn;
+     }
+   #+END_SRC
+** For each adjacent node loop
+   #+BEGIN_SRC C
+     for (j = ptr[i]; j < end; j++) { // for each adj node
+       int diff = end - j;
+       assert(0 <= diff && diff<8);
+       k = col[j];
+       // if needed == not done
+       if (((1 << diff) & lg->partial[i]) == 0) {
+	 if (part[i] == part[k] && lvl <= ll[k] ){ 
+	   bb[i] += b[k] * lg->pg->g->other;
+	   lg->partial[i] |= (1 << diff);
+	 } else i_is_complete = 0;
+       } 
+     } // end for each ajd node
+   #+END_SRC
+** Current and future work
+*** Permutations
+    - Main goal now is permute the vector, so that the last loop's
+      conditions are calculated more easily (or not at all)
+      - \Eg ~for(...) if(lvl = lg->level[i])~ can be changed to two
+	nested loops, reading =level[0]=, =level[1]=, ... consecutively
+	from RAM or *executed on separate processors*
+    - Matrix also has to be permuted - not trivial with CSR
+    - Reuse of permuted matrices
+      - Put all of =mpk()= into a loop, so the partitioning repeats,
+        so it is enough to permute the matrix only the first time (the
+        vector has to be permuted always)
