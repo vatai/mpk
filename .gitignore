@@ -1,0 +1,11 @@
+*~
+*.o
+sq*
+.*
+metis*
+check.m
+bin
+*.tex
+*.pdf
+mpk-paper*
+*_minted*
