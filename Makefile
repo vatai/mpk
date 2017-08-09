@@ -1,10 +1,12 @@
-default : gen comp skirt format komp
+default : gen comp skirt format komp gen2 dmpk
 
 .PHONY: clean
 clean:
 	rm *~ *.o
-CC = gcc 
+CC = gcc
+
 CFLAGS = -g -Imetis/include -Lbuild/metis/build/Linux-x86_64/libmetis/
+CXXFLAGS = -std=c++11 -g -Imetis/include -Lbuild/metis/build/Linux-x86_64/libmetis/
 LDLIBS = -lm -lmetis 
 
 lib.o : lib.c lib.h
@@ -18,3 +20,8 @@ comp : comp.o lib.o
 skirt : skirt.o lib.o
 format : format.o lib.o
 gen : gen.c
+
+
+leveledgraph.o : leveledgraph.h leveledgraph.cpp
+dmpk : dmpk.cpp leveledgraph.h leveledgraph.o
+gen2 : gen2.cpp

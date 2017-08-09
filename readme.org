@@ -1,3 +1,7 @@
 #+TITLE: Matrix Powers Kernel
 
-$Ax=b$
+
+* What's up next
+** TODO Implement the statistics for the paper
+** TODO Implement symmetric mtx file format reading
+** TODO Separate the C and C++ versions

@@ -1,6 +1,7 @@
 *~
 *.o
 sq*
+gii*
 .*
 metis*
 check.m
