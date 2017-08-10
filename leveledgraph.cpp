@@ -2,9 +2,12 @@
 
 #include <iostream>
 #include <map>
+#include <set>
+#include <vector>
 #include <cmath>
+#include <algorithm>
 #include <cassert>
-
+#include <iomanip>
 #include "metis.h"
 
 bVector::bVector(int nn, int ns) :
@@ -99,11 +102,13 @@ PartitionedGraph::PartitionedGraph(const char* fn, const int npart) :
   CSRMatrix(fn), num_part(npart)
 {
   partitions = new int[n];
+  old_partitions = new int[n];
 }
 
 PartitionedGraph::~PartitionedGraph()
 {
   delete [] partitions; partitions = nullptr;
+  delete [] old_partitions; old_partitions = nullptr;
 }
 
 
@@ -111,8 +116,10 @@ LeveledGraph::LeveledGraph(const char* fn, const int np) :
   PartitionedGraph(fn, np)
 {
   levels = new int[n];
+  old_levels = new int[n];
   vertexweights = new int[n];
   edgeweights = new int[nnz];
+
   partials = new unsigned[n];
   currentPermutation = new unsigned[n];
   globalPermutation = new unsigned[n];
@@ -121,7 +128,9 @@ LeveledGraph::LeveledGraph(const char* fn, const int np) :
   partitionBegin = new unsigned[num_part+1];
 
   tmp_level = new int[n];
+  tmp_old_level = new int[n];
   tmp_part = new int[n];
+  tmp_old_part = new int[n];
   tmp_partial = new unsigned[n];
   tmp_perm = new unsigned[n];
 
@@ -131,7 +140,7 @@ LeveledGraph::LeveledGraph(const char* fn, const int np) :
 
   for (unsigned i = 0; i < n; ++i) {
     currentPermutation[i] = globalPermutation[i] = i;
-    partials[i] = levels[i] = inversePermutation[i] = 0;
+    partials[i] = levels[i] = old_levels[i] = inversePermutation[i] = 0;
   }
   partition();
 }
@@ -139,6 +148,7 @@ LeveledGraph::LeveledGraph(const char* fn, const int np) :
 LeveledGraph::~LeveledGraph()
 {
   delete [] levels; levels = nullptr;
+  delete [] old_levels; levels = nullptr;
   delete [] edgeweights; edgeweights = nullptr;
   delete [] vertexweights; vertexweights = nullptr;
   delete [] partials; partials = nullptr;
@@ -148,7 +158,9 @@ LeveledGraph::~LeveledGraph()
   delete [] iterArray; iterArray = nullptr;
 
   delete [] tmp_level; tmp_level = nullptr;
+  delete [] tmp_old_level; tmp_level = nullptr;
   delete [] tmp_part; tmp_part = nullptr;
+  delete [] tmp_old_part; tmp_old_part = nullptr;
   delete [] tmp_partial; tmp_partial = nullptr;
   delete [] tmp_perm; tmp_perm = nullptr;
 
@@ -175,9 +187,67 @@ void LeveledGraph::wpartition()
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR]=1000;
 
+  std::swap(old_partitions,partitions);
   METIS_PartGraphKway(&n, &num_const, ptr, col,
 		      NULL, NULL, edgeweights, &num_part,
 		      NULL, NULL, opt, &dummy, partitions);
+}
+
+void LeveledGraph::optimisePartitions() {
+  // Optimise the new partitioning!!! ////////
+  int i,j;
+  
+  // Who goes where!
+  // count[i,j] says how many vertices of partition j went into the
+  // new partiton i.
+  std::map<std::pair<int,int>,int> count;
+
+  for (i = 0; i < n; ++i)
+    ++count[{old_partitions[i],partitions[i]}];
+#define NDEBUG
+#ifndef NDEBUG
+  for (i = 0; i < num_part; ++i) {
+    for (j= 0; j < num_part; ++j) std::cout << std::setw(3) << count[{i,j}];
+    std::cout << std::endl;
+  }
+#endif
+  // Figure out the new order!
+  
+  //std::vector<std::map<int,std::vector<int>>> suggestions(num_part);
+  std::map<int,std::vector<std::pair<int,int>>,std::greater<int>> suggestions;
+  for (i = 0; i < num_part; ++i) {
+    for (j = 0; j < num_part; ++j) {
+      int x = count[{i,j}];
+      //suggestions[i][x].push_back(j);
+      suggestions[x].push_back({i,j});
+    }
+  }
+    
+  std::set<int> done;
+  std::map<int,int> rename;
+  int cand = 0;
+  while ( done.size() < num_part ) {
+    auto it = suggestions.begin();
+    while ( it != suggestions.end()) {
+      if (cand < it->second.size()) {
+        i = it->second[cand].first;
+        j = it->second[cand].second;
+        if (done.find(i) == done.end()) {
+          // not in done
+          done.insert(i);
+          rename[i]=j;
+        }
+      }
+      it++;
+    }
+    cand++; // next candidate in list
+  }
+
+  for (i = 0; i < num_part; ++i) {
+    int p = partitions[i];
+    partitions[i] = rename[p];
+  }
+
 }
 
 void LeveledGraph::updateWeights()
@@ -244,7 +314,9 @@ void LeveledGraph::permute(bVector& bvect)
     // perm[], part[], level[] and partial[] array swaps.
     tmp_perm[i] = globalPermutation[j];
     tmp_part[i] = partitions[j];
+    tmp_old_part[i] = old_partitions[j];
     tmp_level[i] = levels[j];
+    tmp_old_level[i] = old_levels[j];
     tmp_partial[i] = partials[j];
     
     // matrix ptr and col arrays
@@ -276,7 +348,9 @@ void LeveledGraph::permute(bVector& bvect)
   // perm[], part[], level[] and partial[] array cleanup.
   std::swap(globalPermutation, tmp_perm);
   std::swap(partitions, tmp_part);
+  std::swap(old_partitions, tmp_old_part);
   std::swap(levels, tmp_level);
+  std::swap(old_levels, tmp_old_level);
   std::swap(partials, tmp_partial);
   
 
@@ -303,7 +377,9 @@ void LeveledGraph::inversePermute(fp_t** bb, unsigned num_steps)
     // perm[], part[], level[] and partial[] array swaps.
     tmp_perm[j] = globalPermutation[i];
     tmp_part[j] = partitions[i];
+    tmp_old_part[j] = old_partitions[i];
     tmp_level[j] = levels[i];
+    tmp_old_level[j] = old_levels[i];
     tmp_partial[j] = partials[i];
 
     //* TODO
@@ -332,7 +408,9 @@ void LeveledGraph::inversePermute(fp_t** bb, unsigned num_steps)
   // perm[], part[], level[] and partial[] array cleanup.
   std::swap(globalPermutation, tmp_perm);
   std::swap(partitions, tmp_part);
+  std::swap(old_partitions, tmp_old_part);
   std::swap(levels, tmp_level);
+  std::swap(old_levels, tmp_old_level);
   std::swap(partials, tmp_partial);
 
   // Matrix ptr[] and col[] array cleanup.
@@ -348,14 +426,12 @@ void LeveledGraph::inversePermute(fp_t** bb, unsigned num_steps)
 
 void LeveledGraph::MPK(bVector &bv)
 {
-
+  comm.clear();
   int i,j,k;
   // int sqrn = sqrt(n);
 
   fp_t* b = bv.array;
   fp_t* bb = b + n;;
-  
-  for (i = 0; i < n; i++) tmp_level[i] = levels[i];
   int lvl = 0;
   int contp = 1;
   
@@ -364,7 +440,6 @@ void LeveledGraph::MPK(bVector &bv)
     for (i = 0; i < n; i++) { // for each node
       if (lvl == levels[i]){
 	int i_is_complete = 1;
-	// if (partials[i] == 0) bb[i] = b[i] * lg->pg->g->diag; // REMOVED IN CPP
 	idx_t end_part = partitionBegin[partitions[i]+1];
 	idx_t end = ptr[i+1];
 	for (j = ptr[i]; j < end; j++) { // for each adj node
@@ -374,23 +449,42 @@ void LeveledGraph::MPK(bVector &bv)
 	  int same_part = (0 <=  end_part - k);
 	  // if needed == not done
 	  if (((1 << diff) & partials[i]) == 0) {
-	    if (same_part && lvl <= tmp_level[k] ){ 
-              //if (partitions[i] == partitions[k] && lvl <= tmp_level[k] ){ 
+	    if (same_part and lvl <= levels[k] ){ 
+              //if (partitions[i] == partitions[k] and lvl <= tmp_level[k] ) { 
               bb[i] += b[k] * val[j];
 	      partials[i] |= (1 << diff);
+              int op = old_partitions[k], np = partitions[i];
+              if (op != np)
+                ++comm[{op, np}];
 	    } else i_is_complete = 0;
 	  } 
 	} // end for each ajd node
 	if(i_is_complete){
-	  tmp_level[i]++; // level up
+	  levels[i]++; // level up
 	  partials[i]=0; // no partials in new level
 	  contp = 1;
 	}
       } else contp = 1;
     }
-    for (i = 0; i < n; i++) levels[i] = tmp_level[i];
+    //for (i = 0; i < n; i++) levels[i] = tmp_level[i];
     b = bb;
     bb += n;
   }
+  //std::cout << "yy" << std::endl;
+  for (i = 0; i < n; i++) old_levels[i] = levels[i];
+  //std::swap(old_levels,levels);
 }
 
+void LeveledGraph::stat()
+{
+  std::cout << std::endl;
+  
+  int i,j;
+  for (i = 0; i < num_part; ++i) {
+    for (j = 0; j < num_part; ++j) {
+      std::cout << comm[{i,j}] << ", ";
+    }
+    std::cout << std::endl;
+  }
+
+}

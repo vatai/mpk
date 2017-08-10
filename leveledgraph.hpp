@@ -2,6 +2,7 @@
 #define _LEVELEDGRAPH_H_
 
 #include <fstream>
+#include <map>
 
 typedef float fp_t;
 
@@ -12,8 +13,8 @@ public:
   bVector(int, int);
   virtual ~bVector();
   fp_t *array;
-  int num_steps;
   int nn;
+  int num_steps;
 private:
   bVector();
 
@@ -63,22 +64,25 @@ public:
   virtual ~LeveledGraph();
 
 public:
-  int *levels, *vertexweights, *edgeweights;
+  int *levels, *old_levels, *vertexweights, *edgeweights;
   unsigned *partials, *currentPermutation, *globalPermutation,
     *inversePermutation, *iterArray, *partitionBegin;
   void partition();
   void wpartition();
+  void optimisePartitions();
   void updateWeights();
   void updatePermutation();
   void permute(bVector &);
   void inversePermute(fp_t **, unsigned);
   void MPK(bVector &);
-  void measure();
+  void stat();
 
+  std::map<std::pair<int,int>,int> comm;
+  
 private:
   LeveledGraph();
   unsigned *tmp_partial, *tmp_perm;
-  int *tmp_level, *tmp_part, *tmp_old_part;
+  int *tmp_level, *tmp_old_level, *tmp_part, *tmp_old_part;
   int *tmp_ptr, *tmp_col;
   fp_t *tmp_val;
 

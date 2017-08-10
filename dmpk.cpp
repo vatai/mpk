@@ -58,17 +58,25 @@ int main(int argc, char **argv) {
   LeveledGraph g(argv[1], num_part);
   g.partition();
 
+  /*int sqrn = sqrt(g.n);
+  for (int i = 0; i < g.n; ++i) {
+    if(!(i%sqrn)) std::cout << std::endl;
+    std::cout << g.partitions[i];
+  }
+  std::cout << std::endl;
+  */
+  
   bVector b(g.n, num_steps);
-
   // prn_lvl(lg, bb, 0);
   for (int t = 0; t < num_iter; t++) {
     // iwrite("part", argv[1], t, (void*)pg);
-    g.permute(b);
+    g.permute(b);    
     g.MPK(b);
+    //g.stat();
     // misc_info(lg, bb, k_steps, t);
     g.updateWeights();
     g.wpartition();
-    g.measure();
+    g.optimisePartitions();
   }
 
   g.inversePermute(&b.array, num_steps);
