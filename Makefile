@@ -22,6 +22,6 @@ format : format.o lib.o
 gen : gen.c
 
 
-leveledgraph.o : leveledgraph.h leveledgraph.cpp
-dmpk : dmpk.cpp leveledgraph.h leveledgraph.o
+leveledgraph.o : leveledgraph.hpp leveledgraph.cpp
+dmpk : dmpk.cpp leveledgraph.hpp leveledgraph.o
 gen2 : gen2.cpp

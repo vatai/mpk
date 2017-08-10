@@ -8,29 +8,29 @@ typedef float fp_t;
 class bVector
 {
 
- public:
+public:
   bVector(int, int);
   virtual ~bVector();
   fp_t *array;
-
- private:
+  int num_steps;
+  int nn;
+private:
   bVector();
 
 };
 
 
-
 class CSRMatrix
 {
 
- public:
+public:
   CSRMatrix(const char*);
   virtual ~CSRMatrix();
 
- private:
+private:
   CSRMatrix();
 
- public:
+public:
   int n, nnz, *ptr, *col;
   fp_t *val;
   
@@ -40,28 +40,29 @@ class CSRMatrix
 class PartitionedGraph : public CSRMatrix
 {
 
- public:
+public:
   PartitionedGraph(const char*, const int);
   virtual ~PartitionedGraph();
 
- public:
+public:
   int *partitions;
+  int *old_partitions;
   int num_part;
 
- private:
+private:
   PartitionedGraph();
-  
+
 };
 
 
 class LeveledGraph : public PartitionedGraph
 {
 
- public:
+public:
   LeveledGraph(const char*, const int );
   virtual ~LeveledGraph();
 
- public:
+public:
   int *levels, *vertexweights, *edgeweights;
   unsigned *partials, *currentPermutation, *globalPermutation,
     *inversePermutation, *iterArray, *partitionBegin;
@@ -69,14 +70,15 @@ class LeveledGraph : public PartitionedGraph
   void wpartition();
   void updateWeights();
   void updatePermutation();
-  void permute(fp_t **, unsigned);
+  void permute(bVector &);
   void inversePermute(fp_t **, unsigned);
-  void MPK(int level, bVector &);
+  void MPK(bVector &);
+  void measure();
 
-  private:
+private:
   LeveledGraph();
   unsigned *tmp_partial, *tmp_perm;
-  int *tmp_level, *tmp_part;
+  int *tmp_level, *tmp_part, *tmp_old_part;
   int *tmp_ptr, *tmp_col;
   fp_t *tmp_val;
 

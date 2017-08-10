@@ -1,4 +1,4 @@
-#include "leveledgraph.h"
+#include "leveledgraph.hpp"
 
 #include <iostream>
 #include <map>

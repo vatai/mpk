@@ -20,7 +20,7 @@
 
 #include <iomanip>
 
-#include "leveledgraph.h"
+#include "leveledgraph.hpp"
 
 void octave_check(const char *fn, fp_t* b, int N, int k){
   int n = sqrt(N);
