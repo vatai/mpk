@@ -7,13 +7,15 @@
 
 #include "metis.h"
 
-bVector::bVector(int nn, int num_steps)
+bVector::bVector(int nn, int ns) :
+  nn(nn),
+  num_steps(ns)
 {
   int n = sqrt(nn);
   assert(n*n == nn);
   assert (n > 3);
 
-  array = new fp_t[nn * num_steps ];
+  array = new fp_t[nn * num_steps];
 
   int i=0;
   for (i = 0; i < num_steps*nn; ++i) array[i] = 0;
@@ -220,7 +222,7 @@ void LeveledGraph::updatePermutation()
   }
 }
 
-void LeveledGraph::permute(fp_t** bb, unsigned num_steps)
+void LeveledGraph::permute(bVector& bvect)
 {
   // checklist to permute
   // - perm[], part[], levels[], partials[]
@@ -231,7 +233,7 @@ void LeveledGraph::permute(fp_t** bb, unsigned num_steps)
   int i = 0, k = 0;
 
   // memory for bb[] permutation.
-  fp_t *tmp_bb = new fp_t[n * num_steps];
+  fp_t *tmp_bb = new fp_t[bvect.nn * bvect.num_steps];
   
 
   // This is the main permutation loop: 
@@ -257,14 +259,13 @@ void LeveledGraph::permute(fp_t** bb, unsigned num_steps)
     }
     
     // bb[] array permutation (for each level)
-    fp_t *bptr = *bb;
+    fp_t *old_bptr = bvect.array;
     fp_t *new_bptr = tmp_bb;
-    for (idx_t t = 0; t < num_steps; t++) {
-      new_bptr[i] = bptr[j];
+    for (idx_t t = 0; t < bvect.num_steps; t++) {
+      new_bptr[i] = old_bptr[j];
       new_bptr += n;
-      bptr += n;
+      old_bptr += n;
     }
- 
   }
   
   // prefix sum of ptr[] and col[] renaming
@@ -284,7 +285,7 @@ void LeveledGraph::permute(fp_t** bb, unsigned num_steps)
   std::swap(col, tmp_col);
   std::swap(val, tmp_val);
   
-  std::swap(*bb,tmp_bb);
+  std::swap(bvect.array,tmp_bb);
   delete [] tmp_bb;
 }
 
@@ -345,7 +346,7 @@ void LeveledGraph::inversePermute(fp_t** bb, unsigned num_steps)
 }
 //*/
 
-void LeveledGraph::MPK(int level, bVector &bv)
+void LeveledGraph::MPK(bVector &bv)
 {
 
   int i,j,k;
@@ -358,7 +359,7 @@ void LeveledGraph::MPK(int level, bVector &bv)
   int lvl = 0;
   int contp = 1;
   
-  for(lvl = 0; contp && lvl < level-1; lvl++) { // for each level
+  for(lvl = 0; contp && lvl < bv.num_steps-1; lvl++) { // for each level
     contp = 0;
     for (i = 0; i < n; i++) { // for each node
       if (lvl == levels[i]){
@@ -373,9 +374,8 @@ void LeveledGraph::MPK(int level, bVector &bv)
 	  int same_part = (0 <=  end_part - k);
 	  // if needed == not done
 	  if (((1 << diff) & partials[i]) == 0) {
-	    //if (same_part && lvl <= tmp_level[k] ){ 
-            if (partitions[i] == partitions[k] && lvl <= tmp_level[k] ){ 
-
+	    if (same_part && lvl <= tmp_level[k] ){ 
+              //if (partitions[i] == partitions[k] && lvl <= tmp_level[k] ){ 
               bb[i] += b[k] * val[j];
 	      partials[i] |= (1 << diff);
 	    } else i_is_complete = 0;

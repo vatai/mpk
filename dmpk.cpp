@@ -60,22 +60,21 @@ int main(int argc, char **argv) {
 
   bVector b(g.n, num_steps);
 
-  int i;  
-  
   // prn_lvl(lg, bb, 0);
   for (int t = 0; t < num_iter; t++) {
     // iwrite("part", argv[1], t, (void*)pg);
-    g.permute(&b.array, num_steps);
-    g.MPK(num_steps, b);
+    g.permute(b);
+    g.MPK(b);
     // misc_info(lg, bb, k_steps, t);
     g.updateWeights();
     g.wpartition();
+    g.measure();
   }
 
   g.inversePermute(&b.array, num_steps);
   
   octave_check("check.m", b.array, g.n, num_steps); 
 
-  std::cout << "bye4" << std::endl;
+  std::cout << "bye55" << std::endl;
   return 0;
 }
