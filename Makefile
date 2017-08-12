@@ -6,7 +6,7 @@ clean:
 CC = gcc
 
 CFLAGS = -g -Imetis/include -Lbuild/metis/build/Linux-x86_64/libmetis/
-CXXFLAGS = -std=c++11 -g -Imetis/include -Lbuild/metis/build/Linux-x86_64/libmetis/
+CXXFLAGS = -std=c++14 -g -Imetis/include -Lbuild/metis/build/Linux-x86_64/libmetis/
 LDLIBS = -lm -lmetis 
 
 lib.o : lib.c lib.h

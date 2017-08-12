@@ -22,24 +22,6 @@
 
 #include "leveledgraph.hpp"
 
-void octave_check(const char *fn, fp_t* b, int N, int k){
-  int n = sqrt(N);
-  FILE* f = fopen(fn,"w");
-  fprintf(f,"1;\nn = %d;pde;\n", n);
-  //b += N;
-  for (int t = 0; t < k; t++) {
-    fprintf(f,"rv%d = reshape(A^%d*bb,%d,%d) - [", t, t, n,n);
-    for (int i = 0; i < N; i++) {
-      if (i % n == 0)     fprintf(f,"\n");
-      fprintf(f, " %6.1f", b[i]);
-    }
-    fprintf(f,"]; \nnorm(rv%d)\n",t);
-    b += N;
-  }
-  fclose(f);
-}
-
-
 int main(int argc, char **argv) {
   
   // process argv
@@ -56,33 +38,37 @@ int main(int argc, char **argv) {
   ss << argv[4]; ss >> num_steps; ss.clear();
 
   LeveledGraph g(argv[1], num_part);
-  g.partition();
-
-  /*int sqrn = sqrt(g.n);
-  for (int i = 0; i < g.n; ++i) {
-    if(!(i%sqrn)) std::cout << std::endl;
-    std::cout << g.partitions[i];
-  }
-  std::cout << std::endl;
-  */
-  
   bVector b(g.n, num_steps);
-  // prn_lvl(lg, bb, 0);
+
+  g.partition();
+  // g.printLevels();
+  // g.printPartitions();
+
+  // g.permute(b);
+  // g.printPartitions();
+
   for (int t = 0; t < num_iter; t++) {
-    // iwrite("part", argv[1], t, (void*)pg);
-    g.permute(b);    
+
+    // std::cout << "MPK iteration: " << t << std::endl;
     g.MPK(b);
-    //g.stat();
-    // misc_info(lg, bb, k_steps, t);
+
+    if (t) std::cout << t;
+    g.printStats();
+    // g.printLevels();
+    // g.printPartitions();
+
     g.updateWeights();
     g.wpartition();
+    // g.printPartitions();
     g.optimisePartitions();
+    
+    // g.permute(b);
+    // g.printPartitions();
   }
+  // g.printLevels();
+  // g.inversePermute(b);
 
-  g.inversePermute(&b.array, num_steps);
-  
-  octave_check("check.m", b.array, g.n, num_steps); 
+  b.octave_check("check.m"); 
 
-  std::cout << "bye55" << std::endl;
   return 0;
 }

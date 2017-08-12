@@ -8,7 +8,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
   if (argc != 5) {
-    cerr << "usage: " << argv[0] << "type size file pfile" << endl
+    cerr << "usage: " << argv[0] << " type size file pfile" << endl
          << "type: m5p t5p" << endl;
     return 1;
   }
@@ -29,20 +29,20 @@ int main(int argc, char *argv[])
   ofstream pf(argv[4]);
   
   if (type == "m5p") {
-    int nnz = N*N+2*2*(N)*(N-1); // TODO
+    int nnz = N*N+2*2*(N)*(N-1);
+    f << "%%MatrixMarket matrix coordinate real symmetric\n";
     f << N*N << " " << N*N << " " << nnz << endl;
     for (i = 0; i < N; ++i) {
       for (j = 0; j < N; ++j) {
         f << N*i+j+1 << " " << N*(i)+j+1 << " " << 4 << endl;
         if (i > 0)   f << N*(i-1)+j+1 << " " << N*i+j+1 << " " << -1 << endl;
-        if (i < N-1) f << N*(i+1)+j+1 << " " << N*i+j+1 << " " << -1 << endl;
         if (j > 0)   f << N*i+j+1 << " " << N*i+j-1+1 << " " << -1 << endl;
-        if (j < N-1) f << N*i+j+1 << " " << N*i+j+1+1 << " " << -1 << endl;
       }
     }
   }
 
   if (type == "t5p") {
+    f << "%%MatrixMarket matrix coordinate real general\n";
     for (i = 0; i < N; ++i) {
       for (j = 0; j < N; ++j) {
         if (i == j) f << i << " " << j << " " << -4 << endl;
