@@ -65,7 +65,8 @@ public:
   void permute(bVector &);
   void inversePermute(bVector &);
   void MPK(bVector &);
-  void printStats();
+  void printHeader(int,int);
+  void printStats(int);
 
   std::map<std::pair<int,int>,int> comm_log;
 private:

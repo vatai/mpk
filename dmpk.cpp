@@ -47,13 +47,13 @@ int main(int argc, char **argv) {
   // g.permute(b);
   // g.printPartitions();
 
+  g.printHeader(num_iter,num_steps);
   for (int t = 0; t < num_iter; t++) {
 
     // std::cout << "MPK iteration: " << t << std::endl;
     g.MPK(b);
 
-    if (t) std::cout << t;
-    g.printStats();
+    g.printStats(t);
     // g.printLevels();
     // g.printPartitions();
 
@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
     // g.permute(b);
     // g.printPartitions();
   }
-  // g.printLevels();
+  //g.printLevels();
+  std::cout << "% min level: " << *std::min(g.levels,g.levels+g.n) << std::endl;
   // g.inversePermute(b);
 
   b.octave_check("check.m"); 

@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <sstream>
 #include <map>
 #include <set>
 #include <vector>
@@ -81,7 +83,6 @@ void bVector::octave_check(const char *fn)
   f.close();
 }
 
-
 CSRMatrix::CSRMatrix(const char* s)
 {
   // throw std::invalid_argument("Wrong file name");
@@ -92,7 +93,7 @@ CSRMatrix::CSRMatrix(const char* s)
   }
 
 
-  std::string header, matrix, storage, type, pattern;
+  std::string header, matrix, storage, type, pattern, line;
   f >> header >> matrix >> storage >> type >> pattern;
   if (header != "%%MatrixMarket") {
     std::cerr << "Invalid file format: " << header << std::endl;
@@ -100,7 +101,12 @@ CSRMatrix::CSRMatrix(const char* s)
   }
   bool sym = pattern == "symmetric";
 
-  while (not (f >> n >> n >> nnz));
+  while (std::getline(f,line)) {
+    // std::cout << line << std::endl;
+    if (line[0] != '%' and line.length()>0) break;
+  };
+  std::stringstream ss(line);
+  ss >> n >> n >> nnz;
 
   int i,j;
   fp_t v;
@@ -617,7 +623,24 @@ void LeveledGraph::MPK(bVector &bv)
   delete [] not_sent;
 }
 
-void LeveledGraph::printStats()
+void LeveledGraph::printHeader(int num_iter, int num_steps)
+{
+  std::cout << "% N: " << n << ", "
+            << "num_part: " << num_part << ", "
+            << "num_iter: " << num_iter << ", "
+            << "num_steps(m): " << num_steps
+            << std::endl;
+  std::cout << std::setw(5) << "%Iter"
+            << std::setw(5) << "&" << std::setw(5) << " min"
+            << std::setw(5) << "&" << std::setw(5) << " max"
+            << std::setw(5) << "&" << std::setw(5) << " count"
+            << std::setw(5) << "&" << std::setw(5) << " sum"
+            << std::setw(5) << "&" << std::setw(8)
+            << std::setprecision(1) << std::fixed << " sum/count"
+            << std::setw(5) << "\\\\" << std::endl;
+}
+
+void LeveledGraph::printStats(int iter)
 {
   int i,j;
   /*
@@ -647,12 +670,13 @@ void LeveledGraph::printStats()
       int cur = comm_log[{i,j}];
       if (min>cur and cur) min=cur;
     }
-
-  std::cout << std::setw(5) << "&" << std::setw(5) << min
-            << std::setw(5) << "&" << std::setw(5) << max
-            << std::setw(5) << "&" << std::setw(5) << count
-            << std::setw(5) << "&" << std::setw(5) << sum
-            << std::setw(5) << "&" << std::setw(8)
-            << std::setprecision(1) << std::fixed << float(sum)/float(count)
-            << std::setw(5) << "\\\\" << std::endl;
+  if (count)
+    std::cout << std::setw(5) << iter
+              << std::setw(5) << "&" << std::setw(5) << min
+              << std::setw(5) << "&" << std::setw(5) << max
+              << std::setw(5) << "&" << std::setw(5) << count
+              << std::setw(5) << "&" << std::setw(5) << sum
+              << std::setw(5) << "&" << std::setw(8)
+              << std::setprecision(1) << std::fixed << float(sum)/float(count)
+              << std::setw(5) << "\\\\" << std::endl;
 }
