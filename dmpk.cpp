@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 // #include <stdlib.h>
 // #include <string.h>
 // #include "lib.h"
@@ -40,6 +41,19 @@ int main(int argc, char **argv) {
   LeveledGraph g(argv[1], num_part);
   bVector b(g.n, num_steps);
 
+  for (int i = g.ptr[877]; i < g.ptr[878]; ++i) {
+    std::cout << g.col[i]
+              << ":"
+              << std::setprecision(100)
+              << g.val[i]
+              << "*"
+              << b.array[g.col[i]]
+              << std::endl;
+  }
+  fp_t tmpsum=0;
+  for (int i = g.ptr[877]; i < g.ptr[878]; ++i) tmpsum += b.array[g.col[i]] * g.val[i];
+  std::cout << tmpsum << std::endl;
+
   g.partition();
   // g.printLevels();
   // g.printPartitions();
@@ -55,7 +69,8 @@ int main(int argc, char **argv) {
 
     g.printStats(t);
     // g.printLevels();
-    // g.printPartitions();
+    if(t<2)
+    g.printPartitions();
 
     g.updateWeights();
     g.wpartition();
@@ -66,7 +81,8 @@ int main(int argc, char **argv) {
     // g.printPartitions();
   }
   //g.printLevels();
-  std::cout << "% min level: " << *std::min(g.levels,g.levels+g.n) << std::endl;
+  std::cout << "% min level: " << *std::min_element(g.levels, g.levels + g.n-1) << std::endl;
+
   // g.inversePermute(b);
 
   b.octave_check("check.m"); 
