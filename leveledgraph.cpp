@@ -69,7 +69,7 @@ void bVector::octave_check(const char *fn)
       << " [";
     for (int i = 0; i < n; i++) {
       if (i % sqrn == 0)     f << std::endl;
-      f <<  " " << std::fixed << std::setw(5) << std::setprecision(1) << array[t*n+i];
+      f <<  " " << std::fixed << std::setw(5) << std::setprecision(80) << array[t*n+i];
     }
     f << "];\n";
   }
@@ -630,13 +630,14 @@ void LeveledGraph::printHeader(int num_iter, int num_steps)
             << "num_iter: " << num_iter << ", "
             << "num_steps(m): " << num_steps
             << std::endl;
-  std::cout << std::setw(5) << "%Iter"
-            << std::setw(5) << "&" << std::setw(5) << " min"
-            << std::setw(5) << "&" << std::setw(5) << " max"
-            << std::setw(5) << "&" << std::setw(5) << " count"
-            << std::setw(5) << "&" << std::setw(5) << " sum"
-            << std::setw(5) << "&" << std::setw(8)
-            << std::setprecision(1) << std::fixed << " sum/count"
+  std::cout << std::setw(2) << "%Iter"
+            << std::setw(2) << "&" << std::setw(6) << " min"
+            << std::setw(2) << "&" << std::setw(6) << " max"
+            << std::setw(2) << "&" << std::setw(6) << " count"
+            << std::setw(2) << "&" << std::setw(8) << " cnt/P"
+            << std::setw(2) << "&" << std::setw(6) << " sum"
+            << std::setw(2) << "&" << std::setw(8) << " sum/P"
+            << std::setw(2) << "&" << std::fixed << " sum/count"
             << std::setw(5) << "\\\\" << std::endl;
 }
 
@@ -671,12 +672,14 @@ void LeveledGraph::printStats(int iter)
       if (min>cur and cur) min=cur;
     }
   if (count)
-    std::cout << std::setw(5) << iter
-              << std::setw(5) << "&" << std::setw(5) << min
-              << std::setw(5) << "&" << std::setw(5) << max
-              << std::setw(5) << "&" << std::setw(5) << count
-              << std::setw(5) << "&" << std::setw(5) << sum
-              << std::setw(5) << "&" << std::setw(8)
-              << std::setprecision(1) << std::fixed << float(sum)/float(count)
+    std::cout << std::setprecision(1) << std::fixed
+              << std::setw(5) << iter
+              << std::setw(2) << "&" << std::setw(6) << min
+              << std::setw(2) << "&" << std::setw(6) << max
+              << std::setw(2) << "&" << std::setw(6) << count
+              << std::setw(2) << "&" << std::setw(8) << (float)count/num_part
+              << std::setw(2) << "&" << std::setw(6) << sum
+              << std::setw(2) << "&" << std::setw(8) << (float)sum/num_part
+              << std::setw(2) << "&" << std::setw(8) << (float)sum/count
               << std::setw(5) << "\\\\" << std::endl;
 }
