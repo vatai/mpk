@@ -137,26 +137,25 @@ void calc_newvec(int *partitions, int n)
 void
 calc_newmat (int *partitions, int n)
 {
-  for (int p = 0; p < num_part; ++p) {
-    ptrp[p][0] = 0;
-  }
+  for (int p = 0; p < num_part; ++p) { ptrp[p][0] = 0; }
+  int counter[num_part] = {0, 0};
   for (int i = 0; i < n; ++i){
-    for (int p = 0; p < num_part; ++p) {
-      ptrp[p][i+1] = ptrp[p][i];
-    }
     const int p = partitions[i];
+    const int ii = counter[p];
     const int end = ptr[i+1];
+    ptrp[p][ii+1] = ptrp[p][ii];
     for (int k = ptr[i]; k < end; ++k) {
       const int j = col[k];
       if (partitions[j] == p) {
-        const int jp = ptrp[p][i+1];
-        const int nj = newindex[j];
-        colp[p][jp] = nj;
+        const int jp = ptrp[p][ii+1];
+        colp[p][jp] = newindex[j];
         valp[p][jp] = val[k];
-        ptrp[p][i+1]++;
+        ptrp[p][ii+1]++;
       }
     }
+    counter[p]++;
   }
+  std::cout << counter[0] << "::"  << counter[1]  << std::endl;
 }
 
 void
