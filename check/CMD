@@ -1,0 +1,1 @@
+make gen2 dmpk && ./gen2 m5p 10 gii10/data gii10/data.p && ./dmpk gii10/data 4 8 10 && octave-cli --eval check
