@@ -1,0 +1,51 @@
+#!/bin/bash
+FILE=sq10/data
+NP=5
+
+# partition(pg,num_part) -> pg = $FILE.part.$NP
+./bin/gpmetis $FILE $NP > /dev/null
+# ignore
+./comp part_c $FILE $FILE.c $FILE.part.$NP $FILE.w0.part_c   # just for gnuplot
+./comp level_c $FILE $FILE.c $FILE.part.$NP $FILE.w0.level_c # just for gnuplot
+
+# comp_level(lg) -> lg = $FILE.w0.level
+./comp level $FILE $FILE.c $FILE.part.$NP $FILE.w0.level # levels
+# level2wcrs(lg, wg) -> wg = $FILE.w1
+./comp weight $FILE $FILE.c $FILE.part.$NP $FILE.w1      # weights of the edges
+# wpartition(wg,pg) -> pg = $FILE.w1.part.$NP ()
+./bin/gpmetis -ufactor=1000 $FILE.w1 $NP > /dev/null     # partitioning $FILE.w1
+# ignore
+./comp part_c $FILE $FILE.c $FILE.w1.part.$NP $FILE.w0.level $FILE.w1.part_c   # just for gnuplot
+./comp level_c $FILE $FILE.c $FILE.w1.part.$NP $FILE.w0.level $FILE.w1.level_c # just for gnuplot 
+
+# update_level(lg,lg_old) // lg 
+./comp level $FILE $FILE.c $FILE.w1.part.$NP $FILE.w0.level $FILE.w1.level
+./comp weight $FILE $FILE.c $FILE.w1.part.$NP $FILE.w0.level $FILE.w2
+./bin/gpmetis -ufactor=1000 $FILE.w2 $NP > /dev/null
+./comp part_c $FILE $FILE.c $FILE.w2.part.$NP $FILE.w1.level $FILE.w2.part_c
+./comp level_c $FILE $FILE.c $FILE.w2.part.$NP $FILE.w1.level $FILE.w2.level_c
+
+./comp level $FILE $FILE.c $FILE.w2.part.$NP $FILE.w1.level $FILE.w2.level
+./comp weight $FILE $FILE.c $FILE.w2.part.$NP $FILE.w1.level $FILE.w3
+./bin/gpmetis -ufactor=1000 $FILE.w3 $NP > /dev/null
+./comp part_c $FILE $FILE.c $FILE.w3.part.$NP $FILE.w2.level $FILE.w3.part_c
+./comp level_c $FILE $FILE.c $FILE.w3.part.$NP $FILE.w2.level $FILE.w3.level_c
+
+./comp level $FILE $FILE.c $FILE.w3.part.$NP $FILE.w2.level $FILE.w3.level
+./comp weight $FILE $FILE.c $FILE.w3.part.$NP $FILE.w2.level $FILE.w4
+./bin/gpmetis -ufactor=1000 $FILE.w4 $NP > /dev/null
+./comp part_c $FILE $FILE.c $FILE.w4.part.$NP $FILE.w3.level $FILE.w4.part_c
+./comp level_c $FILE $FILE.c $FILE.w4.part.$NP $FILE.w3.level $FILE.w4.level_c
+
+./comp level $FILE $FILE.c $FILE.w4.part.$NP $FILE.w3.level $FILE.w4.level
+./comp weight $FILE $FILE.c $FILE.w4.part.$NP $FILE.w3.level $FILE.w5
+./bin/gpmetis -ufactor=1000 $FILE.w5 $NP > /dev/null
+./comp part_c $FILE $FILE.c $FILE.w5.part.$NP $FILE.w4.level $FILE.w5.part_c
+./comp level_c $FILE $FILE.c $FILE.w5.part.$NP $FILE.w4.level $FILE.w5.level_c
+
+./comp level $FILE $FILE.c $FILE.w5.part.$NP $FILE.w4.level $FILE.w5.level
+./comp weight $FILE $FILE.c $FILE.w5.part.$NP $FILE.w4.level $FILE.w6
+./bin/gpmetis -ufactor=1000 $FILE.w6 $NP > /dev/null
+./comp part_c $FILE $FILE.c $FILE.w6.part.$NP $FILE.w5.level $FILE.w6.part_c
+./comp level_c $FILE $FILE.c $FILE.w6.part.$NP $FILE.w5.level $FILE.w6.level_c
+
