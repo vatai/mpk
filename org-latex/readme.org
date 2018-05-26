@@ -1,0 +1,113 @@
+#+TITLE: Matrix Powers Kernel
+
+* Important:
+  - Floating point addition is not commutative!!!!
+* What's up next
+** TODO Distributed datastructure
+   Everything is per partition:
+   - $v_*$ has a $idx[*]$ vector which is the true index of it (per level).
+     - I guess the same goes for the $\ell(i)$ level array
+   - $col$ and $ptr$ are modified from the matrix an (also per level)
+     - $col$ is shortened/filtered (accordin to the available $v_*$)
+     - $ptr$ is updated acordingly
+     - and each rows hav an $idx[*]$ vector to store their actual index
+   - We want the second and subsequential loops to be just like a
+     regular SpMV ie $v_i^{[t]} =
+     \sum_{j=ptr_{t,p}[i]}^{ptr_{t,p}[i+1]} val_{t,p}[j]
+     \cdot v_{col_{t,p}[j]}^{[t-1]}$
+     - Q: the lower index $t$ for $ptr$, $val$, and $col$: should it
+       be $t$ or $t-1$?
+** TODO Write the invariant
+   - $v_i^{[t]} = \sum_{j=ptr[i]}^{ptr[i+1]-1} val[j] \cdot v_{col[j]}^{[t-1]} = \sum_{j=1}^n a_{i,j}v_{j}$ if $t \le \ell(i)$
+   - $v_i^{[t]} = \sum_{j=ptr[i]}^{ptr[i+1]} \nu_{i,j} \cdot val[j] \cdot v_{col[j]}^{[t-1]}$ where $\nu_{i,j} = \begin{cases} 1 & part(i) = part(col[j]) \land \ell(col[j]) \le t\\ 0 & part(i) \ne part(col[j]) \lor t < \ell(col[j]) \end{cases}$ if $t = \ell(i) + 1$
+   - $v_i^{t} = 0$ if $\ell(i) + 1 < t$
+** TODO Implement simulated communication
+*** TODO Status quo
+    - There are two points where communicatio recorded
+      - One for each vertex, to check if it is moved by the repartitioner
+      - Another for higher levels??? 
+** TODO Implement symmetric mtx file format reading
+** DONE Implement the statistics for the paper
+** DONE [SOLVED] (float addition is not commutative) MTX format should be exact
+*** DONE Compilation and diagnostics
+   #+BEGIN_SRC bash :results none
+     make dmpk -B && ./dmpk pde900/pde900.mtx 7 6 10
+   #+END_SRC
+
+   *The commented out code should be ignored.*
+
+   *The first column in the result shows the errors, the second column
+   shows the norm of the matrix.*
+
+   The first loop compiles the list of errors between the two
+   calculations.  =rv{i+1}= contains the matrix vector product
+   calculated using DMPK, which should be equal to =B^i*bb=, which is
+   the same matrix vector product calculated by octave.  The value in
+   parenthesis is the exponent.
+
+   The second loop comples the list of norms of =B^i*bb=.
+
+   #+BEGIN_SRC octave :exports both
+     check; B = mmread("pde900/pde900.mtx");
+     % idx = [848,877,878,879];
+     % gold = full(B)(878,idx) *  bb(idx);
+     % idxw = [848, 878, 879, 877];
+     % wrong = full(B)(878, idxw) * bb(idxw);
+     % i=0; rv{i+1} - reshape(B^i*bb,30,30)';  % note the transpose!!!!
+     ans = [];
+     for i = 0:9
+       ans = [ans ; norm(rv{i+1}'(:) - B^i*bb, Inf)]
+     endfor
+     % cond(B)
+     % reshape(bb,30,30)
+     % bb*1
+     % gold - wrong
+     ans2 = []; 
+     for i = 1:10
+       ans2 = [ans2 ;norm(B^i*bb)]
+     endfor
+     ans = [ans ans2 ]
+   #+END_SRC
+
+   #+RESULTS:
+   |                     0 | 341.4086119048916 |
+   | 3.552713678800501e-15 | 1717.136874584686 |
+   |  1.13686837721616e-13 | 11723.95141970991 |
+   | 9.094947017729282e-13 | 93180.06880550965 |
+   | 1.455191522836685e-11 | 806044.8196440764 |
+   | 1.746229827404022e-10 | 7369931.542394226 |
+   | 1.396983861923218e-09 | 70062613.54001084 |
+   | 1.490116119384766e-08 | 684826085.1395652 |
+   | 1.341104507446289e-07 | 6826508127.703259 |
+   |   9.5367431640625e-07 |  68976764400.5207 |
+*** DONE Conclusion
+   Row 30 (last) column 8 (starting with 1) is off.
+   
+   So, i = 29*30+8 = 878, check out row 878 in the matrix...
+   Neighbors (I guess) i = 877, 879, 848
+*** DONE Print
+    row Print 878 (ie row 877 in Cpp) of the matrix in dmpk.cpp.
+*** DONE Comparing output
+    -1.2783593825299999213740420600515790283679962158203125
+    -0.010821019795300000632121140142771764658391475677490234375
+    4.126069217899999586052217637188732624053955078125
+    -1.568187251539999937932634566095657646656036376953125
+
+    30.56473135877639180080223013646900653839111328125
+                     |||||||||||
+    30.56473135877639535351590893696993589401245117187500000000000000000000000000000000 
+    Wrong value?:    ^^^^^^^ 
+    Temporary value: vvv
+    30.6945835963199940010781574528664350509643554687500000000000000000000000000000000000000000000000000000
+*** DONE Debuging instructions
+    !! Finish writing the [[file:gdbcmd]]
+    I left a lot of output:
+    - two for loops in the beginning [[file:dmpk.cpp::44]] (I think these two)
+    - and the partition print for the first two iterations. [[file:dmpk.cpp::72]]
+    - in the heart of MPK() (search for MPKheart) e.g. file:leveledgraph.cpp::593
+    Apperently the trouble is first in partition 6 (neighbouring with
+    5), and then in partition 3.
+*** DONE Clean up!!!
+    All is good
+* Later
+** TODO Separate the C and C++ versions
