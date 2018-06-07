@@ -50,9 +50,16 @@ int main(int argc, char **argv) {
               << b.array[g.col[i]]
               << std::endl;
   }
+  
   fp_t tmpsum=0;
-  for (int i = g.ptr[877]; i < g.ptr[878]; ++i) tmpsum += b.array[g.col[i]] * g.val[i];
-  std::cout << tmpsum << std::endl;
+  for (int i = g.ptr[877]; i < g.ptr[878]; ++i){
+    fp_t x = b.array[g.col[i]], y = g.val[i];
+    std::cout << "x:" << x
+              << ", y:" << y
+              << ", prod:" << x*y << std::endl;
+    tmpsum += b.array[g.col[i]] * g.val[i];
+    std::cout << "tmpsum" << tmpsum << std::endl;
+  }
 
   g.partition();
   // g.printLevels();
@@ -65,17 +72,21 @@ int main(int argc, char **argv) {
   for (int t = 0; t < num_iter; t++) {
 
     // std::cout << "MPK iteration: " << t << std::endl;
+    // std::cout << "0.bb[877]" << b.array[b.n+877] << std::endl;
     g.MPK(b);
+    // std::cout << "1.bb[877]" << b.array[b.n+877] << std::endl;
 
-    g.printStats(t);
+    // g.printStats(t);
     // g.printLevels();
-    if(t<2)
     g.printPartitions();
 
     g.updateWeights();
+    // std::cout << "2.bb[877]" << b.array[b.n+877] << std::endl;
     g.wpartition();
+    // std::cout << "3.bb[877]" << b.array[b.n+877] << std::endl;
     // g.printPartitions();
     g.optimisePartitions();
+    // std::cout << "4.bb[877]" << b.array[b.n+877] << std::endl;
     
     // g.permute(b);
     // g.printPartitions();
