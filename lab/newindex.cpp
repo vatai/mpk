@@ -2,20 +2,46 @@
 #include <utility>
 #include <iomanip>
 
+/**
+ * CAUTION: This is a lab file, for developing certain feature of the
+ * algorithm -- which is something like a first draft.  Therefore this
+ * is by no means a complete program.  
+ *
+ * The idea developed in this file is to the construction of a new
+ * vector and a new (sparse) matrix, based on a partitioning, such
+ * that the usual SpMV multiplication can be applied to them -- but
+ * only on the elements present in a single partitions.
+ */
+
+
 // 4x5 mesh
 // 3*5 + 4*4 = 15 + 16 = 31
 // 31*2 + 20 = 82
-const int nnz = 82;
-const int n = 20;
-const int num_part = 2;
-const int part_n =  n/num_part; 
+const int nnz = 82;  // number of non-zero entries in the matrix.
+const int n = 20;    // number of elements in a vector.
+const int num_part = 2;  // number of partitions.
+const int part_n =  n/num_part; // 'n' for a/the partition (this should be an array).
+const int np[] = {n/num_part, n/num_part};
 
+// partitions[i]: the partition of element 'i' in the vector.
 int partitions[n] = {
   0,0,0,1,1,
   0,0,0,1,1,
   0,0,1,1,1,
   0,0,1,1,1
 };
+
+
+/**
+   What follows are 3 spars matrices: the entire matrix, and two
+   'half' matrices split across the two partitions.
+
+   Each matrix consists of three arrays: val, col, ptr.
+
+   The data-structures of the 'half' matrices have suffix p0, or p1
+   reflecting the partition they belong to. And finally they are put
+   into a single array, to be processable in a single loop.
+*/
 
 // rng(val) = \R
 float val[nnz] = {
@@ -84,11 +110,9 @@ int ptr[n+1] = {
   41, 45, 50, 55, 60,
   64, 67, 71, 75, 79, 82
 };
-int ptrp0[part_n+1];
-int ptrp1[part_n+1];
+int ptrp0[n/num_part+1];
+int ptrp1[n/num_part+1];
 int *ptrp[num_part] = {ptrp0, ptrp1};
-
-int newindex[n];
 
 float vec[n] = {
   10, 11, 12, 13, 14,
@@ -96,14 +120,15 @@ float vec[n] = {
   1,  10,  2, 20, 33,
   0,  1,   3, 55,  1
 };
-float vecp0[part_n];
-float vecp1[part_n];
+float vecp0[n/num_part];
+float vecp1[n/num_part];
 float *vecp[num_part] = {vecp0, vecp1};
 float rvec[n];
-float rvecp0[part_n];
-float rvecp1[part_n];
+float rvecp0[n/num_part];
+float rvecp1[n/num_part];
 float *rvecp[num_part] = {rvecp0, rvecp1};
 
+int new_index[n];  // The new index in the partition
 
 template <typename T>
 void print5(T *a, int n)
@@ -115,27 +140,58 @@ void print5(T *a, int n)
   std::cout << std::endl;
 }
 
-void calc_newindex(int *partitions, int *newindex, int n)
+/*
+  input: n, partitions[]
+
+  output: new_index[]
+
+  calculate_new_index() fills the new_index[] array based on the
+  partitions[] array.  The idea is to process each partition on a
+  separate node: let v[] be a vector, and we want to send the elements
+  of v[] to vp[p][] where p is the partition of the element: ie
+  vp[p][new_index[i]] == v[i] for each p partition and index i.
+ */
+void calculate_new_index(int n, int *partitions, int *new_index)
 {
   int counter[num_part] = {0, 0};
   for(int i = 0; i < n; ++i){
     int p = partitions[i];
-    newindex[i] = counter[p];
+    new_index[i] = counter[p];
     counter[p]++;
   }
 }
 
-void calc_newvec(int *partitions, int n)
+/*
+  input: n, partitions[], new_index[], vec[]
+  
+  output: vecp[]
+
+  calculate_new_vec() copies the elements of vec[], to vecp[p][] based on
+  the value of partitions[] using new_index[].
+ */
+void calculate_new_vec(int n, int* partitions, int* new_index, float *vec, float** vecp)
 {
   for(int i = 0; i < n; ++i){
     const int p = partitions[i];
-    const int inew = newindex[i];
+    const int inew = new_index[i];
     vecp[p][inew] = vec[i];
   }
 }
 
+/*
+  TODO documentation.
+
+  Basically, this function, copies things from {val,col,ptr}[] to
+  {val,col,ptr}p[p][] for each partition 'p' in such a way, that when
+  a traditional (sparse) matrix multiplication is performed on
+  {val,col,ptr}p[p] and the aforementioned vecp[p], we get (almost)
+  the same result as multiplying {val,col,ptr}[] with vec[].  The
+  differences occur for elements, which are now computable within a
+  single partition 'p'.
+*/
+
 void
-calc_newmat (int *partitions, int n)
+calculate_new_mat (int *partitions, int n)
 {
   for (int p = 0; p < num_part; ++p) { ptrp[p][0] = 0; }
   int counter[num_part] = {0, 0};
@@ -146,18 +202,21 @@ calc_newmat (int *partitions, int n)
     ptrp[p][ii+1] = ptrp[p][ii];
     for (int k = ptr[i]; k < end; ++k) {
       const int j = col[k];
-      if (partitions[j] == p) {
+      // if (partitions[j] == p) {
+      if (partitions[j] == p /* and lvl <= levels[j] */)
         const int jp = ptrp[p][ii+1];
-        colp[p][jp] = newindex[j];
+        colp[p][jp] = new_index[j];
         valp[p][jp] = val[k];
         ptrp[p][ii+1]++;
       }
     }
     counter[p]++;
   }
-  std::cout << counter[0] << "::"  << counter[1]  << std::endl;
 }
 
+/* 
+   Sparce matrix multiplication.
+*/
 void
 matmul (int n,
         float *rvec,
@@ -187,25 +246,25 @@ int main(int argc, char *argv[])
   // std::cout << std::endl << "partitions" << std::endl;
   // print5(partitions, n);
 
-  calc_newindex(partitions, newindex, n);
-  // std::cout << "newindex" << std::endl;
-  // print5(newindex, n);
+  calculate_new_index(n, partitions, new_index);
+  // std::cout << "new_index" << std::endl;
+  // print5(new_index, n);
 
-  calc_newvec(partitions, n);
+  calculate_new_vec(n, partitions, new_index, vec, vecp);
   // std::cout << std::endl << "vecp0";
-  // print5(vecp0, part_n);
+  // print5(vecp0, np[0]);
   // std::cout << "vecp1";
-  // print5(vecp1, part_n);
+  // print5(vecp1, np[1]);
 
   std::cout << std::endl << "newmat";
-  calc_newmat(partitions, n);
+  calculate_new_mat(partitions, n);
   print5(colp[0], 10);
   print5(valp[0], 10);
   print5(ptrp[0], 10);
 
   std::cout << std::endl << "matmulp[]";
-  matmul(part_n, rvecp[0], ptrp[0], colp[0], valp[0], vecp[0]);
-  print5(rvecp[0], part_n);
+  matmul(np[0], rvecp[0], ptrp[0], colp[0], valp[0], vecp[0]);
+  print5(rvecp[0], np[0]);
   std::cout << "--- END ---" << std::endl;
   return 0;
 }
