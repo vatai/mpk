@@ -68,7 +68,9 @@ public:
   void printHeader(int,int);
   void printStats(int);
 
+  // Communication
   std::map<std::pair<int,int>,int> comm_log;
+  // typedef  std::vector<int> vi_t;
 private:
   LeveledGraph();
   unsigned *tmp_partial, *tmp_perm;

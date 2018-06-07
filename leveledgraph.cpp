@@ -102,7 +102,6 @@ CSRMatrix::CSRMatrix(const char* s)
   bool sym = pattern == "symmetric";
 
   while (std::getline(f,line)) {
-    // std::cout << line << std::endl;
     if (line[0] != '%' and line.length()>0) break;
   };
   std::stringstream ss(line);
@@ -560,20 +559,18 @@ void LeveledGraph::MPK(bVector &bv)
   int lvl = 0;
   int contp = 1;
 
-  int *not_sent = new int[bv.n * bv.num_steps];
-  for (i = 0; i < bv.n * bv.num_steps; ++i) not_sent[i] = true;
+  int *sent = new int[bv.n * bv.num_steps];
+  for (i = 0; i < bv.n * bv.num_steps; ++i) sent[i] = false;
   
   for(lvl = 0; contp && lvl < bv.num_steps-1; lvl++) { // for each level
     contp = 0;
     for (i = 0; i < n; i++) { // for each node
       if (lvl == levels[i]) {
-        //*
+        // Communication 1.
         int op = old_partitions[i], np = partitions[i];
-        if (op != np and old_levels[i] == lvl and
-            partials[i] != 0 and not_sent[(lvl+1)*bv.n+i]) {
-          not_sent[(lvl+1)*bv.n+i]=false;
+        if (op != np and old_levels[i] == lvl and partials[i] != 0 and not sent[(lvl+1)*bv.n+i]) {
+          sent[(lvl+1)*bv.n+i]=true;
           ++comm_log[{op, np}];
-          // if(op==1&&np==2)std::cout<<"v="<<i<<":"<<op<<"->"<<np<<"(lvl="<<lvl<<")"<<std::endl;
         }
 
 	int i_is_complete = 1;
@@ -589,24 +586,22 @@ void LeveledGraph::MPK(bVector &bv)
 	  // if needed == not done
 	  if (((1 << diff) & partials[i]) == 0) {
 	    //if (same_part and lvl <= levels[k] ){ 
-            if (partitions[i] == partitions[k] and lvl <= levels[k] ) { 
+            if (partitions[i] == partitions[k] and lvl <= levels[k] ) {
               bb[i] += b[k] * val[j];
 	      partials[i] |= (1 << diff);
+
+              // Communication 2.
               op = old_partitions[k];
               np = partitions[i];
-              if (op != np
-                  and old_levels[k] >= lvl
-                  and not_sent[lvl*bv.n+k]) {
-                not_sent[lvl*bv.n+k] = false;
+              if (op != np and old_levels[k] >= lvl and not sent[lvl*bv.n+k]) {
+                sent[lvl*bv.n+k] = true;
                 ++comm_log[{op, np}];
-                // if(op==1&&np==2)std::cout<<"v="<<k<<"(>"<<i<<"):"<<op<<">"<<np<<"("<<lvl<<")"<<std::endl;
               }
 	    } else i_is_complete = 0;
 	  } 
 	} // end for each ajd node
 
 	if(i_is_complete){
-          // std::cout << i << " level up" << std::endl;
 	  levels[i]++; // level up
 	  partials[i]=0; // no partials in new level
 	  contp = 1;
@@ -620,7 +615,7 @@ void LeveledGraph::MPK(bVector &bv)
   }
 
   for (i = 0; i < n; i++) old_levels[i] = levels[i];
-  delete [] not_sent;
+  delete [] sent;
 }
 
 void LeveledGraph::printHeader(int num_iter, int num_steps)
