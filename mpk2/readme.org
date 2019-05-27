@@ -1,0 +1,8 @@
+* MPK from Suda sensei
+The package consists of several programs:
+** Input generation using ~gen~
+   Input:
+   - type :: the type of the generated matrix.
+   - size ::
+   - ghead ::
+
