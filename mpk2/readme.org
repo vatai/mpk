@@ -15,4 +15,9 @@ The package consists of several programs:
     The program executes a bunch of ~system()~ calls, to run other
     binaries.  The line executed is written using ~sprintf()~ to the
     ~line~ variable.  ~driver.c~ basically does the following:
-    - ~mkdir ghead_npart_nlevel_nphase~ (line 46).
+    - ~mkdir $GHEAD_$NPART_$NLEVEL_$NPHASE~ (line 46).
+    - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in the
+      previous ~system()~ call(line 51).
+    - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
+      > $DIR/log~ (line 57).
+    - for ~$N~ from ~0~ to ~$NPHASE~:
