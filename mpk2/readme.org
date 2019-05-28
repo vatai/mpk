@@ -5,4 +5,14 @@ The package consists of several programs:
    - type :: the type of the generated matrix.
    - size ::
    - ghead ::
-
+** Driver
+   Input:
+   - ghead :: input name.
+   - npart :: partitions.
+   - nlevel :: level.
+   - nphase :: phase.
+*** Operation
+    The program executes a bunch of ~system()~ calls, to run other
+    binaries.  The line executed is written using ~sprintf()~ to the
+    ~line~ variable.  ~driver.c~ basically does the following:
+    - ~mkdir ghead_npart_nlevel_nphase~ (line 46).
