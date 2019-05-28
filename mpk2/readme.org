@@ -21,3 +21,14 @@ The package consists of several programs:
     - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
       > $DIR/log~ (line 57).
     - for ~$N~ from ~0~ to ~$NPHASE~:
+      - ~gpmetis~
+      - ~comp level~
+      - ~stat~
+      - ~comp weight~
+      - if ~$N == 0~:
+        - ~gpmetis~
+        - ~skirt~
+        - ~stat~
+      - else if ~$N > 0~:
+        - ~skirt~
+        - ~stat~
