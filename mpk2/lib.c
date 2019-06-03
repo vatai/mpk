@@ -31,7 +31,7 @@ void del_crs(crs0_t *g) {
   free(g);
 }
 
-crs0_t* read_crs(FILE *f) {
+crs0_t* read_crs(FILE *f) { // Called out function from comp.c to read the crs or graph file 
   char line[10240];
 
   fgets(line, 10240, f);
@@ -92,6 +92,9 @@ crs0_t* read_crs(FILE *f) {
 
   return g;
 }
+
+
+
 
 void write_crs(FILE *f, crs0_t *g) {
   assert(f != NULL);

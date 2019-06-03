@@ -24,17 +24,18 @@ int main(int argc, char **argv) {
 
   if (argc != 6 && argc != 7) {
     fprintf(stderr, "usage: %s mode graph coord part [level] out\n",
-	    argv[0]);
-    fprintf(stderr, "valid mode: part_c, level_c, level and weight\n");
+	    argv[0]); // The section to ensure correct format to call out a function
+    fprintf(stderr, "valid mode: part_c, level_c, level and weight\n"); 
     exit(1);
   }
 
-  FILE *fi = fopen(argv[2], "r");
+  FILE *fi = fopen(argv[2], "r"); // open the graph file if not then exit the program
   if (fi == NULL) {
     fprintf(stderr, "cannot open %s\n", argv[2]);
     exit(1);
   }
-  crs0_t *g = read_crs(fi);
+  
+  crs0_t *g = read_crs(fi); // Read the graph 
 
   coord_t *cg = NULL;
   if (strcmp(argv[1], "level_c") == 0 ||
