@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "usage: %s mode graph coord part [level] out\n",
 	    argv[0]); // The section to ensure correct format to call out a function
     fprintf(stderr, "valid mode: part_c, level_c, level and weight\n"); 
-    exit(1);
+    exit(1);//graph is loaction of graph file. coord is x. Part is Partitioned graph. Out will be output file. [level] is optional 
   }
 
   FILE *fi = fopen(argv[2], "r"); // open the graph file if not then exit the program
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   
-  crs0_t *g = read_crs(fi); // Read the graph 
+  crs0_t *g = read_crs(fi); // Read the graph and make a crs data structure.
 
   coord_t *cg = NULL;
   if (strcmp(argv[1], "level_c") == 0 ||
