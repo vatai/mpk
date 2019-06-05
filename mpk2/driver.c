@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
     if (phase == 0)
       sprintf(line, "./comp level %s/g0 x %s/g%d.part.%d %s/l%d",
-	      dir, dir, phase, npart, dir, phase); // Calling comp.c with required string inputs,level is the mode for comp
+	      dir, dir, phase, npart, dir, phase); // Calling comp.c with required string inputs,level is the mode for comp. Separate for phase = 0.
     else
       sprintf(line, "./comp level %s/g0 x %s/g%d.part.%d %s/l%d %s/l%d",
 	      dir, dir, phase, npart, dir, phase-1, dir, phase);
