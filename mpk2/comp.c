@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   
-  crs0_t *g = read_crs(fi); // Read the graph and make a crs data structure.
+  crs0_t *g = read_crs(fi); // Read the graph and make a crs data structure.//*****************************
 
   coord_t *cg = NULL;
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
       exit(1);
     }  
     cg = new_coord(g);
-    read_coord(fc, cg);
+    read_coord(fc, cg); 
   }
 
   FILE *fp = fopen(argv[4], "r");
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
   part_t *pg = new_part(g);
-  read_part(fp, pg);// partitioned graph read function
+  read_part(fp, pg);// partitioned graph read function*********************************
 
   level_t *lg_org = NULL;
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
       exit(1);
     }
     lg_org = new_level(pg);
-    read_level(fl, lg_org);
+    read_level(fl, lg_org); // ********************************Will be used to update level in function below.
   }
 
   FILE *fo = fopen(argv[argc - 1], "w");
@@ -78,14 +78,12 @@ int main(int argc, char **argv) {
 
   level_t *lg = new_level(pg);
   if (lg_org == NULL)
-    comp_level(lg); // If phase 1 then we compute the newely made base level
+    comp_level(lg); // If phase 1 then we compute the newely made base level // ************************
   else
-    update_level(lg, lg_org); // Else we will update the new level
+    update_level(lg, lg_org); // Else we will update the new level // ****************************
 
   wcrs_t *wg = new_wcrs(g);
-  level2wcrs(lg, wg);
-
-
+  level2wcrs(lg, wg); //************************
 
   if (strcmp(argv[1], "part_c") == 0)
     write_part_c(fo, pg, cg);// Not used right now
@@ -93,9 +91,9 @@ int main(int argc, char **argv) {
     print_levels(lg); // Not used yet
     write_level_c(fo, lg, cg);
   } else if (strcmp(argv[1], "level") == 0)
-    write_level(fo, lg);
+    write_level(fo, lg); // ************************
   else if (strcmp(argv[1], "weight") == 0)
-    write_wcrs(fo, wg);
+    write_wcrs(fo, wg); // *************************
   else {
     fprintf(stderr, "unknown mode %s\n", argv[1]);
     fprintf(stderr, "valid mode: part_c, level_c, level and weight\n");
