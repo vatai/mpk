@@ -1,3 +1,25 @@
+// The lib.c implements most of the data-structures and it's
+// operations/methods defined in lib.h.  Most of the data-structures
+// have a new_*, del_*, read_*, write_* functions.
+//
+// new_* :: Usually only the new_* function is documented, which
+// allocates the data-structure.
+//
+// del_* :: The del_* functions free/delete the data-structure.
+//
+// write_* :: The write_* functions write out the data-structures to
+// the disc.
+//
+// read_* :: The read_* functions read the data-structure from the
+// disc.
+//
+// Some functions have *_c suffix, which indicates that the function
+// deals with coordinates (i.e. visual representation) and for now
+// they are not documented.
+//
+// There are several other functions with special purposes.  They are
+// usually important, and documented.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,8 +49,6 @@ crs0_t *new_crs(int nv, int ne) {
   return g;
 }
 
-// Delete (free the memory of) the matrix/graph allocated by `new_crs`
-// (or `read_crs`).
 void del_crs(crs0_t *g) {
   assert(g != NULL);
 
@@ -43,7 +63,6 @@ void del_crs(crs0_t *g) {
   free(g);
 }
 
-// Read a matrix/graph written to disk by `write_crs`.
 crs0_t* read_crs(FILE *f) {
   char line[10240];
 
@@ -106,7 +125,6 @@ crs0_t* read_crs(FILE *f) {
   return g;
 }
 
-// Write a matrix/graph to the disc.
 void write_crs(FILE *f, crs0_t *g) {
   assert(f != NULL);
   assert(g != NULL);
@@ -124,6 +142,11 @@ void write_crs(FILE *f, crs0_t *g) {
   fclose(f);
 }
 
+// For each `i`, `y[i]` is the minimum of `x[i]` and `x[j] + 1` for
+// all vertices `j` adjacent to `i`.
+//
+// If `x[]` holds "levels" of MPK, than `minplus()` will calculate the
+// next level for all `x[]`.
 int minplus(crs0_t *g, int *x, int *y) {
   int i, j, k = 0;
   for (i=0; i < g->n; i++) {
@@ -135,12 +158,14 @@ int minplus(crs0_t *g, int *x, int *y) {
 	k++;
       }
     }
-    y[i] = t;  // min(x[i], x[j] + 1)
+    y[i] = t;  // min(x[i], x[j] + 1 for all j adjacent i)
   }
 
   return k;
 }
 
+// Similar to `minplus()` but do the calculations only for the
+// vertices in partition `r`.
 int minplus_r(crs0_t *g, int *x, int *y, int r, int *part) {
   int i, j, k=0;
   for (i=0; i< g->n; i++)
@@ -159,6 +184,8 @@ int minplus_r(crs0_t *g, int *x, int *y, int r, int *part) {
   return k;
 }
 
+// Similar to `minplus()` but do the calculations only for the
+// vertices in not partition `r`.
 int minplus_x(crs0_t *g, int *x, int *y, int r, int *part) {
   int i, j, k=0;
   for (i=0; i< g->n; i++)
@@ -202,6 +229,9 @@ void read_coord(FILE *f, coord_t *cg) {
   fclose(f);
 }
 
+// Create a partitioned graph/matrix from a CRS graph/matrix: a graph
+// which stores the number of partitions and the partition index for
+// each vertex.
 part_t *new_part(crs0_t *g) {
   assert(g != NULL);
 
@@ -255,6 +285,8 @@ void write_part_c(FILE *f, part_t *pg, coord_t *cg) {
   fclose(f);
 }
 
+// Create a graph/matrix with levels from a partitioned graph: a
+// partitioned graph which stores the level for each node.
 level_t *new_level(part_t *pg) {
   assert(pg != NULL);
 
@@ -278,6 +310,9 @@ void del_level(level_t* lg) {
   free(lg);
 }
 
+// Compute a levels of a partitioned graph in the initial phase.  This
+// method should be called in the first phase and update_level()
+// should be called in the i-THC stage, for i > 2.
 void comp_level(level_t *lg) {
   assert(lg != NULL);
   int n = lg->pg->g->n;
@@ -285,24 +320,34 @@ void comp_level(level_t *lg) {
   int *p = lg->pg->part;
   int *l = lg->level;
 
+  // Temporary arrays.
   int *t0 = (int*) malloc(sizeof(int) * n);
   int *t1 = (int*) malloc(sizeof(int) * n);
   assert(t0 != NULL && t1 != NULL);
 
   int i;
-  for (i = 0; i< np; i++) {
+  for (i = 0; i < np; i++) {
+    // For each partition: `i` is the current partition.
     int j;
-    for (j=0; j< n; j++)
+    for (j=0; j < n; j++)
       if (p[j] == i)
-	t0[j] = t1[j] = n+1;		/* big enough */
+        // For vertices in the current partition.
+	t0[j] = t1[j] = n+1;		// a big enough value
       else
+        // For vertices NOT in the current partition.
 	t0[j] = t1[j] = -1;
 
+    // Calculate the levels as long as possible (after a finite number
+    // of steps, the levels will stop changing).  Input is `t0`;
+    // output is `t1`; after computation the `t0` and `t1` are
+    // swapped.
     do {
       j = minplus_r(lg->pg->g, t0, t1, i, p);
       int *tt = t0;  t0 = t1;  t1 = tt;
     } while (j > 0);
 
+    // The levels are calculated in the `t1[]` array, and are copied
+    // to the `l` array storing the final result.
     for (j=0; j< n; j++)
       if (p[j] == i)
 	l[j] = t1[j];
@@ -338,7 +383,7 @@ void update_level(level_t *lg, level_t *lg_org) {
 	t0[j] = t1[j] = max + n + 1;	/* big enough */
       else
 	t0[j] = t1[j] = l_org[j];
-    
+
     do {
       j = minplus_r(lg->pg->g, t0, t1, i, p);
       int *tt = t0;  t0 = t1;  t1 = tt;
@@ -388,6 +433,8 @@ void write_level_c(FILE *f, level_t *lg, coord_t *cg) {
   fclose(f);
 }
 
+// Create a graph/matrix with weighted edges.  The edge weights are
+// calculated by the `level2wcrs()` function.
 wcrs_t *new_wcrs(crs0_t *g) {
   assert(g != NULL);
 
@@ -439,6 +486,7 @@ void write_wcrs(FILE *f, wcrs_t *wg) {
   fclose(f);
 }
 
+// Calculate the edge weights based on the levels.
 void level2wcrs(level_t *lg, wcrs_t *wg) {
   assert(lg != NULL);
   assert(wg != NULL);
@@ -474,6 +522,7 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
   }
 }
 
+// TODO(vatai): I still need to read trough this.
 skirt_t *new_skirt(part_t *pg) {
   assert(pg != NULL);
 
@@ -497,6 +546,7 @@ void del_skirt(skirt_t *sg) {
   free(sg);
 }
 
+// TODO(vatai): This is probably important.
 void comp_skirt(skirt_t *sg) {
   assert(sg != NULL);
 
@@ -610,8 +660,8 @@ void read_skirt(FILE *f, skirt_t *sg, int level) {
 
   fclose(f);
 }
-    
 
+// TODO(vatai): Maybe this is also important.
 void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
   assert(sg != NULL);
 
