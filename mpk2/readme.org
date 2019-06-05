@@ -3,8 +3,8 @@ The package consists of several programs:
 ** Input generation using ~gen~
    Input:
    - type :: the type of the generated matrix.
-   - size ::
-   - ghead ::
+   - size :: size of the generated matrix.
+   - ghead :: name of the generated file.
 ** Driver
    Input:
    - ghead :: input name.
@@ -21,10 +21,13 @@ The package consists of several programs:
     - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
       > $DIR/log~ (line 57).
     - for ~$N~ from ~0~ to ~$NPHASE~:
-      - ~gpmetis~
-      - ~comp level~
-      - ~stat~
-      - ~comp weight~
+      - Partition graph: ~gpmetis $DIR/g$PHASE $NPART~ (with
+        additional loggin)
+      - Compute levels: ~comp level $DIR/g0 x
+        $DIR/g$PHASE.part.$NPART~ with ~$DIR/l$PHASE~ or
+        ~$DIR/l${PHASE-1} $DIR/l$PHASE~
+      - Write log: ~stat $DIR/l$PHASE $NLEVEL >> $DIR/log~
+      - Compute weights: ~comp weight~
       - if ~$N == 0~:
         - ~gpmetis~
         - ~skirt~
