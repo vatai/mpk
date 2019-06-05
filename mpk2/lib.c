@@ -4,12 +4,22 @@
 #include <assert.h>
 #include "lib.h"
 
+// Creates (allocate) a new sparse matrix in compressed row storage
+// format, with `nv` number of rows (and columns) and `ne` number of
+// non-zero values.  The connection to graphs should be noted: in the
+// adjacency matrix of a graph, the rows and columns both represent
+// the vertices of a graph (hence the `nv` refers to the number of
+// vertices), and there is an entry in the matrix iff there is an edge
+// in the graph between the vertices represented by the row and column
+// of the matrix.
 crs0_t *new_crs(int nv, int ne) {
   crs0_t *g = (crs0_t*) malloc(sizeof(crs0_t));
   assert(g != NULL);
 
   g->n = nv;
   g->ptr = (int*) malloc(sizeof(int) * (nv + 1));
+  // The 2 multiplies comes from the assumption that the graph is
+  // undirected.
   g->col = (int*) malloc(sizeof(int) * 2 * ne);
   assert(g->ptr != NULL);
   assert(g->col != NULL);
@@ -17,6 +27,8 @@ crs0_t *new_crs(int nv, int ne) {
   return g;
 }
 
+// Delete (free the memory of) the matrix/graph allocated by `new_crs`
+// (or `read_crs`).
 void del_crs(crs0_t *g) {
   assert(g != NULL);
 
@@ -31,6 +43,7 @@ void del_crs(crs0_t *g) {
   free(g);
 }
 
+// Read a matrix/graph written to disk by `write_crs`.
 crs0_t* read_crs(FILE *f) {
   char line[10240];
 
@@ -93,6 +106,7 @@ crs0_t* read_crs(FILE *f) {
   return g;
 }
 
+// Write a matrix/graph to the disc.
 void write_crs(FILE *f, crs0_t *g) {
   assert(f != NULL);
   assert(g != NULL);
@@ -112,16 +126,16 @@ void write_crs(FILE *f, crs0_t *g) {
 
 int minplus(crs0_t *g, int *x, int *y) {
   int i, j, k = 0;
-  for (i=0; i< g->n; i++) {
+  for (i=0; i < g->n; i++) {
     int t = x[i];
-    for (j= g->ptr[i]; j< g->ptr[i+1]; j++) {
+    for (j= g->ptr[i]; j < g->ptr[i + 1]; j++) {
       int s = x[g->col[j]] + 1;
       if (s < t) {
 	t = s;
-	k ++;
+	k++;
       }
     }
-    y[i] = t;
+    y[i] = t;  // min(x[i], x[j] + 1)
   }
 
   return k;
