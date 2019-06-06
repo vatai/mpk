@@ -125,9 +125,6 @@ crs0_t* read_crs(FILE *f) { // Called out function from comp.c to read the crs o
   return g;
 }
 
-
-
-
 void write_crs(FILE *f, crs0_t *g) {
   assert(f != NULL);
   assert(g != NULL);
@@ -542,6 +539,9 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
 // For now it seems skirt_t has `n_part * n` number of `levels`
 // (i.e. one for each partition and for each vertex) while `level_t`
 // has only `n` level values.
+//
+// TODO(vatai): move these skirt functions to skirt.c because they are
+// only used there.
 skirt_t *new_skirt(part_t *pg) {
   assert(pg != NULL);
 
@@ -579,7 +579,6 @@ void del_skirt(skirt_t *sg) {
 //
 // As a result `sg->levels[i * n + j]` will have the level of vertex
 // `j` available/reachable using only elements of partition `i`.
-
 void comp_skirt(skirt_t *sg) {
   assert(sg != NULL);
 
@@ -694,7 +693,12 @@ void read_skirt(FILE *f, skirt_t *sg, int level) {
   fclose(f);
 }
 
-// TODO(vatai): Maybe this is also important.
+// TODO(vatai): Not entirely sure about this function.
+//
+// Calculate the total cost, to get all vertices to `level` assuming
+// the `skirt` and all vertices calculated to `level`.
+//
+// lg is optional (i.e. can be NULL).
 void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
   assert(sg != NULL);
 
@@ -705,9 +709,16 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
 
   int i;
   for (i = 0; i < np; i ++) {
+    // For each partition.
+
+    // `skirt` of the current partition
     int *skirt = sg->levels + i * n;
 
+    // The easier version is in the other branch below.
     if (lg != NULL) {
+      // Do the same as `lg == NULL` (see below) but instead of
+      // `skirt[j]` use `skirt[j] + lg->level[j]`?? (vatai)
+
       int t[n], dom[n];
 
       int j;
@@ -726,7 +737,12 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
 	} else if (dom[j] == 1)
 	  n_comm += 2;
 
-    } else {
+    } else {  // if lg == NULL
+      // For each vertex, `n_comp` (i.e. number of computations) is
+      // the number of "level jumps" needed to reach `level` assuming
+      // the vertices already reached level `skirt[j]` (which is
+      // calculated by `level - skirt[j]`); `n_comm` (or number of
+      // communications) is the number of vertices below `level`.
 
       int j;
       for (j=0; j< n; j++)
@@ -741,8 +757,13 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
   int level_comp = 0;
   if (lg != NULL)
     for (i=0; i< n; i++)
+      // `level_comp` is: sum over i for min(level, lg->level[i])
       level_comp += (lg->level[i] > level ? level : lg->level[i]);
 
+  // output:
+  // - n_comp/n,
+  // - level_comp/n,
+  // - n_comm/n
   printf("skirt cost: node %d level %d comp %f (%f) comm %f\n",
 	 n, level, n_comp / (double) n, 
 	 level_comp / (double) n, n_comm / (double) n);
