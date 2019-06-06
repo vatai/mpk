@@ -148,6 +148,14 @@ void write_crs(FILE *f, crs0_t *g) {
 // If `x[]` holds "levels" of MPK, than `minplus()` will calculate the
 // next level for all `x[]`.
 //
+// It should be noted, that although `y[]` is the output of the
+// function, if we want to calculate it for certain vertices
+// (i.e. some values of `i`) those `x[i]` should be initialised to a
+// "big enough" value.  So it will not work for arbitrary `x[]`.
+//
+// TODO(vatai): refactor the minplus functions or specify exact
+// precondition for input values.
+//
 // The return value, `k` is the number of "changes" performed by
 // `minplus()` (I think, vatai).  When it is 0, the input will not be
 // changed, that's how we know we have reached the end of a "phase".
