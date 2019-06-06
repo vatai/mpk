@@ -147,6 +147,10 @@ void write_crs(FILE *f, crs0_t *g) {
 //
 // If `x[]` holds "levels" of MPK, than `minplus()` will calculate the
 // next level for all `x[]`.
+//
+// The return value, `k` is the number of "changes" performed by
+// `minplus()` (I think, vatai).  When it is 0, the input will not be
+// changed, that's how we know we have reached the end of a "phase".
 int minplus(crs0_t *g, int *x, int *y) {
   int i, j, k = 0;
   for (i=0; i < g->n; i++) {
