@@ -693,7 +693,9 @@ void read_skirt(FILE *f, skirt_t *sg, int level) {
   fclose(f);
 }
 
-// TODO(vatai): Not entirely sure about this function.
+// TODO(vatai): Not entirely sure about this function.  It is
+// commented out in skirt.c, but it should print computation and
+// communication costs.
 //
 // Calculate the total cost, to get all vertices to `level` assuming
 // the `skirt` and all vertices calculated to `level`.
