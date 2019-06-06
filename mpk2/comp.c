@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   if (lg_org == NULL)
     comp_level(lg); // If phase 1 then we compute the newely made base level // ************************
   else
-    update_level(lg, lg_org); // Else we will update the new level // ****************************
+    update_level(lg, lg_org); // Else we will update the new level lg with the help lg_org // ****************************
 
   wcrs_t *wg = new_wcrs(g);
   level2wcrs(lg, wg); //************************

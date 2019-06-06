@@ -150,6 +150,7 @@ void write_crs(FILE *f, crs0_t *g) {
 //
 // If `x[]` holds "levels" of MPK, than `minplus()` will calculate the
 // next level for all `x[]`.
+// Here returned value k is the number of modifications made. If it returns 0 then it means that we have reached the end of phase.
 int minplus(crs0_t *g, int *x, int *y) {
   int i, j, k = 0;
   for (i=0; i < g->n; i++) {
@@ -235,14 +236,14 @@ void read_coord(FILE *f, coord_t *cg) {
 // Create a partitioned graph/matrix from a CRS graph/matrix: a graph
 // which stores the number of partitions and the partition index for
 // each vertex.
-part_t *new_part(crs0_t *g) {
+part_t *new_part(crs0_t *g) { // to create a empty partition according to the features of graph.
   assert(g != NULL);
 
   part_t *pg = (part_t*) malloc(sizeof(part_t));
   assert(pg != NULL);
 
-  pg->g = g;
-  pg->n_part = -1;
+  pg->g = g; 
+  pg->n_part = -1; 
   pg->part = (int*) malloc(sizeof(int) * g->n);
 
   return pg;
@@ -261,7 +262,7 @@ void del_part(part_t *pg) {
 
 void read_part(FILE *f, part_t *pg) {
   int i, max=0;
-  for (i=0; i< pg->g->n; i++) {
+  for (i=0; i< pg->g->n; i++) { // according to size of graph we will store the value of partition to which ith index belong
     int p;
     fscanf(f, "%d", &p);
     if (max < p)
@@ -269,7 +270,7 @@ void read_part(FILE *f, part_t *pg) {
     pg->part[i] = p;
   }
 
-  pg->n_part = max + 1;
+  pg->n_part = max + 1; // total partitions
 }
 
 void write_part_c(FILE *f, part_t *pg, coord_t *cg) {
