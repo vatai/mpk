@@ -11,6 +11,10 @@ input/*/
 *.tgz
 metis*
 
+*flymake.c
+*flymake.h
+
+
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
