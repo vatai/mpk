@@ -1,0 +1,37 @@
+* MPK from Suda sensei
+The package consists of several programs:
+** Input generation using ~gen~
+   Input:
+   - type :: the type of the generated matrix.
+   - size :: size of the generated matrix.
+   - ghead :: name of the generated file.
+** Driver
+   Input:
+   - ghead :: input name.
+   - npart :: partitions.
+   - nlevel :: level.
+   - nphase :: phase.
+*** Operation
+    The program executes a bunch of ~system()~ calls, to run other
+    binaries.  The line executed is written using ~sprintf()~ to the
+    ~line~ variable.  ~driver.c~ basically does the following:
+    - ~mkdir $GHEAD_$NPART_$NLEVEL_$NPHASE~ (line 46).
+    - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in the
+      previous ~system()~ call(line 51).
+    - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
+      > $DIR/log~ (line 57).
+    - for ~$N~ from ~0~ to ~$NPHASE~:
+      - Partition graph: ~gpmetis $DIR/g$PHASE $NPART~ (with
+        additional loggin)
+      - Compute levels: ~comp level $DIR/g0 x
+        $DIR/g$PHASE.part.$NPART~ with ~$DIR/l$PHASE~ or
+        ~$DIR/l${PHASE-1} $DIR/l$PHASE~
+      - Write log: ~stat $DIR/l$PHASE $NLEVEL >> $DIR/log~
+      - Compute weights: ~comp weight~
+      - if ~$N == 0~:
+        - ~gpmetis~
+        - ~skirt~
+        - ~stat~
+      - else if ~$N > 0~:
+        - ~skirt~
+        - ~stat~
