@@ -522,7 +522,12 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
   }
 }
 
-// TODO(vatai): I still need to read trough this.
+// TODO(vatai): I still need to read trough this.  `skirt_t` is like
+// `level_t`
+//
+// For now it seems skirt_t has `n_part * n` number of `levels`
+// (i.e. one for each partition and for each vertex) while `level_t`
+// has only `n` level values.
 skirt_t *new_skirt(part_t *pg) {
   assert(pg != NULL);
 
@@ -547,6 +552,20 @@ void del_skirt(skirt_t *sg) {
 }
 
 // TODO(vatai): This is probably important.
+//
+// I think, this calculates the level achievable/reachable in each
+// partition.  This is done by executing `minplus_x()` the `i` loop,
+// where `i` is the current partition.  So for each partition the
+// following is done: the input of `minplus_r` (`t0`) is initialised
+// to be 0 in the current partition, and a "big enough" number
+// everywhere else.  `minplus_r()` updates only the nodes in the
+// current partition, and because the nodes in the other partitions
+// are set to a large value, it will never use them (as if they are
+// inaccessible).
+//
+// As a result `sg->levels[i * n + j]` will have the level of vertex
+// `j` available/reachable using only elements of partition `i`.
+
 void comp_skirt(skirt_t *sg) {
   assert(sg != NULL);
 
