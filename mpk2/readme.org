@@ -48,3 +48,16 @@ The package consists of several programs:
 *** ~/code/mpk/mpk2/mpkprep.c
 **** allocate ~vv[]~ before the call
 **** 
+*** measurements from ~/code/mpk/mpk2/mpkexec.c
+**** spmv_exec_seq()
+**** spmv_exec_par()
+**** exec_mpk_xd()
+**** Hidden under #if 1
+***** exec_mpk_xs()
+***** exec_mpk_xd()
+***** exec_mpk_is()
+***** exec_mpk_id()
+**** Hidden under #if TRANS
+***** exec_mpkt()
+*** 3+1 special =#define=s
+**** ONEVEC, ONEENT, TRANS, and DETAIL
