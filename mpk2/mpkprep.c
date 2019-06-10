@@ -17,6 +17,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
   int nphase = mg->nphase;
 
   int phase;
+  // Loop below to check the error in calculations of levels. 
   for (phase = 0; phase < nphase; phase ++) {
 
     if (phase == 0) {
@@ -25,7 +26,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
       int i;
       for (i=0; i< n; i++)
-	if (0 > l1->level[i]) {
+	if (0 > l1->level[i]) { // Levels should be >=0
 	  fprintf(stderr, "level error at i=%d phase=%d: %d\n", 
 		  i, phase, l1->level[i]);
 	  erc ++;
@@ -39,7 +40,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
       int i;
       for (i=0; i< n; i++)
-	if (l0->level[i] > l1->level[i]) {
+	if (l0->level[i] > l1->level[i]) { // levels should never decrease.
 	  fprintf(stderr, "level error at i=%d phase=%d: %d %d\n", 
 		  i, phase, l0->level[i], l1->level[i]);
 	  erc ++;
@@ -47,16 +48,17 @@ void prep_mpk(mpk_t *mg, double *vv) {
     }
   }
 
-  if (nphase == 0) {
+  // Loop to calculate errors in the levels of skirt
+  if (nphase == 0) { // PA1
 
     int p;
     for (p=0; p< npart; p++) {
 
-      int *sl = mg->sg->levels + p * n;
+      int *sl = mg->sg->levels + p * n; // Levels of skirt of partition p
 
       int i;
       for (i=0; i< n; i++)
-	if (sl[i] >= 0 && 0 > nlevel - sl[i]) {
+	if (sl[i] >= 0 && 0 > nlevel - sl[i]) { // Cannot have skirt level more than nlevel
 	  fprintf(stderr, "skirt level error at i=%d p=%d: %d\n", 
 		  i, p, nlevel - sl[i]);
 	  erc ++;
@@ -81,18 +83,19 @@ void prep_mpk(mpk_t *mg, double *vv) {
     }
   }
   
-  if (erc > 0)
-    exit(1);
+  if (erc > 0) // Proceed only if no errors
+    exit(1); 
 
-  crs0_t *g0 = mg->g0;
+  crs0_t *g0 = mg->g0; 
   assert(g0 != NULL);
 
   int i;
   for (i=0; i< n * (nlevel+1); i++)
     vv[i] = -1.0;
 
-  assert(mg->plist[0] != NULL);
-  int *pl = mg->plist[0]->part;
+  /*assert(mg->plist[0] != NULL);  // This is redundant part. Need to be removed (Utsav)
+  int *pl = mg->plist[0]->part; */
+  int *pl;
 
   for (i=0; i< n; i++)
     vv[i] = pl[i] * 100.0;
@@ -104,6 +107,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
   int tcount = 0;
   int *prevl = l0;
   int prevlmin = 0;
+  //______________________________________________
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
@@ -117,7 +121,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
     int lmin, lmax;
     lmin = lmax = ll[0];
-    for (i=1; i< n; i++) {
+    for (i=1; i< n; i++) { // give max and min value to lmax and lmin res.
       if (lmin > ll[i])
 	lmin = ll[i];
       if (lmax < ll[i])
@@ -128,7 +132,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
       lmax = nlevel;
 
     int l;
-    for (l = prevlmin + 1; l <= lmax; l++) {
+    for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
 	if (prevl[i] < l && l <= ll[i]) {
 	  if (vv[l*n+i] >= 0) {
@@ -175,6 +179,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
     prevl = ll;
     prevlmin = lmin;
   }
+  //___________________________________________
 
   if (erc > 0)
     exit(1);
