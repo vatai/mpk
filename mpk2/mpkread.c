@@ -1,10 +1,13 @@
+// New mpk and read mpk file.
+// To initialize the required variables
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "lib.h"
 
-mpk_t* new_mpk(crs0_t *g0, int npart, int nlevel, int nphase) {
+mpk_t* new_mpk(crs0_t *g0, int npart, int nlevel, int nphase) { // called in read_mpk
   assert(g0 != NULL);
 
   mpk_t *mg = (mpk_t*) malloc(sizeof(mpk_t));
@@ -16,10 +19,10 @@ mpk_t* new_mpk(crs0_t *g0, int npart, int nlevel, int nphase) {
   mg->nphase = nphase;
 
   mg->g0 = g0;
-  if (nphase == 0) {
+  if (nphase == 0) { // PA1
     mg->plist = (part_t**) malloc(sizeof(part_t*));
     mg->llist = NULL;
-  } else {
+  } else { 
     mg->plist = (part_t**) malloc(sizeof(part_t*) * nphase);
     mg->llist = (level_t**) malloc(sizeof(level_t*) * nphase);
     int i;
@@ -28,9 +31,9 @@ mpk_t* new_mpk(crs0_t *g0, int npart, int nlevel, int nphase) {
       mg->llist[i] = NULL;
     }
   }
-  mg->sg = NULL;
+  mg->sg = NULL; // skirt set to null
 
-  mg->tlist = (task_t*) malloc(sizeof(task_t) * npart * (nphase+1));
+  mg->tlist = (task_t*) malloc(sizeof(task_t) * npart * (nphase+1)); // task list
   assert(mg->tlist != NULL);
   int i;
   for (i=0; i< npart * (nphase+1); i++) {
@@ -89,7 +92,9 @@ mpk_t* read_mpk(char *dir) {
   mpk_t *mg = new_mpk(g0, npart, nlevel, nphase);
 
   int phase;
-  for (phase = 0; phase < nphase; phase ++) {
+  for (phase = 0; phase < nphase; phase ++) { 
+    // for loop to enter list of partitions
+    // and list of levels.
 
     sprintf(fname, "%s/g%d.part.%d", dir, phase, npart);
     printf("  reading %s...\n", fname);
@@ -123,13 +128,13 @@ mpk_t* read_mpk(char *dir) {
 
     mg->llist[phase] = lg;
 
-    int nc, i;
+    int nc, i; // To print value of average level on console
     for (i=nc=0; i< mg->n; i++)
       nc += lg->level[i];
     printf("average level %f\n", nc/(double)mg->n);
   }
 
-  if (nphase == 0) {
+  if (nphase == 0) { 
 
     sprintf(fname, "%s/g0.part.%d", dir, npart);
     printf("  reading %s...\n", fname);

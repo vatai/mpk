@@ -86,7 +86,7 @@ typedef struct {
   task_t *tlist;
   long *idxsrc;
   long idxallocsize;
-} mpk_t;
+} mpk_t;// used in new_mpk function in mpkread.c
 
 mpk_t *new_mpk(crs0_t*, int, int, int);
 mpk_t *read_mpk(char*);
