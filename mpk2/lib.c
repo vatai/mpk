@@ -576,7 +576,7 @@ void del_skirt(skirt_t *sg) {
 //
 // And after calling `minplus_x()`:
 //
-<<<<<<< HEAD
+
 // I think, this calculates the level achievable/reachable in each
 // partition.  This is done by executing `minplus_x()` the `i` loop,
 // where `i` is the current partition.  So for each partition the
@@ -586,9 +586,7 @@ void del_skirt(skirt_t *sg) {
 // current partition, and because the nodes in the other partitions
 // are set to a large value, it will never use them (as if they are
 // inaccessible).
-=======
 // 321000123
->>>>>>> dev-emil
 //
 // As a result `sg->levels[i * n + j]` will have the level of vertex
 // `j` available/reachable using only elements of partition `i`.
