@@ -1,3 +1,4 @@
+//*************** These are main computational functions
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
     update_level(lg, lg_org); // Else we will update the new level lg with the help lg_org // ****************************
 
   wcrs_t *wg = new_wcrs(g);
-  level2wcrs(lg, wg); //************************
+  level2wcrs(lg, wg); //************************ Used to calculate edge weights with the help of level
 
   if (strcmp(argv[1], "part_c") == 0)
     write_part_c(fo, pg, cg);// Not used right now

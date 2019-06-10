@@ -43,9 +43,9 @@ void write_level(FILE*, level_t*);
 void write_level_c(FILE*, level_t*, coord_t*);
 
 typedef struct {
-  crs0_t *g;
-  int *wv;
-  int *we;
+  crs0_t *g; // Associated graph
+  int *wv;   // Weight on edges 
+  int *we;   // Weight on edges 
 } wcrs_t;
 
 wcrs_t *new_wcrs(crs0_t*);

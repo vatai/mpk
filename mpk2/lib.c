@@ -369,7 +369,7 @@ void comp_level(level_t *lg) {
 
   free(t1);  free(t0);
 }
-
+// update level is almost same as comp_level the only difference is that there are values already assigned and we will update over that
 void update_level(level_t *lg, level_t *lg_org) {
   assert(lg != NULL);
   assert(lg_org != NULL);
@@ -457,7 +457,7 @@ wcrs_t *new_wcrs(crs0_t *g) {
 
   wg->g = g;
   wg->wv = (int*) malloc(sizeof(int) * g->n);
-  wg->we = (int*) malloc(sizeof(int) * 2 * g->ptr[g->n]);
+  wg->we = (int*) malloc(sizeof(int) * g->ptr[g->n]); // Removed a multiplicand of 2 from here (Utsav)
 
   assert(wg->wv != NULL);
   assert(wg->we != NULL);
@@ -531,7 +531,7 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
       if (w < 1.0)
 	wg->we[j] = 1;
       else
-	wg->we[j] = w;
+	wg->we[j] = w; // Here we are converting the double to integers
     }
   }
 }
@@ -570,9 +570,9 @@ void del_skirt(skirt_t *sg) {
 // I think, this calculates the level achievable/reachable in each
 // partition.  This is done by executing `minplus_x()` the `i` loop,
 // where `i` is the current partition.  So for each partition the
-// following is done: the input of `minplus_r` (`t0`) is initialised
+// following is done: the input of `minplus_x` (`t0`) is initialised
 // to be 0 in the current partition, and a "big enough" number
-// everywhere else.  `minplus_r()` updates only the nodes in the
+// everywhere else.  `minplus_x()` updates only the nodes in the
 // current partition, and because the nodes in the other partitions
 // are set to a large value, it will never use them (as if they are
 // inaccessible).
@@ -628,12 +628,12 @@ void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level) {
 
     int *skirt = sg->levels + i * n;
 
-    if (lg != NULL) {
+    if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
       int j;
       for (j=0; j< n; j++)
 	if (lg->level[j] < level - skirt[j])
 	  fprintf(f, "%d %d\n", j, level - skirt[j]);
-    } else {
+    } else {// This proceeds as pa1
       int j;
       for (j=0; j< n; j++)
 	if (skirt[j] < level)

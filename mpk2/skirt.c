@@ -3,6 +3,9 @@
 #include <assert.h>
 #include <string.h>
 #include "lib.h"
+// argv[] = {./skirt, nlevel, dir/g0, x, dir/g0.part.npart, dir/lphase-1, dir/sphase} for phase != 0
+// argv[] = {./skirt, nlevel, dir/g0, x, dir/g0.part.npart, dir/sphase} for phase=0
+
 
 int main(int argc, char **argv) {
 
@@ -56,14 +59,14 @@ int main(int argc, char **argv) {
   }
 
   skirt_t *sg = new_skirt(pg);
-  comp_skirt(sg);
+  comp_skirt(sg);//******************
 
   FILE *fo = fopen(argv[argc-1], "w");
   if (fo == NULL) {
     fprintf(stderr, "cannot open %s\n", argv[argc-1]);
     exit(1);
   }
-  write_skirt(fo, sg, lg_org, level);
+  write_skirt(fo, sg, lg_org, level); //***************
 
   //  print_skirt_cost(sg, lg_org, level);
 
