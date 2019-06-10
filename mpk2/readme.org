@@ -35,3 +35,29 @@ The package consists of several programs:
       - else if ~$N > 0~:
         - ~skirt~
         - ~stat~
+** ~/code/mpk/mpk2/mpktest.c
+*** ~/code/mpk/mpk2/mpkread.c
+**** pass directory name
+**** obtain ~npart~, ~nlevel~, ~nphase~ from dirname
+**** read dir/g0
+**** ~mg = new_mpk(g0, npart, nlevel, nphase)~
+**** for each phase read the partition and level files ~gP.part.N~ and ~lP~ 
+     - here P is the current phase and N is the number of partitions
+**** read skirt
+**** allocate mg->idxsrc
+*** ~/code/mpk/mpk2/mpkprep.c
+**** allocate ~vv[]~ before the call
+**** 
+*** measurements from ~/code/mpk/mpk2/mpkexec.c
+**** spmv_exec_seq()
+**** spmv_exec_par()
+**** exec_mpk_xd()
+**** Hidden under #if 1
+***** exec_mpk_xs()
+***** exec_mpk_xd()
+***** exec_mpk_is()
+***** exec_mpk_id()
+**** Hidden under #if TRANS
+***** exec_mpkt()
+*** 3+1 special =#define=s
+**** ONEVEC, ONEENT, TRANS, and DETAIL

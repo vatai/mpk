@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
     res = system(line);    /* using gpmetis to do the partition*/
     if (res != 0) exit(res);
 
+    // TODO(vatai): refactor the next two `if`s into one.
     if (phase == 0)
       sprintf(line, "./comp level %s/g0 x %s/g%d.part.%d %s/l%d",
 	      dir, dir, phase, npart, dir, phase); // Calling comp.c with required string inputs,level is the mode for comp. Separate for phase = 0.
