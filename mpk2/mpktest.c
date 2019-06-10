@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  mpk_t *mg = read_mpk(argv[1]);
+  mpk_t *mg = read_mpk(argv[1]); // ******* mpkread.c
 
   int n = mg->n;
   int nlevel = mg->nlevel;

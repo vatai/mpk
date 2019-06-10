@@ -64,6 +64,7 @@ void del_skirt(skirt_t*);
 void comp_skirt(skirt_t*);
 void print_skirt_cost(skirt_t*, level_t*, int);
 void read_skirt(FILE*, skirt_t*, int);
+void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level);
 
 typedef struct {
   int n;

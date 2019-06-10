@@ -11,7 +11,9 @@
 // the disc.
 //
 // read_* :: The read_* functions read the data-structure from the
-// disc.
+// disc.  Only `read_crs()` calls `new_crs()`, all the other read
+// functions assume the matrix/graph is already allocated with the
+// appropriate new_* function.
 //
 // Some functions have *_c suffix, which indicates that the function
 // deals with coordinates (i.e. visual representation) and for now
@@ -124,9 +126,6 @@ crs0_t* read_crs(FILE *f) { // Called out function from comp.c to read the crs o
 
   return g;
 }
-
-
-
 
 void write_crs(FILE *f, crs0_t *g) {
   assert(f != NULL);
@@ -326,7 +325,7 @@ void del_level(level_t* lg) {
 
 // Compute a levels of a partitioned graph in the initial phase.  This
 // method should be called in the first phase and update_level()
-// should be called in the i-THC stage, for i > 2.
+// should be called in the i-th stage, for i > 2.
 void comp_level(level_t *lg) {
   assert(lg != NULL);
   int n = lg->pg->g->n;
@@ -536,12 +535,12 @@ void level2wcrs(level_t *lg, wcrs_t *wg) {
   }
 }
 
-// TODO(vatai): I still need to read trough this.  `skirt_t` is like
-// `level_t`
+// `skirt_t` is like `level_t` but with each partition having its own
+// levels stored i.e. `n_part * n` number of `levels` (while `level_t`
+// has only `n`).
 //
-// For now it seems skirt_t has `n_part * n` number of `levels`
-// (i.e. one for each partition and for each vertex) while `level_t`
-// has only `n` level values.
+// TODO(vatai): [maybe] Move these skirt functions to skirt.c because
+// they are only used there.
 skirt_t *new_skirt(part_t *pg) {
   assert(pg != NULL);
 
@@ -565,8 +564,19 @@ void del_skirt(skirt_t *sg) {
   free(sg);
 }
 
-// TODO(vatai): This is probably important.
+// Calculate the level achievable/reachable in each partition is
+// calculated.  For each partition `i`, the input of `minplus_x`
+// (`t0`) is initialised to be 0 in the current partition, and a "big
+// enough" number everywhere else.  `minplus_x()` updates only the
+// vertices NOT in the current partition.
 //
+// Example: After initialisation (before `minplus_x()`):
+//
+// 999000999  (the current partition is the middle three digits)
+//
+// And after calling `minplus_x()`:
+//
+<<<<<<< HEAD
 // I think, this calculates the level achievable/reachable in each
 // partition.  This is done by executing `minplus_x()` the `i` loop,
 // where `i` is the current partition.  So for each partition the
@@ -576,10 +586,12 @@ void del_skirt(skirt_t *sg) {
 // current partition, and because the nodes in the other partitions
 // are set to a large value, it will never use them (as if they are
 // inaccessible).
+=======
+// 321000123
+>>>>>>> dev-emil
 //
 // As a result `sg->levels[i * n + j]` will have the level of vertex
 // `j` available/reachable using only elements of partition `i`.
-
 void comp_skirt(skirt_t *sg) {
   assert(sg != NULL);
 
@@ -628,14 +640,24 @@ void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level) {
 
     int *skirt = sg->levels + i * n;
 
+
     if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
+
+    // TODO(vatai): this could (should?) be refactored!!!
+    //
+    // Conditionally store `j` and `level - skirt[j]`
+   
       int j;
       for (j=0; j< n; j++)
+        // Condition with `lg`:
+        // `skirt[j] + lg->level[j] < level`
 	if (lg->level[j] < level - skirt[j])
 	  fprintf(f, "%d %d\n", j, level - skirt[j]);
     } else {// This proceeds as pa1
       int j;
       for (j=0; j< n; j++)
+        // Condition without `lg`:
+        // `skirt[j]                < level`
 	if (skirt[j] < level)
 	  fprintf(f, "%d %d\n", j, level - skirt[j]);
     }
@@ -675,18 +697,21 @@ void read_skirt(FILE *f, skirt_t *sg, int level) {
     for (j=0; j< n; j++)
       skirt[j] = -1;		/* no data */
 
-    while (1) {
+    while (1) { // Read the skirt of one partition.
       line[0] = '\0';
       fgets(line, 10240, f);
+      // Read until the end of the file or a line starting with 'p'
       if ((feof(f) && line[0] == '\0') || (line[0] == 'p'))
 	break;
 
+      // Read `k` and `m`.
       int k, m;
       sscanf(line, "%d %d", &k, &m);
       if (k < 0 || n <= k || m < 0 || level < m) {
 	fprintf(stderr, "error in reading skirt: %s", line);
 	exit(1);
       }
+      // Store `k` and `m`.
       skirt[k] = level - m;
     }
   }
@@ -694,7 +719,14 @@ void read_skirt(FILE *f, skirt_t *sg, int level) {
   fclose(f);
 }
 
-// TODO(vatai): Maybe this is also important.
+// TODO(vatai): Not entirely sure about this function.  It is
+// commented out in skirt.c, but it should print computation and
+// communication costs.
+//
+// Calculate the total cost, to get all vertices to `level` assuming
+// the `skirt` and all vertices calculated to `level`.
+//
+// lg is optional (i.e. can be NULL).
 void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
   assert(sg != NULL);
 
@@ -705,11 +737,19 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
 
   int i;
   for (i = 0; i < np; i ++) {
+    // For each partition.
+
+    // `skirt` of the current partition
     int *skirt = sg->levels + i * n;
 
+    // The easier version is in the other branch below.
     if (lg != NULL) {
+      // Do the same as `lg == NULL` (see below) but instead of
+      // `skirt[j]` use `skirt[j] + lg->level[j]`?? (vatai)
+
       int t[n], dom[n];
 
+      // TODO(vatai): 
       int j;
       for (j=0; j< n; j++)
 	if (lg->level[j] + skirt[j] < level)
@@ -726,7 +766,12 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
 	} else if (dom[j] == 1)
 	  n_comm += 2;
 
-    } else {
+    } else {  // if lg == NULL
+      // For each vertex, `n_comp` (i.e. number of computations) is
+      // the number of "level jumps" needed to reach `level` assuming
+      // the vertices already reached level `skirt[j]` (which is
+      // calculated by `level - skirt[j]`); `n_comm` (or number of
+      // communications) is the number of vertices below `level`.
 
       int j;
       for (j=0; j< n; j++)
@@ -741,8 +786,13 @@ void print_skirt_cost(skirt_t *sg, level_t *lg, int level) {
   int level_comp = 0;
   if (lg != NULL)
     for (i=0; i< n; i++)
+      // `level_comp` is: sum over i for min(level, lg->level[i])
       level_comp += (lg->level[i] > level ? level : lg->level[i]);
 
+  // output:
+  // - n_comp/n,
+  // - level_comp/n,
+  // - n_comm/n
   printf("skirt cost: node %d level %d comp %f (%f) comm %f\n",
 	 n, level, n_comp / (double) n, 
 	 level_comp / (double) n, n_comm / (double) n);
