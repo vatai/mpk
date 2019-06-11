@@ -56,6 +56,9 @@ The package consists of several programs:
 ****** nphase > 0: check level + "skirt level" <= nlevel
 **** set vv[] to -1.0 (all ~n * (nlevel + 1)~ values)
 **** set 0th levels vv[] to initial partitions * 100.0
+**** init tcount=0, prevl=[0,0,...], prevlmin=0
+**** The Main Loop: for each phase
+***** 
 *** measurements from ~/code/mpk/mpk2/mpkexec.c
 **** spmv_exec_seq()
 **** spmv_exec_par()
