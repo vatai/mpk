@@ -47,7 +47,15 @@ The package consists of several programs:
 **** allocate mg->idxsrc
 *** ~/code/mpk/mpk2/mpkprep.c
 **** allocate ~(nlevel + 1) * n~ elements for ~vv[]~ before the call
-**** 
+**** perform checks
+***** check that levels are correct
+****** all levels are >= 0 in the first phase
+****** all levels don't decrease compared to the previous phase
+***** check the skirts
+****** nphase = 0 a special case: check "skirt level" <= nlevel
+****** nphase > 0: check level + "skirt level" <= nlevel
+**** set vv[] to -1.0 (all ~n * (nlevel + 1)~ values)
+**** set 0th levels vv[] to initial partitions * 100.0
 *** measurements from ~/code/mpk/mpk2/mpkexec.c
 **** spmv_exec_seq()
 **** spmv_exec_par()
