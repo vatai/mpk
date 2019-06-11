@@ -46,7 +46,7 @@ The package consists of several programs:
 **** read skirt
 **** allocate mg->idxsrc
 *** ~/code/mpk/mpk2/mpkprep.c
-**** allocate ~vv[]~ before the call
+**** allocate ~(nlevel + 1) * n~ elements for ~vv[]~ before the call
 **** 
 *** measurements from ~/code/mpk/mpk2/mpkexec.c
 **** spmv_exec_seq()
