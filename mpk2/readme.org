@@ -81,7 +81,8 @@ The package consists of several programs:
 ***** loop3: as loop1, but now set task.idx[] to l * n + i
 ****** tsize[] is the counter - current index
 ***** update loop variables, prevl, prevlmin
-**** 
+**** Skirt loop: similar to the main loop
+*** init vv[] = [1., 1., ..] at level 0, and [-1., ...] at the last level
 *** measurements from ~/code/mpk/mpk2/mpkexec.c
 **** spmv_exec_seq()
 **** spmv_exec_par()
