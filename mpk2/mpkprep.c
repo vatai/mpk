@@ -1,3 +1,5 @@
+// The section is to ensure the correctc development of outputs by driver.
+// 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -121,7 +123,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
     int lmin, lmax;
     lmin = lmax = ll[0];
-    for (i=1; i< n; i++) { // give max and min value to lmax and lmin res.
+    for (i=1; i< n; i++) { // give max and min value to lmax and lmin resp.
       if (lmin > ll[i])
 	lmin = ll[i];
       if (lmax < ll[i])

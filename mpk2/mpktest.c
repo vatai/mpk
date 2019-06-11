@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     vv[n + i] = -1.0;		/* dummy */
 
   double min;
-  for (i=0; i< 5; i++) {
+  for (i=0; i< 5; i++) { // Here spmv multipliaction(sequential) is carried out and minnimum time is reported 
     double t0 = omp_get_wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
     double t1 = omp_get_wtime();
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
   check_error(vv, n, nlevel);
 
   int nth;
-  for (nth = 1; nth <= mg->npart; nth ++) {
+  for (nth = 1; nth <= mg->npart; nth ++) { // Here spmv multiplication (parallel) is done and minnimum time is reported
     for (i=0; i< 5; i++) {
       double t0 = omp_get_wtime();
       spmv_exec_par(mg->g0, vv, nlevel, nth);
