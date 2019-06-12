@@ -3,42 +3,54 @@ The package consists of the following 3 main parts: ~gen~ for matrix
 generation, ~driver~ to create the scheduling/communication pattern
 and finally ~mpktest~ to run the computation.
 * Input generation: ~gen~
+  See program output without parameters for further information.
 ** Input:
-  - type :: the type of the generated matrix.
-  - size :: size of the generated matrix.
-  - ghead :: name of the generated file.
+   - type :: The type of the generated matrix.
+   - size :: Size of the generated matrix.
+   - ghead :: Name of the generated file.
 ** Output:
+   - ghead.g0 :: Graph/matrix (without vertex values).
+   - ghead.co :: Coordinates for graphical interpretation.
 * Communication pattern generation: ~driver~
 ** Input:
-  - ghead :: input name used by ~gen~.
-  - npart :: number of partitions used.
-  - nlevel :: target level which should be calculated.
-  - nphase :: number of phases.
+   - ghead :: Input name used by ~gen~.
+   - npart :: Number of partitions used.
+   - nlevel :: Target level which should be calculated.
+   - nphase :: Number of phases before doing the "skirt" operation.
 ** Output:
+   - levels :: Levels reached in each phase (~l$P~ files).
+   - weights :: Weights (calculated from levels) used for partitioning
+                (~g$P~ files).
+   - partitions :: partitioned graphs (~g$P.part.$NPART~ files).
+   - skirt :: File ~s$NPHASE~.
+   ~$P~ is the index of the phase.
 ** Operation
    The program executes a bunch of ~system()~ calls, to run other
    binaries.  The line executed is written using ~sprintf()~ to the
    ~line~ variable.  ~driver.c~ basically does the following:
-   - ~mkdir $GHEAD_$NPART_$NLEVEL_$NPHASE~ (line 46).
-   - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in the
-     previous ~system()~ call(line 51).
-   - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
-     > $DIR/log~ (line 57).
-   - for ~$N~ from ~0~ to ~$NPHASE~:
-     - Partition graph: ~gpmetis $DIR/g$PHASE $NPART~ (with
-       additional loggin)
-     - Compute levels: ~comp level $DIR/g0 x
-       $DIR/g$PHASE.part.$NPART~ with ~$DIR/l$PHASE~ or
-       ~$DIR/l${PHASE-1} $DIR/l$PHASE~
-     - Write log: ~stat $DIR/l$PHASE $NLEVEL >> $DIR/log~
-     - Compute weights: ~comp weight~
-     - if ~$N == 0~:
-       - ~gpmetis~
-       - ~skirt~
-       - ~stat~
-     - else if ~$N > 0~:
-       - ~skirt~
-       - ~stat~
+   - ~mkdir $DIR~ where ~$DIR~ is ~$GHEAD_$NPART_$NLEVEL_$NPHASE~.
+   - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in
+     the previous ~system()~ call.
+   - Logging: ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase
+     $NPHASE > $DIR/log~ (line 57).
+   - For ~$P~ from ~0~ to ~$NPHASE - 1~:
+     - Partition graph: ~gpmetis $DIR/g$P $NPART~ (with additional
+       logging).
+     - Compute levels: ~comp level $DIR/g0 x $DIR/g$P.part.$NPART~
+       with as output ~$DIR/l$P~ and as the starting point
+       ~$DIR/l${P-1}~ after the first phase.
+     - Logging: ~stat $DIR/lP $NLEVEL >> $DIR/log~.
+     - Compute weights with ~$DIR/g${P+1}~ as output and after the
+       initial phase with ~$DIR/l{P-1}~ as the input.
+   Finally calculate the skirt:
+   - If ~$NPHASE > 0~, so there is a positive number of phases,
+     calculate the skirt:
+     - The skirt is calculated with the first partitioning: ~skirt
+       $NLEVEL $DIR/g0 x $DIR/g0.part.$NPART $DIR/l${P-1} $DIR/s$P~
+       (followed by a ~stat~ command for logging).
+   - Else, if ~$NPHASE == 0~, the graph needs to be partitioned,
+     before the skirt can be calculated with ~gpmetis~ followed by a
+     ~stat~ command (see source for details).
 * Computation: ~mpktest~
   - mpkread.c
     - pass directory name
