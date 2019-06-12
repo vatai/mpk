@@ -120,7 +120,7 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
   int phase;
   for (phase = 0; phase <= nphase; phase ++) {
     int part;
-#pragma omp parallel for num_threads(nth) schedule(static,1)
+#pragma omp parallel for num_threads(nth) schedule(dynamic,1)
     for (part = 0; part < npart; part ++)
       do_task(mg, vv, phase, part);
   }
