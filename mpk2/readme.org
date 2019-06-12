@@ -1,100 +1,104 @@
-* MPK from Suda sensei
-The package consists of several programs:
-** Input generation using ~gen~
-   Input:
-   - type :: the type of the generated matrix.
-   - size :: size of the generated matrix.
-   - ghead :: name of the generated file.
-** Driver
-   Input:
-   - ghead :: input name.
-   - npart :: partitions.
-   - nlevel :: level.
-   - nphase :: phase.
-*** Operation
-    The program executes a bunch of ~system()~ calls, to run other
-    binaries.  The line executed is written using ~sprintf()~ to the
-    ~line~ variable.  ~driver.c~ basically does the following:
-    - ~mkdir $GHEAD_$NPART_$NLEVEL_$NPHASE~ (line 46).
-    - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in the
-      previous ~system()~ call(line 51).
-    - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
-      > $DIR/log~ (line 57).
-    - for ~$N~ from ~0~ to ~$NPHASE~:
-      - Partition graph: ~gpmetis $DIR/g$PHASE $NPART~ (with
-        additional loggin)
-      - Compute levels: ~comp level $DIR/g0 x
-        $DIR/g$PHASE.part.$NPART~ with ~$DIR/l$PHASE~ or
-        ~$DIR/l${PHASE-1} $DIR/l$PHASE~
-      - Write log: ~stat $DIR/l$PHASE $NLEVEL >> $DIR/log~
-      - Compute weights: ~comp weight~
-      - if ~$N == 0~:
-        - ~gpmetis~
-        - ~skirt~
-        - ~stat~
-      - else if ~$N > 0~:
-        - ~skirt~
-        - ~stat~
-** mpk/mpk2/mpktest.c
-   - mpk/mpk2/mpkread.c
-     - pass directory name
-     - obtain ~npart~, ~nlevel~, ~nphase~ from dirname
-     - read dir/g0
-     - ~mg = new_mpk(g0, npart, nlevel, nphase)~
-     - for each phase read the partition and level files ~gP.part.N~ and ~lP~ 
-       - here P is the current phase and N is the number of partitions
-     - read skirt
-     - allocate mg->idxsrc
-   - mpk/mpk2/mpkprep.c
-     - allocate ~(nlevel + 1) * n~ elements for ~vv[]~ before the call
-     - perform checks
-       - check that levels are correct
-         - all levels are >= 0 in the first phase
-         - all levels don't decrease compared to the previous phase
-       - check the skirts
-         - nphase = 0 a special case: check "skirt level" <= nlevel
-         - nphase > 0: check level + "skirt level" <= nlevel
-     - set vv[] to -1.0 (all ~n * (nlevel + 1)~ values)
-     - set 0th levels vv[] to initial partitions * 100.0
-     - init:
-       - tcount=0
-       - prevl=[0,0,...]: previous levels
-       - prevlmin=0: previous lmin (min of levels)
-     - The Main Loop: for each phase
-       - init: tsize[0..npart] = 0, lmin, lmax
-       - lmax = min(lmax, nlevel), i.e. cap lmax at nlevel
-       - loop1: for every node, every level (prevlmin+1 to lmax)
-         - assuming prevl[i] < level <= ll[i] (ll is mg->llist[phase]->level)
-           - prevl[] is the level reached in the previous phase
-           - ll[] is the level to be reached in the current phase
-           - do some checks
-             - check: vv[] == -1 (if vv[] > 0 then error)
-             - check: every adjacent node from the previous level is calculated (>= 0)
-             - and check: adjacent node is in a different partition OR magic (see below)?
-               Adjacent value mode 100 equals phase??? Why/how? (see next line)
-           - set vv for level and node to current partition * 100 + phase
-           - increment tsize for the current partition
-       - loop2: in the mg->tlist[] for the current phase
-         - set the task size and indices and clean up
-           - tlist[i].n = tsize[]
-           - tlist[i].idx = mg->idxsrc + tcount
-           - tcount += tsize[i]
-           - reinitalize tsize[i] to 0
-       - loop3: as loop1, but now set task.idx[] to l * n + i
-         - tsize[] is the counter - current index
-       - update loop variables, prevl, prevlmin
-     - Skirt loop: similar to the main loop
-   - init vv[] = [1., 1., ..] at level 0, and [-1., ...] everything else
-   - measurements from mpk/mpk2/mpkexec.c
-     - spmv_exec_seq()
-     - spmv_exec_par()
-     - exec_mpk_xd()
-     - Hidden under #if 1
-       - exec_mpk_xs()
-       - exec_mpk_xd()
-       - exec_mpk_is()
-       - exec_mpk_id()
-     - Hidden under #if TRANS
-       - exec_mpkt()
-   - 3+1 special =#define=s
-     - ONEVEC, ONEENT, TRANS, and DETAIL
+#+TITLE: MPK from Suda sensei
+The package consists of the following 3 main parts: ~gen~ for matrix
+generation, ~driver~ to create the scheduling/communication pattern
+and finally ~mpktest~ to run the computation.
+* Input generation: ~gen~
+** Input:
+  - type :: the type of the generated matrix.
+  - size :: size of the generated matrix.
+  - ghead :: name of the generated file.
+** Output:
+* Communication pattern generation: ~driver~
+** Input:
+  - ghead :: input name used by ~gen~.
+  - npart :: number of partitions used.
+  - nlevel :: target level which should be calculated.
+  - nphase :: number of phases.
+** Output:
+** Operation
+   The program executes a bunch of ~system()~ calls, to run other
+   binaries.  The line executed is written using ~sprintf()~ to the
+   ~line~ variable.  ~driver.c~ basically does the following:
+   - ~mkdir $GHEAD_$NPART_$NLEVEL_$NPHASE~ (line 46).
+   - ~cp $GHEAD.g0 $DIR/g0~ where ~$DIR~ is the directory created in the
+     previous ~system()~ call(line 51).
+   - ~echo graph $GHEAD, npart $NPART, nlevel $NLEVEL, nphase $NPHASE
+     > $DIR/log~ (line 57).
+   - for ~$N~ from ~0~ to ~$NPHASE~:
+     - Partition graph: ~gpmetis $DIR/g$PHASE $NPART~ (with
+       additional loggin)
+     - Compute levels: ~comp level $DIR/g0 x
+       $DIR/g$PHASE.part.$NPART~ with ~$DIR/l$PHASE~ or
+       ~$DIR/l${PHASE-1} $DIR/l$PHASE~
+     - Write log: ~stat $DIR/l$PHASE $NLEVEL >> $DIR/log~
+     - Compute weights: ~comp weight~
+     - if ~$N == 0~:
+       - ~gpmetis~
+       - ~skirt~
+       - ~stat~
+     - else if ~$N > 0~:
+       - ~skirt~
+       - ~stat~
+* Computation: ~mpktest~
+  - mpkread.c
+    - pass directory name
+    - obtain ~npart~, ~nlevel~, ~nphase~ from dirname
+    - read dir/g0
+    - ~mg = new_mpk(g0, npart, nlevel, nphase)~
+    - for each phase read the partition and level files ~gP.part.N~ and ~lP~ 
+      - here P is the current phase and N is the number of partitions
+    - read skirt
+    - allocate mg->idxsrc
+  - mpkprep.c
+    - allocate ~(nlevel + 1) * n~ elements for ~vv[]~ before the call
+    - perform checks
+      - check that levels are correct
+        - all levels are >= 0 in the first phase
+        - all levels don't decrease compared to the previous phase
+      - check the skirts
+        - nphase = 0 a special case: check "skirt level" <= nlevel
+        - nphase > 0: check level + "skirt level" <= nlevel
+    - set vv[] to -1.0 (all ~n * (nlevel + 1)~ values)
+    - set 0th levels vv[] to initial partitions * 100.0
+    - init:
+      - tcount=0
+      - prevl=[0,0,...]: previous levels
+      - prevlmin=0: previous lmin (min of levels)
+    - The Main Loop: for each phase
+      - init: tsize[0..npart] = 0, lmin, lmax
+      - lmax = min(lmax, nlevel), i.e. cap lmax at nlevel
+      - loop1: for every node, every level (prevlmin+1 to lmax)
+        - assuming prevl[i] < level <= ll[i] (ll is mg->llist[phase]->level)
+          - prevl[] is the level reached in the previous phase
+          - ll[] is the level to be reached in the current phase
+          - do some checks
+            - check: vv[] == -1 (if vv[] > 0 then error)
+            - check: every adjacent node from the previous level is calculated (>= 0)
+            - and check: adjacent node is in a different partition OR magic (see below)?
+              Adjacent value mode 100 equals phase??? Why/how? (see next line)
+          - set vv for level and node to current partition * 100 + phase
+          - increment tsize for the current partition
+      - loop2: in the mg->tlist[] for the current phase
+        - set the task size and indices and clean up
+          - tlist[i].n = tsize[]
+          - tlist[i].idx = mg->idxsrc + tcount
+          - tcount += tsize[i]
+          - reinitalize tsize[i] to 0
+      - loop3: as loop1, but now set task.idx[] to l * n + i
+        - tsize[] is the counter - current index
+      - update loop variables, prevl, prevlmin
+    - Skirt loop: similar to the main loop
+  - init vv[] = [1., 1., ..] at level 0, and [-1., ...] everything else
+  - measurements from mpkexec.c
+    - spmv_exec_seq()
+    - spmv_exec_par()
+    - exec_mpk_xd()
+    - Hidden under #if 1
+      - exec_mpk_xs()
+      - exec_mpk_xd()
+      - exec_mpk_is()
+      - exec_mpk_id()
+    - Hidden under #if TRANS
+      - exec_mpkt()
+  - 3+1 special =#define=s
+    - ONEVEC, ONEENT, TRANS, and DETAIL
