@@ -576,16 +576,6 @@ void del_skirt(skirt_t *sg) {
 //
 // And after calling `minplus_x()`:
 //
-
-// I think, this calculates the level achievable/reachable in each
-// partition.  This is done by executing `minplus_x()` the `i` loop,
-// where `i` is the current partition.  So for each partition the
-// following is done: the input of `minplus_x` (`t0`) is initialised
-// to be 0 in the current partition, and a "big enough" number
-// everywhere else.  `minplus_x()` updates only the nodes in the
-// current partition, and because the nodes in the other partitions
-// are set to a large value, it will never use them (as if they are
-// inaccessible).
 // 321000123
 //
 // As a result `sg->levels[i * n + j]` will have the level of vertex
@@ -638,6 +628,7 @@ void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level) {
 
     int *skirt = sg->levels + i * n;
 
+<<<<<<< HEAD
 
     if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
 
@@ -645,6 +636,12 @@ void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level) {
     //
     // Conditionally store `j` and `level - skirt[j]`
    
+=======
+    // TODO(vatai): this could (should?) be refactored!!!
+    //
+    // Conditionally store `j` and `level - skirt[j]`
+    if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
+>>>>>>> a0a87a27bdaea8dfcd58726846fe17c9d45ed8f8
       int j;
       for (j=0; j< n; j++)
         // Condition with `lg`:

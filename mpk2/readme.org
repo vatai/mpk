@@ -46,8 +46,45 @@ The package consists of several programs:
 **** read skirt
 **** allocate mg->idxsrc
 *** ~/code/mpk/mpk2/mpkprep.c
-**** allocate ~vv[]~ before the call
-**** 
+**** allocate ~(nlevel + 1) * n~ elements for ~vv[]~ before the call
+**** perform checks
+***** check that levels are correct
+****** all levels are >= 0 in the first phase
+****** all levels don't decrease compared to the previous phase
+***** check the skirts
+****** nphase = 0 a special case: check "skirt level" <= nlevel
+****** nphase > 0: check level + "skirt level" <= nlevel
+**** set vv[] to -1.0 (all ~n * (nlevel + 1)~ values)
+**** set 0th levels vv[] to initial partitions * 100.0
+**** init:
+***** tcount=0
+***** prevl=[0,0,...]: previous levels
+***** prevlmin=0: previous lmin (min of levels)
+**** The Main Loop: for each phase
+***** init: tsize[0..npart] = 0, lmin, lmax
+***** lmax = min(lmax, nlevel), i.e. cap lmax at nlevel
+***** loop1: for every node, every level (prevlmin+1 to lmax)
+****** assuming prevl[i] < level <= ll[i] (ll is mg->llist[phase]->level)
+       - prevl[] is the level reached in the previous phase
+       - ll[] is the level to be reached in the current phase
+******* do some checks
+******** check: vv[] == -1 (if vv[] > 0 then error)
+******** check: every adjacent node from the previous level is calculated (>= 0)
+******** and check: adjacent node is in a different partition OR magic (see below)?
+         Adjacent value mode 100 equals phase??? Why/how? (see next line)
+******* set vv for level and node to current partition * 100 + phase
+******* increment tsize for the current partition
+***** loop2: in the mg->tlist[] for the current phase
+****** set the task size and indices and clean up
+******* tlist[i].n = tsize[]
+******* tlist[i].idx = mg->idxsrc + tcount
+******* tcount += tsize[i]
+******* reinitalize tsize[i] to 0
+***** loop3: as loop1, but now set task.idx[] to l * n + i
+****** tsize[] is the counter - current index
+***** update loop variables, prevl, prevlmin
+**** Skirt loop: similar to the main loop
+*** init vv[] = [1., 1., ..] at level 0, and [-1., ...] everything else
 *** measurements from ~/code/mpk/mpk2/mpkexec.c
 **** spmv_exec_seq()
 **** spmv_exec_par()
