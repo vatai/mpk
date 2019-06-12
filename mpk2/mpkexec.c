@@ -5,7 +5,7 @@
 #include "lib.h"
 #include <omp.h>
 
-static void do_task(mpk_t *mg, double *vv, int phase, int part) {
+static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too. defined static
   assert(mg != NULL && vv != NULL);
 
   int n = mg->n;

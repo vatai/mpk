@@ -5,7 +5,7 @@
 #include "lib.h"
 #include <omp.h>
 
-#define DETAIL 1
+#define DETAIL 0
 #define ONEVEC 0
 #define ONEENT 0
 #define TRANS 0
@@ -56,15 +56,15 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  mpk_t *mg = read_mpk(argv[1]); // ******* mpkread.c
+  mpk_t *mg = read_mpk(argv[1]); // ******* 
 
   int n = mg->n;
   int nlevel = mg->nlevel;
 
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
-  assert(vv != NULL);
+  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1)); // vv used to mimic structure to store the matrix 
+  assert(vv != NULL);                                           
 
-  prep_mpk(mg, vv); //**** mpkprep.c
+  prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
 
   int i;
   for (i=0; i< n; i++)
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     vv[n + i] = -1.0;		/* dummy */
 
   double min;
-  for (i=0; i< 5; i++) { // Here spmv multipliaction(sequential) is carried out and minnimum time is reported 
+  for (i=0; i< 5; i++) { // spmv multipliaction(sequential) is carried out and minnimum time is reported 
     double t0 = omp_get_wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
     double t1 = omp_get_wtime();
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
   check_error(vv, n, nlevel);
 
   int nth;
-  for (nth = 1; nth <= mg->npart; nth ++) { // Here spmv multiplication (parallel) is done and minnimum time is reported
+  for (nth = 1; nth <= mg->npart; nth ++) { // spmv multiplication (parallel) is done and minnimum time is reported
     for (i=0; i< 5; i++) {
       double t0 = omp_get_wtime();
       spmv_exec_par(mg->g0, vv, nlevel, nth);
