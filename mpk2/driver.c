@@ -47,22 +47,22 @@ int main(int argc, char **argv) {
   if (res != 0) exit(res);
 
   sprintf(line, "cp %s.g0 %s/g0", ghead, dir);
-  printf("%s\n", line); 
+  printf("%s\n", line);
   res = system(line); /* Copying the ghead.g0 to the newely made folder */
-  if (res != 0) exit(res);  
+  if (res != 0) exit(res);
 
   sprintf(line, "echo graph %s, npart %d, nlevel %d, "
 	  "nphase %d > %s/log", ghead, npart, nlevel, nphase, dir);
   printf("%s\n", line);
-  res = system(line);  
-  if (res != 0) exit(res);  
+  res = system(line);
+  if (res != 0) exit(res);
 
   int phase;
   for (phase = 0; phase < nphase; phase ++) {  // Implementing all nphases
 
-    sprintf(line, "./gpmetis -ufactor=%d %s/g%d %d > %s/metis.log%d", 
+    sprintf(line, "./gpmetis -ufactor=%d %s/g%d %d > %s/metis.log%d",
 	    UFACTOR, dir, phase, npart, dir, phase);
-    printf("%s\n", line);  // ufactor denotes the value of maximum imbalance factor among partitions. 
+    printf("%s\n", line);  // ufactor denotes the value of maximum imbalance factor among partitions.
     res = system(line);    /* using gpmetis to do the partition*/
     if (res != 0) exit(res);
 
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     res = system(line);
     if (res != 0) exit(res);
 
-    sprintf(line, "./stat %s/l%d %d >> %s/log; tail -1 %s/log", 
+    sprintf(line, "./stat %s/l%d %d >> %s/log; tail -1 %s/log",
 	    dir, phase, nlevel, dir, dir);
     printf("%s\n", line);
     res = system(line);
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     res = system(line);
     if (res != 0) exit(res);
 
-    sprintf(line, "./stat %s/l%d %s/s%d %d >> %s/log; tail -1 %s/log", 
+    sprintf(line, "./stat %s/l%d %s/s%d %d >> %s/log; tail -1 %s/log",
 	    dir, phase-1, dir, phase, nlevel, dir, dir);
     printf("%s\n", line);
     res = system(line);
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
   } else {			/* nphase = 0, i.e. PA1 */
 
     phase = 0;
-    sprintf(line, "./gpmetis -ufactor=%d %s/g%d %d > %s/metis.log%d", 
+    sprintf(line, "./gpmetis -ufactor=%d %s/g%d %d > %s/metis.log%d",
 	    UFACTOR, dir, phase, npart, dir, phase);
     printf("%s\n", line);
     res = system(line);
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     res = system(line);
     if (res != 0) exit(res);
 
-    sprintf(line, "./stat none %s/s%d %d >> %s/log; tail -1 %s/log", 
+    sprintf(line, "./stat none %s/s%d %d >> %s/log; tail -1 %s/log",
 	    dir, phase, nlevel, dir, dir);
     printf("%s\n", line);
     res = system(line);
