@@ -134,7 +134,7 @@ mpk_t* read_mpk(char *dir) {
     printf("average level %f\n", nc/(double)mg->n);
   }
 
-  if (nphase == 0) { 
+  if (nphase == 0) {
 
     sprintf(fname, "%s/g0.part.%d", dir, npart);
     printf("  reading %s...\n", fname);

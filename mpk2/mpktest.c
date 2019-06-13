@@ -28,7 +28,7 @@ void show_exinfo(mpk_t *mg) {
     for (j=0; j< npart; j++) {
       task_t *tl = mg->tlist + i * npart + j;
 #if DETAIL
-      printf("%d %d %d %d %e %e\n", i, j, tl->th, 
+      printf("%d %d %d %d %e %e\n", i, j, tl->th,
 	     tl->n, tl->t1 - tl->t0, (tl->t1 - tl->t0) / tl->n);
 #endif
       tsum += tl->t1 - tl->t0;
@@ -56,13 +56,13 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  mpk_t *mg = read_mpk(argv[1]); // ******* 
+  mpk_t *mg = read_mpk(argv[1]); // *******
 
   int n = mg->n;
   int nlevel = mg->nlevel;
 
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1)); // vv used to mimic structure to store the matrix 
-  assert(vv != NULL);                                           
+  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1)); // vv used to mimic structure to store the matrix
+  assert(vv != NULL);
 
   prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     vv[n + i] = -1.0;		/* dummy */
 
   double min;
-  for (i=0; i< 5; i++) { // spmv multipliaction(sequential) is carried out and minnimum time is reported 
+  for (i=0; i< 5; i++) { // spmv multipliaction(sequential) is carried out and minnimum time is reported
     double t0 = omp_get_wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
     double t1 = omp_get_wtime();
