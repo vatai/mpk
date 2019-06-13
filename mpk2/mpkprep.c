@@ -1,5 +1,3 @@
-// The section is to ensure the correctc development of outputs by driver.
-// 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +17,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
   int nphase = mg->nphase;
 
   int phase;
-  // Loop below to check the error in calculations of levels. 
+  // Loop below to check the error in calculations of levels.
   for (phase = 0; phase < nphase; phase ++) {
 
     if (phase == 0) {
@@ -29,7 +27,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
       int i;
       for (i=0; i< n; i++)
 	if (0 > l1->level[i]) { // Levels should be >=0
-	  fprintf(stderr, "level error at i=%d phase=%d: %d\n", 
+	  fprintf(stderr, "level error at i=%d phase=%d: %d\n",
 		  i, phase, l1->level[i]);
 	  erc ++;
 	}
@@ -43,7 +41,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
       int i;
       for (i=0; i< n; i++)
 	if (l0->level[i] > l1->level[i]) { // levels should never decrease.
-	  fprintf(stderr, "level error at i=%d phase=%d: %d %d\n", 
+	  fprintf(stderr, "level error at i=%d phase=%d: %d %d\n",
 		  i, phase, l0->level[i], l1->level[i]);
 	  erc ++;
 	}
@@ -61,7 +59,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
       int i;
       for (i=0; i< n; i++)
 	if (sl[i] >= 0 && 0 > nlevel - sl[i]) { // Cannot have skirt level more than nlevel
-	  fprintf(stderr, "skirt level error at i=%d p=%d: %d\n", 
+	  fprintf(stderr, "skirt level error at i=%d p=%d: %d\n",
 		  i, p, nlevel - sl[i]);
 	  erc ++;
 	}
@@ -78,17 +76,17 @@ void prep_mpk(mpk_t *mg, double *vv) {
       int i;
       for (i=0; i< n; i++)
 	if (sl[i] >= 0 && ll[i] > nlevel - sl[i]) {
-	  fprintf(stderr, "skirt level error at i=%d p=%d: %d %d\n", 
+	  fprintf(stderr, "skirt level error at i=%d p=%d: %d %d\n",
 		  i, p, ll[i], nlevel - sl[i]);
 	  erc ++;
 	}
     }
   }
-  
-  if (erc > 0) // Proceed only if no errors
-    exit(1); 
 
-  crs0_t *g0 = mg->g0; 
+  if (erc > 0) // Proceed only if no errors
+    exit(1);
+
+  crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
 
   int i;
@@ -208,7 +206,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
 	  int j;
 	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) {
 	    int k = g0->col[j];
-	    
+
 	    if (vv[(l-1)*n + k] < 0.0) {
 	      fprintf(stderr, "skirt error level %d i %d k %d\n",
 		      l, i, k);
