@@ -628,20 +628,11 @@ void write_skirt(FILE *f, skirt_t *sg, level_t *lg, int level) {
 
     int *skirt = sg->levels + i * n;
 
-<<<<<<< HEAD
-
-    if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
 
     // TODO(vatai): this could (should?) be refactored!!!
     //
     // Conditionally store `j` and `level - skirt[j]`
-   
-=======
-    // TODO(vatai): this could (should?) be refactored!!!
-    //
-    // Conditionally store `j` and `level - skirt[j]`
     if (lg != NULL) { // lg is null in the case of phase = 0. So this part is only for dmpk
->>>>>>> a0a87a27bdaea8dfcd58726846fe17c9d45ed8f8
       int j;
       for (j=0; j< n; j++)
         // Condition with `lg`:
