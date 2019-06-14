@@ -22,7 +22,7 @@ mpk_t* new_mpk(crs0_t *g0, int npart, int nlevel, int nphase) { // called in rea
   if (nphase == 0) { // PA1
     mg->plist = (part_t**) malloc(sizeof(part_t*));
     mg->llist = NULL;
-  } else { 
+  } else {
     mg->plist = (part_t**) malloc(sizeof(part_t*) * nphase);
     mg->llist = (level_t**) malloc(sizeof(level_t*) * nphase);
     int i;

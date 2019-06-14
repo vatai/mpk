@@ -39,6 +39,8 @@ typedef struct {
 level_t *new_level(part_t*);
 void del_level(level_t*);
 void comp_level(level_t*);
+void update_level(level_t *, level_t *);
+void read_level(FILE *, level_t *);
 void write_level(FILE*, level_t*);
 void write_level_c(FILE*, level_t*, coord_t*);
 

@@ -22,6 +22,7 @@
 // There are several other functions with special purposes.  They are
 // usually important, and documented.
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
