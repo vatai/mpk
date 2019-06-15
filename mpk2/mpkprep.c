@@ -93,7 +93,7 @@ void prep_mpk(mpk_t *mg, double *vv) {
   for (i=0; i< n * (nlevel+1); i++)
     vv[i] = -1.0;
 
-  int *pl = mg->plist[0]->part; 
+  int *pl = mg->plist[0]->part;
 
   for (i=0; i< n; i++)
     vv[i] = pl[i] * 100.0;
