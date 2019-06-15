@@ -62,7 +62,8 @@ int main(int argc, char **argv) {
   int n = mg->n;
   int nlevel = mg->nlevel;
 
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1)); // vv used to mimic structure to store the matrix
+  // vv stores the vector (vertices) at different levels
+  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
   prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
