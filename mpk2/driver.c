@@ -66,7 +66,6 @@ int main(int argc, char **argv) {
     res = system(line);    /* using gpmetis to do the partition*/
     if (res != 0) exit(res);
 
-    // TODO(vatai): refactor the next two `if`s into one.
     if (phase == 0)
       sprintf(line, "./comp level %s/g0 x %s/g%d.part.%d %s/l%d",
 	      dir, dir, phase, npart, dir, phase); // Calling comp.c with required string inputs,level is the mode for comp. Separate for phase = 0.
@@ -85,7 +84,7 @@ int main(int argc, char **argv) {
 
     if (phase == 0)
       sprintf(line, "./comp weight %s/g0 x %s/g%d.part.%d %s/g%d",
-	      dir, dir, phase, npart, dir, phase+1);
+	      dir, dir, phase, npart, dir, phase+1); // Calling comp.c again but this time to do computations for weight
     else
       sprintf(line, "./comp weight %s/g0 x %s/g%d.part.%d %s/l%d %s/g%d",
 	      dir, dir, phase, npart, dir, phase-1, dir, phase+1);
@@ -99,7 +98,7 @@ int main(int argc, char **argv) {
     sprintf(line, "./skirt %d %s/g0 x %s/g0.part.%d %s/l%d %s/s%d",
 	    nlevel, dir, dir, npart, dir, phase-1, dir, phase);
     printf("%s\n", line);
-    res = system(line);
+    res = system(line); // Skirt used to fill the leftover gap.
     if (res != 0) exit(res);
 
     sprintf(line, "./stat %s/l%d %s/s%d %d >> %s/log; tail -1 %s/log",

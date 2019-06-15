@@ -1,4 +1,4 @@
-//*************** These are main computational functions
+//*************** (Main computational functions)
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
