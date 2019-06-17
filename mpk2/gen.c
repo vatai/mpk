@@ -1,3 +1,4 @@
+// This is a matrix generator file. No compuation is performed here.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
