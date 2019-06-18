@@ -15,13 +15,6 @@ format.o : format.c lib.h
 stat.o : stat.c lib.h
 driver.o : driver.c lib.h
 
-mpkread.o : mpkread.c
-mpktest.o : mpktest.c
-mpkprep.o : mpkprep.c
-mpkexec.o : mpkexec.c
-mpktexec.o : mpktexec.c
-spmvexec.o : spmvexec.c
-
 comp : comp.o lib.o
 skirt : skirt.o lib.o
 format : format.o lib.o
@@ -31,4 +24,5 @@ driver : driver.o
 MPKOBJ = lib.o mpkread.o mpkprep.o mpkexec.o mpktexec.o spmvexec.o
 mpktest : mpktest.o $(MPKOBJ)
 
-mpi_mpktest : mpi_mpktest.o $(MPKOBJ)
+MPIMPKOBJ = lib.o mpkread.o mpi_mpkprep.o mpkexec.o mpktexec.o spmvexec.o
+mpi_mpktest : mpi_mpktest.o $(MPIMPKOBJ)

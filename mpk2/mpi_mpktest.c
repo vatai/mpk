@@ -53,17 +53,17 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-
 int main(int argc, char* argv[]){
-  MPI_Init(&argc, &argv);
-  int world_rank, world_size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
   if (argc != 2) {
     fprintf(stderr, "usage: %s dirname\n", argv[0]);
     exit(1);
   }
+
+  // Init MPI
+  MPI_Init(&argc, &argv);
+  int world_rank, world_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   mpk_t *mg = read_mpk(argv[1]); // *******
 
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]){
   double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
-  prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
+  mpi_prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
 
   int i;
   for (i=0; i< n; i++)
