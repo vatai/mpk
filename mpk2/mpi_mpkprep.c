@@ -154,10 +154,18 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 	      fprintf(stderr, " prevl=%d\n", prevl[k]);
 	      erc ++;
 	    }
+
+            // MPI code
+
+            // Needed node is in different partition
+            bool diff_part = mg->plist[phase - 1]->part[k] != pl[i];
+            bool is_computed = prevl[k] > ll[i];
+            if (diff_part && is_computed) {
+            }
 	  }
 
 	  vv[l*n + i] = pl[i] * 100.0 + phase;
-	  tsize[pl[i]] ++;
+	  tsize[pl[i]] ++;  // Most important in loop1
 	}
     }
 
