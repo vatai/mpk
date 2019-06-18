@@ -148,9 +148,9 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 
 	      fprintf(stderr, "structure error phase %d level %d i %d k %d\n",
 		      phase, l, i, k);
-	      int ll;
-	      for (ll=0; ll< l; ll++)
-		fprintf(stderr, "%6.0f", vv[ll*n+k]);
+	      int r;
+	      for (r=0; r< l; r++)
+		fprintf(stderr, "%6.0f", vv[r*n+k]);
 	      fprintf(stderr, " prevl=%d\n", prevl[k]);
 	      erc ++;
 	    }
