@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include <mpi.h>
+
 #include "lib.h"
 
 void mpi_prep_mpk(mpk_t *mg, double *vv) {
@@ -130,10 +133,13 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
     if (lmax > nlevel)
       lmax = nlevel;
 
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
-	if (prevl[i] < l && l <= ll[i]) {
+	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) {
 	  if (vv[l*n+i] >= 0) {
 	    fprintf(stderr, "already computed: level %d i %d\n", l, i);
 	    erc ++;
@@ -158,15 +164,17 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
             // MPI code
 
             // Needed node is in different partition
-            bool diff_part = mg->plist[phase - 1]->part[k] != pl[i];
-            bool is_computed = prevl[k] > ll[i];
+            int diff_part = mg->plist[phase - 1]->part[k] != pl[i];
+            int is_computed = prevl[k] > ll[i];
             if (diff_part && is_computed) {
             }
 	  }
 
 	  vv[l*n + i] = pl[i] * 100.0 + phase;
 	  tsize[pl[i]] ++;  // Most important in loop1
-	}
+	} else {
+          //
+        }
     }
 
     task_t *tl = mg->tlist + phase * npart;
