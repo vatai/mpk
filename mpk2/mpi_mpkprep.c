@@ -20,6 +20,15 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
   int nphase = mg->nphase;
 
   int phase;
+
+  // Every phase needs its own send and receive buffer.
+  //
+  // TODO(vatai): These mallocs should be moved to somewhere else - to
+  // the same "scope" where it can be freed.  Right now, I'm not even
+  // sure how/where I could use them outside of this function.
+  double **sbufs = malloc(sizeof(*sbufs) * nphase);
+  double **rbufs = malloc(sizeof(*rbufs) * nphase);
+
   // Loop below to check the error in calculations of levels.
   for (phase = 0; phase < nphase; phase ++) {
 
@@ -136,6 +145,12 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // Communication of which vertex (n) from which level (nlevel)
+    // from which process/partition (npart) to which process/partition
+    // (npart).
+    int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
+    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
+
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
@@ -163,18 +178,36 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 
             // MPI code
 
-            // Needed node is in different partition
-            int diff_part = mg->plist[phase - 1]->part[k] != pl[i];
-            int is_computed = prevl[k] > ll[i];
-            if (diff_part && is_computed) {
+            if (phase == 0) {
+              // No communication occurs in the initial phase.
+              // TODO(vatai): what to do here?
+            } else {
+              // Communicate after the initial phase, if the following
+              // 2 conditions are met for the adjacent vertex
+              // (i.e. the "source" vertex needed to compute vv[n * l
+              // + i])
+
+              // The source vertex is in a different partition then
+              // the target vertex
+              int diff_part = mg->plist[phase - 1]->part[k] != pl[i];
+              // The vertex is computed, i.e. just before the target
+              // level.
+              int is_computed = prevl[k] >= l - 1;
+              if (diff_part && is_computed) {
+                int src_idx = n * (l - 1) + k;
+                int src_part = mg->plist[phase - 1]->part[k];
+                int tgt_part = pl[i];
+
+                int from_to_idx = npart * src_part + tgt_part;
+                int idx = nlevel * n * (from_to_idx + l) + i;
+                comm_table[idx]++;
+              }
             }
 	  }
 
 	  vv[l*n + i] = pl[i] * 100.0 + phase;
 	  tsize[pl[i]] ++;  // Most important in loop1
-	} else {
-          //
-        }
+	}
     }
 
     task_t *tl = mg->tlist + phase * npart;
@@ -210,7 +243,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 
     int l;
     for (l = prevlmin + 1; l <= nlevel; l++) {
-
       for (i=0; i< n; i++)
 	if (prevl[i] < l && sl[p*n+i] >= 0 && l <= nlevel - sl[p*n+i]) {
 	  if (vv[l*n+i] > 0.0) {
