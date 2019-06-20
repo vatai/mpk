@@ -148,9 +148,13 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
     // Communication of which vertex (n) from which level (nlevel)
     // from which process/partition (npart) to which process/partition
     // (npart).
-    int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
-    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
 
+    if (phase>0) // No communication for phase = 0
+    {
+      int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
+    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
+    }
+    
 
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
@@ -182,29 +186,26 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
             if (phase == 0) {
               // No communication occurs in the initial phase.
               // TODO(vatai): what to do here?
-              
-
-              
+              continue;
             } else {
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
               // (i.e. the "source" vertex needed to compute vv[n * l
               // + i])
 
-              // The source vertex is in a different partition then
+              // The source vertex is in a different partition than
               // the target vertex
-              int diff_part = mg->plist[phase - 1]->part[k] != pl[i];
+              int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
               // The vertex is computed, i.e. just before the target
               // level.
-              int is_computed = prevl[k] >= l - 1;
-              if (diff_part && is_computed) {
-                int src_idx = n * (l - 1) + k;
-                int src_part = mg->plist[phase - 1]->part[k];
-                int tgt_part = pl[i];
-
-                int from_to_idx = npart * src_part + tgt_part;
-                int idx = nlevel * n * (from_to_idx + l) + i;
-                comm_table[idx]++;
+              int is_computed = (prevl[k] >= l - 1);
+              if (is_diff_part && is_computed) {
+                //int vv_idx = n * (l - 1) + k; //source vv index
+                int src_part = mg->plist[phase - 1]->part[k]; // source partition
+                int tgt_part = pl[i]; // target partition
+                int from_part_to_part = npart * src_part + tgt_part;
+                int idx = nlevel * n * (from_part_to_part)+ n*l + i;
+                comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
               }
             }
 	  }
