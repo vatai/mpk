@@ -112,13 +112,33 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   int *prevl = l0;
   int prevlmin = 0;
   //______________________________________________
+
+  int *numb_of_send = malloc(sizeof(int)*nphase);
+  int *numb_of_rec = malloc(sizeof(int)*nphase);
+  int **send_counts = malloc(sizeof(int*)*nphase);
+  int **recv_counts = malloc(sizeof(int*)*nphase);
+
+
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
 
     assert(mg->llist[phase] != NULL);
     int *ll = mg->llist[phase]->level;
+    if (phase>0)
+    {
+    numb_of_send[phase]=0;
+    numb_of_rec[phase] = 0;
+    //(Utsav) initialize the values to 0
+    send_counts[phase] = malloc(sizeof(int)*npart);
+    recv_counts[phase] = malloc(sizeof(int)*npart);
+    for (int i = 0; i < npart; ++i)
+    {
+    (*(*send_counts[phase]+i))=0;
+    (*(*recv_counts[phase]+i))=0;
+    }
 
+    }
     int tsize[npart];
     for (i = 0; i< npart; i++)
       tsize[i] = 0;
@@ -152,7 +172,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
-	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { //according to rank**
+	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { //according to rank
 	  if (vv[l*n+i] >= 0) {
 	    fprintf(stderr, "already computed: level %d i %d\n", l, i);
 	    erc ++;
@@ -185,7 +205,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
               // 2 conditions are met for the adjacent vertex
               // (i.e. the "source" vertex needed to compute vv[n * l
               // + i])
-
               // The source vertex is in a different partition than
               // the target vertex
               int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
@@ -199,6 +218,17 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
                 int from_part_to_part = npart * src_part + tgt_part;
                 int idx = nlevel * n * (from_part_to_part)+ n*l + i;
                 comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
+                if (src_part==rank)
+                {
+                  int numb_of_send[phase]++;
+                  (*(*send_counts[phase]+tgt_part))++;
+                }
+                if (tgt_part==rank)
+                {
+                  int numb_of_rec[phase]++;
+                  (*(*recv_counts[phase]+src_part))++;
+                }
+
               }
             }
 	  }
@@ -231,13 +261,10 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   // for phase = 0 there is no communication so will remain NULL
   for (phase = 1; i < nphase; ++i)
   {
-    sbufs[phase] = malloc(sizeof(int) * npart * /*no of elements in the partition*/);
-    rbufs[phase] = malloc(sizeof(int) * npart * /*no of elements in the partition*/);
+    sbufs[phase] = malloc(sizeof(int)*numb_of_send[phase]);
+    rbufs[phase] = malloc(sizeof(int) *numb_of_rec[phase]);
 
-
-   
-
-  }
+  }  
 
   if (erc > 0)
     exit(1);

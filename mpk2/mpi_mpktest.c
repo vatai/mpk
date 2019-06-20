@@ -79,8 +79,8 @@ int main(int argc, char* argv[]){
   //(Utsav) Do we need to change the name ?
   double *ssbufs;
   double *rrbufs;
-  double **sbufs = malloc(sizeof(*ssbufs) * nphase);
-  double **rbufs = malloc(sizeof(*rrbufs) * nphase);
+  double **sbufs = malloc(sizeof(double*) * nphase);
+  double **rbufs = malloc(sizeof(double*) * nphase);
 
   mpi_prep_mpk(mg, vv,sbufs,rbufs); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
 
