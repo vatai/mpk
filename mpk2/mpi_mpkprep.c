@@ -151,17 +151,18 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
     int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
     for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
 
+
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
-	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) {
+	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { //according to rank**
 	  if (vv[l*n+i] >= 0) {
 	    fprintf(stderr, "already computed: level %d i %d\n", l, i);
 	    erc ++;
 	  }
 
 	  int j;
-	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) {
+	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) { // All neighbours
 	    int k = g0->col[j];
 
 	    if (vv[(l-1)*n + k] < 0.0 ||
@@ -176,11 +177,14 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 	      erc ++;
 	    }
 
-            // MPI code
+            // MPI code to complete comm_table
 
             if (phase == 0) {
               // No communication occurs in the initial phase.
               // TODO(vatai): what to do here?
+              
+
+              
             } else {
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
