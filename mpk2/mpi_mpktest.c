@@ -74,7 +74,15 @@ int main(int argc, char* argv[]){
   double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
-  mpi_prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not
+  //Every phase needs its own buffer.
+  // It can be overwritten over the same memory later.
+  //(Utsav) Do we need to change the name ?
+  double *ssbufs;
+  double *rrbufs;
+  double **sbufs = malloc(sizeof(*ssbufs) * nphase);
+  double **rbufs = malloc(sizeof(*rrbufs) * nphase);
+
+  mpi_prep_mpk(mg, vv,sbufs,rbufs); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
 
   int i;
   for (i=0; i< n; i++)

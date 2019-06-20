@@ -102,4 +102,4 @@ void exec_mpk_id(mpk_t*, double*, int nthread);
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
 
-void mpi_prep_mpk(mpk_t*, double*);
+void mpi_prep_mpk(mpk_t*, double*,double **,double**);

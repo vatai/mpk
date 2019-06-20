@@ -7,7 +7,7 @@
 
 #include "lib.h"
 
-void mpi_prep_mpk(mpk_t *mg, double *vv) {
+void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   assert(mg != NULL && vv != NULL);
 
   printf("checking mpk...");  fflush(stdout);
@@ -21,13 +21,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
 
   int phase;
 
-  // Every phase needs its own send and receive buffer.
-  //
-  // TODO(vatai): These mallocs should be moved to somewhere else - to
-  // the same "scope" where it can be freed.  Right now, I'm not even
-  // sure how/where I could use them outside of this function.
-  double **sbufs = malloc(sizeof(*sbufs) * nphase);
-  double **rbufs = malloc(sizeof(*rbufs) * nphase);
 
   // Loop below to check the error in calculations of levels.
   for (phase = 0; phase < nphase; phase ++) {
@@ -233,6 +226,18 @@ void mpi_prep_mpk(mpk_t *mg, double *vv) {
     prevlmin = lmin;
   }
   //___________________________________________
+
+  // Following loop is to initialize sbufs and rbufs
+  // for phase = 0 there is no communication so will remain NULL
+  for (phase = 1; i < nphase; ++i)
+  {
+    sbufs[phase] = malloc(sizeof(int) * npart * /*no of elements in the partition*/);
+    rbufs[phase] = malloc(sizeof(int) * npart * /*no of elements in the partition*/);
+
+
+   
+
+  }
 
   if (erc > 0)
     exit(1);
