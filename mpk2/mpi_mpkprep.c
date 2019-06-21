@@ -117,7 +117,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   int *numb_of_rec = malloc(sizeof(int)*nphase);
   int **send_counts = malloc(sizeof(int*)*nphase);
   int **recv_counts = malloc(sizeof(int*)*nphase);
-
+  int **send_displ = malloc(sizeof(int*)*nphase);
+  int **recv_displ = malloc(sizeof(int*)*nphase);
 
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
@@ -134,8 +135,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
     recv_counts[phase] = malloc(sizeof(int)*npart);
     for (int i = 0; i < npart; ++i)
     {
-    (*(*send_counts[phase]+i))=0;
-    (*(*recv_counts[phase]+i))=0;
+    (*(send_counts[phase]+i))=0;
+    (*(recv_counts[phase]+i))=0;
     }
 
     }
@@ -221,12 +222,12 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
                 if (src_part==rank)
                 {
                   int numb_of_send[phase]++;
-                  (*(*send_counts[phase]+tgt_part))++;
+                  (*(send_counts[phase]+tgt_part))++;
                 }
                 if (tgt_part==rank)
                 {
                   int numb_of_rec[phase]++;
-                  (*(*recv_counts[phase]+src_part))++;
+                  (*(recv_counts[phase]+src_part))++;
                 }
 
               }
@@ -257,13 +258,38 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   }
   //___________________________________________
 
-  // Following loop is to initialize sbufs and rbufs
+  // Following loop is to initialize sbufs 
   // for phase = 0 there is no communication so will remain NULL
   for (phase = 1; i < nphase; ++i)
   {
     sbufs[phase] = malloc(sizeof(int)*numb_of_send[phase]);
     rbufs[phase] = malloc(sizeof(int) *numb_of_rec[phase]);
 
+    send_displ[phase] = malloc(sizeof(int)*npart);
+    recv_displ[phase] = malloc(sizeof(int)*npart);
+    for (int i = 0; i < npart; ++i)
+    {
+      if (i==0)
+      {
+        *(send_displ[phase])=*(send_counts[phase]);
+        *(recv_displ[phase])=*(recv_counts[phase]);
+        continue;
+      }
+      *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]);
+      *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]);
+    }
+    //(Utsav) sbufs to be made here.
+    int count = 0;
+    for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i)
+    { 
+      if (comm_table[i]==1)
+      {
+        sbufs[count]=vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
+        count++;
+        continue;
+      }
+
+    }
   }  
 
   if (erc > 0)
