@@ -30,5 +30,3 @@ driver : driver.o
 
 MPKOBJ = lib.o mpkread.o mpkprep.o mpkexec.o mpktexec.o spmvexec.o
 mpktest : mpktest.o $(MPKOBJ)
-
-mpi_mpktest : mpi_mpktest.o $(MPKOBJ)
