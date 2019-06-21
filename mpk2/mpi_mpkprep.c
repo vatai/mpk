@@ -112,34 +112,13 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
   int *prevl = l0;
   int prevlmin = 0;
   //______________________________________________
-
-  int *numb_of_send = malloc(sizeof(int)*nphase);
-  int *numb_of_rec = malloc(sizeof(int)*nphase);
-  int **send_counts = malloc(sizeof(int*)*nphase);
-  int **recv_counts = malloc(sizeof(int*)*nphase);
-  int **send_displ = malloc(sizeof(int*)*nphase);
-  int **recv_displ = malloc(sizeof(int*)*nphase);
-
+  // this for conatins original mpkpart
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
 
     assert(mg->llist[phase] != NULL);
     int *ll = mg->llist[phase]->level;
-    if (phase>0)
-    {
-    numb_of_send[phase]=0;
-    numb_of_rec[phase] = 0;
-    //(Utsav) initialize the values to 0
-    send_counts[phase] = malloc(sizeof(int)*npart);
-    recv_counts[phase] = malloc(sizeof(int)*npart);
-    for (int i = 0; i < npart; ++i)
-    {
-    (*(send_counts[phase]+i))=0;
-    (*(recv_counts[phase]+i))=0;
-    }
-
-    }
     int tsize[npart];
     for (i = 0; i< npart; i++)
       tsize[i] = 0;
@@ -155,21 +134,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
 
     if (lmax > nlevel)
       lmax = nlevel;
-
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    // Communication of which vertex (n) from which level (nlevel)
-    // from which process/partition (npart) to which process/partition
-    // (npart).
-
-    if (phase>0) // No communication for phase = 0
-    {
-      int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
-    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
-    }
-    
-
+  
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
@@ -219,14 +184,14 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
                 int from_part_to_part = npart * src_part + tgt_part;
                 int idx = nlevel * n * (from_part_to_part)+ n*l + i;
                 comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
-                if (src_part==rank)
+                if (src_part==rank )
                 {
-                  int numb_of_send[phase]++;
+                   numb_of_send[phase]++;
                   (*(send_counts[phase]+tgt_part))++;
                 }
-                if (tgt_part==rank)
+                if (tgt_part==rank )//Needs to changed()
                 {
-                  int numb_of_rec[phase]++;
+                   numb_of_rec[phase]++;
                   (*(recv_counts[phase]+src_part))++;
                 }
 
@@ -256,7 +221,57 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
     prevl = ll;
     prevlmin = lmin;
   }
-  //___________________________________________
+  //_____________________________________________
+
+  int *numb_of_send = malloc(sizeof(int)*nphase); 
+  int *numb_of_rec = malloc(sizeof(int)*nphase);
+  int **send_counts = malloc(sizeof(int*)*nphase);
+  int **recv_counts = malloc(sizeof(int*)*nphase);
+  int **send_displ = malloc(sizeof(int*)*nphase);
+  int **recv_displ = malloc(sizeof(int*)*nphase);
+
+  //following for contains mpi part
+  // Starts from 1 since no communication for phase 0
+  for (phase = 1; phase < nphase; phase ++) {
+    pl = mg->plist[phase]->part;
+    int *ll = mg->llist[phase]->level;
+
+    int lmin, lmax;
+    lmin = lmax = ll[0];
+    for (i=1; i< n; i++) { // give max and min value to lmax and lmin resp.
+      if (lmin > ll[i])
+        lmin = ll[i];
+      if (lmax < ll[i])
+        lmax = ll[i];
+    }
+
+    if (lmax > nlevel)
+      lmax = nlevel;
+
+
+    numb_of_send[phase]=0;
+    numb_of_rec[phase] = 0;
+    send_counts[phase] = malloc(sizeof(int)*npart);
+    recv_counts[phase] = malloc(sizeof(int)*npart);
+    for (int i = 0; i < npart; ++i){
+      (*(send_counts[phase]+i))=0; 
+      (*(recv_counts[phase]+i))=0;
+    }
+
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Communication of which vertex (n) from which level (nlevel)
+    // from which process/partition (npart) to which process/partition
+    // (npart).
+      int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
+    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
+   
+
+
+  }
+
+  //____________________________________________
 
   // Following loop is to initialize sbufs 
   // for phase = 0 there is no communication so will remain NULL
@@ -273,10 +288,11 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
       {
         *(send_displ[phase])=*(send_counts[phase]);
         *(recv_displ[phase])=*(recv_counts[phase]);
-        continue;
       }
+      else{
       *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]);
       *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]);
+    }
     }
     //(Utsav) sbufs to be made here.
     int count = 0;
@@ -286,7 +302,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
       {
         sbufs[count]=vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
         count++;
-        continue;
       }
 
     }
