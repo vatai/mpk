@@ -58,6 +58,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   int *rdisp = rdispls;
   int *sdisp = sdispls;
 
+  int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
   //______________________________________________
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
@@ -81,7 +82,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     // Communication of which vertex (n) from which level (nlevel)
     // from which process/partition (npart) to which process/partition
     // (npart).
-    int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
     for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
 
     int l;
