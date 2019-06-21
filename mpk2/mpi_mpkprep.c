@@ -7,9 +7,9 @@
 
 #include "lib.h"
 
-int get_ct_idx(int n, int nlevel, int src_part, int tgt_part, int vv_idx){
+int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx){
   int from_part_to_part = npart * src_part + tgt_part;
-  return nlevel * n * (from_part_to_part)+ vv_idx;
+  return nlevel * n * from_part_to_part + vv_idx;
 }
 
 void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
@@ -114,7 +114,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
                 int vv_idx = n * (l - 1) + k; //source vv index
                 int src_part = mg->plist[phase - 1]->part[k]; // source partition
                 int tgt_part = pl[i]; // target partition
-                int idx = get_ct_idx(n,nlevel,src_part,tgt_part,vv_idx);
+                int idx = get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
                 comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
               }
             }
@@ -133,7 +133,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
       // For all vv indices.
       for (int i = 0; i < nlevel*n; ++i){
         // Here p is the source (from) partition.
-        int idx = get_ct_idx(n, nlevel, p, rank, i);
+        int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
         if (comm_table[idx])
         {
           // So we increment:
@@ -141,7 +141,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
           rcount[p]++;
         }
         // Here `p` is the target (to) partition.
-        idx = get_ct_idx(n, nlevel, rank, p, i);
+        idx = get_ct_idx(n, nlevel, npart, rank, p, i);
         if (comm_table[idx])
         {
           // So we increment:
