@@ -7,7 +7,10 @@
 
 #include "lib.h"
 
-void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs) {
+void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
+                  int **idx_sbufs, int **idx_rbufs,
+                  int *sendcount, int *recvcount,
+                  int *sdispls, int* rdispls) {
   assert(mg != NULL && vv != NULL);
 
   printf("checking mpk...");  fflush(stdout);
