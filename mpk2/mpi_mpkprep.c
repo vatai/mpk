@@ -176,87 +176,38 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
 
     for (int i = 0; i < npart; ++i)
     {
-      if (i==0)
-      {
-        *(send_displ[phase])=*(send_counts[phase]);
-        *(recv_displ[phase])=*(recv_counts[phase]);
-      }
-      else{
-      *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]);
-      *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]);
-    }
+    /*   if (i==0) */
+    /*   { */
+    /*     *(send_displ[phase])=*(send_counts[phase]); */
+    /*     *(recv_displ[phase])=*(recv_counts[phase]); */
+    /*   } */
+    /*   else{ */
+    /*   *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]); */
+    /*   *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]); */
+    /* } */
     }
     //(Utsav) sbufs to be made here.
     int count = 0;
     for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i)
     { 
-      if (comm_table[i]==1)
+      if (comm_table[i])
       {
-        sbufs[count]=vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
+        // sbufs[count] = vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
         count++;
       }
 
     }
-  }  
+  }
 
-  if (erc > 0)
-    exit(1);
 
   pl = mg->plist[0]->part;
   int *sl = mg->sg->levels;
 
-  int p;
-  for (p = 0; p < npart; p++) {
-    int cnt = 0;
-    task_t *tl = mg->tlist + nphase * npart + p;
-    tl->idx = mg->idxsrc + tcount;
-
-    int l;
-    for (l = prevlmin + 1; l <= nlevel; l++) {
-      for (i=0; i< n; i++)
-	if (prevl[i] < l && sl[p*n+i] >= 0 && l <= nlevel - sl[p*n+i]) {
-	  if (vv[l*n+i] > 0.0) {
-	    fprintf(stderr, "skirt %d %d %d already computed\n", l, i, p);
-	    erc ++;
-	  }
-
-	  int j;
-	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) {
-	    int k = g0->col[j];
-
-	    if (vv[(l-1)*n + k] < 0.0) {
-	      fprintf(stderr, "skirt error level %d i %d k %d\n",
-		      l, i, k);
-	      erc ++;
-	    }
-	  }
-
-	  vv[l*n+i] = pl[i] * 100.0 + nphase;
-	  tl->idx[cnt++] = l*n+i;
-	}
-    }
-
-    for (l = prevlmin + 1; l <= nlevel; l++) {
-      for (i=0; i< n; i++)
-	if (prevl[i] < l && sl[p*n+i] >= 0 && l <= nlevel - sl[p*n+i])
-	  vv[l*n+i] = -0.1;	/* clean up */
-    }
-
-    tl->n = cnt;
-    tcount += cnt;
-  }
 
   assert(tcount <= mg->idxallocsize && nlevel * n <= tcount);
   printf(" task %f", tcount / (double)(nlevel * n));
 
-  for (i=0; i< n; i++)
-    if (vv[nlevel * n + i] < -0.5) {
-      fprintf(stderr, "element %d of final level not computed\n", i);
-      erc ++;
-    }
 
-  if (erc > 0)
-    exit(1);
 
   printf(" done\n");
 
