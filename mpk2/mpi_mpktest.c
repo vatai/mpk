@@ -74,15 +74,42 @@ int main(int argc, char* argv[]){
   double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
+  prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
+
   //Every phase needs its own buffer.
   // It can be overwritten over the same memory later.
   //(Utsav) Do we need to change the name ?
-  double *ssbufs;
-  double *rrbufs;
-  double **sbufs = malloc(sizeof(double*) * nphase);
-  double **rbufs = malloc(sizeof(double*) * nphase);
 
-  mpi_prep_mpk(mg, vv,sbufs,rbufs); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
+  // int MPI_Alltoallv(const void *sendbuf, const int *sendcounts,
+  //                   const int *sdispls, MPI_Datatype sendtype, void *recvbuf,
+  //                   const int *recvcounts, const int *rdispls, MPI_Datatype recvtype,
+  //                   MPI_Comm comm)
+
+  // Each phase communicates a different amount, hence pointer to
+  // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
+  // send buffer in phase `p`
+
+  // Send and receive buffers for vertex values (from vv).
+  double **vv_sbufs = malloc(sizeof(*vv_sbufs) * mg->nphase);
+  double **vv_rbufs = malloc(sizeof(*vv_rbufs) * mg->nphase);
+  // Send and receive buffers for (vv) indices.
+  int **idx_sbufs = malloc(sizeof(*idx_sbufs) * mg->nphase);
+  int **idx_rbufs = malloc(sizeof(*idx_rbufs) * mg->nphase);
+
+  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
+  // p]` are is the number of elements sent/received to/from partition
+  // `p`.
+  int *sendcounts = malloc(sizeof(*sendcounts) * mg->npart * mg->nphase);
+  int *recvcounts = malloc(sizeof(*recvcounts) * mg->npart * mg->nphase);
+
+  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
+  // the displacement (index) in the send/receive buffers where the
+  // elements sent to partition/process `p` start.
+  int *sdispls = malloc(sizeof(*sdispls) * mg->npart * mg->nphase);
+  int *rdispls = malloc(sizeof(*rdispls) * mg->npart * mg->nphase);
+
+  mpi_prep_mpk(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
+               sendcounts, recvcounts, sdispls, rdispls);
 
   int i;
   for (i=0; i< n; i++)
