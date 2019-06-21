@@ -50,8 +50,13 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   int tcount = 0;
   int *prevl = l0;
   int prevlmin = 0;
+  // rcount and scount are pointers to the first element of the
+  // recvcount and sendcount for the current phase.
   int *rcount = recvcount;
   int *scount = sendcount;
+  // Similar to s/rcount.
+  int *rdisp = rdispls;
+  int *sdisp = sdispls;
 
   //______________________________________________
   for (phase = 0; phase < nphase; phase ++) {
@@ -72,7 +77,13 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
 
     if (lmax > nlevel)
       lmax = nlevel;
-  
+
+    // Communication of which vertex (n) from which level (nlevel)
+    // from which process/partition (npart) to which process/partition
+    // (npart).
+    int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
+    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
+
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i=0; i< n; i++)
@@ -112,60 +123,57 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
       }
     int numb_of_send = 0;
     int numb_of_rec = 0;
-    for (int p = 0; p < npart; ++p)
-    {
+    // For all "other" partitions `p` (other = other partitions we are
+    // sending to, and other partitions we are receiving from).
+    for (i = 0; i < npart; i++) {
+      rcount[i] = 0;
+      scount[i] = 0;
+    }
+    for (int p = 0; p < npart; ++p) {
+      // For all vv indices.
       for (int i = 0; i < nlevel*n; ++i){
-        int idx = get_ct_idx(n,nlevel,p,rank,i) ;
+        // Here p is the source (from) partition.
+        int idx = get_ct_idx(n, nlevel, p, rank, i);
         if (comm_table[idx])
         {
-          
+          // So we increment:
+          numb_of_rec++;
+          rcount[p]++;
+        }
+        // Here `p` is the target (to) partition.
+        idx = get_ct_idx(n, nlevel, rank, p, i);
+        if (comm_table[idx])
+        {
+          // So we increment:
+          numb_of_send++;
+          scount[p]++;
         }
       }
     }
-    // Prepare for the next phase  
+    sbufs[phase] = malloc(sizeof(*sbufs[phase]) * numb_of_send);
+    rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
+    idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
+    idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
+
+    // Do a scan on rdisp/sdisp.
+
+
+    // Prepare for the next phase.
     prevl = ll;
     prevlmin = lmin;
-    rcount+=npart;
-    scount+=npart;
+    rcount += npart;
+    scount += npart;
+    rdisp += npart;
+    sdisp += npart;
   }
   //_____________________________________________
 
-  //following for contains mpi part
-  // Starts from 1 since no communication for phase 0
-  for (phase = 1; phase < nphase; phase ++) {
-   
-
-
-    send_counts[phase] = malloc(sizeof(int)*npart);
-    recv_counts[phase] = malloc(sizeof(int)*npart);
-    for (int i = 0; i < npart; ++i){
-      (*(send_counts[phase]+i))=0; 
-      (*(recv_counts[phase]+i))=0;
-    }
-
-    
-
-    // Communication of which vertex (n) from which level (nlevel)
-    // from which process/partition (npart) to which process/partition
-    // (npart).
-      int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
-    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
-   
-
-
-  }
-
-  //____________________________________________
 
   // Following loop is to initialize sbufs 
   // for phase = 0 there is no communication so will remain NULL
   for (phase = 1; i < nphase; ++i)
   {
-    sbufs[phase] = malloc(sizeof(int)*numb_of_send[phase]);
-    rbufs[phase] = malloc(sizeof(int) *numb_of_rec[phase]);
 
-    send_displ[phase] = malloc(sizeof(int)*npart);
-    recv_displ[phase] = malloc(sizeof(int)*npart);
     for (int i = 0; i < npart; ++i)
     {
       if (i==0)
