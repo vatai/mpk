@@ -84,43 +84,49 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     // (npart).
     for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
 
+    // LOOP1: build `comm_table[]`
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
-      for (i=0; i< n; i++)
-      	if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { //according to rank
+      for (i = 0; i < n; i++) {
+        if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { // according to rank
 
-         int j;
-      	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) { // All neighbours
-           int k = g0->col[j];
-
+          int j;
+          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
+            int k = g0->col[j];
 
             // MPI code to complete comm_table
 
-           if (phase == 0) {
+            if (phase == 0) {
               // No communication occurs in the initial phase.
               // TODO(vatai): what to do here?
-           } else {
+            } else {
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
               // (i.e. the "source" vertex needed to compute vv[n * l
               // + i])
               // The source vertex is in a different partition than
               // the target vertex
-            int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
+              int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
               // The vertex is computed, i.e. just before the target
               // level.
-            int is_computed = (prevl[k] >= l - 1);
-            if (is_diff_part && is_computed) {
-                int vv_idx = n * (l - 1) + k; //source vv index
-                int src_part = mg->plist[phase - 1]->part[k]; // source partition
-                int tgt_part = pl[i]; // target partition
-                int idx = get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-                comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
+              int is_computed = (prevl[k] >= l - 1);
+              if (is_diff_part && is_computed) {
+                int vv_idx = n * (l - 1) + k; // source vv index
+                int src_part =
+                    mg->plist[phase - 1]->part[k]; // source partition
+                int tgt_part = pl[i];              // target partition
+                int idx =
+                    get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+                comm_table[idx]++; // setting it to 1 implying the communication
+                                   // for the corresponding index
               }
             }
           }
         }
       }
+    }
+
+    // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     int numb_of_send = 0;
     int numb_of_rec = 0;
     // For all "other" partitions `p` (other = other partitions we are
@@ -150,10 +156,35 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
         }
       }
     }
+
     sbufs[phase] = malloc(sizeof(*sbufs[phase]) * numb_of_send);
     rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
     idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
     idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
+    int counter[npart];
+
+    // Initialise `counters[]` array.
+    for(int p = 0; p < npart; p++) {
+      counter[p] = 0;
+    }
+
+    // LOOP3: Fill sendbuffers
+    for (int p = 0; p < npart; ++p) {
+      // For all vv indices.
+      for (int i = 0; i < nlevel*n; ++i){
+        // Here p is the destination (to) partition.
+        int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+        if (comm_table[idx]) {
+          sbufs[phase][counter[p]] = vv[i];
+          idx_sbufs[phase][counter[p]] = i;
+          counter[p]++;
+        }
+      }
+      // TODO(vatai): displacement should be counted here.
+      if (p == 0) {
+      } else {
+      }
+    }
 
     // Do a scan on rdisp/sdisp.
 
@@ -168,37 +199,33 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   }
   //_____________________________________________
 
-
-  // Following loop is to initialize sbufs 
+  // Following loop is to initialize sbufs
   // for phase = 0 there is no communication so will remain NULL
-  for (phase = 1; i < nphase; ++i)
-  {
+  for (phase = 1; phase < nphase; ++phase) {
 
-    for (int i = 0; i < npart; ++i)
-    {
-    /*   if (i==0) */
-    /*   { */
-    /*     *(send_displ[phase])=*(send_counts[phase]); */
-    /*     *(recv_displ[phase])=*(recv_counts[phase]); */
-    /*   } */
-    /*   else{ */
-    /*   *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]); */
-    /*   *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]); */
-    /* } */
+    for (int p = 0; p < npart; ++p) {
+      /*   if (i==0) */
+      /*   { */
+      /*     *(send_displ[phase])=*(send_counts[phase]); */
+      /*     *(recv_displ[phase])=*(recv_counts[phase]); */
+      /*   } */
+      /*   else{ */
+      /*   *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]);
+       */
+      /*   *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]);
+       */
+      /* } */
     }
     //(Utsav) sbufs to be made here.
     int count = 0;
-    for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i)
-    { 
-      if (comm_table[i])
-      {
+    for (int i = nlevel * n * npart * rank; i < nlevel * n * npart * (rank + 1);
+         ++i) {
+      if (comm_table[i]) {
         // sbufs[count] = vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
         count++;
       }
-
     }
   }
-
 
   pl = mg->plist[0]->part;
   int *sl = mg->sg->levels;
