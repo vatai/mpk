@@ -14,6 +14,71 @@
 #define ONEENT 0
 #define TRANS 0
 
+void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
+                  int **idx_sbufs, int **idx_rbufs,
+                  int *sendcount, int *recvcount,
+                  int *sdispls, int* rdispls){
+  
+  //printf("vv:\n");
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  char name[100];
+  sscanf(name,"%dout_mpi_alltoallre",rank);
+  FILE *f = fopen(name, "w");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", name);
+    exit(1);
+  }
+
+  fprintf(f, "vv:\n");
+  for (int i = 0; i < (mg->n)*(mg->nlevel); ++i){
+    fprintf(f, " %d",vv[i] );
+    if ((i+1)%n==0){
+      fprintf(f, "\n");
+    }
+  }
+
+  sendcount += npart;
+  recvcount += npart;
+  sdispls += npart;
+  rdispls += npart;
+  for (phase  = 1; phase < mg->nphase; ++phase){
+    fprintf(f, "Phase:%d\n",phase);
+    fprintf(f, "sbufs:\n");    
+    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
+      fprintf(f, " %d",sbufs[phase][i]);
+    }
+    fprintf(f, "\n");
+    fprintf(f, "idx_sbufs\n");
+    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
+      fprintf(f, " %d",idx_bufs[phase][i]);
+    }
+    fprintf(f, "\n");
+    fprintf(f, "sendcount\n");
+    for(int i = 0; i< npart;i++){
+      fprintf(f, " %d",sendcount[i]);
+    }
+    fprintf(f, "\n");
+    fprintf(f, "recvcount\n");
+    for(int i = 0; i< npart;i++){
+      fprintf(f, " %d",recvcount[i]);
+    }
+    fprintf(f, "\n");
+    fprintf(f, "sdispls\n");
+    for(int i = 0; i< npart;i++){
+      fprintf(f, " %d",sdispls[i]);
+    }
+    fprintf(f, "\n");
+    fprintf(f, "rdispls\n");
+    for(int i = 0; i< npart;i++){
+      fprintf(f, " %d",rdispls[i]);
+    }
+    fprintf(f, "\n");
+  }
+  fclose(f);
+}
+                  
+
 void show_exinfo(mpk_t *mg) {
   assert(mg != NULL);
 
@@ -109,6 +174,9 @@ int main(int argc, char* argv[]){
   int *rdispls = malloc(sizeof(*rdispls) * mg->npart * mg->nphase);
 
   mpi_prep_mpk(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
+               sendcounts, recvcounts, sdispls, rdispls);
+
+  test_allltoall_inputs(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
                sendcounts, recvcounts, sdispls, rdispls);
 
   int i;
