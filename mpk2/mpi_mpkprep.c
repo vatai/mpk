@@ -58,7 +58,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   int *rdisp = rdispls;
   int *sdisp = sdispls;
 
-  int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
+  int *comm_table = malloc(sizeof(int) * nlevel * n * npart * npart);
   //______________________________________________
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
@@ -121,48 +121,59 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
           }
         }
       }
-    int numb_of_send = 0;
-    int numb_of_rec = 0;
-    // For all "other" partitions `p` (other = other partitions we are
-    // sending to, and other partitions we are receiving from).
-    // [Note] Each partition is creating its unique scount,sdisp
-    // rcount and rdisp
-    for (i = 0; i < npart; i++) {
-      rcount[i] = 0;
-      scount[i] = 0;
-    }
-    for (int p = 0; p < npart; ++p) {
-      // For all vv indices.
-      for (int i = 0; i < nlevel*n; ++i){
-        // Here p is the source (from) partition.
-        int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
-        if (comm_table[idx])
-        {
-          // So we increment:
-          numb_of_rec++;
-          rcount[p]++;
-        }
-        // Here `p` is the target (to) partition.
-        idx = get_ct_idx(n, nlevel, npart, rank, p, i);
-        if (comm_table[idx])
-        {
-          // So we increment:
-          numb_of_send++;
-          scount[p]++;
+
+    if(phase!=0){
+      int numb_of_send = 0;
+      int numb_of_rec = 0;
+      // For all "other" partitions `p` (other = other partitions we are
+      // sending to, and other partitions we are receiving from).
+      // [Note] Each partition is creating its unique scount,sdisp
+      // rcount and rdisp
+      for (i = 0; i < npart; i++) {
+        rcount[i] = 0;
+        scount[i] = 0;
+      }
+      for (int p = 0; p < npart; ++p) {
+        // For all vv indices.
+        for (int i = 0; i < nlevel*n; ++i){
+          // Here p is the source (from) partition.
+          int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
+          if (comm_table[idx])
+          {
+            // So we increment:
+            numb_of_rec++;
+            rcount[p]++;
+          }
+          // Here `p` is the target (to) partition.
+          idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+          if (comm_table[idx])
+          {
+            // So we increment:
+            numb_of_send++;
+            scount[p]++;
+          }
         }
       }
-    }
-    sbufs[phase] = malloc(sizeof(*sbufs[phase]) * numb_of_send);
-    rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
-    idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
-    idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
+      vv_sbufs[phase] = malloc(sizeof(*vv_sbufs[phase]) * numb_of_send);
+      vv_rbufs[phase] = malloc(sizeof(*vv_rbufs[phase]) * numb_of_rec);
+      idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
+      idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
 
-    // Do a scan on rdisp/sdisp.
-    sdisp[0] = 0;
-    rdisp[0] = 0;
-    for (int p = 1; i < npart; ++p){
-      sdisp[p] += scount[p-1];
-      rdisp[p] += rcount[p-1];
+      // Do a scan on rdisp/sdisp.
+      sdisp[0] = 0;
+      rdisp[0] = 0;
+      for (int p = 1; i < npart; ++p){
+        sdisp[p] += scount[p-1];
+        rdisp[p] += rcount[p-1];
+      }
+      // Following loop is to initialize sbufs
+      int count = 0;
+      for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i){
+        if(comm_table[i]){
+          vv_sbufs[phase][count] = vv[(i-nlevel*n*npart*rank)%(n*nlevel)];
+          vv_idx[phase][count] = (i-nlevel*n*npart*rank)%(n*nlevel);
+        }
+      }
     }
 
     // Prepare for the next phase.
@@ -177,24 +188,11 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   //_____________________________________________
 
 
-  // Following loop is to initialize sbufs 
+ /* // Following loop is to initialize sbufs 
   // for phase = 0 there is no communication so will remain NULL
   for (phase = 1; i < nphase; ++i)
   {
 
-   // for (int i = 0; i < npart; ++i)
-    //{
-    /*   if (i==0) */
-    /*   { */
-    /*     *(send_displ[phase])=*(send_counts[phase]); */
-    /*     *(recv_displ[phase])=*(recv_counts[phase]); */
-    /*   } */
-    /*   else{ */
-    /*   *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]); */
-    /*   *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]); */
-    /* } */
-    //}
-    //(Utsav) sbufs to be made here.
     int count = 0;
     for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i)
     { 
@@ -205,7 +203,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
       }
 
     }
-  }
+  } */
 
   printf(" done\n");
 
