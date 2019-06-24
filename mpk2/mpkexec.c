@@ -136,6 +136,25 @@ void exec_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
   int npart = mg->npart;
   int nlevel = mg->nlevel;
   int nphase = mg->nphase;
+  sendcounts += npart;
+  sdispls += npart;
+  recvcounts += npart;
+  rdispls += npart;
+
+  comm = MPI_COMM_WORLD;
+
+  int phase;
+  for (phase = 1; phase <= nphase; phase ++){
+
+    MPI_Alltoallv( sbufs[phase], sendcount, sdispls, MPI_INT,
+                     rbufs[phase], recvcount, rdispls, MPI_INT, comm );
+
+    // Do calculation using rbufs 
+    sendcounts += npart;
+    sdispls += npart;
+    recvcounts += npart;
+    rdispls += npart;
+  }
 
 
   
