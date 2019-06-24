@@ -115,7 +115,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
                 int src_part = mg->plist[phase - 1]->part[k]; // source partition
                 int tgt_part = pl[i]; // target partition
                 int idx = get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-                comm_table[idx]++; // setting it to 1 implying the communication for the corresponding index
+                comm_table[idx]=1; // setting it to 1 implying the communication for the corresponding index
               }
             }
           }
@@ -125,6 +125,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     int numb_of_rec = 0;
     // For all "other" partitions `p` (other = other partitions we are
     // sending to, and other partitions we are receiving from).
+    // [Note] Each partition is creating its unique scount,sdisp
+    // rcount and rdisp
     for (i = 0; i < npart; i++) {
       rcount[i] = 0;
       scount[i] = 0;
@@ -156,7 +158,12 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
 
     // Do a scan on rdisp/sdisp.
-
+    sdisp[0] = 0;
+    rdisp[0] = 0;
+    for (int p = 1; i < npart; ++p){
+      sdisp[p] += scount[p-1];
+      rdisp[p] += rcount[p-1];
+    }
 
     // Prepare for the next phase.
     prevl = ll;
@@ -165,6 +172,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     scount += npart;
     rdisp += npart;
     sdisp += npart;
+    
   }
   //_____________________________________________
 
@@ -174,8 +182,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   for (phase = 1; i < nphase; ++i)
   {
 
-    for (int i = 0; i < npart; ++i)
-    {
+   // for (int i = 0; i < npart; ++i)
+    //{
     /*   if (i==0) */
     /*   { */
     /*     *(send_displ[phase])=*(send_counts[phase]); */
@@ -185,7 +193,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     /*   *(send_displ[phase])=*(send_displ[phase-1])+ *(send_counts[phase]); */
     /*   *(recv_displ[phase])=*(recv_displ[phase-1])+ *(recv_counts[phase]); */
     /* } */
-    }
+    //}
     //(Utsav) sbufs to be made here.
     int count = 0;
     for (int i = nlevel*n*npart*rank; i < nlevel*n*npart*(rank+1); ++i)
@@ -199,25 +207,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     }
   }
 
-
-  pl = mg->plist[0]->part;
-  int *sl = mg->sg->levels;
-
-
-  assert(tcount <= mg->idxallocsize && nlevel * n <= tcount);
-  printf(" task %f", tcount / (double)(nlevel * n));
-
-
-
   printf(" done\n");
 
-#if 0
-  printf("size of tasks ...\n");
-  for (i = 0; i <= nphase; i++) {
-    int p;
-    for (p=0; p< npart; p++)
-      printf("%5d", mg->tlist[i*npart+p].n);
-    printf("\n");
-  }
-#endif
 }
