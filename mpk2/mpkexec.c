@@ -125,3 +125,18 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
       do_task(mg, vv, phase, part);
   }
 }
+
+void exec_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
+                  int **idx_sbufs, int **idx_rbufs,
+                  int *sendcount, int *recvcount,
+                  int *sdispls, int* rdispls){
+  assert(mg != NULL && vv != NULL);
+  
+  int n = mg->n;
+  int npart = mg->npart;
+  int nlevel = mg->nlevel;
+  int nphase = mg->nphase;
+
+
+  
+}
