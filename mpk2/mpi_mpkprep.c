@@ -192,7 +192,11 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
         // TODO(vatai): displacement should be counted here.
         // Do a scan on rdisp/sdisp.
         if (p == 0) {
+          sdisp[p] = 0;
+          rdisp[p] = 0;
         } else {
+          sdisp[p] = sdisp[p - 1] + scount[p - 1];
+          rdisp[p] = rdisp[p - 1] + rcount[p - 1];
         }
       }
     } // if (phase != 0) end!
