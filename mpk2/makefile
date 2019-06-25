@@ -1,9 +1,9 @@
 default : gen comp skirt format driver stat mpktest mpi_mpktest
 
 #CC = gcc -O3
-CC = mpiicc
+CC = mpicc
 CFLAGS = -O3 -fopenmp
-LDLIBS = -fopenmp
+LDLIBS = -fopenmp -lm
 
 gen : gen.c
 	gcc -O3 -o gen gen.c

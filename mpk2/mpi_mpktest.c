@@ -20,10 +20,13 @@ void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs
                   int *sdispls, int* rdispls){
   
   //printf("vv:\n");
+  int n = mg -> n;
+  int npart = mg->npart;
+  int rank;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   char name[100];
-  sscanf(name,"%dout_mpi_alltoallre",rank);
+  sscanf(name,"%d_out_mpi_alltoallre",&rank);
   FILE *f = fopen(name, "w");
   if (f == NULL) {
     fprintf(stderr, "cannot open %s\n", name);
@@ -32,7 +35,7 @@ void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs
 
   fprintf(f, "vv:\n");
   for (int i = 0; i < (mg->n)*(mg->nlevel); ++i){
-    fprintf(f, " %d",vv[i] );
+    fprintf(f, " %f",vv[i] );
     if ((i+1)%n==0){
       fprintf(f, "\n");
     }
@@ -42,16 +45,16 @@ void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs
   recvcount += npart;
   sdispls += npart;
   rdispls += npart;
-  for (phase  = 1; phase < mg->nphase; ++phase){
+  for (int phase  = 1; phase < mg->nphase; ++phase){
     fprintf(f, "Phase:%d\n",phase);
     fprintf(f, "sbufs:\n");    
     for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
-      fprintf(f, " %d",sbufs[phase][i]);
+      fprintf(f, " %f",sbufs[phase][i]);
     }
     fprintf(f, "\n");
     fprintf(f, "idx_sbufs\n");
     for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
-      fprintf(f, " %d",idx_bufs[phase][i]);
+      fprintf(f, " %d",idx_sbufs[phase][i]);
     }
     fprintf(f, "\n");
     fprintf(f, "sendcount\n");
