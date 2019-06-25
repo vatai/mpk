@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "lib.h"
 #include <omp.h>
+#include <mpi.h>
 
 static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static
   assert(mg != NULL && vv != NULL);
@@ -124,4 +125,34 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
     for (part = 0; part < npart; part ++)
       do_task(mg, vv, phase, part);
   }
+}
+
+void exec_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
+                  int **idx_sbufs, int **idx_rbufs,
+                  int *sendcount, int *recvcount,
+                  int *sdispls, int* rdispls){
+  assert(mg != NULL && vv != NULL);
+  
+  int n = mg->n;
+  int npart = mg->npart;
+  int nlevel = mg->nlevel;
+  int nphase = mg->nphase;
+  sendcount += npart;
+  sdispls += npart;
+  recvcount += npart;
+  rdispls += npart;
+
+
+  int phase;
+  for (phase = 1; phase <= nphase; phase ++){
+
+    MPI_Alltoallv( sbufs[phase], sendcount, sdispls, MPI_INT,
+                     rbufs[phase], recvcount, rdispls, MPI_INT, MPI_COMM_WORLD );
+
+    // Do calculation using rbufs 
+    sendcount += npart;
+    sdispls += npart;
+    recvcount += npart;
+    rdispls += npart;
+  }  
 }
