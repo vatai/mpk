@@ -15,3 +15,6 @@ rm -rf 'five10*'
 
 # Check `gen`, `driver` and `mpktest`
 ./gen m5p 10 five10 && ./driver five10 4 20 5 && ./mpktest five10_4_20_5
+
+# Check MPI version
+mpirun ./mpi_mpktest five10_4_20_5
