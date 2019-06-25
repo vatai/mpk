@@ -112,7 +112,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
-        if (pl[i] == rank && prevl[i] < l && l <= ll[i]) { // according to rank
+        if (prevl[i] < l && l <= ll[i]) { // according to rank
 
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
@@ -140,7 +140,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
                     mg->plist[phase - 1]->part[k]; // source partition
                 int tgt_part = pl[i];              // target partition
                 int idx = get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-                comm_table[idx]++; // setting it to 1 implying the communication
+                comm_table[idx]=1; // setting it to 1 implying the communication
                                    // for the corresponding index
               }
             }
