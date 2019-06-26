@@ -22,11 +22,12 @@ void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = mg -> n;
   int npart = mg->npart;
-  int rank;
 
+  int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
   char name[100];
-  sprintf(name,"%d_out_mpi_alltoall",rank);
+  sprintf(name,"%d_out_mpi_alltoall.log",rank);
   FILE *f = fopen(name, "w");
   if (f == NULL) {
     fprintf(stderr, "cannot open %s\n", name);
