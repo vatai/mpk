@@ -4,8 +4,8 @@
 # Simple script to build and test al programs.
 #
 # TODO(vatai): Expand this file with further tests, possibly for the
-# time of writing mpi_mpktest, check if bot bot mpktest versions
-# perform give the same results.
+# time of writing mpi_mpktest, check if both mpktest versions give the
+# same results.
 
 NAME=mesh5p
 SIZE=4
@@ -38,6 +38,10 @@ echo test_builds.sh: testing MPI version
 mpirun ./mpi_mpktest $DIRNAME
 
 # POST PROCESSING
+#
+# Assume 2d 5point mesh.  The level and partition of vertices is
+# written 1 vertex per line.  Rearrange the level and partition values
+# in a way that resembles the original 2d mesh.
 for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$_$p"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
