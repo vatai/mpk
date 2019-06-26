@@ -7,9 +7,9 @@
 # time of writing mpi_mpktest, check if bot bot mpktest versions
 # perform give the same results.
 
-NAME=three
-SIZE=3
-NPART=4
+NAME=2dmesh
+SIZE=4
+NPART=2
 NLEVEL=10
 NPHASE=5
 
