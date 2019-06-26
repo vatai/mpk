@@ -110,38 +110,42 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
 
     // LOOP1: build `comm_table[]`
     int l;
-    for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
-      for (i = 0; i < n; i++) {
-        if (prevl[i] < l && l <= ll[i]) { // according to rank
+    if (phase > 0) {
+      for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
+        for (i = 0; i < n; i++) {
+          if (prevl[i] < l && l <= ll[i]) { // according to rank
 
-          int j;
-          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
-            int k = g0->col[j];
+            int j;
+            for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
+              int k = g0->col[j];
 
-            // MPI code to complete comm_table
+              // MPI code to complete comm_table
 
-            if (phase == 0) {
-              // No communication occurs in the initial phase.
-              // TODO(vatai): what to do here?
-            } else {
-              // Communicate after the initial phase, if the following
-              // 2 conditions are met for the adjacent vertex
-              // (i.e. the "source" vertex needed to compute vv[n * l
-              // + i])
-              // The source vertex is in a different partition than
-              // the target vertex
-              int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
-              // The vertex is computed, i.e. just before the target
-              // level.
-              int is_computed = (prevl[k] >= l - 1);
-              if (is_diff_part && is_computed) {
-                int vv_idx = n * (l - 1) + k; // source vv index
-                int src_part =
-                    mg->plist[phase - 1]->part[k]; // source partition
-                int tgt_part = pl[i];              // target partition
-                int idx = get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-                comm_table[idx]=1; // setting it to 1 implying the communication
-                                   // for the corresponding index
+              if (phase == 0) {
+                // No communication occurs in the initial phase.
+                // TODO(vatai): what to do here?
+              } else {
+                // Communicate after the initial phase, if the following
+                // 2 conditions are met for the adjacent vertex
+                // (i.e. the "source" vertex needed to compute vv[n * l
+                // + i])
+                // The source vertex is in a different partition than
+                // the target vertex
+                int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
+                // The vertex is computed, i.e. just before the target
+                // level.
+                int is_computed = (prevl[k] >= l - 1);
+                if (is_diff_part && is_computed) {
+                  int vv_idx = n * (l - 1) + k; // source vv index
+                  int src_part =
+                      mg->plist[phase - 1]->part[k]; // source partition
+                  int tgt_part = pl[i];              // target partition
+                  int idx =
+                      get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+                  comm_table[idx] =
+                      1; // setting it to 1 implying the communication
+                         // for the corresponding index
+                }
               }
             }
           }
