@@ -99,7 +99,7 @@ void exec_mpk_xs(mpk_t*, double*, int nthread);
 void exec_mpk_xd(mpk_t*, double*, int nthread);
 void exec_mpk_is(mpk_t*, double*, int nthread);
 void exec_mpk_id(mpk_t*, double*, int nthread);
-void exec_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
+void exec_mpk_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
                   int **idx_sbufs, int **idx_rbufs,
                   int *sendcount, int *recvcount,
                   int *sdispls, int* rdispls);
