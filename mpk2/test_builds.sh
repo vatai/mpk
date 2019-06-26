@@ -11,10 +11,16 @@
 make -B
 
 # Delete input files.
-rm -rf 'five10*'
+rm -rf five10*
 
 # Check `gen`, `driver` and `mpktest`
-./gen m5p 10 five10 && ./driver five10 4 20 5 && ./mpktest five10_4_20_5
+echo test_builds.sh: generating data
+./gen m5p 10 five10 && ./driver five10 4 20 5
 
+echo test_builds.sh: testing OpenMP version
+# Check OpenMP version
+./mpktest five10_4_20_5
+
+echo test_builds.sh: testing MPI version
 # Check MPI version
 mpirun ./mpi_mpktest five10_4_20_5
