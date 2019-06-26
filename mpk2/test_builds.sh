@@ -7,7 +7,7 @@
 # time of writing mpi_mpktest, check if bot bot mpktest versions
 # perform give the same results.
 
-NAME=2dmesh
+NAME=mesh5p
 SIZE=4
 NPART=2
 NLEVEL=10
@@ -29,9 +29,15 @@ echo test_builds.sh: generating data
 ./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE
 
 echo test_builds.sh: testing OpenMP version
+DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # Check OpenMP version
-./mpktest ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+./mpktest $DIRNAME
 
 echo test_builds.sh: testing MPI version
 # Check MPI version
-mpirun ./mpi_mpktest ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+mpirun ./mpi_mpktest $DIRNAME
+
+# POST PROCESSING
+for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
+    perl -lne 'if ($. % '$SIZE' == 0) {print "$_$p"; $p=""} else { $p="$p $_"}' $file > $file.pp
+done
