@@ -236,8 +236,8 @@ int main(int argc, char* argv[]){
 #if 1
     for (i=0; i< 5; i++) {
       double t0 = omp_get_wtime();
-      exec_mpi(mg, vv, nth,vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
-               sendcounts, recvcounts, sdispls, rdispls );
+      /* exec_mpk_mpi(mg, vv, nth,vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs, */
+      /*          sendcounts, recvcounts, sdispls, rdispls ); */
       double t1 = omp_get_wtime();
 
       show_exinfo(mg);
