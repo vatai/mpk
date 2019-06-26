@@ -179,8 +179,8 @@ int main(int argc, char* argv[]){
   mpi_prep_mpk(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
                sendcounts, recvcounts, sdispls, rdispls);
 
-  test_allltoall_inputs(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
-               sendcounts, recvcounts, sdispls, rdispls);
+  //test_allltoall_inputs(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
+  //             sendcounts, recvcounts, sdispls, rdispls);
 
   int i;
   for (i=0; i< n; i++)

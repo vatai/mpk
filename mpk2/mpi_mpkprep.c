@@ -29,7 +29,10 @@ void testcomm_table(mpk_t *mg, int comm_table[],int phase, int rank){
     for (int j = 0; j < npart; ++j){
       fprintf(f, "Target Partition=%d\n",j );
       for (int k = 0; k < n*nlevel; ++k){
-        fprintf(f, " %d", comm_table[(i*npart*n*nlevel)+(j*n*nlevel)+k]);
+        if (comm_table[(i*npart*n*nlevel)+(j*n*nlevel)+k])
+        {
+          fprintf(f, " vvposition = %d vvlevel = %d\n", (k%16), k/16);
+        }
       }
       fprintf(f, "\n");
     }
