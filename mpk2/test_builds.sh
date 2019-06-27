@@ -43,5 +43,5 @@ mpirun ./mpi_mpktest $DIRNAME
 # written 1 vertex per line.  Rearrange the level and partition values
 # in a way that resembles the original 2d mesh.
 for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
-    perl -lne 'if ($. % '$SIZE' == 0) {print "$_$p"; $p=""} else { $p="$p $_"}' $file > $file.pp
+    perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
