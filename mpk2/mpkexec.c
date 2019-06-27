@@ -146,10 +146,12 @@ void exec_mpk_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs
   int phase;
   for (phase = 1; phase <= nphase; phase ++){
 
-    MPI_Alltoallv( sbufs[phase], sendcount, sdispls, MPI_INT,
-                     rbufs[phase], recvcount, rdispls, MPI_INT, MPI_COMM_WORLD );
+    MPI_Alltoallv(sbufs[phase], sendcount, sdispls, MPI_INT, rbufs[phase],
+                  recvcount, rdispls, MPI_INT, MPI_COMM_WORLD);
 
-    // Do calculation using rbufs 
+    // TODO(vatai): Add the alltoall call to idx buffers and place the
+    // vv values in the vv array (to index found in idx buffer).
+
     sendcount += npart;
     sdispls += npart;
     recvcount += npart;
