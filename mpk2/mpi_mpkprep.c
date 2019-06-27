@@ -154,7 +154,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
         }
       }
     }
-      testcomm_table(mg, comm_table,phase,rank);
+    testcomm_table(mg, comm_table,phase,rank);
     // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     if(phase != 0){
       int numb_of_send = 0;
@@ -192,12 +192,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
       rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
       idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
       idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
-      int counter[npart];
-
-      // Initialise `counters[]` array.
-      for (int p = 0; p < npart; p++) {
-        counter[p] = 0;
-      }
+      int counter = 0;
 
       // Do a scan on rdisp/sdisp.
       sdisp[0] = 0;
@@ -214,9 +209,9 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
           // Here p is the destination (to) partition.
           int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
           if (comm_table[idx]) {
-            sbufs[phase][counter[p]] = vv[i];
-            idx_sbufs[phase][counter[p]] = i;
-            counter[p]++;
+            sbufs[phase][counter] = vv[i];
+            idx_sbufs[phase][counter] = i;
+            counter++;
           }
         }
         // TODO(vatai): displacement should be counted here.
