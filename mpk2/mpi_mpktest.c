@@ -41,12 +41,12 @@ void test_allltoall_inputs(mpk_t *mg, double **sbufs, double **rbufs,
   for (int phase  = 1; phase < mg->nphase; ++phase){
     fprintf(f, "Phase:%d\n",phase);
     fprintf(f, "sbufs-\n");
-    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
+    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-1];i++){
       fprintf(f, " %f",sbufs[phase][i]);
     }
     fprintf(f, "\n");
     fprintf(f, "idx_sbufs-\n");
-    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-2];i++){
+    for(int i = 0; i< sendcount[npart-1]+sdispls[npart-1];i++){
       fprintf(f, " %d",idx_sbufs[phase][i]);
     }
     fprintf(f, "\n");
