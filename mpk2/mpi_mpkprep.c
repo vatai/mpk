@@ -192,12 +192,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
       rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
       idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
       idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
-      // Do a scan on rdisp/sdisp.
-      sdisp[0] = 0;
-      rdisp[0] = 0;
-      for (int p = 1; i < npart; ++p){
-        sdisp[p] += scount[p-1];
-        rdisp[p] += rcount[p-1];
       for (i = 0; i < numb_of_send; i++)
       {
         sbufs[phase][i] = 0;
