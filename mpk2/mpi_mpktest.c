@@ -70,6 +70,11 @@ void test_allltoall_inputs(mpk_t *mg, double **sbufs, double **rbufs,
       fprintf(f, " %d",rdispls[i]);
     }
     fprintf(f, "\n");
+
+    sendcount += npart;
+    recvcount += npart;
+    sdispls += npart;
+    rdispls += npart;
   }
   fclose(f);
 }
