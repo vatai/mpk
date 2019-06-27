@@ -35,7 +35,7 @@ DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 
 echo test_builds.sh: testing MPI version
 # Check MPI version
-mpirun ./mpi_mpktest $DIRNAME
+mpirun -n $NPART ./mpi_mpktest $DIRNAME
 
 # POST PROCESSING
 #
