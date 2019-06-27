@@ -14,7 +14,7 @@
 #define ONEENT 0
 #define TRANS 0
 
-void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
+void test_allltoall_inputs(mpk_t *mg, double **sbufs, double **rbufs,
                   int **idx_sbufs, int **idx_rbufs,
                   int *sendcount, int *recvcount,
                   int *sdispls, int* rdispls)
@@ -32,14 +32,6 @@ void test_allltoall_inputs(mpk_t *mg, double *vv, double **sbufs, double **rbufs
   if (f == NULL) {
     fprintf(stderr, "cannot open %s\n", name);
     exit(1);
-  }
-
-  fprintf(f, "vv:\n");
-  for (int i = 0; i < (mg->n)*(mg->nlevel); ++i){
-    fprintf(f, " %f",vv[i] );
-    if ((i+1)%n==0){
-      fprintf(f, "\n");
-    }
   }
 
   sendcount += npart;
@@ -180,8 +172,8 @@ int main(int argc, char* argv[]){
   mpi_prep_mpk(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
                sendcounts, recvcounts, sdispls, rdispls);
 
-  //test_allltoall_inputs(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
-  //             sendcounts, recvcounts, sdispls, rdispls);
+  test_allltoall_inputs(mg, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
+                        sendcounts, recvcounts, sdispls, rdispls);
 
   int i;
   for (i=0; i< n; i++)

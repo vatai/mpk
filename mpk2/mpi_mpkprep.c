@@ -12,6 +12,7 @@ int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_
   return nlevel * n * from_part_to_part + vv_idx;
 
 }
+
 void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
   if (rank == 0) {
     printf("Testing and printing commtable in a text doc\n");
