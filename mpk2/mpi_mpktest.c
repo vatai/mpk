@@ -14,14 +14,11 @@
 #define ONEENT 0
 #define TRANS 0
 
-void test_allltoall_inputs(mpk_t *mg, double **sbufs, double **rbufs,
-                  int **idx_sbufs, int **idx_rbufs,
-                  int *sendcount, int *recvcount,
-                  int *sdispls, int* rdispls)
+void test_allltoall_inputs(comm_data_t *cd)
 {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
-  int n = mg -> n;
-  int npart = mg->npart;
+  int n = cd->n;
+  int npart = cd->npart;
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -34,40 +31,40 @@ void test_allltoall_inputs(mpk_t *mg, double **sbufs, double **rbufs,
     exit(1);
   }
 
-  sendcount += npart;
-  recvcount += npart;
-  sdispls += npart;
-  rdispls += npart;
-  for (int phase  = 1; phase < mg->nphase; ++phase){
+  int *sendcount = cd->sendcounts + npart;
+  int *recvcount = cd->recvcounts + npart;
+  int *sdispls = cd->sdispls + npart;
+  int *rdispls = cd->rdispls + npart;
+  for (int phase  = 1; phase < cd->nphase; ++phase){
     fprintf(f, "Phase:%d\n",phase);
     fprintf(f, "sbufs-\n");
     for(int i = 0; i< sendcount[npart-1]+sdispls[npart-1];i++){
-      fprintf(f, " %f",sbufs[phase][i]);
+      fprintf(f, " %f", cd->vv_sbufs[phase][i]);
     }
     fprintf(f, "\n");
     fprintf(f, "idx_sbufs-\n");
     for(int i = 0; i< sendcount[npart-1]+sdispls[npart-1];i++){
-      fprintf(f, " %d",idx_sbufs[phase][i]);
+      fprintf(f, " %d", cd->idx_sbufs[phase][i]);
     }
     fprintf(f, "\n");
     fprintf(f, "sendcount-\n");
     for(int i = 0; i< npart;i++){
-      fprintf(f, " %d",sendcount[i]);
+      fprintf(f, " %d", sendcount[i]);
     }
     fprintf(f, "\n");
     fprintf(f, "recvcount-\n");
     for(int i = 0; i< npart;i++){
-      fprintf(f, " %d",recvcount[i]);
+      fprintf(f, " %d", recvcount[i]);
     }
     fprintf(f, "\n");
     fprintf(f, "sdispls-\n");
     for(int i = 0; i< npart;i++){
-      fprintf(f, " %d",sdispls[i]);
+      fprintf(f, " %d", sdispls[i]);
     }
     fprintf(f, "\n");
     fprintf(f, "rdispls-\n");
     for(int i = 0; i< npart;i++){
-      fprintf(f, " %d",rdispls[i]);
+      fprintf(f, " %d", rdispls[i]);
     }
     fprintf(f, "\n");
 
@@ -155,30 +152,10 @@ int main(int argc, char* argv[]){
   // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
   // send buffer in phase `p`
 
-  // Send and receive buffers for vertex values (from vv).
-  double **vv_sbufs = malloc(sizeof(*vv_sbufs) * mg->nphase);
-  double **vv_rbufs = malloc(sizeof(*vv_rbufs) * mg->nphase);
-  // Send and receive buffers for (vv) indices.
-  int **idx_sbufs = malloc(sizeof(*idx_sbufs) * mg->nphase);
-  int **idx_rbufs = malloc(sizeof(*idx_rbufs) * mg->nphase);
+  comm_data_t cd;
+  mpi_prep_mpk(mg, vv, &cd);
 
-  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
-  // p]` are is the number of elements sent/received to/from partition
-  // `p`.
-  int *sendcounts = malloc(sizeof(*sendcounts) * mg->npart * mg->nphase);
-  int *recvcounts = malloc(sizeof(*recvcounts) * mg->npart * mg->nphase);
-
-  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
-  // the displacement (index) in the send/receive buffers where the
-  // elements sent to partition/process `p` start.
-  int *sdispls = malloc(sizeof(*sdispls) * mg->npart * mg->nphase);
-  int *rdispls = malloc(sizeof(*rdispls) * mg->npart * mg->nphase);
-
-  mpi_prep_mpk(mg, vv, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
-               sendcounts, recvcounts, sdispls, rdispls);
-
-  test_allltoall_inputs(mg, vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs,
-                        sendcounts, recvcounts, sdispls, rdispls);
+  test_allltoall_inputs(&cd);
 
   int i;
   for (i=0; i< n; i++)

@@ -91,6 +91,35 @@ typedef struct {
   long idxallocsize;
 } mpk_t;// used in new_mpk function in mpkread.c
 
+typedef struct {
+  int n;
+  int nlevel;
+  int npart;
+  int nphase;
+  // Each phase communicates a different amount, hence pointer to
+  // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
+  // send buffer in phase `p`
+
+  // Send and receive buffers for vertex values (from vv).
+  double **vv_sbufs;
+  double **vv_rbufs;
+  // Send and receive buffers for (vv) indices.
+  int **idx_sbufs;
+  int **idx_rbufs;
+
+  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
+  // p]` are is the number of elements sent/received to/from partition
+  // `p`.
+  int *sendcounts;
+  int *recvcounts;
+
+  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
+  // the displacement (index) in the send/receive buffers where the
+  // elements sent to partition/process `p` start.
+  int *sdispls;
+  int *rdispls;
+} comm_data_t;
+
 mpk_t *new_mpk(crs0_t*, int, int, int);
 mpk_t *read_mpk(char*);
 void prep_mpk(mpk_t*, double*);
@@ -106,4 +135,4 @@ void exec_mpk_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
 
-void mpi_prep_mpk(mpk_t*, double*, double **, double**, int**, int**, int*, int*, int*, int*);
+void mpi_prep_mpk(mpk_t*, double*, comm_data_t *cd);

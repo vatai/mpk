@@ -42,18 +42,19 @@ void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
   }
 }
 
-void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
-                  int **idx_sbufs, int **idx_rbufs,
-                  int *sendcount, int *recvcount,
-                  int *sdispls, int* rdispls) {
+void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   assert(mg != NULL && vv != NULL);
 
   printf("preparing mpi buffers for communication...");  fflush(stdout);
 
   int n = mg->n;
+  cd->n = n;
   int npart = mg->npart;
+  cd->npart = npart;
   int nlevel = mg->nlevel;
+  cd->nlevel = nlevel;
   int nphase = mg->nphase;
+  cd->nphase = nphase;
   int phase;
 
 
@@ -61,14 +62,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   assert(g0 != NULL);
 
   int i;
-  for (i=0; i< n * (nlevel+1); i++)
-    vv[i] = -1.0;
-
   assert(mg->plist[0] != NULL);
   int *pl = mg->plist[0]->part;
-
-  for (i=0; i< n; i++)
-    vv[i] = pl[i] * 100.0;
 
   int l0[n];
   for (i=0; i< n; i++)
@@ -77,16 +72,35 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  // Send and receive buffers for vertex values (from vv).
+  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * mg->nphase);
+  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * mg->nphase);
+  // Send and receive buffers for (vv) indices.
+  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * mg->nphase);
+  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * mg->nphase);
+
+  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
+  // p]` are is the number of elements sent/received to/from partition
+  // `p`.
+  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * mg->npart * mg->nphase);
+  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * mg->npart * mg->nphase);
+
+  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
+  // the displacement (index) in the send/receive buffers where the
+  // elements sent to partition/process `p` start.
+  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * mg->nphase);
+  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * mg->nphase);
+
   int tcount = 0;
   int *prevl = l0;
   int prevlmin = 0;
   // rcount and scount are pointers to the first element of the
   // recvcount and sendcount for the current phase.
-  int *rcount = recvcount;
-  int *scount = sendcount;
+  int *rcount = cd->recvcounts;
+  int *scount = cd->sendcounts;
   // Similar to s/rcount.
-  int *rdisp = rdispls;
-  int *sdisp = sdispls;
+  int *rdisp = cd->rdispls;
+  int *sdisp = cd->sdispls;
 
   int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
   //______________________________________________
@@ -199,19 +213,19 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
         }
       }
 
-      sbufs[phase] = malloc(sizeof(*sbufs[phase]) * numb_of_send);
-      rbufs[phase] = malloc(sizeof(*rbufs[phase]) * numb_of_rec);
-      idx_sbufs[phase] = malloc(sizeof(*idx_sbufs[phase]) * numb_of_send);
-      idx_rbufs[phase] = malloc(sizeof(*idx_rbufs[phase]) * numb_of_rec);
+      cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * numb_of_send);
+      cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
+      cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
+      cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
       for (i = 0; i < numb_of_send; i++)
       {
-        sbufs[phase][i] = 0;
-        idx_sbufs[phase][i] = 0;
+        cd->vv_sbufs[phase][i] = 0;
+        cd->idx_sbufs[phase][i] = 0;
       }
       for (i = 0; i < numb_of_rec; i++)
       {
-        rbufs[phase][i] = 0;
-        idx_rbufs[phase][i] = 0;
+        cd->vv_rbufs[phase][i] = 0;
+        cd->idx_rbufs[phase][i] = 0;
       }
       int counter = 0;
 
@@ -222,8 +236,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, double **sbufs, double **rbufs,
           // Here p is the destination (to) partition.
           int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
           if (comm_table[idx]) {
-            sbufs[phase][counter] = vv[i];
-            idx_sbufs[phase][counter] = i;
+            cd->vv_sbufs[phase][counter] = vv[i];
+            cd->idx_sbufs[phase][counter] = i;
             counter++;
           }
         }
