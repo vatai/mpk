@@ -10,31 +10,33 @@
 int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx){
   int from_part_to_part = npart * src_part + tgt_part;
   return nlevel * n * from_part_to_part + vv_idx;
-}
-void testcomm_table(mpk_t *mg, int comm_table[],int phase, int rank){
-  printf("Testing and printing commtable in a text doc\n");
-  char name[100];
-  sprintf(name,"Phase%d_Rank%d_Commtable",phase,rank);
-  FILE *f = fopen(name, "w");
-  if (f == NULL) {
-    fprintf(stderr, "cannot open %s\n", name);
-    exit(1);
-  }
-  int n = mg->n;
-  int npart = mg->npart;
-  int nlevel = mg->nlevel;
 
-  for (int i = 0; i < npart; ++i){
-    fprintf(f, "Source Partition = %d\n",i );
-    for (int j = 0; j < npart; ++j){
-      fprintf(f, "Target Partition=%d\n",j );
-      for (int k = 0; k < n*nlevel; ++k){
-        if (comm_table[(i*npart*n*nlevel)+(j*n*nlevel)+k])
-        {
-          fprintf(f, " vvposition = %d vvlevel = %d\n", (k%16), k/16);
+}
+void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
+  if (rank == 0) {
+    printf("Testing and printing commtable in a text doc\n");
+    char name[100];
+    sprintf(name, "Phase%d_Commtable.log", phase);
+    FILE *f = fopen(name, "w");
+    if (f == NULL) {
+      fprintf(stderr, "cannot open %s\n", name);
+      exit(1);
+    }
+    int n = mg->n;
+    int npart = mg->npart;
+    int nlevel = mg->nlevel;
+
+    for (int i = 0; i < npart; ++i) {
+      fprintf(f, "Source Partition = %d\n", i);
+      for (int j = 0; j < npart; ++j) {
+        fprintf(f, "Target Partition=%d\n", j);
+        for (int k = 0; k < n * nlevel; ++k) {
+          if (comm_table[(i * npart * n * nlevel) + (j * n * nlevel) + k]) {
+            fprintf(f, " vvposition = %d vvlevel = %d\n", (k % 16), k / 16);
+          }
         }
+        fprintf(f, "\n");
       }
-      fprintf(f, "\n");
     }
   }
 }

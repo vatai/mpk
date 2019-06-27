@@ -4,12 +4,12 @@
 # Simple script to build and test al programs.
 #
 # TODO(vatai): Expand this file with further tests, possibly for the
-# time of writing mpi_mpktest, check if bot bot mpktest versions
-# perform give the same results.
+# time of writing mpi_mpktest, check if both mpktest versions give the
+# same results.
 
-NAME=three
-SIZE=3
-NPART=4
+NAME=mesh5p
+SIZE=4
+NPART=2
 NLEVEL=10
 NPHASE=5
 
@@ -29,9 +29,19 @@ echo test_builds.sh: generating data
 ./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE
 
 echo test_builds.sh: testing OpenMP version
+DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # Check OpenMP version
-./mpktest ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+./mpktest $DIRNAME
 
 echo test_builds.sh: testing MPI version
 # Check MPI version
-mpirun ./mpi_mpktest ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+mpirun ./mpi_mpktest $DIRNAME
+
+# POST PROCESSING
+#
+# Assume 2d 5point mesh.  The level and partition of vertices is
+# written 1 vertex per line.  Rearrange the level and partition values
+# in a way that resembles the original 2d mesh.
+for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
+    perl -lne 'if ($. % '$SIZE' == 0) {print "$_$p"; $p=""} else { $p="$p $_"}' $file > $file.pp
+done
