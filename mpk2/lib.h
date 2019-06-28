@@ -129,12 +129,9 @@ void exec_mpk_xs(mpk_t*, double*, int nthread);
 void exec_mpk_xd(mpk_t*, double*, int nthread);
 void exec_mpk_is(mpk_t*, double*, int nthread);
 void exec_mpk_id(mpk_t*, double*, int nthread);
-void exec_mpk_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
-                  int **idx_sbufs, int **idx_rbufs,
-                  int *sendcount, int *recvcount,
-                  int *sdispls, int* rdispls);
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
 
+void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd);
 void mpi_prep_mpk(mpk_t*, double*, comm_data_t *);
 void mpi_del_cd(comm_data_t *);

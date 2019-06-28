@@ -123,9 +123,6 @@ int main(int argc, char* argv[]){
 
   // Init MPI
   MPI_Init(&argc, &argv);
-  int world_rank, world_size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   mpk_t *mg = read_mpk(argv[1]); // *******
 
@@ -137,6 +134,11 @@ int main(int argc, char* argv[]){
   assert(vv != NULL);
 
   prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
+
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
+  assert(world_size == mg->npart);
 
   //Every phase needs its own buffer.
   // It can be overwritten over the same memory later.
@@ -173,119 +175,17 @@ int main(int argc, char* argv[]){
   printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
-  int nth;
-  for (nth = 1; nth <= mg->npart; nth ++) { // spmv multiplication (parallel) is done and minnimum time is reported
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      spmv_exec_par(mg->g0, vv, nlevel, nth);
-      double t1 = omp_get_wtime();
+  // for (i = 0; i < 5; i++) {
+  // double t0 = omp_get_wtime();
+  mpi_exec_mpk(mg, vv, &cd);
+  // double t1 = omp_get_wtime();
 
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("spmv nth= %d time= %e\n", nth, min);
-    check_error(vv, n, nlevel);
-  }
-
-  /********************************************************************/
-#if ONEVEC
-  printf("force to refer only one element\n");
-  for (i=0; i< mg->g0->ptr[n+1]; i++)
-    mg->g0->col[i] = 0;
-#endif
-
-#if ONEENT
-  printf("force to compute only one element\n");
-  for (i=0; i< mg->npart * (mg->nphase+1); i++) {
-    int j;
-    for (j=0; j< mg->tlist[i].n; j++)
-      mg->tlist[i].idx[j] = n;
-  }
-#endif
-  /********************************************************************/
-
-
-  for (nth = 1; nth <= mg->npart; nth ++) {
-#if 1
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      /* exec_mpk_mpi(mg, vv, nth,vv_sbufs, vv_rbufs, idx_sbufs, idx_rbufs, */
-      /*          sendcounts, recvcounts, sdispls, rdispls ); */
-      double t1 = omp_get_wtime();
-
-      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("mpk nth= %d time= %e\n", nth, min);
-    check_error(vv, n, nlevel);
-#else
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      exec_mpk_xs(mg, vv, nth);
-      double t1 = omp_get_wtime();
-
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("xs nth= %d time= %e\n", nth, min);
-
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      exec_mpk_xd(mg, vv, nth);
-      double t1 = omp_get_wtime();
-
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("xd nth= %d time= %e\n", nth, min);
-
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      exec_mpk_is(mg, vv, nth);
-      double t1 = omp_get_wtime();
-
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("is nth= %d time= %e\n", nth, min);
-
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      exec_mpk_id(mg, vv, nth);
-      double t1 = omp_get_wtime();
-
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("id nth= %d time= %e\n", nth, min);
-#endif
-  }
-
-#if TRANS
-  for (i=0; i< n * (nlevel+1); i++)
-    vv[i] = -1.0;		/* dummy */
-  for (i=0; i< n; i++)
-    vv[i * (nlevel+1)] = 1.0;
-
-  for (nth = 1; nth <= mg->npart; nth ++) {
-    for (i=0; i< 5; i++) {
-      double t0 = omp_get_wtime();
-      exec_mpkt(mg, vv, nth);
-      double t1 = omp_get_wtime();
-
-      //      show_exinfo(mg);
-      if (i == 0 || min > t1 - t0)
-	min = t1 - t0;
-    }
-    printf("mpkt nth= %d time= %e\n", nth, min);
-  }
-#endif
+  // show_exinfo(mg);
+  // if (i == 0 || min > t1 - t0)
+  // min = t1 - t0;
+  // }
+  // printf("spmv nth= %d time= %e\n", nth, min);
+  // check_error(vv, n, nlevel);
 
   mpi_del_cd(&cd);
   free(vv);

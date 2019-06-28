@@ -127,34 +127,39 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
   }
 }
 
-void exec_mpk_mpi(mpk_t *mg, double *vv, int nth, double **sbufs, double **rbufs,
-                  int **idx_sbufs, int **idx_rbufs,
-                  int *sendcount, int *recvcount,
-                  int *sdispls, int* rdispls){
-  assert(mg != NULL && vv != NULL);
-  
+void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
+  printf(">>> mpi_exec_mpk BEGIN\n");
+  assert(mg != NULL && vv != NULL && cd != NULL);
+
   int n = mg->n;
   int npart = mg->npart;
   int nlevel = mg->nlevel;
   int nphase = mg->nphase;
-  sendcount += npart;
-  sdispls += npart;
-  recvcount += npart;
-  rdispls += npart;
 
+  int *sendcount = cd->sendcounts + npart;
+  int *recvcount = cd->recvcounts + npart;
+  int *sdispls = cd->sdispls + npart;
+  int *rdispls = cd->rdispls + npart;
 
   int phase;
+  // TODO(vatai): remove debug messages!
+  printf(">>> mpi_exec_mpk() before loop\n");
   for (phase = 1; phase <= nphase; phase ++){
-
-    MPI_Alltoallv(sbufs[phase], sendcount, sdispls, MPI_INT, rbufs[phase],
-                  recvcount, rdispls, MPI_INT, MPI_COMM_WORLD);
-
+    printf(">>> mpi_exec_mpk() phase=%d point1\n", phase);
+    MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_FLOAT,
+                  cd->vv_rbufs[phase], recvcount, rdispls, MPI_FLOAT,
+                  MPI_COMM_WORLD);
+    printf(">>> mpi_exec_mpk() phase=%d point2\n", phase);
+    MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
+                  cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
+                  MPI_COMM_WORLD);
+    printf(">>> mpi_exec_mpk() phase=%d point3\n", phase);
     // TODO(vatai): Add the alltoall call to idx buffers and place the
     // vv values in the vv array (to index found in idx buffer).
 
     sendcount += npart;
-    sdispls += npart;
     recvcount += npart;
+    sdispls += npart;
     rdispls += npart;
-  }  
+  }
 }
