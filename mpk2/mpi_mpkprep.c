@@ -7,7 +7,7 @@
 
 #include "lib.h"
 
-int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx){
+int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx) {
   int from_part_to_part = npart * src_part + tgt_part;
   return nlevel * n * from_part_to_part + vv_idx;
 
@@ -254,5 +254,32 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     sdisp += npart;
   }
 
+  free(comm_table);
   printf(" done\n");
+}
+
+void mpi_del_cd(comm_data_t *cd) {
+  int i;
+  free(cd->rdispls);
+  free(cd->sdispls);
+  free(cd->recvcounts);
+  free(cd->sendcounts);
+
+  // TODO(vatai): receive buffers can't be deallocated. Why? Check
+  // this after the communication part is written.
+  for (i = 0; i < cd->nphase; i++) {
+    // free(cd->idx_rbufs[i]);
+    free(cd->idx_sbufs[i]);
+    // free(cd->vv_rbufs[i]);
+    free(cd->vv_sbufs[i]);
+  }
+  // free(cd->idx_rbufs);
+  free(cd->idx_sbufs);
+  // free(cd->vv_rbufs);
+  free(cd->vv_sbufs);
+
+  cd->nphase = 0;
+  cd->npart = 0;
+  cd->nlevel = 0;
+  cd->n = 0;
 }

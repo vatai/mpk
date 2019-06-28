@@ -183,3 +183,5 @@ mpk_t* read_mpk(char *dir) {
 
   return mg;
 }
+
+// TODO(vatai): del_mpk(mpk_t *mg) {}

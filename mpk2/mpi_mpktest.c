@@ -14,8 +14,7 @@
 #define ONEENT 0
 #define TRANS 0
 
-void test_allltoall_inputs(comm_data_t *cd)
-{
+void test_allltoall_inputs(comm_data_t *cd) {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = cd->n;
   int npart = cd->npart;
@@ -288,6 +287,9 @@ int main(int argc, char* argv[]){
   }
 #endif
 
+  mpi_del_cd(&cd);
+  free(vv);
+  // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
   MPI_Finalize();
   return 0;
 }
