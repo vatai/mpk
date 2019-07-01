@@ -230,6 +230,10 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
             if (phase == 0) {
               // No communication occurs in the initial phase.
               // TODO(vatai): what to do here?
+              //
+              // TODO(vatai): We probably don't need to do anything,
+              // and we can probably just start the loop from phase =
+              // 1 (instead of 0).
             } else {
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
