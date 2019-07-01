@@ -142,9 +142,14 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int *rdispls = cd->rdispls + npart;
 
   int phase;
+
   // TODO(vatai): remove debug messages!
   printf(">>> mpi_exec_mpk() before loop\n");
   for (phase = 1; phase <= nphase; phase ++){
+    for (int i = 0; i < sendcount[npart-1]+sdispls[npart-1]; ++i){
+      cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
+    }
+    
     printf(">>> mpi_exec_mpk() phase=%d point1\n", phase);
     MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_FLOAT,
                   cd->vv_rbufs[phase], recvcount, rdispls, MPI_FLOAT,
