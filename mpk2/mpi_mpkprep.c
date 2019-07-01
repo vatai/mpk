@@ -55,8 +55,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   cd->nlevel = nlevel;
   int nphase = mg->nphase;
   cd->nphase = nphase;
-  int phase;
-
 
   crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
@@ -104,6 +102,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
 
   int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
   //______________________________________________
+  int phase;
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
@@ -132,7 +131,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
-        if (prevl[i] < l && l <= ll[i]) { 
+        if (prevl[i] < l && l <= ll[i]) {
 
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
