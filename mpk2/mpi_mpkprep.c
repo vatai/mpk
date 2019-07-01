@@ -147,8 +147,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   cd->nlevel = nlevel;
   int nphase = mg->nphase;
   cd->nphase = nphase;
-  int phase;
-
 
   crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
@@ -165,23 +163,23 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Send and receive buffers for vertex values (from vv).
-  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * mg->nphase);
-  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * mg->nphase);
+  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (mg->nphase + 1));
+  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (mg->nphase + 1));
   // Send and receive buffers for (vv) indices.
-  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * mg->nphase);
-  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * mg->nphase);
+  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (mg->nphase + 1));
+  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (mg->nphase + 1));
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
-  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * mg->npart * mg->nphase);
-  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * mg->npart * mg->nphase);
+  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * mg->npart * (mg->nphase + 1));
+  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * mg->npart * (mg->nphase + 1));
 
   // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
   // the displacement (index) in the send/receive buffers where the
   // elements sent to partition/process `p` start.
-  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * mg->nphase);
-  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * mg->nphase);
+  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * (mg->nphase + 1));
+  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
 
   int tcount = 0;
   int *prevl = l0;
@@ -191,6 +189,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
 
   int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
   //______________________________________________
+  int phase;
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
@@ -219,7 +218,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
-        if (prevl[i] < l && l <= ll[i]) { 
+        if (prevl[i] < l && l <= ll[i]) {
 
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
@@ -268,6 +267,47 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     prevlmin = lmin;
     
   }
+
+  // Skirt `comm_table`
+  pl = mg->plist[0]->part;
+  int *sl = mg->sg->levels;
+
+  int p;
+  for (p = 0; p < npart; p++) {
+    int cnt = 0;
+    task_t *tl = mg->tlist + nphase * npart + p;
+    tl->idx = mg->idxsrc + tcount;
+
+    int l;
+    for (l = prevlmin + 1; l <= nlevel; l++) {
+      for (i = 0; i < n; i++) {
+        if (prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
+
+          int j;
+          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) {
+            int k = g0->col[j];
+
+            int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
+            int is_computed = (prevl[k] >= l - 1);
+            if (is_diff_part && is_computed) {
+              int vv_idx = n * (l - 1) + k;                 // source vv index
+              int src_part = mg->plist[phase - 1]->part[k]; // source partition
+              int tgt_part = pl[i];                         // target partition
+              int idx =
+                  get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+              comm_table[idx] = 1; // setting it to 1 implying the communication
+                                   // for the corresponding index
+            }
+          }
+        }
+      }
+    }
+  } // end partition loop
+  testcomm_table(mg, comm_table, phase, rank);
+
+  /*
+   * call comm_table_to_data() hese
+   */
 
   free(comm_table);
   printf(" done\n");
