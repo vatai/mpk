@@ -257,6 +257,47 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     sdisp += npart;
   }
 
+  // Skirt `comm_table`
+  pl = mg->plist[0]->part;
+  int *sl = mg->sg->levels;
+
+  int p;
+  for (p = 0; p < npart; p++) {
+    int cnt = 0;
+    task_t *tl = mg->tlist + nphase * npart + p;
+    tl->idx = mg->idxsrc + tcount;
+
+    int l;
+    for (l = prevlmin + 1; l <= nlevel; l++) {
+      for (i = 0; i < n; i++) {
+        if (prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
+
+          int j;
+          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) {
+            int k = g0->col[j];
+
+            int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
+            int is_computed = (prevl[k] >= l - 1);
+            if (is_diff_part && is_computed) {
+              int vv_idx = n * (l - 1) + k;                 // source vv index
+              int src_part = mg->plist[phase - 1]->part[k]; // source partition
+              int tgt_part = pl[i];                         // target partition
+              int idx =
+                  get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+              comm_table[idx] = 1; // setting it to 1 implying the communication
+                                   // for the corresponding index
+            }
+          }
+        }
+      }
+    }
+  } // end partition loop
+  testcomm_table(mg, comm_table, phase, rank);
+
+  /*
+   * call comm_table_to_data() hese
+   */
+
   free(comm_table);
   printf(" done\n");
 }
