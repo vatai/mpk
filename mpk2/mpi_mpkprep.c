@@ -71,23 +71,23 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // Send and receive buffers for vertex values (from vv).
-  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * mg->nphase);
-  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * mg->nphase);
+  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (mg->nphase + 1));
+  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (mg->nphase + 1));
   // Send and receive buffers for (vv) indices.
-  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * mg->nphase);
-  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * mg->nphase);
+  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (mg->nphase + 1));
+  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (mg->nphase + 1));
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
-  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * mg->npart * mg->nphase);
-  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * mg->npart * mg->nphase);
+  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * mg->npart * (mg->nphase + 1));
+  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * mg->npart * (mg->nphase + 1));
 
   // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
   // the displacement (index) in the send/receive buffers where the
   // elements sent to partition/process `p` start.
-  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * mg->nphase);
-  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * mg->nphase);
+  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * (mg->nphase + 1));
+  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
 
   int tcount = 0;
   int *prevl = l0;
