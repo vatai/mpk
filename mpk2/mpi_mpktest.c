@@ -178,6 +178,9 @@ int main(int argc, char* argv[]){
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, &cd);
+  for (int i = 0; i < n; i++) {
+    printf("> check: %f\n", vv[nlevel * n + i]);
+  }
   // double t1 = omp_get_wtime();
 
   // show_exinfo(mg);
