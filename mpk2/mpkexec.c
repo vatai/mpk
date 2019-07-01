@@ -146,8 +146,8 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   // TODO(vatai): remove debug messages!
   printf(">>> mpi_exec_mpk() before loop\n");
   for (phase = 1; phase <= nphase; phase ++){
-    for (int i = 0; i < sendcount; ++i){
-      vv_sbufs[phase][i] = vv[idx_sbufs[phase][i]];
+    for (int i = 0; i < sendcount[npart-1]+sdispls[npart-1]; ++i){
+      cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
     }
     
     printf(">>> mpi_exec_mpk() phase=%d point1\n", phase);
