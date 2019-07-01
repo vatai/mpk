@@ -18,28 +18,24 @@ void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, in
   int nlevel = mg->nlevel;
   int n = mg->n;
 
-  int *rcount = cd->recvcounts;
-  int *scount = cd->sendcounts;
+  int *rcount = cd->recvcounts + phase * npart;
+  int *scount = cd->sendcounts + phase * npart;
   // Similar to s/rcount.
-  int *rdisp = cd->rdispls;
-  int *sdisp = cd->sdispls;
-
-  rcount = rcount+phase*npart;
-  scount = scount + phase*npart;
-  rdisp = rdisp + phase*npart;
-  sdisp = sdisp + phase*npart;
+  int *rdisp = cd->rdispls + phase * npart;
+  int *sdisp = cd->sdispls + phase * npart;
 
   int numb_of_send = 0;
   int numb_of_rec = 0;
-  // For all "other" partitions `p` (other = other partitions we are
-  // sending to, and other partitions we are receiving from).
-  // [Note] Each partition is creating its unique scount,sdisp
-  // rcount and rdisp
   int i;
   for (i = 0; i < npart; i++) {
     rcount[i] = 0;
     scount[i] = 0;
   }
+
+  // For all "other" partitions `p` (other = other partitions we are
+  // sending to, and other partitions we are receiving from).
+  // [Note] Each partition is creating its unique scount,sdisp
+  // rcount and rdisp
   for (int p = 0; p < npart; ++p) {
     // For all vv indices.
     for (i = 0; i < nlevel*n; ++i){
@@ -74,22 +70,8 @@ void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, in
   cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
   cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
   cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
-  // TODO(vatai): The next two loops to set
-  // {vv,idx}_{s,r}bufs[phase][i] to 0 are probably not needed
-  // because it was written because of some error/debugging.
-  for (i = 0; i < numb_of_send; i++)
-  {
-    cd->vv_sbufs[phase][i] = 0;
-    cd->idx_sbufs[phase][i] = 0;
-  }
-  for (i = 0; i < numb_of_rec; i++)
-  {
-    cd->vv_rbufs[phase][i] = 0;
-    cd->idx_rbufs[phase][i] = 0;
-  }
-  int counter = 0;
 
-  // LOOP3: Fill sendbuffers
+  int counter = 0;
   for (int p = 0; p < npart; ++p) {
     // For all vv indices.
     for (int i = 0; i < nlevel * n; ++i) {
@@ -102,8 +84,6 @@ void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, in
       }
     }
   }
-  // TODO(vatai): COMM_TABLE_TO_COMM_DATA should end here
-    
 }
 
 void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
