@@ -175,11 +175,24 @@ int main(int argc, char* argv[]){
   printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
+  for (i=0; i< n; i++)
+    vv[i] = 1.0;
+  for (i=0; i< n * nlevel; i++)
+    vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, &cd);
-  for (int i = 0; i < n; i++) {
-    printf("> check: %f\n", vv[nlevel * n + i]);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (rank == 0) {
+    for (int level = 0; level < nlevel; level++) {
+      printf("> level(%3d): ", level);
+      for (int i = 0; i < n; i++) {
+        printf(" %8.3f", vv[level * n + i]);
+      }
+      printf("\n");
+    }
   }
   // double t1 = omp_get_wtime();
 
