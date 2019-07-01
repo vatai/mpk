@@ -12,6 +12,98 @@ int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_
   return nlevel * n * from_part_to_part + vv_idx;
 
 }
+void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, int phase){
+  int npart = mg->npart;
+  int nlevel = mg->nlevel;
+  int n = mg->n;
+
+  int *rcount = cd->recvcounts;
+  int *scount = cd->sendcounts;
+  // Similar to s/rcount.
+  int *rdisp = cd->rdispls;
+  int *sdisp = cd->sdispls;
+
+  rcount = rcount+phase*npart;
+  scount = scount + phase*npart;
+  rdisp = rdisp + phase*npart;
+  sdisp = sdisp + phase*npart;
+
+  int numb_of_send = 0;
+  int numb_of_rec = 0;
+  // For all "other" partitions `p` (other = other partitions we are
+  // sending to, and other partitions we are receiving from).
+  // [Note] Each partition is creating its unique scount,sdisp
+  // rcount and rdisp
+  int i;
+  for (i = 0; i < npart; i++) {
+    rcount[i] = 0;
+    scount[i] = 0;
+  }
+  for (int p = 0; p < npart; ++p) {
+    // For all vv indices.
+    for (i = 0; i < nlevel*n; ++i){
+      // Here p is the source (from) partition.
+      int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
+      if (comm_table[idx])
+      {
+        // So we increment:
+        numb_of_rec++;
+        rcount[p]++;
+      }
+      // Here `p` is the target (to) partition.
+      idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+      if (comm_table[idx])
+      {
+        // So we increment:
+        numb_of_send++;
+        scount[p]++;
+      }
+    }
+    // Do a scan on rdisp/sdisp.
+    if (p == 0) {
+      sdisp[p] = 0;
+      rdisp[p] = 0;
+    } else {
+      sdisp[p] = sdisp[p - 1] + scount[p - 1];
+      rdisp[p] = rdisp[p - 1] + rcount[p - 1];
+    }
+  }
+
+  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * numb_of_send);
+  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
+  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
+  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
+  // TODO(vatai): The next two loops to set
+  // {vv,idx}_{s,r}bufs[phase][i] to 0 are probably not needed
+  // because it was written because of some error/debugging.
+  for (i = 0; i < numb_of_send; i++)
+  {
+    cd->vv_sbufs[phase][i] = 0;
+    cd->idx_sbufs[phase][i] = 0;
+  }
+  for (i = 0; i < numb_of_rec; i++)
+  {
+    cd->vv_rbufs[phase][i] = 0;
+    cd->idx_rbufs[phase][i] = 0;
+  }
+  int counter = 0;
+
+  // LOOP3: Fill sendbuffers
+  for (int p = 0; p < npart; ++p) {
+    // For all vv indices.
+    for (int i = 0; i < nlevel * n; ++i) {
+      // Here p is the destination (to) partition.
+      int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+      if (comm_table[idx]) {
+        // cd->vv_sbufs[phase][counter] = vv[i];
+        cd->idx_sbufs[phase][counter] = i;
+        counter++;
+      }
+    }
+  }
+  // TODO(vatai): COMM_TABLE_TO_COMM_DATA should end here
+    
+}
 
 void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
   if (rank == 0) {
@@ -94,11 +186,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int prevlmin = 0;
   // rcount and scount are pointers to the first element of the
   // recvcount and sendcount for the current phase.
-  int *rcount = cd->recvcounts;
-  int *scount = cd->sendcounts;
-  // Similar to s/rcount.
-  int *rdisp = cd->rdispls;
-  int *sdisp = cd->sdispls;
 
   int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
   //______________________________________________
@@ -171,90 +258,14 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     testcomm_table(mg, comm_table, phase, rank);
     // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     if (phase != 0) {
-      // TODO(vatai): COMM_TABLE_TO_COMM_DATA should start here
-      int numb_of_send = 0;
-      int numb_of_rec = 0;
-      // For all "other" partitions `p` (other = other partitions we are
-      // sending to, and other partitions we are receiving from).
-      // [Note] Each partition is creating its unique scount,sdisp
-      // rcount and rdisp
-      for (i = 0; i < npart; i++) {
-        rcount[i] = 0;
-        scount[i] = 0;
-      }
-      for (int p = 0; p < npart; ++p) {
-        // For all vv indices.
-        for (int i = 0; i < nlevel*n; ++i){
-          // Here p is the source (from) partition.
-          int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
-          if (comm_table[idx])
-          {
-            // So we increment:
-            numb_of_rec++;
-            rcount[p]++;
-          }
-          // Here `p` is the target (to) partition.
-          idx = get_ct_idx(n, nlevel, npart, rank, p, i);
-          if (comm_table[idx])
-          {
-            // So we increment:
-            numb_of_send++;
-            scount[p]++;
-          }
-        }
-        // Do a scan on rdisp/sdisp.
-        if (p == 0) {
-          sdisp[p] = 0;
-          rdisp[p] = 0;
-        } else {
-          sdisp[p] = sdisp[p - 1] + scount[p - 1];
-          rdisp[p] = rdisp[p - 1] + rcount[p - 1];
-        }
-      }
-
-      cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * numb_of_send);
-      cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
-      cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
-      cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
-      // TODO(vatai): The next two loops to set
-      // {vv,idx}_{s,r}bufs[phase][i] to 0 are probably not needed
-      // because it was written because of some error/debugging.
-      for (i = 0; i < numb_of_send; i++)
-      {
-        cd->vv_sbufs[phase][i] = 0;
-        cd->idx_sbufs[phase][i] = 0;
-      }
-      for (i = 0; i < numb_of_rec; i++)
-      {
-        cd->vv_rbufs[phase][i] = 0;
-        cd->idx_rbufs[phase][i] = 0;
-      }
-      int counter = 0;
-
-      // LOOP3: Fill sendbuffers
-      for (int p = 0; p < npart; ++p) {
-        // For all vv indices.
-        for (int i = 0; i < nlevel * n; ++i) {
-          // Here p is the destination (to) partition.
-          int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
-          if (comm_table[idx]) {
-            // cd->vv_sbufs[phase][counter] = vv[i];
-            cd->idx_sbufs[phase][counter] = i;
-            counter++;
-          }
-        }
-      }
-      // TODO(vatai): COMM_TABLE_TO_COMM_DATA should end here
+      mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
     } // if (phase != 0) end!
 
 
     // Prepare for the next phase.
     prevl = ll;
     prevlmin = lmin;
-    rcount += npart;
-    scount += npart;
-    rdisp += npart;
-    sdisp += npart;
+    
   }
 
   // Skirt `comm_table`
