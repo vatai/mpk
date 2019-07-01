@@ -305,15 +305,15 @@ void mpi_del_cd(comm_data_t *cd) {
 
   // TODO(vatai): receive buffers can't be deallocated. Why? Check
   // this after the communication part is written.
-  for (i = 0; i < cd->nphase; i++) {
-    // free(cd->idx_rbufs[i]);
+  for (i = 1; i < cd->nphase; i++) {
+    free(cd->idx_rbufs[i]);
     free(cd->idx_sbufs[i]);
-    // free(cd->vv_rbufs[i]);
+    free(cd->vv_rbufs[i]);
     free(cd->vv_sbufs[i]);
   }
-  // free(cd->idx_rbufs);
+  free(cd->idx_rbufs);
   free(cd->idx_sbufs);
-  // free(cd->vv_rbufs);
+  free(cd->vv_rbufs);
   free(cd->vv_sbufs);
 
   cd->nphase = 0;
