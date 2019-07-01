@@ -12,6 +12,7 @@ int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_
   return nlevel * n * from_part_to_part + vv_idx;
 
 }
+
 void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, int phase){
   int npart = mg->npart;
   int nlevel = mg->nlevel;
@@ -265,10 +266,11 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     // Prepare for the next phase.
     prevl = ll;
     prevlmin = lmin;
-    
   }
 
   // Skirt `comm_table`
+  assert (phase == nphase);
+
   pl = mg->plist[0]->part;
   int *sl = mg->sg->levels;
 
@@ -304,10 +306,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     }
   } // end partition loop
   testcomm_table(mg, comm_table, phase, rank);
-
-  /*
-   * call comm_table_to_data() hese
-   */
+  mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
 
   free(comm_table);
   printf(" done\n");
