@@ -180,8 +180,8 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
       fprintf(log_file, "\n\n==== SEND: part/rank %d : phase %d ====\n\n", rank, phase);
       log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
              log_file);
-      MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_FLOAT,
-                    cd->vv_rbufs[phase], recvcount, rdispls, MPI_FLOAT,
+      MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_DOUBLE,
+                    cd->vv_rbufs[phase], recvcount, rdispls, MPI_DOUBLE,
                     MPI_COMM_WORLD);
       MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
                     cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
