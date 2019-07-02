@@ -6,6 +6,40 @@
 #include <omp.h>
 #include <mpi.h>
 
+void log_cd(double *vv_sbufs, int *idx_sbufs, int *sendcount, int *sdispls,
+            double *vv_rbufs, int *idx_rbufs, int *recvcount, int *rdispls,
+            int phase, FILE *log_file) {
+  // TODO(vatai): do this just for send or just for receive!
+  int rank, npart;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &npart);
+
+  int rtotal = 0;
+  int stotal = 0;
+  for (int p = 0; p < npart; p++) {
+    rtotal += recvcount[p];
+    stotal += sendcount[p];
+  }
+  assert (rtotal == recvcount[npart - 1] + rdispls[npart - 1]);
+  assert (stotal == sendcount[npart - 1] + sdispls[npart - 1]);
+
+  fprintf(log_file, "==== part/rank %d : phase %d ====\n\n", rank, phase);
+  fprintf(log_file, "[  i] %8s, %8s\n", "vv_sbuf", "idx_sbuf");
+  for (int i = 0; i < stotal; i++) {
+    fprintf(log_file, "[%3d] %8f, %8d\n", i, vv_sbufs[i], idx_sbufs[i]);
+  }
+  fprintf(log_file, "[  i] %8s, %8s\n", "vv_rbuf", "idx_rbuf");
+  for (int i = 0; i < rtotal; i++) {
+    fprintf(log_file, "[%3d] %8f, %8d\n", i, vv_rbufs[i], idx_rbufs[i]);
+  }
+  fprintf(log_file, "[  p] %8s, %8s, %8s, %8s", "scount", "sdisp", "rcount",
+          "rdisp");
+  for (int p = 0; p < npart; p++) {
+    fprintf(log_file, "[%3d] %8d, %8d, %8d, %8d", p, sendcount[p], sdispls[p],
+            recvcount[p], rdispls[p]);
+  }
+}
+
 static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static
   assert(mg != NULL && vv != NULL);
 
@@ -146,29 +180,39 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int phase;
 
   // TODO(vatai): remove debug messages!
+  char fname[1024];
+  sprintf(fname, "mpi_log_rank-%d", rank);
+  FILE *log_file = fopen(fname, "w");
   for (phase = 0; phase <= nphase; phase++) {
     if (phase > 0) {
       for (int i = 0; i < sendcount[npart - 1] + sdispls[npart - 1]; ++i) {
         cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
       }
 
+      log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
+             cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
+             phase, log_file);
       MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_FLOAT,
                     cd->vv_rbufs[phase], recvcount, rdispls, MPI_FLOAT,
                     MPI_COMM_WORLD);
       MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
                     cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
                     MPI_COMM_WORLD);
+      log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
+             cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
+             phase, log_file);
+
       for (int i = 0; i < recvcount[npart - 1] + rdispls[npart - 1]; ++i) {
         vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
       }
     }
+
     do_task(mg, vv, phase, rank);
-    // TODO(vatai): Add the alltoall call to idx buffers and place the
-    // vv values in the vv array (to index found in idx buffer).
 
     sendcount += npart;
     recvcount += npart;
     sdispls += npart;
     rdispls += npart;
   }
+  fclose(log_file);
 }
