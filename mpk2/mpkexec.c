@@ -6,37 +6,25 @@
 #include <omp.h>
 #include <mpi.h>
 
-void log_cd(double *vv_sbufs, int *idx_sbufs, int *sendcount, int *sdispls,
-            double *vv_rbufs, int *idx_rbufs, int *recvcount, int *rdispls,
-            int phase, FILE *log_file) {
-  // TODO(vatai): do this just for send or just for receive!
-  int rank, npart;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
+            FILE *log_file) {
+  int npart;
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
 
-  int rtotal = 0;
-  int stotal = 0;
+  int total = 0;
   for (int p = 0; p < npart; p++) {
-    rtotal += recvcount[p];
-    stotal += sendcount[p];
+    total += count[p];
   }
-  assert (rtotal == recvcount[npart - 1] + rdispls[npart - 1]);
-  assert (stotal == sendcount[npart - 1] + sdispls[npart - 1]);
+  assert(total == count[npart - 1] + displs[npart - 1]);
 
-  fprintf(log_file, "==== part/rank %d : phase %d ====\n\n", rank, phase);
-  fprintf(log_file, "[  i] %8s, %8s\n", "vv_sbuf", "idx_sbuf");
-  for (int i = 0; i < stotal; i++) {
-    fprintf(log_file, "[%3d] %8f, %8d\n", i, vv_sbufs[i], idx_sbufs[i]);
+  fprintf(log_file, "[i<%3d] %8s, %8s\n", total, "vv_buf", "idx_buf");
+  for (int i = 0; i < total; i++) {
+    fprintf(log_file, "[%5d] %8f, %8d\n", i, vv_bufs[i], idx_bufs[i]);
   }
-  fprintf(log_file, "[  i] %8s, %8s\n", "vv_rbuf", "idx_rbuf");
-  for (int i = 0; i < rtotal; i++) {
-    fprintf(log_file, "[%3d] %8f, %8d\n", i, vv_rbufs[i], idx_rbufs[i]);
-  }
-  fprintf(log_file, "[  p] %8s, %8s, %8s, %8s", "scount", "sdisp", "rcount",
-          "rdisp");
+
+  fprintf(log_file, "[p<%3d] %8s, %8s\n", npart, "count", "disp");
   for (int p = 0; p < npart; p++) {
-    fprintf(log_file, "[%3d] %8d, %8d, %8d, %8d", p, sendcount[p], sdispls[p],
-            recvcount[p], rdispls[p]);
+    fprintf(log_file, "[%5d] %8d, %8d\n", p, count[p], displs[p]);
   }
 }
 
@@ -189,18 +177,18 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
         cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
       }
 
+      fprintf(log_file, "\n\n==== SEND: part/rank %d : phase %d ====\n\n", rank, phase);
       log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
-             cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
-             phase, log_file);
+             log_file);
       MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_FLOAT,
                     cd->vv_rbufs[phase], recvcount, rdispls, MPI_FLOAT,
                     MPI_COMM_WORLD);
       MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
                     cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
                     MPI_COMM_WORLD);
-      log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
-             cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
-             phase, log_file);
+      fprintf(log_file, "\n\n==== RECV: part/rank %d : phase %d ====\n\n", rank, phase);
+      log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
+             log_file);
 
       for (int i = 0; i < recvcount[npart - 1] + rdispls[npart - 1]; ++i) {
         vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
