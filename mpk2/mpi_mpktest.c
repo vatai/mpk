@@ -195,6 +195,7 @@ int main(int argc, char* argv[]){
     }
     fprintf(vv_log_file, "\n");
   }
+  fclose(vv_log_file);
   // double t1 = omp_get_wtime();
 
   // show_exinfo(mg);
