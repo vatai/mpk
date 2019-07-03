@@ -75,7 +75,6 @@ void test_allltoall_inputs(comm_data_t *cd) {
   fclose(f);
 }
 
-
 void show_exinfo(mpk_t *mg) {
   assert(mg != NULL);
 
@@ -133,7 +132,9 @@ int main(int argc, char* argv[]){
   double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
-  prep_mpk(mg, vv); //****** // Verify if the input data has correct structure and report error if not and prepare communication matrix
+  // verify if the input data has correct structure and report error
+  // if not and prepare communication matrix.
+  prep_mpk(mg, vv);
 
   int world_size;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -159,13 +160,15 @@ int main(int argc, char* argv[]){
   test_allltoall_inputs(&cd);
 
   int i;
-  for (i=0; i< n; i++)
+  for (i = 0; i < n; i++)
     vv[i] = 1.0;
-  for (i=0; i< n * nlevel; i++)
+  for (i = 0; i < n * nlevel; i++)
     vv[n + i] = -1.0;		/* dummy */
 
   double min;
-  for (i=0; i< 5; i++) { // spmv multipliaction(sequential) is carried out and minnimum time is reported
+  // SpMV multiplication (sequential) is carried out and minimum time
+  // is reported.
+  for (i = 0; i < 5; i++) {
     double t0 = omp_get_wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
     double t1 = omp_get_wtime();
@@ -188,12 +191,16 @@ int main(int argc, char* argv[]){
   char fname[1024];
   sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
   FILE *vv_log_file = fopen(fname, "w");
+  int ns = sqrt(n);
   for (int level = 0; level < nlevel + 1; level++) {
-    fprintf(vv_log_file, "> level(%3d): ", level);
+    fprintf(vv_log_file, "> level(%3d): \n", level);
     for (int i = 0; i < n; i++) {
+      if (i % ns == 0) {
+        fprintf(vv_log_file, "\n");
+      }
       fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
     }
-    fprintf(vv_log_file, "\n");
+    fprintf(vv_log_file, "\n\n");
   }
   fclose(vv_log_file);
   // double t1 = omp_get_wtime();
