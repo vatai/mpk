@@ -150,7 +150,6 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
 }
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
-  printf(">>> mpi_exec_mpk BEGIN\n");
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   assert(mg != NULL && vv != NULL && cd != NULL);
@@ -169,7 +168,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
 
   // TODO(vatai): remove debug messages!
   char fname[1024];
-  sprintf(fname, "mpi_log_rank-%d", rank);
+  sprintf(fname, "mpi_comm_in_exec_rank-%d.log", rank);
   FILE *log_file = fopen(fname, "w");
   for (phase = 0; phase <= nphase; phase++) {
     if (phase > 0) {

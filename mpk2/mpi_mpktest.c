@@ -182,17 +182,18 @@ int main(int argc, char* argv[]){
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, &cd);
+
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Barrier(MPI_COMM_WORLD);
-  if (rank == 0) {
-    for (int level = 0; level < nlevel; level++) {
-      printf("> level(%3d): ", level);
-      for (int i = 0; i < n; i++) {
-        printf(" %8.3f", vv[level * n + i]);
-      }
-      printf("\n");
+  char fname[1024];
+  sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
+  FILE *vv_log_file = fopen(fname, "w");
+  for (int level = 0; level < nlevel + 1; level++) {
+    fprintf(vv_log_file, "> level(%3d): ", level);
+    for (int i = 0; i < n; i++) {
+      fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
     }
+    fprintf(vv_log_file, "\n");
   }
   // double t1 = omp_get_wtime();
 
