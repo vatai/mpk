@@ -7,7 +7,7 @@
 #include <mpi.h>
 
 void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
-            FILE *log_file) {
+            int n, FILE *log_file) {
   int npart;
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
 
@@ -19,7 +19,11 @@ void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
 
   fprintf(log_file, "[i<%3d] %8s, %8s\n", total, "vv_buf", "idx_buf");
   for (int i = 0; i < total; i++) {
-    fprintf(log_file, "[%5d] %8f, %8d\n", i, vv_bufs[i], idx_bufs[i]);
+    int idx = idx_bufs[i];
+    int level = idx / n;
+    int j = idx % n;
+    fprintf(log_file, "[%5d] %8.3f, %8d (level: %d, j: %d)\n", i, vv_bufs[i], idx,
+            level, j);
   }
 
   fprintf(log_file, "[p<%3d] %8s, %8s\n", npart, "count", "disp");
@@ -178,7 +182,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
 
       fprintf(log_file, "\n\n==== SEND: part/rank %d : phase %d ====\n\n", rank, phase);
       log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
-             log_file);
+             cd->n, log_file);
       MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_DOUBLE,
                     cd->vv_rbufs[phase], recvcount, rdispls, MPI_DOUBLE,
                     MPI_COMM_WORLD);
@@ -187,7 +191,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
                     MPI_COMM_WORLD);
       fprintf(log_file, "\n\n==== RECV: part/rank %d : phase %d ====\n\n", rank, phase);
       log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
-             log_file);
+             cd->n, log_file);
 
       for (int i = 0; i < recvcount[npart - 1] + rdispls[npart - 1]; ++i) {
         vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
