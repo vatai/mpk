@@ -11,7 +11,7 @@ NAME=mesh5p
 SIZE=4
 NPART=2
 NLEVEL=14
-NPHASE=5
+NPHASE=6
 
 MAKEFILE=makefile
 which mpiicc 2>/dev/null 1>/dev/null && MAKEFILE+=.intel || MAKEFILE+=.gcc

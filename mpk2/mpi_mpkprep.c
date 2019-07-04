@@ -261,8 +261,6 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int p;
   for (p = 0; p < npart; p++) {
     int cnt = 0;
-    task_t *tl = mg->tlist + nphase * npart + p;
-    tl->idx = mg->idxsrc + tcount;
 
     int l;
     for (l = prevlmin + 1; l <= nlevel; l++) {
