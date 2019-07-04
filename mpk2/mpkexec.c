@@ -6,6 +6,20 @@
 #include <omp.h>
 #include <mpi.h>
 
+void log_tlist(mpk_t *mg, int phase, FILE *log_file) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  task_t *tl = mg->tlist + phase * mg->npart + rank;
+  int n = mg->n;
+  for (int i = 0; i < tl->n; i++) {
+    int idx = tl->idx[i];
+    int level = idx / n;
+    int j = idx % n;
+    fprintf(log_file, "%d (level:%3d, i: %3d)\n", idx, level, j);
+  }
+}
+
 void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
             int n, FILE *log_file) {
   int npart;
@@ -176,11 +190,13 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   FILE *log_file = fopen(fname, "w");
   for (phase = 0; phase <= nphase; phase++) {
     if (phase > 0) {
+      fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank, phase);
+      log_tlist(mg, phase, log_file);
       for (int i = 0; i < sendcount[npart - 1] + sdispls[npart - 1]; ++i) {
         cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
       }
 
-      fprintf(log_file, "\n\n==== SEND: part/rank %d : phase %d ====\n\n", rank, phase);
+      fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank, phase);
       log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
              cd->n, log_file);
       MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_DOUBLE,
@@ -189,7 +205,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
       MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
                     cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
                     MPI_COMM_WORLD);
-      fprintf(log_file, "\n\n==== RECV: part/rank %d : phase %d ====\n\n", rank, phase);
+      fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank, phase);
       log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
              cd->n, log_file);
 
