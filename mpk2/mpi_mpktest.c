@@ -114,7 +114,7 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
   if (argc != 2) {
     fprintf(stderr, "usage: %s dirname\n", argv[0]);
     exit(1);
@@ -141,9 +141,9 @@ int main(int argc, char* argv[]){
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
   assert(world_size == mg->npart);
 
-  //Every phase needs its own buffer.
+  // Every phase needs its own buffer.
   // It can be overwritten over the same memory later.
-  //(Utsav) Do we need to change the name ?
+  // (Utsav) Do we need to change the name ?
 
   // int MPI_Alltoallv(const void *sendbuf, const int *sendcounts,
   //                   const int *sdispls, MPI_Datatype sendtype, void *recvbuf,

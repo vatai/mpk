@@ -167,6 +167,56 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
   }
 }
 
+void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
+             FILE *log_file) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int npart = mg->npart;
+
+  // Log tlist.
+  fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank,
+          phase);
+  log_tlist(mg, phase, log_file);
+
+  // Copy data to send buffers.
+  int stotal = cd->sendcounts[npart * phase + npart - 1] +
+               cd->sdispls[npart * phase + npart - 1];
+  for (int i = 0; i < stotal; ++i) {
+    cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
+  }
+
+  // Log send buffers.
+  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank,
+          phase);
+  log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase],
+         cd->sendcounts + npart * phase, cd->sdispls + npart * phase, cd->n,
+         log_file);
+
+  // Do communication.
+  MPI_Alltoallv(cd->vv_sbufs[phase], cd->sendcounts + npart * phase,
+                cd->sdispls + npart * phase, MPI_DOUBLE, cd->vv_rbufs[phase],
+                cd->recvcounts + npart * phase, cd->rdispls + npart * phase,
+                MPI_DOUBLE, MPI_COMM_WORLD);
+  MPI_Alltoallv(cd->idx_sbufs[phase], cd->sendcounts + npart * phase,
+                cd->sdispls + npart * phase, MPI_INT, cd->idx_rbufs[phase],
+                cd->recvcounts + npart * phase, cd->rdispls + npart * phase,
+                MPI_INT, MPI_COMM_WORLD);
+
+  // Log receive buffers.
+  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank,
+          phase);
+  log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase],
+         cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
+         log_file);
+
+  // Copy from receive buffers.
+  int rtotal = cd->recvcounts[npart * phase + npart - 1] +
+               cd->rdispls[npart * phase + npart - 1];
+  for (int i = 0; i < rtotal; ++i) {
+    vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
+  }
+}
+
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -177,49 +227,17 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int nlevel = mg->nlevel;
   int nphase = mg->nphase;
 
-  int *sendcount = cd->sendcounts;
-  int *recvcount = cd->recvcounts;
-  int *sdispls = cd->sdispls;
-  int *rdispls = cd->rdispls;
-
-  int phase;
-
-  // TODO(vatai): remove debug messages!
   char fname[1024];
   sprintf(fname, "mpi_comm_in_exec_rank-%d.log", rank);
   FILE *log_file = fopen(fname, "w");
+
+  int phase;
   for (phase = 0; phase <= nphase; phase++) {
     if (phase > 0) {
-      fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank, phase);
-      log_tlist(mg, phase, log_file);
-      for (int i = 0; i < sendcount[npart - 1] + sdispls[npart - 1]; ++i) {
-        cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
-      }
-
-      fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank, phase);
-      log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase], sendcount, sdispls,
-             cd->n, log_file);
-      MPI_Alltoallv(cd->vv_sbufs[phase], sendcount, sdispls, MPI_DOUBLE,
-                    cd->vv_rbufs[phase], recvcount, rdispls, MPI_DOUBLE,
-                    MPI_COMM_WORLD);
-      MPI_Alltoallv(cd->idx_sbufs[phase], sendcount, sdispls, MPI_INT,
-                    cd->idx_rbufs[phase], recvcount, rdispls, MPI_INT,
-                    MPI_COMM_WORLD);
-      fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank, phase);
-      log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase], recvcount, rdispls,
-             cd->n, log_file);
-
-      for (int i = 0; i < recvcount[npart - 1] + rdispls[npart - 1]; ++i) {
-        vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
-      }
+      do_comm(phase, mg, cd, vv, log_file);
     }
 
     do_task(mg, vv, phase, rank);
-
-    sendcount += npart;
-    recvcount += npart;
-    sdispls += npart;
-    rdispls += npart;
   }
   fclose(log_file);
 }
