@@ -135,6 +135,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   int i;
   assert(mg->plist[0] != NULL);
   int *pl = mg->plist[0]->part;
+  int *prevpartl = mg->plist[0]->part;
 
   int l0[n];
   for (i=0; i< n; i++)
@@ -174,7 +175,9 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
     pl = mg->plist[phase]->part;
-
+    if (phase>0){
+      prevpartl = mg->plist[phase-1]->part;
+    }
     assert(mg->llist[phase] != NULL);
     int *ll = mg->llist[phase]->level;
 
@@ -240,6 +243,20 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
         }
       }
     }
+
+    if (phase>0) {
+      for (int i = 0; i < n; ++i) {
+        for (int l = 1; l < nlevel; ++l) {
+          int vv_idx = n * (l-1) + i;
+          int src_part = prevpartl[i];
+          int tgt_part = pl[i];
+          int idx =
+             get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+          comm_table[idx] = 1;     
+        }    
+      }
+    }
+
     testcomm_table(mg, comm_table, phase, rank);
     // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     if (phase != 0) {
@@ -287,6 +304,16 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
       }
     }
   } // end partition loop
+ /* for (int i = 0; i < n; ++i) {
+   for (int l = 1; l <= nlevel; ++l) {
+     int vv_idx = n * (l-1) + i;
+          int src_part = mg->plist[phase-1]->part[i];
+          int tgt_part = pl[i];
+          int idx =
+             get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+          comm_table[idx] = 1;     
+        }    
+      } */
   testcomm_table(mg, comm_table, phase, rank);
   mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
 
