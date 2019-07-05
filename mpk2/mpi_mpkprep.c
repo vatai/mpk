@@ -288,7 +288,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) {
             int k = g0->col[j];
 
-            int is_diff_part = (mg->plist[phase - 1]->part[k] != p);
+            int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
             int is_computed = (prevl[k] >= l - 1);
             if (is_diff_part && is_computed) {
               int vv_idx = n * (l - 1) + k;                 // source vv index
