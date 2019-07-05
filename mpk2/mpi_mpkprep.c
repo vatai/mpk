@@ -246,7 +246,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
 
     if (phase>0) {
       for (int i = 0; i < n; ++i) {
-        for (int l = 1; l < nlevel; ++l) {
+        for (int l = 1; l <= lmax; ++l) {
           int vv_idx = n * (l-1) + i;
           int src_part = prevpartl[i];
           int tgt_part = pl[i];
