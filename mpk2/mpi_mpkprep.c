@@ -304,16 +304,7 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
       }
     }
   } // end partition loop
- /* for (int i = 0; i < n; ++i) {
-   for (int l = 1; l <= nlevel; ++l) {
-     int vv_idx = n * (l-1) + i;
-          int src_part = mg->plist[phase-1]->part[i];
-          int tgt_part = pl[i];
-          int idx =
-             get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-          comm_table[idx] = 1;     
-        }    
-      } */
+
   testcomm_table(mg, comm_table, phase, rank);
   mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
 
