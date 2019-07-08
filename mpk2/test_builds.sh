@@ -45,3 +45,5 @@ mpirun -n $NPART ./mpi_mpktest $DIRNAME
 for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
+
+python merge_vv.py vv_after_mpi_exec_rank*.log
