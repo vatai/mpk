@@ -148,6 +148,13 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   for (i=0; i< n; i++)
     l0[i] = 0;
 
+  // store_part[i] is the partition number where vv[i] is stored.
+  int *store_part = (int*) malloc(sizeof(*store_part) * n * (nlevel + 1));
+  for (i = 0; i < n; i++)
+    store_part[i] = pl[i];
+  for (i = 0; i < n * nlevel; i++)
+    store_part[n + i] = -1;
+
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -316,6 +323,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
 
   free(comm_table);
+  free(store_part);
   printf(" done\n");
 }
 
