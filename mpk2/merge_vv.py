@@ -47,9 +47,8 @@ for i in range(nlines):
         except:
             pass
     if cur_floats is not None:
-        out_lines[-1] = " ".join(map(str, cur_floats)) + "\n"
+        out_lines[-1] = " ".join(map(str, cur_floats))
         cur_floats = None
 
-with open("merged_vv.log", 'w') as outfile:
-    for line in out_lines:
-        outfile.write(line)
+for line in out_lines:
+    print(line)
