@@ -13,7 +13,11 @@ int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_
 
 }
 
-void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank, int phase){
+/*
+ * Convert `comm_table[]` to comm. data `cd`.
+ */
+void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank,
+                      int phase) {
   int npart = mg->npart;
   int nlevel = mg->nlevel;
   int n = mg->n;
@@ -115,8 +119,11 @@ void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
   }
 }
 
-void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
-  assert(mg != NULL && vv != NULL);
+/*
+ * Allocate and fill `comm_data_t cd`.
+ */
+void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
+  assert(mg != NULL);
 
   printf("preparing mpi buffers for communication...");  fflush(stdout);
 
@@ -252,8 +259,8 @@ void mpi_prep_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
           int tgt_part = pl[i];
           int idx =
              get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-          comm_table[idx] = 1;     
-        }    
+          comm_table[idx] = 1;
+        }
       }
     }
 
