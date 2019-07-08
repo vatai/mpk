@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
     vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
-  mpi_exec_mpk(mg, vv, &cd);
+  mpi_exec_mpk(mg, vv, &cd, argv[1]);
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
