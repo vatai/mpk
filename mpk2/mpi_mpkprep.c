@@ -288,7 +288,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
 
   pl = mg->plist[0]->part;
   int *sl = mg->sg->levels;
-
+  for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
   int p;
   for (p = 0; p < npart; p++) {
     int cnt = 0;
