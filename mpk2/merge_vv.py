@@ -31,24 +31,19 @@ nlines = len(lines[0])
 
 out_lines = []
 for i in range(nlines):
-    out_lines.append(lines[0][i])
     cur_floats = None
     for file_lines in lines:
         arr_line = file_lines[i].split(" ")
         filtered = list(filter(lambda t: t != '', arr_line))
         filtered[-1] = filtered[-1][:-1]
-        try:
-            floats = list(map(float, filtered))
+        if '>' in filtered or '' in filtered:
+            print(lines[0][i][:-1])
+        else:
+            floats = map(float, filtered)
             if cur_floats is None:
-                cur_floats = floats
+                cur_floats = list(floats)
             else:
-                for i in range(len(cur_floats)):
-                    cur_floats[i] = max(cur_floats[i], floats[i])
-        except:
-            pass
-    if cur_floats is not None:
-        out_lines[-1] = " ".join(map(str, cur_floats))
-        cur_floats = None
-
-for line in out_lines:
-    print(line)
+                for j in range(len(cur_floats)):
+                    cur_floats[j] = max(cur_floats[j], floats[j])
+            line = " ".join(map(str, cur_floats))
+            print(line)
