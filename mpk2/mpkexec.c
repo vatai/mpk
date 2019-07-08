@@ -5,8 +5,9 @@
 #include "lib.h"
 #include <omp.h>
 #include <mpi.h>
+#include <math.h>
 
-void print_values_of_vv(int rank, int phase, double *vv, char *dir) {
+void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
   char fname[1024];
   sprintf(fname,"%s/vv_after_phase_%d_with_rank%d", dir, phase, rank);
   FILE *vv_log_file = fopen(fname, "w");
@@ -259,7 +260,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
 
     do_task(mg, vv, phase, rank);
 
-    print_values_of_vv(rank, phase, vv, dir);
+    print_values_of_vv(rank, phase, n, nlevel, vv, dir);
   }
   fclose(log_file);
 }
