@@ -132,7 +132,7 @@ void exec_mpk_id(mpk_t*, double*, int nthread);
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
-void mpi_prep_mpk(mpk_t*, double*, comm_data_t *);
+void mpi_prep_mpk(mpk_t*, comm_data_t *);
 
 void mpi_del_cd(comm_data_t *);
 void mpi_prepbufs_mpk(mpk_t*, int comm_table[], comm_data_t*, int rank, int phase);
