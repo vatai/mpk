@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
   // send buffer in phase `p`
 
   comm_data_t cd;
-  mpi_prep_mpk(mg, vv, &cd);
+  mpi_prep_mpk(mg, &cd);
 
   test_allltoall_inputs(&cd);
 
