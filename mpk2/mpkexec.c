@@ -5,6 +5,27 @@
 #include "lib.h"
 #include <omp.h>
 #include <mpi.h>
+#include <math.h>
+
+void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
+  char fname[1024];
+  sprintf(fname,"%s/vv_after_phase_%d_with_rank%d", dir, phase, rank);
+  FILE *vv_log_file = fopen(fname, "w");
+  int ns = sqrt(n);
+  for (int level = 0; level < nlevel + 1; level++) {
+    fprintf(vv_log_file, "> level(%3d): \n", level);
+    for (int i = 0; i < n; i++) {
+      if (i % ns == 0) {
+        fprintf(vv_log_file, "\n");
+      }
+      fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
+    }
+    fprintf(vv_log_file, "\n\n");
+  }
+  fclose(vv_log_file);
+
+  return;
+}
 
 void log_tlist(mpk_t *mg, int phase, FILE *log_file) {
   int rank;
@@ -217,7 +238,7 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
   }
 }
 
-void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
+void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   assert(mg != NULL && vv != NULL && cd != NULL);
@@ -238,6 +259,8 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd) {
     }
 
     do_task(mg, vv, phase, rank);
+
+    print_values_of_vv(rank, phase, n, nlevel, vv, dir);
   }
   fclose(log_file);
 }
