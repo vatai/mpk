@@ -219,7 +219,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
         int i_vvidx = n * l + i;
-        if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
+        if (prevl[i] < l && l <= ll[i] /* && store_part[i_vvidx] == -1 */) {
           int current_part = pl[i];
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
@@ -258,19 +258,6 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
       }
     }
 
-    if (phase>0) {
-      for (int i = 0; i < n; ++i) {
-        for (int l = 1; l <= lmax; ++l) {
-          int vv_idx = n * (l-1) + i;
-          int src_part = prevpartl[i];
-          int tgt_part = pl[i];
-          int idx =
-             get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-          comm_table[idx] = 1;
-        }
-      }
-    }
-
     testcomm_table(mg, comm_table, phase, rank);
     // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     if (phase != 0) {
@@ -291,29 +278,28 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
   int p;
   for (p = 0; p < npart; p++) {
-    int cnt = 0;
-
     int l;
     for (l = prevlmin + 1; l <= nlevel; l++) {
       for (i = 0; i < n; i++) {
-        if (prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
-
+        int i_vvidx = n * l + i;
+        // TODO(vatai): Why is the commented out condition breaking
+        // the program?
+        if (/* store_part[i_vvidx] != -1 && */ prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) {
             int k = g0->col[j];
+            int k_vvidx = n * (l - 1) + k;                 // source vv index
 
-            int is_diff_part = 1; //(mg->plist[phase - 1]->part[k] != pl[i]);
-            int is_computed = (prevl[k] >= l - 1);
-            if (is_diff_part && is_computed) {
-              int vv_idx = n * (l - 1) + k;                 // source vv index
-              int src_part = mg->plist[phase - 1]->part[k]; // source partition
-              int tgt_part = p;                         // target partition
+            assert (store_part[k_vvidx] != -1);
+            int is_diff_part = store_part[k_vvidx] != p;
+            if (is_diff_part) {
               int idx =
-                  get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
+                  get_ct_idx(n, nlevel, npart, store_part[k_vvidx], p, k_vvidx);
               comm_table[idx] = 1; // setting it to 1 implying the communication
                                    // for the corresponding index
             }
           }
+          store_part[i_vvidx] = p;
         }
       }
     }
