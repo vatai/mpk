@@ -13,6 +13,8 @@ NPART=2
 NLEVEL=14
 NPHASE=6
 
+rm *.log
+
 MAKEFILE=makefile
 which mpiicc 2>/dev/null 1>/dev/null && MAKEFILE+=.intel || MAKEFILE+=.gcc
 # Force build all.
