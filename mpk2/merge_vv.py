@@ -11,11 +11,6 @@ def open_files():
         print("Opening {}".format(fname))
         files.append(open(fname, 'r'))
 
-    for i, file in enumerate(files):
-        fname0 = file.name
-        fname1 = re.sub(r'[0-9]', str(i), sys.argv[1])
-        assert fname0 == fname1
-
     return files
 
 
