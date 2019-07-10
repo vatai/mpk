@@ -218,8 +218,9 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     int l;
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
-        if (prevl[i] < l && l <= ll[i]) {
-
+        int i_vvidx = n * l + i;
+        if (prevl[i] < l && l <= ll[i] /* && store_part[i_vvidx] == -1 */) {
+          int current_part = pl[i];
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
             int k = g0->col[j];
@@ -227,28 +228,32 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
             // MPI code to complete comm_table
 
             if (phase != 0) {
+              int k_vvidx = n * (l - 1) + k; // source vv index
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
               // (i.e. the "source" vertex needed to compute vv[n * l
               // + i])
               // The source vertex is in a different partition than
               // the target vertex
-              int is_diff_part = (mg->plist[phase - 1]->part[k] != pl[i]);
+              if (store_part[k_vvidx] == -1) {
+                printf("ERROR: l-1: %d; k: %d\n", l-1, k);
+              }
+              assert (store_part[k_vvidx] != -1);
+              int is_diff_part = store_part[k_vvidx] != current_part;
               // The vertex is computed, i.e. just before the target
               // level.
-              int is_computed = (prevl[k] >= l - 1);
-              if (is_diff_part && is_computed) {
-                int vv_idx = n * (l - 1) + k; // source vv index
-                int src_part =
-                    mg->plist[phase - 1]->part[k]; // source partition
-                int tgt_part = pl[i];              // target partition
-                int idx =
-                    get_ct_idx(n, nlevel, npart, src_part, tgt_part, vv_idx);
-                comm_table[idx] = 1; // setting it to 1 implying the communication
-                                     // for the corresponding index
+              if (is_diff_part) {
+                int src_part = store_part[k_vvidx]; // source partition
+                int idx = get_ct_idx(n, nlevel, npart, src_part, current_part,
+                                     k_vvidx);
+
+                // setting it to 1 implying the communication
+                // for the corresponding index
+                comm_table[idx] = 1;
               }
             }
           }
+          store_part[i_vvidx] = current_part;
         }
       }
     }
