@@ -150,6 +150,8 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
 
   // store_part[i] is the partition number where vv[i] is stored.
   int *store_part = (int*) malloc(sizeof(*store_part) * n * (nlevel + 1));
+  // Initialise store_part[i] to be the id of the 0th partition for
+  // level 0, and -1 for all other levels
   for (i = 0; i < n; i++)
     store_part[i] = pl[i];
   for (i = 0; i < n * nlevel; i++)
@@ -224,14 +226,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
 
             // MPI code to complete comm_table
 
-            if (phase == 0) {
-              // No communication occurs in the initial phase.
-              // TODO(vatai): what to do here?
-              //
-              // TODO(vatai): We probably don't need to do anything,
-              // and we can probably just start the loop from phase =
-              // 1 (instead of 0).
-            } else {
+            if (phase != 0) {
               // Communicate after the initial phase, if the following
               // 2 conditions are met for the adjacent vertex
               // (i.e. the "source" vertex needed to compute vv[n * l
