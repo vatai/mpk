@@ -219,7 +219,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
       for (i = 0; i < n; i++) {
         int i_vvidx = n * l + i;
-        if (prevl[i] < l && l <= ll[i] /* && store_part[i_vvidx] == -1 */) {
+        if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
           int current_part = pl[i];
           int j;
           for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
