@@ -13,7 +13,21 @@
 #define ONEVEC 0
 #define ONEENT 0
 #define TRANS 0
+#define LOGFILE 0
 
+void print_time(char *dir, double mpi_exectime, double spmvmintime) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  char name[100];
+  sprintf(name,"%s/%d_time.log",dir,rank);
+  FILE *f = fopen(name, "w");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", name);
+    exit(1);
+  }
+  fprintf(f, "spmvmintime = %lf and mpi_exectime = %lf\n",spmvmintime, mpi_exectime );
+  fclose(f);
+}
 void test_allltoall_inputs(comm_data_t *cd) {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = cd->n;
@@ -163,11 +177,10 @@ int main(int argc, char* argv[]) {
   for (i = 0; i < n; i++) vv[i] = 1.0;
   for (i = 0; i < n * nlevel; i++) vv[n + i] = -1.0;		/* dummy */
 
-  // double min;
   // SpMV multiplication (sequential) is carried out and minimum time
   // is reported.
   double start, end;
-  double min = 0;  
+  double spmvmintime = 0;  
   // TODO(Utsav): Do we need barrier ? //MPI_Barrier(MPI_COMM_WORLD);
   
   for (int i = 0; i < 5; ++i) {
@@ -175,9 +188,9 @@ int main(int argc, char* argv[]) {
     spmv_exec_seq(mg->g0, vv, nlevel);
     end = MPI_Wtime();
     if (i==0)
-      min = end-start;
-    else if (min < end-start)
-      min = end-start;
+      spmvmintime = end-start;
+    else if (spmvmintime < end-start)
+      spmvmintime = end-start;
   }
   
   // TODO(vatai): double t1 = omp_get_wtime();
@@ -187,13 +200,16 @@ int main(int argc, char* argv[]) {
   // printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
-  for (i=0; i< n; i++)
-    vv[i] = 1.0;
-  for (i=0; i< n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
-  // for (i = 0; i < 5; i++) {
-  // double t0 = omp_get_wtime();
+  for (i=0; i< n; i++) vv[i] = 1.0;
+  for (i=0; i< n * nlevel; i++) vv[n + i] = -1.0;		/* dummy */
+
+  double mpi_exectime = 0;
+  start = MPI_Wtime();
   mpi_exec_mpk(mg, vv, &cd, argv[1]);
+  end = MPI_Wtime();
+  mpi_exectime = end-start;
+
+  print_time(argv[1],mpi_exectime,spmvmintime);
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
