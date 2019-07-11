@@ -11,7 +11,7 @@ NAME=mesh5p
 SIZE=10
 NPART=16
 NLEVEL=100
-NPHASE=6
+NPHASE=0
 
 rm *.log
 
