@@ -160,22 +160,31 @@ int main(int argc, char* argv[]) {
   test_allltoall_inputs(&cd);
 
   int i;
-  for (i = 0; i < n; i++)
-    vv[i] = 1.0;
-  for (i = 0; i < n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
+  for (i = 0; i < n; i++) vv[i] = 1.0;
+  for (i = 0; i < n * nlevel; i++) vv[n + i] = -1.0;		/* dummy */
 
-  double min;
+  // double min;
   // SpMV multiplication (sequential) is carried out and minimum time
   // is reported.
-  for (i = 0; i < 5; i++) {
-    // TODO(vatai): double t0 = omp_get_wtime();
+  double start, end;
+  double min = 0;  
+  // TODO(Utsav): Do we need barrier ? //MPI_Barrier(MPI_COMM_WORLD);
+  
+  for (int i = 0; i < 5; ++i) {
+    start = MPI_Wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
-    // TODO(vatai): double t1 = omp_get_wtime();
-    // if (i == 0 || min > t1 - t0)
-    //   min = t1 - t0;
+    end = MPI_Wtime();
+    if (i==0)
+      min = end-start;
+    else if (min < end-start)
+      min = end-start;
   }
-  printf("seq spmv time= %e\n", min);
+  
+  // TODO(vatai): double t1 = omp_get_wtime();
+  // if (i == 0 || min > t1 - t0)
+  //   min = t1 - t0;
+  
+  // printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
   for (i=0; i< n; i++)
