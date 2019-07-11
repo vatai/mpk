@@ -13,7 +13,7 @@
 #define ONEVEC 0
 #define ONEENT 0
 #define TRANS 0
-#define LOGFILE 0
+#define LOGFILE 1
 
 void print_time(char *dir, double mpi_exectime, double spmvmintime) {
   int rank;
@@ -170,8 +170,10 @@ int main(int argc, char* argv[]) {
 
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
-
-  test_allltoall_inputs(&cd);
+  
+  #if LOGFILE
+    test_allltoall_inputs(&cd);
+  #endif
 
   int i;
   for (i = 0; i < n; i++) vv[i] = 1.0;
@@ -211,23 +213,25 @@ int main(int argc, char* argv[]) {
 
   print_time(argv[1],mpi_exectime,spmvmintime);
 
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  char fname[1024];
-  sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
-  FILE *vv_log_file = fopen(fname, "w");
-  int ns = sqrt(n);
-  for (int level = 0; level < nlevel + 1; level++) {
-    fprintf(vv_log_file, "> level(%3d): \n", level);
-    for (int i = 0; i < n; i++) {
-      if (i % ns == 0) {
-        fprintf(vv_log_file, "\n");
+  #if LOGFILE
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    char fname[1024];
+    sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
+    FILE *vv_log_file = fopen(fname, "w");
+    int ns = sqrt(n);
+    for (int level = 0; level < nlevel + 1; level++) {
+      fprintf(vv_log_file, "> level(%3d): \n", level);
+      for (int i = 0; i < n; i++) {
+        if (i % ns == 0) {
+          fprintf(vv_log_file, "\n");
+        }
+        fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
       }
-      fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
+      fprintf(vv_log_file, "\n\n");
     }
-    fprintf(vv_log_file, "\n\n");
-  }
-  fclose(vv_log_file);
+    fclose(vv_log_file);
+  #endif
   // double t1 = omp_get_wtime();
 
   // show_exinfo(mg);
