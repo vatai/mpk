@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "lib.h"
+
 #include <omp.h>
+
+#include "lib.h"
 
 static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static
   assert(mg != NULL && vv != NULL);
@@ -125,3 +127,4 @@ void exec_mpk_id(mpk_t *mg, double *vv, int nth) {
       do_task(mg, vv, phase, part);
   }
 }
+

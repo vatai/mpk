@@ -92,7 +92,7 @@ mpk_t* read_mpk(char *dir) {
   mpk_t *mg = new_mpk(g0, npart, nlevel, nphase);
 
   int phase;
-  for (phase = 0; phase < nphase; phase ++) { 
+  for (phase = 0; phase < nphase; phase ++) {
     // for loop to enter list of partitions
     // and list of levels.
 
@@ -183,3 +183,5 @@ mpk_t* read_mpk(char *dir) {
 
   return mg;
 }
+
+// TODO(vatai): del_mpk(mpk_t *mg) {}

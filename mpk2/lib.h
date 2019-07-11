@@ -1,3 +1,6 @@
+#ifndef _LIB_H_
+#define _LIB_H_
+
 typedef struct {
   int n;			/* number of nodes */
   int *ptr;			/* pointer */
@@ -93,6 +96,7 @@ typedef struct {
 
 mpk_t *new_mpk(crs0_t*, int, int, int);
 mpk_t *read_mpk(char*);
+// TODO(vatai): void del_mpk(mpk_t*)// do it in mpkread.c
 void prep_mpk(mpk_t*, double*);
 void exec_mpk(mpk_t*, double*, int nthread);
 void exec_mpk_xs(mpk_t*, double*, int nthread);
@@ -101,3 +105,5 @@ void exec_mpk_is(mpk_t*, double*, int nthread);
 void exec_mpk_id(mpk_t*, double*, int nthread);
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
+
+#endif

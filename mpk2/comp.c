@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 
   level_t *lg = new_level(pg);
   if (lg_org == NULL)
-    comp_level(lg); // If phase 1 then we compute the newely made base level // ************************
+    comp_level(lg); // If phase 0 then we compute the newely made base level // ************************
   else
     update_level(lg, lg_org); // Else we will update the new level lg with the help lg_org // ****************************
 
