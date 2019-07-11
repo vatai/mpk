@@ -6,6 +6,7 @@
 #include <mpi.h>
 
 #include "lib.h"
+#include "mpi_lib.h"
 
 int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx) {
   int from_part_to_part = npart * src_part + tgt_part;

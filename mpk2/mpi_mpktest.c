@@ -5,9 +5,9 @@
 #include <string.h>
 
 #include <mpi.h>
-#include <omp.h>
 
 #include "lib.h"
+#include "mpi_lib.h"
 
 #define DETAIL 0
 #define ONEVEC 0
@@ -169,11 +169,11 @@ int main(int argc, char* argv[]) {
   // SpMV multiplication (sequential) is carried out and minimum time
   // is reported.
   for (i = 0; i < 5; i++) {
-    double t0 = omp_get_wtime();
+    // TODO(vatai): double t0 = omp_get_wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
-    double t1 = omp_get_wtime();
-    if (i == 0 || min > t1 - t0)
-      min = t1 - t0;
+    // TODO(vatai): double t1 = omp_get_wtime();
+    // if (i == 0 || min > t1 - t0)
+    //   min = t1 - t0;
   }
   printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);

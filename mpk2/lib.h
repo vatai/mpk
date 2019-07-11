@@ -1,3 +1,6 @@
+#ifndef _LIB_H_
+#define _LIB_H_
+
 typedef struct {
   int n;			/* number of nodes */
   int *ptr;			/* pointer */
@@ -91,35 +94,6 @@ typedef struct {
   long idxallocsize;
 } mpk_t;// used in new_mpk function in mpkread.c
 
-typedef struct {
-  int n;
-  int nlevel;
-  int npart;
-  int nphase;
-  // Each phase communicates a different amount, hence pointer to
-  // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
-  // send buffer in phase `p`
-
-  // Send and receive buffers for vertex values (from vv).
-  double **vv_sbufs;
-  double **vv_rbufs;
-  // Send and receive buffers for (vv) indices.
-  int **idx_sbufs;
-  int **idx_rbufs;
-
-  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
-  // p]` are is the number of elements sent/received to/from partition
-  // `p`.
-  int *sendcounts;
-  int *recvcounts;
-
-  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
-  // the displacement (index) in the send/receive buffers where the
-  // elements sent to partition/process `p` start.
-  int *sdispls;
-  int *rdispls;
-} comm_data_t;
-
 mpk_t *new_mpk(crs0_t*, int, int, int);
 mpk_t *read_mpk(char*);
 // TODO(vatai): void del_mpk(mpk_t*)// do it in mpkread.c
@@ -131,9 +105,5 @@ void exec_mpk_is(mpk_t*, double*, int nthread);
 void exec_mpk_id(mpk_t*, double*, int nthread);
 void spmv_exec_seq(crs0_t*, double*, int nlevel);
 void spmv_exec_par(crs0_t*, double*, int nlevel, int nth);
-void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
-void mpi_prep_mpk(mpk_t*, comm_data_t *);
 
-void mpi_del_cd(comm_data_t *);
-void mpi_prepbufs_mpk(mpk_t*, int comm_table[], comm_data_t*, int rank, int phase);
-void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir);
+#endif

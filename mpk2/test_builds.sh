@@ -8,9 +8,9 @@
 # same results.
 
 NAME=mesh5p
-SIZE=4
-NPART=2
-NLEVEL=14
+SIZE=10
+NPART=16
+NLEVEL=100
 NPHASE=6
 
 rm *.log
