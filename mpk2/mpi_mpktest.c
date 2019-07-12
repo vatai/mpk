@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
     if (mg->plist[0]->part[i] == rank)
       vv[i] = 1.0;
     else
-      vv[i] = 100.0;
+      vv[i] = -100.0;
   for (i=0; i< n * nlevel; i++)
     vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
