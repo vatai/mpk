@@ -206,10 +206,14 @@ int main(int argc, char* argv[]) {
   for (i=0; i< n * nlevel; i++) vv[n + i] = -1.0;		/* dummy */
 
   double mpi_exectime = 0;
-  start = MPI_Wtime();
-  mpi_exec_mpk(mg, vv, &cd, argv[1]);
-  end = MPI_Wtime();
-  mpi_exectime = end-start;
+  for (int i = 0; i < 5; ++i) {
+    start = MPI_Wtime();
+    mpi_exec_mpk(mg, vv, &cd, argv[1]);
+    end = MPI_Wtime();
+    if (i==0) mpi_exectime = end-start;
+    else if (mpi_exectime < end-start) mpi_exectime = end-start;
+  }
+  
 
   print_time(argv[1],mpi_exectime,spmvmintime);
 
