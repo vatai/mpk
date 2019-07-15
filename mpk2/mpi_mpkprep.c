@@ -8,10 +8,23 @@
 #include "lib.h"
 #include "mpi_lib.h"
 
-int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_idx) {
-  int from_part_to_part = npart * src_part + tgt_part;
-  return nlevel * n * from_part_to_part + vv_idx;
+static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
+  int from_part_to_part = mg->npart * src_part + tgt_part;
+  return mg->nlevel * mg->n * from_part_to_part + vv_idx;
+}
 
+static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
+                        int *store_part) {
+  crs0_t *g0 = mg->g0;
+  assert(g0 != NULL);
+  for (int j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
+    int k_vvidx = mg->n * (l - 1) + g0->col[j];       // source vv index
+    assert(store_part[k_vvidx] != -1);
+    if (store_part[k_vvidx] != curpart) {
+      int idx = get_ct_idx(mg, store_part[k_vvidx], curpart, k_vvidx);
+      comm_table[idx] = 1;
+    }
+  }
 }
 
 /*
@@ -47,14 +60,14 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd,
     // For all vv indices.
     for (i = 0; i < nlevel * n; ++i) {
       // Here p is the source (from) partition.
-      int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
+      int idx = get_ct_idx(mg, p, rank, i);
       if (comm_table[idx]) {
         // So we increment:
         numb_of_rec++;
         rcount[p]++;
       }
       // Here `p` is the target (to) partition.
-      idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+      idx = get_ct_idx(mg, rank, p, i);
       if (comm_table[idx]) {
         // So we increment:
         numb_of_send++;
@@ -81,7 +94,7 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd,
     // For all vv indices.
     for (int i = 0; i < nlevel * n; ++i) {
       // Here p is the destination (to) partition.
-      int idx = get_ct_idx(n, nlevel, npart, rank, p, i);
+      int idx = get_ct_idx(mg, rank, p, i);
       if (comm_table[idx]) {
         // cd->vv_sbufs[phase][counter] = vv[i];
         cd->idx_sbufs[phase][counter] = i;
@@ -221,40 +234,11 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
       for (i = 0; i < n; i++) {
         int i_vvidx = n * l + i;
         if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
-          int current_part = pl[i];
+          int curpart = pl[i];
           int j;
-          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
-            int k = g0->col[j];
-
-            // MPI code to complete comm_table
-
-            if (phase != 0) {
-              int k_vvidx = n * (l - 1) + k; // source vv index
-              // Communicate after the initial phase, if the following
-              // 2 conditions are met for the adjacent vertex
-              // (i.e. the "source" vertex needed to compute vv[n * l
-              // + i])
-              // The source vertex is in a different partition than
-              // the target vertex
-              if (store_part[k_vvidx] == -1) {
-                printf("ERROR: l-1: %d; k: %d\n", l-1, k);
-              }
-              assert (store_part[k_vvidx] != -1);
-              int is_diff_part = store_part[k_vvidx] != current_part;
-              // The vertex is computed, i.e. just before the target
-              // level.
-              if (is_diff_part) {
-                int src_part = store_part[k_vvidx]; // source partition
-                int idx = get_ct_idx(n, nlevel, npart, src_part, current_part,
-                                     k_vvidx);
-
-                // setting it to 1 implying the communication
-                // for the corresponding index
-                comm_table[idx] = 1;
-              }
-            }
-          }
-          store_part[i_vvidx] = current_part;
+          if (phase != 0)
+            proc_vertex(curpart, i, l, mg, comm_table, store_part);
+          store_part[i_vvidx] = curpart;
         }
       }
     }
@@ -286,20 +270,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
         // TODO(vatai): Why is the commented out condition breaking
         // the program?
         if (/* store_part[i_vvidx] != -1 && */ prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
-          int j;
-          for (j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) {
-            int k = g0->col[j];
-            int k_vvidx = n * (l - 1) + k;                 // source vv index
-
-            assert (store_part[k_vvidx] != -1);
-            int is_diff_part = store_part[k_vvidx] != p;
-            if (is_diff_part) {
-              int idx =
-                  get_ct_idx(n, nlevel, npart, store_part[k_vvidx], p, k_vvidx);
-              comm_table[idx] = 1; // setting it to 1 implying the communication
-                                   // for the corresponding index
-            }
-          }
+          proc_vertex(p, i, l, mg, comm_table, store_part);
           store_part[i_vvidx] = p;
         }
       }
