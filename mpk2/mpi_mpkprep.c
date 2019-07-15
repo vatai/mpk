@@ -17,11 +17,13 @@ int get_ct_idx(int n, int nlevel, int npart, int src_part, int tgt_part, int vv_
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */
-void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank,
-                      int phase) {
+static void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd,
+                             int phase) {
   int npart = mg->npart;
   int nlevel = mg->nlevel;
   int n = mg->n;
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   int *rcount = cd->recvcounts + phase * npart;
   int *scount = cd->sendcounts + phase * npart;
@@ -43,19 +45,17 @@ void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd, int rank,
   // rcount and rdisp
   for (int p = 0; p < npart; ++p) {
     // For all vv indices.
-    for (i = 0; i < nlevel*n; ++i){
+    for (i = 0; i < nlevel * n; ++i) {
       // Here p is the source (from) partition.
       int idx = get_ct_idx(n, nlevel, npart, p, rank, i);
-      if (comm_table[idx])
-      {
+      if (comm_table[idx]) {
         // So we increment:
         numb_of_rec++;
         rcount[p]++;
       }
       // Here `p` is the target (to) partition.
       idx = get_ct_idx(n, nlevel, npart, rank, p, i);
-      if (comm_table[idx])
-      {
+      if (comm_table[idx]) {
         // So we increment:
         numb_of_send++;
         scount[p]++;
@@ -262,7 +262,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     testcomm_table(mg, comm_table, phase, rank);
     // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
     if (phase != 0) {
-      mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
+      mpi_prepbufs_mpk(mg, comm_table, cd, phase);
     } // if (phase != 0) end!
 
 
@@ -307,7 +307,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   } // end partition loop
 
   testcomm_table(mg, comm_table, phase, rank);
-  mpi_prepbufs_mpk(mg, comm_table, cd, rank, phase);
+  mpi_prepbufs_mpk(mg, comm_table, cd, phase);
 
   free(comm_table);
   free(store_part);
