@@ -41,6 +41,23 @@ static void new_cd(mpk_t *mg, comm_data_t *cd) {
   cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
 }
 
+static int *new_comm_table(mpk_t *mg) {
+  int num_ct_elem = mg->nlevel * mg->n * mg->npart * mg->npart;
+  return malloc(sizeof(int) * num_ct_elem);
+}
+
+static int *new_store_part(mpk_t *mg) {
+  // Initialise store_part[i] to be the id of the 0th partition for
+  // level 0, and -1 for all other levels
+  int n = mg->n;
+  int *pl = mg->plist[0]->part;
+  int sp_num_elem = n * (mg->nlevel + 1);
+  int *store_part = (int*) malloc(sizeof(*store_part) * sp_num_elem);
+  for (int i = 0; i < n * (mg->nlevel + 1); i++)
+    store_part[i] = i < n ? pl[i] : -1;
+  return store_part;
+}
+
 static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
                         int *store_part) {
   crs0_t *g0 = mg->g0;
@@ -112,6 +129,25 @@ static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part,
       }
     }
   } // end partition loop
+}
+
+static void lminmax(int phase, mpk_t *mg, int *_lmin, int *_lmax) {
+  assert(mg->llist[phase] != NULL);
+  int lmin, lmax;
+  int *ll = mg->llist[phase]->level;
+  lmin = lmax = ll[0];
+  for (int i = 1; i < mg->n; i++) {
+    if (lmin > ll[i])
+      lmin = ll[i];
+    if (lmax < ll[i])
+      lmax = ll[i];
+  }
+
+  if (lmax > mg->nlevel)
+    lmax = mg->nlevel;
+
+  *_lmin = lmin;
+  *_lmax = lmax;
 }
 
 /*
@@ -251,22 +287,14 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   for (i=0; i< n; i++)
     l0[i] = 0;
 
-  // store_part[i] is the partition number where vv[i] is stored.
-  int *store_part = (int*) malloc(sizeof(*store_part) * n * (nlevel + 1));
-  // Initialise store_part[i] to be the id of the 0th partition for
-  // level 0, and -1 for all other levels
-  for (i = 0; i < n; i++)
-    store_part[i] = pl[i];
-  for (i = 0; i < n * nlevel; i++)
-    store_part[n + i] = -1;
-
   new_cd(mg, cd);
+  int *comm_table = new_comm_table(mg);
+  int *store_part = new_store_part(mg);
+
   int tcount = 0;
   int *prevl = l0;
   int prevlmin = 0;
 
-  int *comm_table = malloc(sizeof(*comm_table) * nlevel * n * npart * npart);
-  //______________________________________________
   int phase;
   for (phase = 0; phase < nphase; phase ++) {
     assert(mg->plist[phase] != NULL);
@@ -278,16 +306,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     int *ll = mg->llist[phase]->level;
 
     int lmin, lmax;
-    lmin = lmax = ll[0];
-    for (i=1; i< n; i++) { // give max and min value to lmax and lmin resp.
-      if (lmin > ll[i])
-	lmin = ll[i];
-      if (lmax < ll[i])
-	lmax = ll[i];
-    }
-
-    if (lmax > nlevel)
-      lmax = nlevel;
+    lminmax(phase, mg, &lmin, &lmax);
 
     clear_comm_table(mg, comm_table);
     phase_comm_table(phase, mg, comm_table, store_part, prevlmin, lmax, prevl);
