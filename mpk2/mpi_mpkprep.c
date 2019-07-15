@@ -27,10 +27,44 @@ static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
   }
 }
 
+static void clear_ct(mpk_t *mg, int *comm_table) {
+  // Communication of which vertex (n) from which level (nlevel)
+  // from which process/partition (npart) to which process/partition
+  // (npart).
+  int N = mg->nlevel * mg->n * mg->npart * mg->npart;
+  for (int i = 0; i < N; i++) comm_table[i] = 0;
+}
+
+static void skirt_ct(mpk_t *mg, int *comm_table, int *store_part,
+                     int prevlmin) {
+  int n = mg->n;
+  int nlevel = mg->nlevel;
+  int npart = mg->npart;
+  int nphase = mg->nphase;
+  int *sl = mg->sg->levels;
+  clear_ct(mg, comm_table);
+  for (int p = 0; p < npart; p++) {
+    for (int l = prevlmin + 1; l <= nlevel; l++) {
+      for (int i = 0; i < n; i++) {
+        // TODO(vatai): Why is the commented out condition breaking
+        // the program?
+        int above_prevl = (nphase ? mg->llist[nphase - 1]->level[i] : 0) < l;
+        int skirt_active = sl[p * n + i] >= 0;
+        int not_over_max = l <= nlevel - sl[p * n + i];
+        if (/* store_part[i_vvidx] != -1 && */ above_prevl &&
+             skirt_active && not_over_max) {
+          proc_vertex(p, i, l, mg, comm_table, store_part);
+          store_part[n * l + i] = p;
+        }
+      }
+    }
+  } // end partition loop
+}
+
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */
-static void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd,
+static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
                              int phase) {
   int npart = mg->npart;
   int nlevel = mg->nlevel;
@@ -104,7 +138,7 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int comm_table[], comm_data_t *cd,
   }
 }
 
-void testcomm_table(mpk_t *mg, int comm_table[], int phase, int rank) {
+void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
   if (rank == 0) {
     printf("Testing and printing commtable in a text doc\n");
     char name[100];
@@ -223,10 +257,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     if (lmax > nlevel)
       lmax = nlevel;
 
-    // Communication of which vertex (n) from which level (nlevel)
-    // from which process/partition (npart) to which process/partition
-    // (npart).
-    for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
+    clear_ct(mg, comm_table);
 
     // LOOP1: build `comm_table[]`
     int l;
@@ -258,25 +289,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   // Skirt `comm_table`
   assert (phase == nphase);
 
-  pl = mg->plist[0]->part;
-  int *sl = mg->sg->levels;
-  for (i = 0; i < nlevel * n * npart * npart; i++) comm_table[i] = 0;
-  int p;
-  for (p = 0; p < npart; p++) {
-    int l;
-    for (l = prevlmin + 1; l <= nlevel; l++) {
-      for (i = 0; i < n; i++) {
-        int i_vvidx = n * l + i;
-        // TODO(vatai): Why is the commented out condition breaking
-        // the program?
-        if (/* store_part[i_vvidx] != -1 && */ prevl[i] < l && sl[p * n + i] >= 0 && l <= nlevel - sl[p * n + i]) {
-          proc_vertex(p, i, l, mg, comm_table, store_part);
-          store_part[i_vvidx] = p;
-        }
-      }
-    }
-  } // end partition loop
-
+  skirt_ct(mg, comm_table, store_part, prevlmin);
   testcomm_table(mg, comm_table, phase, rank);
   mpi_prepbufs_mpk(mg, comm_table, cd, phase);
 
