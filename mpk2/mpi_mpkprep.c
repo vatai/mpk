@@ -27,22 +27,47 @@ static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
   }
 }
 
-static void clear_ct(mpk_t *mg, int *comm_table) {
+static void clear_comm_table(mpk_t *mg, int *comm_table) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
   int N = mg->nlevel * mg->n * mg->npart * mg->npart;
-  for (int i = 0; i < N; i++) comm_table[i] = 0;
+  for (int i = 0; i < N; i++)
+    comm_table[i] = 0;
 }
 
-static void skirt_ct(mpk_t *mg, int *comm_table, int *store_part,
-                     int prevlmin) {
+static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
+                             int *store_part, int prevlmin, int lmax,
+                             int *prevl) {
+  // Communication of which vertex (n) from which level (nlevel)
+  // from which process/partition (npart) to which process/partition
+  // (npart).
+  int *pl = mg->plist[phase]->part;
+  int n = mg->n;
+  for (int i = 0; i < mg->nlevel * mg->n * mg->npart * mg->npart; i++)
+    comm_table[i] = 0;
+  int *ll = mg->llist[phase]->level;
+  for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
+    for (int i = 0; i < n; i++) {
+      int i_vvidx = n * l + i;
+      if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
+        int curpart = mg->plist[phase]->part[i];
+        if (phase != 0)
+          proc_vertex(curpart, i, l, mg, comm_table, store_part);
+        store_part[i_vvidx] = curpart;
+      }
+    }
+  }
+}
+
+static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part,
+                             int prevlmin) {
   int n = mg->n;
   int nlevel = mg->nlevel;
   int npart = mg->npart;
   int nphase = mg->nphase;
   int *sl = mg->sg->levels;
-  clear_ct(mg, comm_table);
+  clear_comm_table(mg, comm_table);
   for (int p = 0; p < npart; p++) {
     for (int l = prevlmin + 1; l <= nlevel; l++) {
       for (int i = 0; i < n; i++) {
@@ -51,8 +76,8 @@ static void skirt_ct(mpk_t *mg, int *comm_table, int *store_part,
         int above_prevl = (nphase ? mg->llist[nphase - 1]->level[i] : 0) < l;
         int skirt_active = sl[p * n + i] >= 0;
         int not_over_max = l <= nlevel - sl[p * n + i];
-        if (/* store_part[i_vvidx] != -1 && */ above_prevl &&
-             skirt_active && not_over_max) {
+        if (/* store_part[i_vvidx] != -1 && */ above_prevl && skirt_active &&
+            not_over_max) {
           proc_vertex(p, i, l, mg, comm_table, store_part);
           store_part[n * l + i] = p;
         }
@@ -257,39 +282,21 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     if (lmax > nlevel)
       lmax = nlevel;
 
-    clear_ct(mg, comm_table);
+    clear_comm_table(mg, comm_table);
+    phase_comm_table(phase, mg, comm_table, store_part, prevlmin, lmax, prevl);
 
-    // LOOP1: build `comm_table[]`
-    int l;
-    for (l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
-      for (i = 0; i < n; i++) {
-        int i_vvidx = n * l + i;
-        if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
-          int curpart = pl[i];
-          int j;
-          if (phase != 0)
-            proc_vertex(curpart, i, l, mg, comm_table, store_part);
-          store_part[i_vvidx] = curpart;
-        }
-      }
-    }
-
-    testcomm_table(mg, comm_table, phase, rank);
-    // LOOP2: calculate numb_of_send, numb_of_rec, rcount[], scount[]
-    if (phase != 0) {
+    if (phase != 0)
       mpi_prepbufs_mpk(mg, comm_table, cd, phase);
-    } // if (phase != 0) end!
-
 
     // Prepare for the next phase.
-    prevl = ll;
+    prevl = mg->llist[phase]->level;
     prevlmin = lmin;
   }
 
   // Skirt `comm_table`
   assert (phase == nphase);
 
-  skirt_ct(mg, comm_table, store_part, prevlmin);
+  skirt_comm_table(mg, comm_table, store_part, prevlmin);
   testcomm_table(mg, comm_table, phase, rank);
   mpi_prepbufs_mpk(mg, comm_table, cd, phase);
 
