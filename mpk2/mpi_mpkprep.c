@@ -89,8 +89,7 @@ static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
   // (npart).
   int *pl = mg->plist[phase]->part;
   int n = mg->n;
-  for (int i = 0; i < mg->nlevel * mg->n * mg->npart * mg->npart; i++)
-    comm_table[i] = 0;
+  clear_comm_table(mg, comm_table);
   int *ll = mg->llist[phase]->level;
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
@@ -165,7 +164,6 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
   // recvcount and sendcount for the current phase.
   int *rcount = cd->recvcounts + phase * npart;
   int *scount = cd->sendcounts + phase * npart;
-  // Similar to s/rcount.
   int *rdisp = cd->rdispls + phase * npart;
   int *sdisp = cd->sdispls + phase * npart;
 
@@ -181,9 +179,9 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
   // sending to, and other partitions we are receiving from).
   // [Note] Each partition is creating its unique scount,sdisp
   // rcount and rdisp
-  for (int p = 0; p < npart; ++p) {
+  for (int p = 0; p < npart; p++) {
     // For all vv indices.
-    for (i = 0; i < nlevel * n; ++i) {
+    for (i = 0; i < nlevel * n; i++) {
       // Here p is the source (from) partition.
       int idx = get_ct_idx(mg, p, rank, i);
       if (comm_table[idx]) {
@@ -215,7 +213,7 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
   cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
 
   int counter = 0;
-  for (int p = 0; p < npart; ++p) {
+  for (int p = 0; p < npart; p++) {
     // For all vv indices.
     for (int i = 0; i < nlevel * n; ++i) {
       // Here p is the destination (to) partition.
@@ -262,53 +260,31 @@ void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
  * Allocate and fill `comm_data_t cd`.
  */
 void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
-  assert(mg != NULL);
-
   printf("preparing mpi buffers for communication...");  fflush(stdout);
 
+  assert(mg != NULL);
   int n = mg->n;
-  cd->n = n;
-  int npart = mg->npart;
-  cd->npart = npart;
-  int nlevel = mg->nlevel;
-  cd->nlevel = nlevel;
-  int nphase = mg->nphase;
-  cd->nphase = nphase;
-
-  crs0_t *g0 = mg->g0;
-  assert(g0 != NULL);
-
-  int i;
-  assert(mg->plist[0] != NULL);
-  int *pl = mg->plist[0]->part;
-  int *prevpartl = mg->plist[0]->part;
-
-  int l0[n];
-  for (i=0; i< n; i++)
-    l0[i] = 0;
 
   new_cd(mg, cd);
   int *comm_table = new_comm_table(mg);
   int *store_part = new_store_part(mg);
 
-  int tcount = 0;
+  assert(mg->plist[0] != NULL);
+
+  int l0[n];
+  for (int i = 0; i < n; i++)
+    l0[i] = 0;
   int *prevl = l0;
   int prevlmin = 0;
+  int *prevpartl = mg->plist[0]->part;
 
-  int phase;
-  for (phase = 0; phase < nphase; phase ++) {
+  for (int phase = 0; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
-    pl = mg->plist[phase]->part;
-    if (phase>0){
-      prevpartl = mg->plist[phase-1]->part;
-    }
-    assert(mg->llist[phase] != NULL);
-    int *ll = mg->llist[phase]->level;
+    if (phase > 0)
+      prevpartl = mg->plist[phase - 1]->part;
 
     int lmin, lmax;
     lminmax(phase, mg, &lmin, &lmax);
-
-    clear_comm_table(mg, comm_table);
     phase_comm_table(phase, mg, comm_table, store_part, prevlmin, lmax, prevl);
 
     if (phase != 0)
@@ -319,11 +295,8 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     prevlmin = lmin;
   }
 
-  // Skirt `comm_table`
-  assert (phase == nphase);
-
   skirt_comm_table(mg, comm_table, store_part, prevlmin);
-  mpi_prepbufs_mpk(mg, comm_table, cd, phase);
+  mpi_prepbufs_mpk(mg, comm_table, cd, mg->nphase);
 
   free(comm_table);
   free(store_part);
