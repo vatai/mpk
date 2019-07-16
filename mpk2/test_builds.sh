@@ -11,7 +11,7 @@ NAME=mesh5p
 SIZE=10
 NPART=2
 NLEVEL=20
-NPHASE=0
+NPHASE=6
 
 # Remove logs.
 rm *.log
