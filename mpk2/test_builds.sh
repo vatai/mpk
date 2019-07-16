@@ -1,7 +1,7 @@
 #!/bin/bash
 # !KEEP IN SYNC WITH MAKEFILE!
 #
-# Simple script to build and test al programs.
+# Simple script to build and test all programs.
 #
 # TODO(vatai): Expand this file with further tests, possibly for the
 # time of writing mpi_mpktest, check if both mpktest versions give the
@@ -9,14 +9,17 @@
 
 NAME=mesh5p
 SIZE=10
-NPART=16
-NLEVEL=100
-NPHASE=6
+NPART=2
+NLEVEL=20
+NPHASE=0
 
+# Remove logs.
 rm *.log
 
+# Select makefile.
 MAKEFILE=makefile
 which mpiicc 2>/dev/null 1>/dev/null && MAKEFILE+=.intel || MAKEFILE+=.gcc
+
 # Force build all.
 make -f $MAKEFILE -B || exit
 
@@ -33,11 +36,11 @@ echo test_builds.sh: generating data
 echo test_builds.sh: testing OpenMP version
 DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # Check OpenMP version
-./mpktest $DIRNAME
+./mpktest $DIRNAME || exit
 
 echo test_builds.sh: testing MPI version
 # Check MPI version
-mpirun -n $NPART ./mpi_mpktest $DIRNAME
+mpirun -n $NPART ./mpi_mpktest $DIRNAME || exit
 
 # POST PROCESSING
 #
@@ -48,4 +51,4 @@ for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
 
-python merge_vv.py vv_after_mpi_exec_rank*.log
+python merge_vv.py vv_after_mpi_exec_rank*.log || exit

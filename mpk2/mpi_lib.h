@@ -1,6 +1,8 @@
 #ifndef _MPI_LIB_H_
 #define _MPI_LIB_H_
 
+#include "lib.h"
+
 typedef struct {
   int n;
   int nlevel;
@@ -34,7 +36,6 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
 void mpi_prep_mpk(mpk_t*, comm_data_t *);
 
 void mpi_del_cd(comm_data_t *);
-void mpi_prepbufs_mpk(mpk_t*, int comm_table[], comm_data_t*, int rank, int phase);
 void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir);
 
 #endif

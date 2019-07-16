@@ -177,12 +177,12 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
     prevl = ll;
     prevlmin = lmin;
-  }
-  //___________________________________________
+  } /* end loop(phase) */
 
   if (erc > 0)
     exit(1);
 
+  /* Skirt code */
   pl = mg->plist[0]->part;
   int *sl = mg->sg->levels;
 
@@ -197,11 +197,13 @@ void prep_mpk(mpk_t *mg, double *vv) {
 
       for (i=0; i< n; i++)
 	if (prevl[i] < l && sl[p*n+i] >= 0 && l <= nlevel - sl[p*n+i]) {
+          /* error check */
 	  if (vv[l*n+i] > 0.0) {
 	    fprintf(stderr, "skirt %d %d %d already computed\n", l, i, p);
 	    erc ++;
 	  }
 
+          /* error check loop */
 	  int j;
 	  for (j= g0->ptr[i]; j< g0->ptr[i+1]; j++) {
 	    int k = g0->col[j];
@@ -212,10 +214,12 @@ void prep_mpk(mpk_t *mg, double *vv) {
 	      erc ++;
 	    }
 	  }
+          /* for error checking */
+          vv[l * n + i] = pl[i] * 100.0 + nphase;
 
-	  vv[l*n+i] = pl[i] * 100.0 + nphase;
-	  tl->idx[cnt++] = l*n+i;
-	}
+          /** Add index to task list!!! **/
+          tl->idx[cnt++] = l * n + i;
+        }
     }
 
     for (l = prevlmin + 1; l <= nlevel; l++) {
