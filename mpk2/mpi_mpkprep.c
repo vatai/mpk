@@ -21,29 +21,39 @@ static void new_cd(mpk_t *mg, comm_data_t *cd) {
 
   // Send and receive buffers for vertex values (from vv).
   cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (mg->nphase + 1));
+  assert(cd->vv_sbufs != NULL);
   cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (mg->nphase + 1));
+  assert(cd->vv_rbufs != NULL);
   // Send and receive buffers for (vv) indices.
   cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (mg->nphase + 1));
+  assert(cd->idx_sbufs != NULL);
   cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (mg->nphase + 1));
+  assert(cd->idx_rbufs != NULL);
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
   cd->sendcounts =
       malloc(sizeof(*cd->sendcounts) * mg->npart * (mg->nphase + 1));
+  assert(cd->sendcounts != NULL);
   cd->recvcounts =
       malloc(sizeof(*cd->recvcounts) * mg->npart * (mg->nphase + 1));
+  assert(cd->recvcounts != NULL);
 
   // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
   // the displacement (index) in the send/receive buffers where the
   // elements sent to partition/process `p` start.
   cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * (mg->nphase + 1));
+  assert(cd->sdispls != NULL);
   cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
+  assert(cd->rdispls != NULL);
 }
 
 static int *new_comm_table(mpk_t *mg) {
   int num_ct_elem = mg->nlevel * mg->n * mg->npart * mg->npart;
-  return malloc(sizeof(int) * num_ct_elem);
+  int *ct = malloc(sizeof(*ct) * num_ct_elem);
+  assert(ct != NULL);
+  return ct;
 }
 
 static int *new_store_part(mpk_t *mg) {
@@ -53,6 +63,7 @@ static int *new_store_part(mpk_t *mg) {
   int *pl = mg->plist[0]->part;
   int sp_num_elem = n * (mg->nlevel + 1);
   int *store_part = (int*) malloc(sizeof(*store_part) * sp_num_elem);
+  assert(store_part != NULL);
   for (int i = 0; i < n * (mg->nlevel + 1); i++)
     store_part[i] = i < n ? pl[i] : -1;
   return store_part;
@@ -208,9 +219,13 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
   }
 
   cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * numb_of_send);
+  assert(cd->vv_sbufs[phase] != NULL);
   cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
+  assert(cd->vv_rbufs[phase] != NULL);
   cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
+  assert(cd->idx_sbufs[phase] != NULL);
   cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
+  assert(cd->idx_rbufs[phase] != NULL);
 
   int counter = 0;
   for (int p = 0; p < npart; p++) {
