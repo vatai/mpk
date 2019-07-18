@@ -6,8 +6,6 @@
 #include "lib.h"
 #include <omp.h>
 
-#define VV_FILENAME "vv_mpktest.out"
-
 #define DETAIL 0
 #define ONEVEC 0
 #define ONEENT 0
@@ -50,16 +48,6 @@ void check_error(double *vv, int n, int nlevel) {
     e += (v - 1.0) * (v - 1.0);
   }
   printf("error %e\n", sqrt(e/n));
-}
-
-void save_floats(const char *fn, double *ptr, size_t n) {
-  FILE *file = fopen(fn, "w");
-  fprintf(file, "%d\n", n);
-  for (size_t i = 0; i < n; i++) {
-    fprintf(file, "%f\n", ptr[i]);
-  }
-  fclose(file);
-
 }
 
 int main(int argc, char **argv) {
@@ -209,8 +197,6 @@ int main(int argc, char **argv) {
     printf("mpkt nth= %d time= %e\n", nth, min);
   }
 #endif
-
-  save_floats(VV_FILENAME, vv, n * (nlevel + 1));
 
   return 0;
 }
