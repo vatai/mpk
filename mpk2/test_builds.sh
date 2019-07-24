@@ -13,6 +13,8 @@ NPART=2
 NLEVEL=20
 NPHASE=6
 
+cd "$(dirname "$0")"
+
 # Remove logs.
 rm *.log
 
