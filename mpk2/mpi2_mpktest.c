@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
   mpi_exec_mpk(mg, vv, &cd, argv[1]);
 
   char fname[1024];
-  sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
+  sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);
   FILE *vv_log_file = fopen(fname, "w");
   int ns = sqrt(n);
   for (int level = 0; level < nlevel + 1; level++) {
