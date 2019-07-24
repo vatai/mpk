@@ -164,6 +164,16 @@ int main(int argc, char* argv[]) {
 
   make_mptr(mg, &cd);
 
+  for (int phase = 2; phase < 4; phase++) {
+    task_t *tl = mg->tlist + phase * mg->npart + rank;
+    for (int i = 0; i < 10 && i < tl->n; i++) {
+      int idx = tl->idx[i];
+      int imod = idx % mg->n;
+      printf("idx %d, idx mod n %d, ptr[%d] %d, mptr[%d] %d\n",
+             idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]);
+    }
+  }
+
   // test_allltoall_inputs(&cd);
 
   int i;
