@@ -1,6 +1,8 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
+#include <stdio.h>
+
 typedef struct {
   int n;			/* number of nodes */
   int *ptr;			/* pointer */
@@ -49,8 +51,8 @@ void write_level_c(FILE*, level_t*, coord_t*);
 
 typedef struct {
   crs0_t *g; // Associated graph
-  int *wv;   // Weight on edges 
-  int *we;   // Weight on edges 
+  int *wv;   // Weight on edges
+  int *we;   // Weight on edges
 } wcrs_t;
 
 wcrs_t *new_wcrs(crs0_t*);
