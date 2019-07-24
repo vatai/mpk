@@ -115,17 +115,19 @@ void check_error(double *vv, int n, int nlevel) {
 }
 
 void make_mptr(mpk_t *mg, comm_data_t *cd) {
-  // TODO(vatai): should it be (nphase + 1) ???
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  cd->mptr = malloc(sizeof(*cd->mptr) * cd->nphase);
-  for (int phase = 0; phase < cd->nphase; phase++) {
+  int *ptr = mg->g0->ptr;
+  cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
+  for (int phase = 0; phase <= cd->nphase; phase++) {
     task_t *tl = mg->tlist + phase * mg->npart + rank;
-    cd->mptr[phase] = malloc(sizeof(*cd->mptr[phase]) * (tl->n + 1));
-    for (int i = 0; i < tl->n; i++) {
-      // TODO(vatai): fill mptr[phase][i]
-      cd->mptr[phase][i];
+    int *mptr = malloc(sizeof(*cd->mptr[phase]) * (tl->n + 1));
+    mptr[0] = 0;
+    for (int mi = 0; mi < tl->n; mi++) {
+      int i = tl->idx[mi] % mg->n;
+      mptr[mi+1] = mptr[mi] + ptr[i + 1] - ptr[i];
     }
+    cd->mptr[phase] = mptr;
   }
 }
 
