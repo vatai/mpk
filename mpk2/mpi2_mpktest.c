@@ -164,15 +164,19 @@ int main(int argc, char* argv[]) {
 
   make_mptr(mg, &cd);
 
-  for (int phase = 2; phase < 4; phase++) {
+  char fname[1024];
+  sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank);
+  FILE *mptr_log_file = fopen(fname, "w");
+  for (int phase = 0; phase <= mg->nphase; phase++) {
     task_t *tl = mg->tlist + phase * mg->npart + rank;
     for (int i = 0; i < 10 && i < tl->n; i++) {
       int idx = tl->idx[i];
       int imod = idx % mg->n;
-      printf("idx %d, idx mod n %d, ptr[%d] %d, mptr[%d] %d\n",
-             idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]);
+      fprintf(mptr_log_file, "idx %d, idx mod n %d, ptr[%d] %d, mptr[%d] %d\n",
+              idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]);
     }
   }
+  fclose(mptr_log_file);
 
   // test_allltoall_inputs(&cd);
 
@@ -206,7 +210,6 @@ int main(int argc, char* argv[]) {
   // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, &cd, argv[1]);
 
-  char fname[1024];
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);
   FILE *vv_log_file = fopen(fname, "w");
   int ns = sqrt(n);
