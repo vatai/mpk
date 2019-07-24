@@ -76,10 +76,11 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
   int npart = mg->npart;
 
   // Log tlist.
-  fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank,
-          phase);
-  log_tlist(mg, phase, log_file);
-
+  #if LOGFILE
+    fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank,
+            phase);
+    log_tlist(mg, phase, log_file);
+  #endif
   // Copy data to send buffers.
   int stotal = cd->sendcounts[npart * phase + npart - 1] +
                cd->sdispls[npart * phase + npart - 1];
@@ -88,12 +89,13 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
   }
 
   // Log send buffers.
-  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank,
-          phase);
-  log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase],
-         cd->sendcounts + npart * phase, cd->sdispls + npart * phase, cd->n,
-         log_file);
-
+  #if LOGFILE
+    fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank,
+            phase);
+    log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase],
+           cd->sendcounts + npart * phase, cd->sdispls + npart * phase, cd->n,
+           log_file);
+  #endif
   // Do communication.
   MPI_Alltoallv(cd->vv_sbufs[phase], cd->sendcounts + npart * phase,
                 cd->sdispls + npart * phase, MPI_DOUBLE, cd->vv_rbufs[phase],
@@ -105,12 +107,13 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
                 MPI_INT, MPI_COMM_WORLD);
 
   // Log receive buffers.
-  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank,
-          phase);
-  log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase],
-         cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
-         log_file);
-
+  #if LOGFILE
+    fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank,
+            phase);
+    log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase],
+           cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
+           log_file);
+  #endif
   // Copy from receive buffers.
   int rtotal = cd->recvcounts[npart * phase + npart - 1] +
                cd->rdispls[npart * phase + npart - 1];
@@ -171,8 +174,9 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
     }
 
     do_task(mg, vv, phase, rank);
-
-    print_values_of_vv(rank, phase, n, nlevel, vv, dir);
+    #if LOGFILE
+      print_values_of_vv(rank, phase, n, nlevel, vv, dir);
+    #endif
   }
   fclose(log_file);
 }

@@ -13,7 +13,21 @@
 #define ONEVEC 0
 #define ONEENT 0
 #define TRANS 0
+#define LOGFILE 1
 
+void print_time(char *dir, double mpi_exectime, double spmvmintime) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  char name[100];
+  sprintf(name,"%s/%d_time.log",dir,rank);
+  FILE *f = fopen(name, "w");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", name);
+    exit(1);
+  }
+  fprintf(f, "spmvmintime = %lf and mpi_exectime = %lf\n",spmvmintime, mpi_exectime );
+  fclose(f);
+}
 void test_allltoall_inputs(comm_data_t *cd) {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = cd->n;
@@ -157,40 +171,61 @@ int main(int argc, char* argv[]) {
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  test_allltoall_inputs(&cd);
+  #if LOGFILE
+    test_allltoall_inputs(&cd);
+  #endif
 
   int i;
-  for (i = 0; i < n; i++)
-    vv[i] = 1.0;
-  for (i = 0; i < n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
+  for (i = 0; i < n; i++) vv[i] = 1.0;
+  for (i = 0; i < n * nlevel; i++) vv[n + i] = -1.0;		/* dummy */
 
-  double min;
   // SpMV multiplication (sequential) is carried out and minimum time
   // is reported.
-  for (i = 0; i < 5; i++) {
-    // TODO(vatai): double t0 = omp_get_wtime();
+  double start, end;
+  double spmvmintime = 0;
+  // TODO(Utsav): Do we need barrier ? //MPI_Barrier(MPI_COMM_WORLD);
+
+  for (int i = 0; i < 5; ++i) {
+    start = MPI_Wtime();
     spmv_exec_seq(mg->g0, vv, nlevel);
-    // TODO(vatai): double t1 = omp_get_wtime();
-    // if (i == 0 || min > t1 - t0)
-    //   min = t1 - t0;
+    end = MPI_Wtime();
+    if (i==0)
+      spmvmintime = end-start;
+    else if (spmvmintime < end-start)
+      spmvmintime = end-start;
   }
-  printf("seq spmv time= %e\n", min);
+
+  // TODO(vatai): double t1 = omp_get_wtime();
+  // if (i == 0 || min > t1 - t0)
+  //   min = t1 - t0;
+
+  // printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  for (i=0; i< n; i++)
+  for (i = 0; i < n; i++)
     if (mg->plist[0]->part[i] == rank)
       vv[i] = 1.0;
     else
       vv[i] = -100.0;
-  for (i=0; i< n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
-  // for (i = 0; i < 5; i++) {
-  // double t0 = omp_get_wtime();
-  mpi_exec_mpk(mg, vv, &cd, argv[1]);
+  for (i = 0; i < n * nlevel; i++)
+    vv[n + i] = -1.0; /* dummy */
 
+  double mpi_exectime = 0;
+  for (int i = 0; i < 5; ++i) {
+    start = MPI_Wtime();
+    mpi_exec_mpk(mg, vv, &cd, argv[1]);
+    end = MPI_Wtime();
+    if (i == 0)
+      mpi_exectime = end - start;
+    else if (mpi_exectime < end - start)
+      mpi_exectime = end - start;
+  }
+
+  print_time(argv[1], mpi_exectime, spmvmintime);
+
+#if LOGFILE
   char fname[1024];
   sprintf(fname, "vv_after_mpi_exec_rank%d.log", rank);
   FILE *vv_log_file = fopen(fname, "w");
@@ -206,6 +241,7 @@ int main(int argc, char* argv[]) {
     fprintf(vv_log_file, "\n\n");
   }
   fclose(vv_log_file);
+#endif
   // double t1 = omp_get_wtime();
 
   // show_exinfo(mg);
