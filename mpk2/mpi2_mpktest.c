@@ -132,8 +132,6 @@ int main(int argc, char* argv[]) {
   double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
   assert(vv != NULL);
 
-  // verify if the input data has correct structure and report error
-  // if not and prepare communication matrix.
   prep_mpk(mg, vv);
 
   int world_size;
@@ -141,23 +139,10 @@ int main(int argc, char* argv[]) {
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
   assert(world_size == mg->npart);
 
-  // Every phase needs its own buffer.
-  // It can be overwritten over the same memory later.
-  // (Utsav) Do we need to change the name ?
-
-  // int MPI_Alltoallv(const void *sendbuf, const int *sendcounts,
-  //                   const int *sdispls, MPI_Datatype sendtype, void *recvbuf,
-  //                   const int *recvcounts, const int *rdispls, MPI_Datatype recvtype,
-  //                   MPI_Comm comm)
-
-  // Each phase communicates a different amount, hence pointer to
-  // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
-  // send buffer in phase `p`
-
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  test_allltoall_inputs(&cd);
+  // test_allltoall_inputs(&cd);
 
   int i;
   for (i = 0; i < n; i++)
