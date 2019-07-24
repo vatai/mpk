@@ -152,7 +152,10 @@ int main(int argc, char* argv[]) {
   prep_mpk(mg, vv);
 
   int world_size;
+  int rank;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
   assert(world_size == mg->npart);
 
@@ -182,8 +185,6 @@ int main(int argc, char* argv[]) {
   printf("seq spmv time= %e\n", min);
   check_error(vv, n, nlevel);
 
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   for (i=0; i< n; i++)
     if (mg->plist[0]->part[i] == rank)
       vv[i] = 1.0;
