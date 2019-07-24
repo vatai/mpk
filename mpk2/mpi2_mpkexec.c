@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "lib.h"
-#include "mpi_lib.h"
+#include "mpi2_lib.h"
 
 void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
   char fname[1024];
