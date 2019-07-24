@@ -7,7 +7,7 @@
 #include <mpi.h>
 
 #include "lib.h"
-#include "mpi_lib.h"
+#include "mpi2_lib.h"
 
 #define DETAIL 0
 #define ONEVEC 0
@@ -114,6 +114,14 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
+void make_mptr(mpk_t *mg, comm_data_t *cd) {
+  // TODO(vatai): should it be (nphase + 1) ???
+  cd->mptr = malloc(sizeof(*cd->mptr) * cd->nphase);
+  for (int i = 0; i < cd->nphase; i++)
+    // TODO(vatai): important, what is the tlist index?????
+    cd->mptr[i] = malloc(sizeof(*cd->mptr[i]) * mg->tlist[0].n);
+}
+
 int main(int argc, char* argv[]) {
   if (argc != 2) {
     fprintf(stderr, "usage: %s dirname\n", argv[0]);
@@ -141,6 +149,8 @@ int main(int argc, char* argv[]) {
 
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
+
+  make_mptr(mg, &cd);
 
   // test_allltoall_inputs(&cd);
 
