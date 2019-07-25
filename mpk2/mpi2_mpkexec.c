@@ -98,10 +98,6 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
                 cd->sdispls + npart * phase, MPI_DOUBLE, cd->vv_rbufs[phase],
                 cd->recvcounts + npart * phase, cd->rdispls + npart * phase,
                 MPI_DOUBLE, MPI_COMM_WORLD);
-  MPI_Alltoallv(cd->idx_sbufs[phase], cd->sendcounts + npart * phase,
-                cd->sdispls + npart * phase, MPI_INT, cd->idx_rbufs[phase],
-                cd->recvcounts + npart * phase, cd->rdispls + npart * phase,
-                MPI_INT, MPI_COMM_WORLD);
 
   // Log receive buffers.
   fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank,
