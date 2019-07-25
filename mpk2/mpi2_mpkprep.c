@@ -188,6 +188,7 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
 
   // For all "other" partitions `p` (other = other partitions we are
   // sending to, and other partitions we are receiving from).
+  //
   // [Note] Each partition is creating its unique scount,sdisp
   // rcount and rdisp
   for (int p = 0; p < npart; p++) {

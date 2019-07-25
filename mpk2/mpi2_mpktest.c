@@ -232,7 +232,6 @@ int main(int argc, char* argv[]) {
     vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
-  printf("===== MPI_PREP_MPK DONE ====");
   mpi_exec_mpk(mg, vv, &cd, argv[1]);
 
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);

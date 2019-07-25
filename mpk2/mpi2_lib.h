@@ -37,9 +37,11 @@ typedef struct {
 } comm_data_t;
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
+
 void mpi_prep_mpk(mpk_t*, comm_data_t *);
 
 void mpi_del_cd(comm_data_t *);
+
 void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir);
 
 #endif
