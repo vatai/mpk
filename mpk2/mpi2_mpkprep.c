@@ -308,8 +308,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     lminmax(phase, mg, &lmin, &lmax);
     phase_comm_table(phase, mg, comm_table, store_part, prevlmin, lmax, prevl);
 
-    if (phase != 0)
-      mpi_prepbufs_mpk(mg, comm_table, cd, phase);
+    mpi_prepbufs_mpk(mg, comm_table, cd, phase);
 
     // Prepare for the next phase.
     prevl = mg->llist[phase]->level;
