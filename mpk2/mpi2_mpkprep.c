@@ -107,8 +107,7 @@ static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
       int i_vvidx = n * l + i;
       if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
         int curpart = mg->plist[phase]->part[i];
-        if (phase != 0)
-          proc_vertex(curpart, i, l, mg, comm_table, store_part);
+        proc_vertex(curpart, i, l, mg, comm_table, store_part);
         store_part[i_vvidx] = curpart;
       }
     }
@@ -297,12 +296,9 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     l0[i] = 0;
   int *prevl = l0;
   int prevlmin = 0;
-  int *prevpartl = mg->plist[0]->part;
 
   for (int phase = 0; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
-    if (phase > 0)
-      prevpartl = mg->plist[phase - 1]->part;
 
     int lmin, lmax;
     lminmax(phase, mg, &lmin, &lmax);
