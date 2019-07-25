@@ -186,21 +186,21 @@ int main(int argc, char* argv[]) {
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  // make_mptr_mcol(mg, &cd);
+  /* make_mptr_mcol(mg, &cd); */
 
   char fname[1024];
-  sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank);
-  FILE *mptr_log_file = fopen(fname, "w");
-  for (int phase = 0; phase <= mg->nphase; phase++) {
-    task_t *tl = mg->tlist + phase * mg->npart + rank;
-    for (int i = 0; i < 10 && i < tl->n; i++) {
-      int idx = tl->idx[i];
-      int imod = idx % mg->n;
-      fprintf(mptr_log_file, "idx %d, idx mod n %d, ptr[%d] %d, mptr[%d] %d\n",
-              idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]);
-    }
-  }
-  fclose(mptr_log_file);
+  /* sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank); */
+  /* FILE *mptr_log_file = fopen(fname, "w"); */
+  /* for (int phase = 0; phase <= mg->nphase; phase++) { */
+  /*   task_t *tl = mg->tlist + phase * mg->npart + rank; */
+  /*   for (int i = 0; i < 10 && i < tl->n; i++) { */
+  /*     long idx = tl->idx[i]; */
+  /*     long imod = idx % mg->n; */
+  /*     fprintf(mptr_log_file, "idx %ld, idx mod n %ld, ptr[%ld] %d, mptr[%d] %d\n", */
+  /*             idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]); */
+  /*   } */
+  /* } */
+  /* fclose(mptr_log_file); */
 
   // test_allltoall_inputs(&cd);
 
@@ -232,6 +232,7 @@ int main(int argc, char* argv[]) {
     vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
+  printf("===== MPI_PREP_MPK DONE ====");
   mpi_exec_mpk(mg, vv, &cd, argv[1]);
 
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);

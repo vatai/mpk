@@ -6,7 +6,7 @@
 #include <mpi.h>
 
 #include "lib.h"
-#include "mpi_lib.h"
+#include "mpi2_lib.h"
 
 static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
   int from_part_to_part = mg->npart * src_part + tgt_part;
@@ -227,16 +227,21 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
   cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
   assert(cd->idx_rbufs[phase] != NULL);
 
-  int counter = 0;
+  int scounter = 0;
+  int rcounter = 0;
   for (int p = 0; p < npart; p++) {
     // For all vv indices.
     for (int i = 0; i < nlevel * n; ++i) {
       // Here p is the destination (to) partition.
-      int idx = get_ct_idx(mg, rank, p, i);
-      if (comm_table[idx]) {
-        // cd->vv_sbufs[phase][counter] = vv[i];
-        cd->idx_sbufs[phase][counter] = i;
-        counter++;
+      int sidx = get_ct_idx(mg, rank, p, i);
+      if (comm_table[sidx]) {
+        cd->idx_sbufs[phase][scounter] = i;
+        scounter++;
+      }
+      int ridx = get_ct_idx(mg, p, rank, i);
+      if (comm_table[ridx]) {
+        cd->idx_rbufs[phase][rcounter] = i;
+        rcounter++;
       }
     }
   }
