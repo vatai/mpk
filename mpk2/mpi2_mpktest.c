@@ -114,7 +114,9 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-static int find_idx(int *ptr, int size, int target) {
+void fill_idx_rbuf(comm_data_t* cd) {}
+
+static int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
     if (ptr[i] == target)
       return i;
@@ -143,7 +145,7 @@ void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
       int i = tl->idx[mi] % mg->n;
       int level = tl->idx[mi] / mg->n;
       for (int t = ptr[i]; t < ptr[i + 1]; t++) {
-        int target = col[t] + cd->n * (level - 1);
+        long target = col[t] + cd->n * (level - 1);
         int rsize = cd->rdispls[cd->npart * phase + cd->npart - 1];
         int idx = find_idx(cd->idx_rbufs[phase], rsize, target);
         if (idx == -1) idx = find_idx(tl->idx, tl->n, target);
@@ -184,7 +186,7 @@ int main(int argc, char* argv[]) {
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  make_mptr_mcol(mg, &cd);
+  // make_mptr_mcol(mg, &cd);
 
   char fname[1024];
   sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank);
