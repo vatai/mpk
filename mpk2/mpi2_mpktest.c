@@ -114,20 +114,42 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-void make_mptr(mpk_t *mg, comm_data_t *cd) {
+static int find_idx(int *ptr, int size, int target) {
+  for (int i = 0; i < size; i++)
+    if (ptr[i] == target)
+      return i;
+  return -1;
+}
+
+void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *ptr = mg->g0->ptr;
+  int *col = mg->g0->col;
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
+  cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
   for (int phase = 0; phase <= cd->nphase; phase++) {
     task_t *tl = mg->tlist + phase * mg->npart + rank;
-    int *mptr = malloc(sizeof(*cd->mptr[phase]) * (tl->n + 1));
+    int *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
     mptr[0] = 0;
     for (int mi = 0; mi < tl->n; mi++) {
       int i = tl->idx[mi] % mg->n;
       mptr[mi+1] = mptr[mi] + ptr[i + 1] - ptr[i];
     }
     cd->mptr[phase] = mptr;
+
+    int *mcol = malloc(sizeof(*mcol) * ptr[tl->n]);
+    for (int mi = 0; mi < tl->n; mi++) {
+      int i = tl->idx[mi] % mg->n;
+      int level = tl->idx[mi] / mg->n;
+      for (int t = ptr[i]; t < ptr[i + 1]; t++) {
+        int target = col[t] + cd->n * (level - 1);
+        int rsize = cd->rdispls[cd->npart * phase + cd->npart - 1];
+        int idx = find_idx(cd->idx_rbufs[phase], rsize, target);
+        if (idx == -1) idx = find_idx(tl->idx, tl->n, target);
+        // assert(idx != -1);
+      }
+    }
   }
 }
 
@@ -162,7 +184,7 @@ int main(int argc, char* argv[]) {
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  make_mptr(mg, &cd);
+  make_mptr_mcol(mg, &cd);
 
   char fname[1024];
   sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank);
