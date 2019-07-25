@@ -16,8 +16,8 @@ typedef struct {
   double **vv_sbufs;
   double **vv_rbufs;
   // Send and receive buffers for (vv) indices.
-  int **idx_sbufs;
-  int **idx_rbufs;
+  long **idx_sbufs;
+  long **idx_rbufs;
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition

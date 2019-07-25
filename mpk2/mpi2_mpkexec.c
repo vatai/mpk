@@ -43,8 +43,8 @@ void log_tlist(mpk_t *mg, int phase, FILE *log_file) {
   }
 }
 
-void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
-            int n, FILE *log_file) {
+void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
+            FILE *log_file) {
   int npart;
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
 
@@ -56,11 +56,11 @@ void log_cd(double *vv_bufs, int *idx_bufs, int *count, int *displs,
 
   fprintf(log_file, "[i<%3d] %8s, %8s\n", total, "vv_buf", "idx_buf");
   for (int i = 0; i < total; i++) {
-    int idx = idx_bufs[i];
+    long idx = idx_bufs[i];
     int level = idx / n;
     int j = idx % n;
-    fprintf(log_file, "[%5d] %8.3f, %8d (level: %d, j: %d)\n", i, vv_bufs[i], idx,
-            level, j);
+    fprintf(log_file, "[%5d] %8.3f, %8d (level: %d, j: %d)\n", i, vv_bufs[i],
+            idx, level, j);
   }
 
   fprintf(log_file, "[p<%3d] %8s, %8s\n", npart, "count", "disp");
@@ -83,9 +83,8 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
   // Copy data to send buffers.
   int stotal = cd->sendcounts[npart * phase + npart - 1] +
                cd->sdispls[npart * phase + npart - 1];
-  for (int i = 0; i < stotal; ++i) {
+  for (int i = 0; i < stotal; ++i)
     cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
-  }
 
   // Log send buffers.
   fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank,
@@ -114,9 +113,8 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
   // Copy from receive buffers.
   int rtotal = cd->recvcounts[npart * phase + npart - 1] +
                cd->rdispls[npart * phase + npart - 1];
-  for (int i = 0; i < rtotal; ++i) {
+  for (int i = 0; i < rtotal; ++i)
     vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
-  }
 }
 
 static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static

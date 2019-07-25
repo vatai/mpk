@@ -28,6 +28,7 @@ void print_time(char *dir, double mpi_exectime, double spmvmintime) {
   fprintf(f, "spmvmintime = %lf and mpi_exectime = %lf\n",spmvmintime, mpi_exectime );
   fclose(f);
 }
+
 void test_allltoall_inputs(comm_data_t *cd) {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = cd->n;
