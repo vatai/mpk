@@ -92,9 +92,26 @@ static void clear_comm_table(mpk_t *mg, int *comm_table) {
     comm_table[i] = 0;
 }
 
+static int min_or_0(mpk_t *mg, int phase) {
+  if (mg->nphase == 0) return 0;
+  int *ll = mg->llist[phase]->level;
+  int rv = ll[0];
+  for (int i = 0; i < mg->n; i++)
+    if (ll[i] < rv)
+      rv = ll[i];
+  return rv;
+}
+
+static int amax(int *ll, int n) {
+  int rv = ll[0];
+  for (int i = 0; i < n; i++)
+    if (ll[i] > rv)
+      rv = ll[i];
+  return rv;
+}
+
 static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
-                             int *store_part, int prevlmin, int lmax,
-                             int *prevl) {
+                             int *store_part, int *prevl) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
@@ -102,6 +119,9 @@ static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
   int n = mg->n;
   clear_comm_table(mg, comm_table);
   int *ll = mg->llist[phase]->level;
+  int lmax = amax(ll, n);
+  // TODO(vatai): remove if phase == 0 is skipped
+  int prevlmin = phase ? min_or_0(mg, phase - 1) : 0;
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
@@ -114,13 +134,13 @@ static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
   }
 }
 
-static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part,
-                             int prevlmin) {
+static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part) {
   int n = mg->n;
   int nlevel = mg->nlevel;
   int npart = mg->npart;
   int nphase = mg->nphase;
   int *sl = mg->sg->levels;
+  int prevlmin = min_or_0(mg, nphase - 1);
   clear_comm_table(mg, comm_table);
   for (int p = 0; p < npart; p++) {
     for (int l = prevlmin + 1; l <= nlevel; l++) {
@@ -280,7 +300,7 @@ void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
  * Allocate and fill `comm_data_t cd`.
  */
 void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
-  printf("preparing mpi buffers for communication...");  fflush(stdout);
+  printf("preparing mpi buffers for communication...\n");
 
   assert(mg != NULL);
   int n = mg->n;
@@ -295,23 +315,19 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   for (int i = 0; i < n; i++)
     l0[i] = 0;
   int *prevl = l0;
-  int prevlmin = 0;
 
   for (int phase = 0; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
 
-    int lmin, lmax;
-    lminmax(phase, mg, &lmin, &lmax);
-    phase_comm_table(phase, mg, comm_table, store_part, prevlmin, lmax, prevl);
+    phase_comm_table(phase, mg, comm_table, store_part, prevl);
 
     mpi_prepbufs_mpk(mg, comm_table, cd, phase);
 
     // Prepare for the next phase.
     prevl = mg->llist[phase]->level;
-    prevlmin = lmin;
   }
 
-  skirt_comm_table(mg, comm_table, store_part, prevlmin);
+  skirt_comm_table(mg, comm_table, store_part);
   mpi_prepbufs_mpk(mg, comm_table, cd, mg->nphase);
 
   free(comm_table);
