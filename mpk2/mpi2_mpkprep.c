@@ -50,6 +50,9 @@ static void new_cd(mpk_t *mg, comm_data_t *cd) {
 }
 
 static int *new_comm_table(mpk_t *mg) {
+  // Communication of which vertex (n) from which level (nlevel)
+  // from which process/partition (npart) to which process/partition
+  // (npart).
   int num_ct_elem = mg->nlevel * mg->n * mg->npart * mg->npart;
   int *ct = malloc(sizeof(*ct) * num_ct_elem);
   assert(ct != NULL);
@@ -112,12 +115,14 @@ static int amax(int *ll, int n) {
 
 static void zeroth_comm_table(mpk_t *mg, int *comm_table,
                              int *store_part) {
-  // Communication of which vertex (n) from which level (nlevel)
-  // from which process/partition (npart) to which process/partition
-  // (npart).
   int n = mg->n;
   int *ll = mg->llist[0]->level;
   clear_comm_table(mg, comm_table);
+  for (int i = 0; i < n; i++) {
+    int part = mg->plist[0]->part[i];
+    int idx = get_ct_idx(mg, part, part, i);
+    comm_table[idx] = 1;
+  }
   int lmax = amax(ll, n);
   for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
@@ -133,9 +138,6 @@ static void zeroth_comm_table(mpk_t *mg, int *comm_table,
 
 static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
                              int *store_part) {
-  // Communication of which vertex (n) from which level (nlevel)
-  // from which process/partition (npart) to which process/partition
-  // (npart).
   int n = mg->n;
   int *pl = mg->plist[phase]->part;
   int *ll = mg->llist[phase]->level;
