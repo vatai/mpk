@@ -123,35 +123,70 @@ static int find_idx(long *ptr, int size, long target) {
   return -1;
 }
 
-void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
+void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int *ptr = mg->g0->ptr;
+  task_t *tl = mg->tlist + phase * mg->npart + rank;
+  int *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
+  mptr[0] = 0;
+  for (int mi = 0; mi < tl->n; mi++) {
+    int i = tl->idx[mi] % mg->n;
+    mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
+  }
+  cd->mptr[phase] = mptr;
+}
+
+void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *ptr = mg->g0->ptr;
   int *col = mg->g0->col;
+  int *mptr = cd->mptr[phase];
+  int *rdisp = cd->rdispls + phase * mg->npart;
+  int *rcount = cd->recvcounts + phase * mg->npart;
+  task_t *tl = mg->tlist + phase * mg->npart + rank;
+
+  for (int i = 0; i < 5; i++)
+    printf(">>>> rcount %d,", cd->recvcounts[i]);
+  printf("\n");
+  int *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
+  for (int mi = 0; mi < tl->n; mi++) {
+    long i = tl->idx[mi] % mg->n;
+    long level = tl->idx[mi] / mg->n;
+
+    for (int t = ptr[i]; t < ptr[i + 1]; t++) {
+      long target = col[t] + cd->n * (level - 1);
+      int rsize = rcount[cd->npart - 1] + rdisp[cd->npart - 1];
+      int idx = find_idx(cd->idx_rbufs[phase] + rank, rsize, target);
+      if (idx == -1)
+        idx = find_idx(tl->idx, tl->n, target);
+      // Debug
+      if (idx == -1) {
+        printf("%d=================== wrong rsize: %d, targer: %ld\n", rank,
+               rsize, target);
+        for (int j = 0; j < rsize; j++)
+          printf("idx_rbufs[%d]: %ld != %ld\n", j, cd->idx_rbufs[phase][rank + j],
+        target);
+        for (int j = 0; j < tl->n; j++)
+          printf("tl->idx[%d]: %ld != %ld\n", j, tl->idx[j], target);
+      } else {
+        printf("%d=================== right rsize: %d, targer: %ld\n", rank,
+               rsize, target);
+      }
+      assert(idx != -1);
+    }
+  }
+  cd->mcol[phase] = mcol;
+}
+
+void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
   for (int phase = 0; phase <= cd->nphase; phase++) {
-    task_t *tl = mg->tlist + phase * mg->npart + rank;
-    int *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
-    mptr[0] = 0;
-    for (int mi = 0; mi < tl->n; mi++) {
-      int i = tl->idx[mi] % mg->n;
-      mptr[mi+1] = mptr[mi] + ptr[i + 1] - ptr[i];
-    }
-    cd->mptr[phase] = mptr;
-
-    int *mcol = malloc(sizeof(*mcol) * ptr[tl->n]);
-    for (int mi = 0; mi < tl->n; mi++) {
-      int i = tl->idx[mi] % mg->n;
-      int level = tl->idx[mi] / mg->n;
-      for (int t = ptr[i]; t < ptr[i + 1]; t++) {
-        long target = col[t] + cd->n * (level - 1);
-        int rsize = cd->rdispls[cd->npart * phase + cd->npart - 1];
-        int idx = find_idx(cd->idx_rbufs[phase], rsize, target);
-        if (idx == -1) idx = find_idx(tl->idx, tl->n, target);
-        // assert(idx != -1);
-      }
-    }
+    make_mptr(mg, cd, phase);
+    make_mcol(mg, cd, phase);
   }
 }
 
@@ -186,7 +221,7 @@ int main(int argc, char* argv[]) {
   comm_data_t cd;
   mpi_prep_mpk(mg, &cd);
 
-  /* make_mptr_mcol(mg, &cd); */
+  make_mptr_mcol(mg, &cd);
 
   char fname[1024];
   /* sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank); */
