@@ -110,18 +110,39 @@ static int amax(int *ll, int n) {
   return rv;
 }
 
-static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
-                             int *store_part, int *prevl) {
+static void zeroth_comm_table(mpk_t *mg, int *comm_table,
+                             int *store_part) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
-  int *pl = mg->plist[phase]->part;
   int n = mg->n;
+  int *ll = mg->llist[0]->level;
   clear_comm_table(mg, comm_table);
-  int *ll = mg->llist[phase]->level;
   int lmax = amax(ll, n);
-  // TODO(vatai): remove if phase == 0 is skipped
-  int prevlmin = phase ? min_or_0(mg, phase - 1) : 0;
+  for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
+    for (int i = 0; i < n; i++) {
+      int i_vvidx = n * l + i;
+      if (0 < l && l <= ll[i] && store_part[i_vvidx] == -1) {
+        int curpart = mg->plist[0]->part[i];
+        proc_vertex(curpart, i, l, mg, comm_table, store_part);
+        store_part[i_vvidx] = curpart;
+      }
+    }
+  }
+}
+
+static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
+                             int *store_part) {
+  // Communication of which vertex (n) from which level (nlevel)
+  // from which process/partition (npart) to which process/partition
+  // (npart).
+  int n = mg->n;
+  int *pl = mg->plist[phase]->part;
+  int *ll = mg->llist[phase]->level;
+  int *prevl = mg->llist[phase - 1]->level;
+  int lmax = amax(ll, n);
+  int prevlmin = min_or_0(mg, phase - 1);
+  clear_comm_table(mg, comm_table);
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
@@ -316,14 +337,16 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
     l0[i] = 0;
   int *prevl = l0;
 
-  for (int phase = 0; phase < mg->nphase; phase++) {
+  if (mg->nphase > 0) {
+    assert(mg->plist[0] != NULL);
+    zeroth_comm_table(mg, comm_table, store_part);
+    mpi_prepbufs_mpk(mg, comm_table, cd, 0);
+    prevl = mg->llist[0]->level;
+  }
+  for (int phase = 1; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
-
-    phase_comm_table(phase, mg, comm_table, store_part, prevl);
-
+    phase_comm_table(phase, mg, comm_table, store_part);
     mpi_prepbufs_mpk(mg, comm_table, cd, phase);
-
-    // Prepare for the next phase.
     prevl = mg->llist[phase]->level;
   }
 
