@@ -114,7 +114,76 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-void fill_idx_rbuf(comm_data_t* cd) {}
+void collect_results(mpk_t *mg, double *vv) {
+  int rank, worldsize;
+  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int *count = malloc(sizeof(*count) * mg->npart);
+  for (int part = 0; part < mg->npart; part++)
+    count[part] = 0;
+
+  for (int phase = 0; phase <= mg->nphase; phase++) {
+    for (int part = 0; part < mg->npart; part++) {
+      task_t *tl = mg->tlist + phase * mg->npart + part;
+      count[part] += tl->n;
+    }
+  }
+  // tl_n_sum[] done
+
+  if (rank == 0) {
+    // allocate buf
+    double **buf = malloc(sizeof(*buf) * mg->npart);
+    for (int part = 0; part < mg->npart; part++)
+      buf[part] = malloc(sizeof(*buf[part]) * count[part]);
+
+    MPI_Status status;
+    for (int part = 1; part < mg->npart; part++)
+      MPI_Recv(buf[part], count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
+               &status);
+
+    // TODO(vatai): copy from buf
+    for (int part = 0; part <= mg->npart; part++) {
+      for (int phase = 1; phase <= mg->nphase; phase++) {
+        task_t *tl = mg->tlist + phase * mg->npart + part;
+        for (int i = 0; i < tl->n; i++) {
+          long val = tl->idx[i];
+          if (val >= mg->n * (mg->nlevel + 1))
+            printf("tl->idx[i]: %ld\n", tl->idx[i]);
+          vv[tl->idx[i]] = 0; // buf[part][i];
+        }
+      }
+    }
+
+    // deallocate buf
+    for (int part = 1; part < mg->npart; part++)
+      free(buf[part]);
+    free(buf);
+  } else {
+    double *buf = malloc(sizeof(*buf) * count[rank]);
+
+    for (int phase = 0; phase <= mg->nphase; phase++) {
+      task_t *tl = mg->tlist + phase * mg->npart + rank;
+      for (int i = 0; i < tl->n; i++)
+        buf[i] = vv[tl->idx[i]];
+    }
+
+    MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+    free(buf);
+  }
+
+  free(count);
+}
+
+int check_results(comm_data_t *cd, double *vv) {
+  return 0; // TODO(vatai): remove
+  int size = cd->n * cd->nlevel;
+  for (int i = 0; i < size; i++)
+    if (vv[i] != 1) return -1;
+  return 0;
+};
+
+void fill_idx_rbuf(comm_data_t *cd) {}
 
 static int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
@@ -323,9 +392,11 @@ int main(int argc, char* argv[]) {
   // printf("spmv nth= %d time= %e\n", nth, min);
   // check_error(vv, n, nlevel);
 
+  collect_results(mg, vv);
+  int result = check_results(&cd, vv);
   mpi_del_cd(&cd);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
   MPI_Finalize();
-  return 0;
+  return result;
 }
