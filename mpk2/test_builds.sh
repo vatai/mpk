@@ -54,4 +54,4 @@ echo test_builds.sh: testing MPI version
 # Check MPI version
 mpirun -n $NPART ./mpi2_mpktest $DIRNAME || exit
 
-python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
+# python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
