@@ -139,6 +139,7 @@ void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
 }
 
 void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
+  printf("MCOL START\n");
   int rank, worldsize;
   MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -158,10 +159,15 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
       long target = col[t] + cd->n * (level - 1);
 
       // PROBLEM CODE
-      int rsize = rcount[phase * cd->npart + rank];
-      long *idx_rbuf = cd->idx_rbufs[phase] + rank;
-
-      int idx = find_idx(idx_rbuf, rsize, target);
+      int rsize;
+      long *idx_rbuf;
+      int idx = -1;
+      for (int ph = 0; idx == -1 && ph < phase; ph++) {
+        rsize = rcount[(ph) * cd->npart + rank];
+        idx_rbuf = cd->idx_rbufs[ph] + rank;
+        idx = find_idx(idx_rbuf, rsize, target);
+        if (idx != -1 && ph != 0) printf("phase: %d, ph: %d", phase, ph);
+      }
       if (idx == -1)
         idx = find_idx(tl->idx, tl->n, target);
 
@@ -207,6 +213,7 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
     }
   }
   cd->mcol[phase] = mcol;
+  printf("MCOL END\n");
 }
 
 void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
