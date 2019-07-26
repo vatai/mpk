@@ -37,12 +37,6 @@ echo test_builds.sh: generating data
 
 echo test_builds.sh: testing OpenMP version
 DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
-# Check OpenMP version
-./mpktest $DIRNAME || exit
-
-echo test_builds.sh: testing MPI version
-# Check MPI version
-mpirun -n $NPART ./mpi2_mpktest $DIRNAME || exit
 
 # POST PROCESSING
 #
@@ -52,5 +46,12 @@ mpirun -n $NPART ./mpi2_mpktest $DIRNAME || exit
 for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
+
+# Check OpenMP version
+./mpktest $DIRNAME || exit
+
+echo test_builds.sh: testing MPI version
+# Check MPI version
+mpirun -n $NPART ./mpi2_mpktest $DIRNAME || exit
 
 python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
