@@ -183,25 +183,6 @@ static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part) {
   } // end partition loop
 }
 
-static void lminmax(int phase, mpk_t *mg, int *_lmin, int *_lmax) {
-  assert(mg->llist[phase] != NULL);
-  int lmin, lmax;
-  int *ll = mg->llist[phase]->level;
-  lmin = lmax = ll[0];
-  for (int i = 1; i < mg->n; i++) {
-    if (lmin > ll[i])
-      lmin = ll[i];
-    if (lmax < ll[i])
-      lmax = ll[i];
-  }
-
-  if (lmax > mg->nlevel)
-    lmax = mg->nlevel;
-
-  *_lmin = lmin;
-  *_lmax = lmax;
-}
-
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */

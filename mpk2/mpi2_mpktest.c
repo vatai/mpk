@@ -186,18 +186,16 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 
         fprintf(file, "idx_rbuf\n");
         for (int ph = 0; ph <= cd->nphase; ph++) {
-          for (int pt = 0; pt < cd->npart; pt++) {
+          for (int pt = 0; pt < cd->npart; pt++)
             fprintf(file, "%ld ", cd->idx_rbufs[ph][pt]);
-          };
           fprintf(file, "\n");
         }
         fprintf(file, "\n");
 
         fprintf(file, "recvcnt\n");
         for (int ph = 0; ph <= cd->nphase; ph++) {
-          for (int pt = 0; pt < cd->npart; pt++) {
+          for (int pt = 0; pt < cd->npart; pt++)
             fprintf(file, "%d ", cd->recvcounts[ph * cd->npart + pt]);
-          };
           fprintf(file, "\n");
         }
         fprintf(file, "\n");
