@@ -182,28 +182,10 @@ static void collect_results(mpk_t *mg, double *vv) {
 }
 
 static int check_results(comm_data_t *cd, double *vv) {
-  // return 0; // TODO(vatai): remove
   int size = cd->n * cd->nlevel;
-  FILE *file = fopen("check_results.log", "w");
-  for (int i = 0; i < size; i++) {
-    double val = vv[cd->n + i];
-    if (i % cd->n == 0)
-      fprintf(file, "\n");
-    if (1.0 == val)
-      fprintf(file, "x");
-    else
-      fprintf(file, "-");
-    /* fprintf(file, "%1.0f", val); */
-  }
-  fprintf(file, "\n");
-  fclose(file);
-
-  for (int i = 0; i < size; i++) {
-    double val = vv[cd->n + i];
-    if (val != 1.0) {
-      printf("--> --> %1.0f <-- <--\n", val);
-    }
-  }
+  for (int i = 0; i < size; i++)
+    if (vv[cd->n + i] != 1.0)
+      return -1;
   return 0;
 };
 
@@ -419,8 +401,10 @@ int main(int argc, char* argv[]) {
   // printf("spmv nth= %d time= %e\n", nth, min);
   // check_error(vv, n, nlevel);
 
+  int result = 0;
   collect_results(mg, vv);
-  int result = check_results(&cd, vv);
+  if (rank == 0)
+    result = check_results(&cd, vv);
   mpi_del_cd(&cd);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
