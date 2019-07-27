@@ -114,12 +114,9 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-void collect_results(mpk_t *mg, double *vv) {
-  int rank, worldsize;
-  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
+static int *alloc_fill_count(mpk_t *mg) {
   int *count = malloc(sizeof(*count) * mg->npart);
+  assert(count != NULL);
   for (int part = 0; part < mg->npart; part++)
     count[part] = 0;
 
@@ -129,61 +126,86 @@ void collect_results(mpk_t *mg, double *vv) {
       count[part] += tl->n;
     }
   }
-  // tl_n_sum[] done
+  return count;
+}
 
-  if (rank == 0) {
-    // allocate buf
-    double **buf = malloc(sizeof(*buf) * mg->npart);
-    for (int part = 0; part < mg->npart; part++)
-      buf[part] = malloc(sizeof(*buf[part]) * count[part]);
-
-    MPI_Status status;
-    for (int part = 1; part < mg->npart; part++)
-      MPI_Recv(buf[part], count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
-               &status);
-
-    // TODO(vatai): copy from buf
-    for (int part = 0; part <= mg->npart; part++) {
-      for (int phase = 1; phase <= mg->nphase; phase++) {
-        task_t *tl = mg->tlist + phase * mg->npart + part;
-        for (int i = 0; i < tl->n; i++) {
-          long val = tl->idx[i];
-          if (val >= mg->n * (mg->nlevel + 1))
-            printf("tl->idx[i]: %ld\n", tl->idx[i]);
-          vv[tl->idx[i]] = 0; // buf[part][i];
-        }
+static void recv_copy(mpk_t *mg, int *count, double *vv) {
+  for (int part = 1; part < mg->npart; part++) {
+    double *buf = malloc(sizeof(*buf) * count[part]);
+    assert(buf != NULL);
+    MPI_Recv(buf, count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+    // PHASE LOOP
+    for (int phase = 0; phase <= mg->nphase; phase++) {
+      task_t *tl = mg->tlist + phase * mg->npart + part;
+      for (int i = 0; i < tl->n; i++) {
+        long val = tl->idx[i];
+        if (val >= mg->n * (mg->nlevel + 1))
+          printf("tl->idx[i]: %ld\n", tl->idx[i]);
+        vv[tl->idx[i]] = buf[i];
       }
     }
-
-    // deallocate buf
-    for (int part = 1; part < mg->npart; part++)
-      free(buf[part]);
-    free(buf);
-  } else {
-    double *buf = malloc(sizeof(*buf) * count[rank]);
-
-    for (int phase = 0; phase <= mg->nphase; phase++) {
-      task_t *tl = mg->tlist + phase * mg->npart + rank;
-      for (int i = 0; i < tl->n; i++)
-        buf[i] = vv[tl->idx[i]];
-    }
-
-    MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     free(buf);
   }
+}
+
+static void copy_send(mpk_t *mg, int *count, double *vv) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  double *buf = malloc(sizeof(*buf) * count[rank]);
+  assert(buf != NULL);
+
+  // PHASE LOOP
+  for (int phase = 0; phase <= mg->nphase; phase++) {
+    task_t *tl = mg->tlist + phase * mg->npart + rank;
+    for (int i = 0; i < tl->n; i++)
+      buf[i] = vv[tl->idx[i]];
+  }
+
+  MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+  free(buf);
+}
+
+static void collect_results(mpk_t *mg, double *vv) {
+  int rank, worldsize;
+  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int *count = alloc_fill_count(mg);
+
+  if (rank == 0)
+    recv_copy(mg, count, vv);
+  else
+    copy_send(mg, count, vv);
 
   free(count);
 }
 
-int check_results(comm_data_t *cd, double *vv) {
-  return 0; // TODO(vatai): remove
+static int check_results(comm_data_t *cd, double *vv) {
+  // return 0; // TODO(vatai): remove
   int size = cd->n * cd->nlevel;
-  for (int i = 0; i < size; i++)
-    if (vv[i] != 1) return -1;
+  FILE *file = fopen("check_results.log", "w");
+  for (int i = 0; i < size; i++) {
+    double val = vv[cd->n + i];
+    if (i % cd->n == 0)
+      fprintf(file, "\n");
+    if (1.0 == val)
+      fprintf(file, "x");
+    else
+      fprintf(file, "-");
+    /* fprintf(file, "%1.0f", val); */
+  }
+  fprintf(file, "\n");
+  fclose(file);
+
+  for (int i = 0; i < size; i++) {
+    double val = vv[cd->n + i];
+    if (val != 1.0) {
+      printf("--> --> %1.0f <-- <--\n", val);
+    }
+  }
   return 0;
 };
-
-void fill_idx_rbuf(comm_data_t *cd) {}
 
 static int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
@@ -199,6 +221,7 @@ void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
   int *ptr = mg->g0->ptr;
   task_t *tl = mg->tlist + phase * mg->npart + rank;
   int *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
+  assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < tl->n; mi++) {
     int i = tl->idx[mi] % mg->n;
@@ -219,6 +242,7 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   task_t *tl = mg->tlist + phase * mg->npart + rank;
 
   int *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
+  assert(mcol != NULL);
   for (int mi = 0; mi < tl->n; mi++) {
     long i = tl->idx[mi] % mg->n;
     long level = tl->idx[mi] / mg->n;
@@ -278,7 +302,10 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 
 void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
+  assert(cd->mptr != NULL);
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
+  assert(cd->mcol != NULL);
+  
   for (int phase = 0; phase <= cd->nphase; phase++) {
     make_mptr(mg, cd, phase);
     /* printf("========= recvcounts[]"); */
@@ -286,7 +313,7 @@ void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
     /*   printf("%d ", cd->rdispls[i]); */
     /* printf("\n"); */
     // exit(1);
-    make_mcol(mg, cd, phase);
+    // make_mcol(mg, cd, phase);
   }
 }
 
