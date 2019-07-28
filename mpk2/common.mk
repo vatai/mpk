@@ -1,4 +1,4 @@
-default : gen comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest
+default : gen gen2 comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest
 
 gen : gen.c
 	gcc -O3 -o gen gen.c
