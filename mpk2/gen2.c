@@ -82,22 +82,44 @@ int main(int argc, char **argv) {
     int i, j;
     for (i=0; i< n; i++)
       for (j=0; j< n; j++) {
-	if (i > 0)
-	  fprintf(f, "%d ", (i-1) * n + j + 1);
-	else
-	  fprintf(f, "%d ", (n-1) * n + j + 1);
-	if (i < n-1)
-	  fprintf(f, "%d ", (i+1) * n + j + 1);
-	else
+        double mid = -4;
+        double side = 1;
+        if (i == n - 1) {
 	  fprintf(f, "%d ", 0 * n + j + 1);
-	if (j > 0)
-	  fprintf(f, "%d ", i * n + j-1 + 1);
-	else
-	  fprintf(f, "%d ", i * n + n-1 + 1);
-	if (j < n-1)
-	  fprintf(f, "%d ", i * n + j+1 + 1);
-	else
+          fprintf(fv, "%lf ", side);
+        }
+	if (i > 0) {
+	  fprintf(f, "%d ", (i-1) * n + j + 1);
+          fprintf(fv, "%lf ", side);
+        }
+        if (j == n - 1){
 	  fprintf(f, "%d ", i * n + 0 + 1);
+          fprintf(fv, "%lf ", side);
+        }
+	if (j > 0) {
+	  fprintf(f, "%d ", i * n + j-1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
+
+        fprintf(f, "%d ", i * n + j + 1);
+        fprintf(fv, "%lf ", mid);
+
+        if (i < n - 1) {
+	  fprintf(f, "%d ", (i+1) * n + j + 1);
+          fprintf(fv, "%lf ", side);
+        }
+	if (j < n - 1) {
+	  fprintf(f, "%d ", i * n + j+1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
+        if (i == 0) {
+	  fprintf(f, "%d ", (n-1) * n + j + 1);
+          fprintf(fv, "%lf ", side);
+        }
+        if (j == 0){
+	  fprintf(f, "%d ", i * n + n-1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
 	fprintf(f, "\n");
 
 	fprintf(fp, "%d %d\n", i, j);
@@ -109,19 +131,36 @@ int main(int argc, char **argv) {
     int i, j;
     for (i=0; i< n; i++)
       for (j=0; j< n; j++) {
-	if (i > 0)
-	  fprintf(f, "%d ", (i-1) * n + j + 1);
-	if (i < n-1)
-	  fprintf(f, "%d ", (i+1) * n + j + 1);
-	if (j > 0)
-	  fprintf(f, "%d ", i * n + j-1 + 1);
-	if (j < n-1)
-	  fprintf(f, "%d ", i * n + j+1 + 1);
-
-	if (i > 0 && j > 0)
+        double mid = -6;
+        double side = 1;
+	if (i > 0 && j > 0) {
 	  fprintf(f, "%d ", (i-1) * n + j-1 + 1);
-	if (i < n-1 && j < n-1)
+          fprintf(fv, "%lf ", side);
+        }
+	if (i > 0) {
+	  fprintf(f, "%d ", (i-1) * n + j + 1);
+          fprintf(fv, "%lf ", side);
+        }
+	if (j > 0) {
+	  fprintf(f, "%d ", i * n + j-1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
+
+        fprintf(f, "%d ", i * n + j + 1);
+        fprintf(fv, "%lf ", mid);
+
+        if (j < n-1) {
+	  fprintf(f, "%d ", i * n + j+1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
+        if (i < n - 1) {
+          fprintf(f, "%d ", (i+1) * n + j + 1);
+          fprintf(fv, "%lf ", side);
+        }
+	if (i < n-1 && j < n-1) {
 	  fprintf(f, "%d ", (i+1) * n + j+1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
 	fprintf(f, "\n");
 
 	fprintf(fp, "%d %d\n", i, j);
@@ -133,23 +172,44 @@ int main(int argc, char **argv) {
     int i, j;
     for (i=0; i< n; i++)
       for (j=0; j< n; j++) {
-	if (i > 0)
+        double side = 1;
+        double mid = -8;
+	if (i > 0) {
 	  fprintf(f, "%d ", (i-1) * n + j + 1);
-	if (i < n-1)
+          fprintf(fv, "%lf ", side);
+        }
+	if (i < n-1) {
 	  fprintf(f, "%d ", (i+1) * n + j + 1);
-	if (j > 0)
+          fprintf(fv, "%lf ", side);
+        }
+	if (j > 0) {
 	  fprintf(f, "%d ", i * n + j-1 + 1);
-	if (j < n-1)
+          fprintf(fv, "%lf ", side);
+        }
+	if (j < n-1) {
 	  fprintf(f, "%d ", i * n + j+1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
 
-	if (i > 0 && j > 0)
+        fprintf(f, "%d ", i * n + j + 1);
+        fprintf(fv, "%lf ", mid);
+
+        if (i > 0 && j > 0) {
 	  fprintf(f, "%d ", (i-1) * n + j-1 + 1);
-	if (i < n-1 && j < n-1)
+          fprintf(fv, "%lf ", side);
+        }
+	if (i < n-1 && j < n-1) {
 	  fprintf(f, "%d ", (i+1) * n + j+1 + 1);
-	if (i > 0 && j < n-1)
+          fprintf(fv, "%lf ", side);
+        }
+	if (i > 0 && j < n-1) {
 	  fprintf(f, "%d ", (i-1) * n + j+1 + 1);
-	if (i < n-1 && j > 0)
+          fprintf(fv, "%lf ", side);
+        }
+	if (i < n-1 && j > 0) {
 	  fprintf(f, "%d ", (i+1) * n + j-1 + 1);
+          fprintf(fv, "%lf ", side);
+        }
 	fprintf(f, "\n");
 
 	fprintf(fp, "%d %d\n", i, j);
@@ -162,18 +222,36 @@ int main(int argc, char **argv) {
     for (i=0; i< n; i++)
       for (j=0; j< n; j++)
 	for (k=0; k< n; k++) {
-	  if (i > 0)
+          double side = 1;
+          double mid = -6;
+
+          fprintf(f, "%d ", (i * n + j) * n + k + 1);
+          fprintf(fv, "%lf ", mid);
+
+          if (i > 0) {
 	    fprintf(f, "%d ", ((i-1) * n + j) * n + k + 1);
-	  if (i < n-1)
+            fprintf(fv, "%lf ", side);
+          }
+	  if (i < n-1) {
 	    fprintf(f, "%d ", ((i+1) * n + j) * n + k + 1);
-	  if (j > 0)
+            fprintf(fv, "%lf ", side);
+          }
+	  if (j > 0) {
 	    fprintf(f, "%d ", (i * n + j-1) * n + k + 1);
-	  if (j < n-1)
+            fprintf(fv, "%lf ", side);
+          }
+	  if (j < n-1) {
 	    fprintf(f, "%d ", (i * n + j+1) * n + k + 1);
-	  if (k > 0)
+            fprintf(fv, "%lf ", side);
+          }
+	  if (k > 0) {
 	    fprintf(f, "%d ", (i * n + j) * n + k-1 + 1);
-	  if (k < n-1)
+            fprintf(fv, "%lf ", side);
+          }
+	  if (k < n-1) {
 	    fprintf(f, "%d ", (i * n + j) * n + k+1 + 1);
+            fprintf(fv, "%lf ", side);
+          }
 	  fprintf(f, "\n");
 	}
 
