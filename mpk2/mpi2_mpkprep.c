@@ -13,7 +13,8 @@ static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
   return mg->nlevel * mg->n * from_part_to_part + vv_idx;
 }
 
-static void new_cd(mpk_t *mg, comm_data_t *cd) {
+comm_data_t *new_comm_data(mpk_t *mg) {
+  comm_data_t *cd = malloc(sizeof(*cd));
   cd->n = mg->n;
   cd->npart = mg->npart;
   cd->nlevel = mg->nlevel;
@@ -47,6 +48,34 @@ static void new_cd(mpk_t *mg, comm_data_t *cd) {
   assert(cd->sdispls != NULL);
   cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
   assert(cd->rdispls != NULL);
+
+  return cd;
+}
+
+void del_comm_data(comm_data_t *cd) {
+  int i;
+  free(cd->rdispls);
+  free(cd->sdispls);
+  free(cd->recvcounts);
+  free(cd->sendcounts);
+
+  // TODO(vatai): receive buffers can't be deallocated. Why? Check
+  // this after the communication part is written.
+  for (i = 1; i < cd->nphase; i++) {
+    free(cd->idx_rbufs[i]);
+    free(cd->idx_sbufs[i]);
+    free(cd->vv_rbufs[i]);
+    free(cd->vv_sbufs[i]);
+  }
+  free(cd->idx_rbufs);
+  free(cd->idx_sbufs);
+  free(cd->vv_rbufs);
+  free(cd->vv_sbufs);
+
+  cd->nphase = 0;
+  cd->npart = 0;
+  cd->nlevel = 0;
+  cd->n = 0;
 }
 
 static int *new_comm_table(mpk_t *mg) {
@@ -309,7 +338,6 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   assert(mg != NULL);
   int n = mg->n;
 
-  new_cd(mg, cd);
   int *comm_table = new_comm_table(mg);
   int *store_part = new_store_part(mg);
 
@@ -341,28 +369,3 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   printf(" done\n");
 }
 
-void mpi_del_cd(comm_data_t *cd) {
-  int i;
-  free(cd->rdispls);
-  free(cd->sdispls);
-  free(cd->recvcounts);
-  free(cd->sendcounts);
-
-  // TODO(vatai): receive buffers can't be deallocated. Why? Check
-  // this after the communication part is written.
-  for (i = 1; i < cd->nphase; i++) {
-    free(cd->idx_rbufs[i]);
-    free(cd->idx_sbufs[i]);
-    free(cd->vv_rbufs[i]);
-    free(cd->vv_sbufs[i]);
-  }
-  free(cd->idx_rbufs);
-  free(cd->idx_sbufs);
-  free(cd->vv_rbufs);
-  free(cd->vv_sbufs);
-
-  cd->nphase = 0;
-  cd->npart = 0;
-  cd->nlevel = 0;
-  cd->n = 0;
-}

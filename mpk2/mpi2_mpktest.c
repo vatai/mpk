@@ -287,7 +287,7 @@ void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
   assert(cd->mptr != NULL);
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
   assert(cd->mcol != NULL);
-  
+
   for (int phase = 0; phase <= cd->nphase; phase++) {
     make_mptr(mg, cd, phase);
     /* printf("========= recvcounts[]"); */
@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
   // Init MPI
   MPI_Init(&argc, &argv);
 
-  mpk_t *mg = read_mpk(argv[1]); // *******
+  mpk_t *mg = read_mpk(argv[1]);
 
   int n = mg->n;
   int nlevel = mg->nlevel;
@@ -327,10 +327,11 @@ int main(int argc, char* argv[]) {
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
   assert(world_size == mg->npart);
 
-  comm_data_t cd;
-  mpi_prep_mpk(mg, &cd);
+  comm_data_t *cd = new_comm_data(mg);
 
-  make_mptr_mcol(mg, &cd);
+  mpi_prep_mpk(mg, cd);
+
+  make_mptr_mcol(mg, cd);
 
   char fname[1024];
   /* sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank); */
@@ -346,7 +347,7 @@ int main(int argc, char* argv[]) {
   /* } */
   /* fclose(mptr_log_file); */
 
-  // test_allltoall_inputs(&cd);
+  // test_allltoall_inputs(cd);
 
   int i;
   for (i = 0; i < n; i++)
@@ -376,7 +377,7 @@ int main(int argc, char* argv[]) {
     vv[n + i] = -1.0;		/* dummy */
   // for (i = 0; i < 5; i++) {
   // double t0 = omp_get_wtime();
-  mpi_exec_mpk(mg, vv, &cd, argv[1]);
+  mpi_exec_mpk(mg, vv, cd, argv[1]);
 
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);
   FILE *vv_log_file = fopen(fname, "w");
@@ -404,8 +405,8 @@ int main(int argc, char* argv[]) {
   int result = 0;
   collect_results(mg, vv);
   if (rank == 0)
-    result = check_results(&cd, vv);
-  mpi_del_cd(&cd);
+    result = check_results(cd, vv);
+  del_comm_data(cd);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
   MPI_Finalize();

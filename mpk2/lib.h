@@ -14,8 +14,6 @@ void del_crs(crs0_t*);
 crs0_t *read_crs(FILE*);
 void write_crs(FILE*, crs0_t*);
 
-
-
 typedef struct {
   crs0_t *g;
   double *x;
