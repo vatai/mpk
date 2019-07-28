@@ -333,34 +333,22 @@ void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
  * Allocate and fill `comm_data_t cd`.
  */
 void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
-  printf("preparing mpi buffers for communication...\n");
-
   assert(mg != NULL);
-  int n = mg->n;
+  printf("preparing mpi buffers for communication...");
 
   int *comm_table = new_comm_table(mg);
   int *store_part = new_store_part(mg);
-
-  assert(mg->plist[0] != NULL);
-
-  int l0[n];
-  for (int i = 0; i < n; i++)
-    l0[i] = 0;
-  int *prevl = l0;
 
   if (mg->nphase > 0) {
     assert(mg->plist[0] != NULL);
     zeroth_comm_table(mg, comm_table, store_part);
     mpi_prepbufs_mpk(mg, comm_table, cd, 0);
-    prevl = mg->llist[0]->level;
   }
   for (int phase = 1; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
     phase_comm_table(phase, mg, comm_table, store_part);
     mpi_prepbufs_mpk(mg, comm_table, cd, phase);
-    prevl = mg->llist[phase]->level;
   }
-
   skirt_comm_table(mg, comm_table, store_part);
   mpi_prepbufs_mpk(mg, comm_table, cd, mg->nphase);
 
