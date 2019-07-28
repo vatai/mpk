@@ -22,6 +22,8 @@ typedef struct {
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
+  int *phase_scnt;
+  int *phase_rcnt;
   int *sendcounts;
   int *recvcounts;
 

@@ -16,37 +16,39 @@ static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
 comm_data_t *new_comm_data(mpk_t *mg) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->n = mg->n;
-  cd->npart = mg->npart;
   cd->nlevel = mg->nlevel;
-  cd->nphase = mg->nphase;
+  int npart = cd->npart = mg->npart;
+  int nphase = cd->nphase = mg->nphase;
 
   // Send and receive buffers for vertex values (from vv).
-  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (mg->nphase + 1));
+  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
   assert(cd->vv_sbufs != NULL);
-  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (mg->nphase + 1));
+  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (nphase + 1));
   assert(cd->vv_rbufs != NULL);
   // Send and receive buffers for (vv) indices.
-  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (mg->nphase + 1));
+  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (nphase + 1));
   assert(cd->idx_sbufs != NULL);
-  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (mg->nphase + 1));
+  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (nphase + 1));
   assert(cd->idx_rbufs != NULL);
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
-  cd->sendcounts =
-      malloc(sizeof(*cd->sendcounts) * mg->npart * (mg->nphase + 1));
+  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * npart * (nphase + 1));
   assert(cd->sendcounts != NULL);
-  cd->recvcounts =
-      malloc(sizeof(*cd->recvcounts) * mg->npart * (mg->nphase + 1));
+  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
   assert(cd->recvcounts != NULL);
+  cd->phase_scnt = malloc(sizeof(*cd->phase_scnt) * (nphase + 1));
+  assert(cd->phase_scnt != NULL);
+  cd->phase_rcnt = malloc(sizeof(*cd->phase_rcnt) * (nphase + 1));
+  assert(cd->phase_rcnt != NULL);
 
   // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
   // the displacement (index) in the send/receive buffers where the
   // elements sent to partition/process `p` start.
-  cd->sdispls = malloc(sizeof(*cd->sdispls) * mg->npart * (mg->nphase + 1));
+  cd->sdispls = malloc(sizeof(*cd->sdispls) * npart * (nphase + 1));
   assert(cd->sdispls != NULL);
-  cd->rdispls = malloc(sizeof(*cd->rdispls) * mg->npart * (mg->nphase + 1));
+  cd->rdispls = malloc(sizeof(*cd->rdispls) * npart * (nphase + 1));
   assert(cd->rdispls != NULL);
 
   return cd;
@@ -58,6 +60,8 @@ void del_comm_data(comm_data_t *cd) {
   free(cd->sdispls);
   free(cd->recvcounts);
   free(cd->sendcounts);
+  free(cd->phase_rcnt);
+  free(cd->phase_scnt);
 
   // TODO(vatai): receive buffers can't be deallocated. Why? Check
   // this after the communication part is written.
@@ -212,79 +216,68 @@ static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part) {
   } // end partition loop
 }
 
-/*
- * Convert `comm_table[]` to comm. data `cd`.
- */
-static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
-                             int phase) {
-  int npart = mg->npart;
-  int nlevel = mg->nlevel;
-  int n = mg->n;
+static void fill_counts(int phase, int *comm_table, mpk_t *mg,
+                              comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  // rcount and scount are pointers to the first element of the
-  // recvcount and sendcount for the current phase.
-  int *rcount = cd->recvcounts + phase * npart;
-  int *scount = cd->sendcounts + phase * npart;
-  int *rdisp = cd->rdispls + phase * npart;
-  int *sdisp = cd->sdispls + phase * npart;
-
-  int numb_of_send = 0;
-  int numb_of_rec = 0;
-  int i;
-  for (i = 0; i < npart; i++) {
-    rcount[i] = 0;
-    scount[i] = 0;
+  cd->phase_scnt[phase] = 0;
+  cd->phase_rcnt[phase] = 0;
+  for (int p = 0; p < mg->npart; p++) {
+    cd->sendcounts[phase * mg->npart + p] = 0;
+    cd->recvcounts[phase * mg->npart + p] = 0;
   }
-
-  // For all "other" partitions `p` (other = other partitions we are
-  // sending to, and other partitions we are receiving from).
-  //
-  // [Note] Each partition is creating its unique scount,sdisp
-  // rcount and rdisp
-  for (int p = 0; p < npart; p++) {
-    // For all vv indices.
-    for (i = 0; i < nlevel * n; i++) {
-      // Here p is the source (from) partition.
-      int idx = get_ct_idx(mg, p, rank, i);
+  for (int p = 0; p < mg->npart; p++) {
+    for (int i = 0; i < mg->n * mg->nlevel; i++) {
+      int idx = get_ct_idx(mg, rank, p, i);
       if (comm_table[idx]) {
-        // So we increment:
-        numb_of_rec++;
-        rcount[p]++;
+        cd->phase_scnt[phase]++;
+        cd->sendcounts[phase * mg->npart + p]++;
       }
-      // Here `p` is the target (to) partition.
-      idx = get_ct_idx(mg, rank, p, i);
+      idx = get_ct_idx(mg, p, rank, i);
       if (comm_table[idx]) {
-        // So we increment:
-        numb_of_send++;
-        scount[p]++;
+        cd->phase_rcnt[phase]++;
+        cd->recvcounts[phase * mg->npart + p]++;
       }
     }
-    // Do a scan on rdisp/sdisp.
+  }
+}
+
+static void fill_displs(int phase, mpk_t *mg, comm_data_t *cd) {
+  // Needs sendcounts and recvcounts filled for phase.
+  for (int p = 0; p < mg->npart; p++) {
+    int idx = phase * mg->npart + p;
     if (p == 0) {
-      sdisp[p] = 0;
-      rdisp[p] = 0;
+      cd->sdispls[idx] = 0;
+      cd->rdispls[idx] = 0;
     } else {
-      sdisp[p] = sdisp[p - 1] + scount[p - 1];
-      rdisp[p] = rdisp[p - 1] + rcount[p - 1];
+      cd->sdispls[idx] = cd->sdispls[idx - 1] + cd->sendcounts[idx - 1];
+      cd->rdispls[idx] = cd->rdispls[idx - 1] + cd->recvcounts[idx - 1];
     }
   }
+}
 
-  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * numb_of_send);
+static void alloc_bufs(int phase, comm_data_t *cd) {
+  // Needs phase_scnt and phase_rcnt filled.
+  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * cd->phase_scnt[phase]);
   assert(cd->vv_sbufs[phase] != NULL);
-  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * numb_of_rec);
+  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * cd->phase_rcnt[phase]);
   assert(cd->vv_rbufs[phase] != NULL);
-  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * numb_of_send);
+  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * cd->phase_scnt[phase]);
   assert(cd->idx_sbufs[phase] != NULL);
-  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * numb_of_rec);
+  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * cd->phase_rcnt[phase]);
   assert(cd->idx_rbufs[phase] != NULL);
+}
 
+static void fill_idx_buffers(int phase, int *comm_table, mpk_t *mg,
+                             comm_data_t *cd) {
+  // Needs idx buffers allocated.
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int scounter = 0;
   int rcounter = 0;
-  for (int p = 0; p < npart; p++) {
+  for (int p = 0; p < mg->npart; p++) {
     // For all vv indices.
-    for (int i = 0; i < nlevel * n; ++i) {
+    for (int i = 0; i < mg->nlevel * mg->n; ++i) {
       // Here p is the destination (to) partition.
       int sidx = get_ct_idx(mg, rank, p, i);
       if (comm_table[sidx]) {
@@ -298,6 +291,18 @@ static void mpi_prepbufs_mpk(mpk_t *mg, int *comm_table, comm_data_t *cd,
       }
     }
   }
+}
+
+/*
+ * Convert `comm_table[]` to comm. data `cd`.
+ */
+static void fill_comm_data(int phase, int *comm_table, mpk_t *mg,
+                           comm_data_t *cd) {
+  // Fills cd members from the information from comm_table.
+  fill_counts(phase, comm_table, mg, cd);
+  fill_displs(phase, mg, cd);
+  alloc_bufs(phase, cd);
+  fill_idx_buffers(phase, comm_table, mg, cd);
 }
 
 void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
@@ -342,15 +347,15 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   if (mg->nphase > 0) {
     assert(mg->plist[0] != NULL);
     zeroth_comm_table(mg, comm_table, store_part);
-    mpi_prepbufs_mpk(mg, comm_table, cd, 0);
+    fill_comm_data(0, comm_table, mg, cd);
   }
   for (int phase = 1; phase < mg->nphase; phase++) {
     assert(mg->plist[phase] != NULL);
     phase_comm_table(phase, mg, comm_table, store_part);
-    mpi_prepbufs_mpk(mg, comm_table, cd, phase);
+    fill_comm_data(phase, comm_table, mg, cd);
   }
   skirt_comm_table(mg, comm_table, store_part);
-  mpi_prepbufs_mpk(mg, comm_table, cd, mg->nphase);
+  fill_comm_data(mg->nphase, comm_table, mg, cd);
 
   free(comm_table);
   free(store_part);
