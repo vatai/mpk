@@ -82,12 +82,12 @@ void del_comm_data(comm_data_t *cd) {
   cd->n = 0;
 }
 
-static int *new_comm_table(mpk_t *mg) {
+static char *new_comm_table(mpk_t *mg) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
   int num_ct_elem = mg->nlevel * mg->n * mg->npart * mg->npart;
-  int *ct = malloc(sizeof(*ct) * num_ct_elem);
+  char *ct = malloc(sizeof(*ct) * num_ct_elem);
   assert(ct != NULL);
   return ct;
 }
@@ -105,7 +105,7 @@ static int *new_store_part(mpk_t *mg) {
   return store_part;
 }
 
-static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
+static void proc_vertex(int curpart, int i, int l, mpk_t *mg, char *comm_table,
                         int *store_part) {
   crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
@@ -119,7 +119,7 @@ static void proc_vertex(int curpart, int i, int l, mpk_t *mg, int *comm_table,
   }
 }
 
-static void clear_comm_table(mpk_t *mg, int *comm_table) {
+static void clear_comm_table(mpk_t *mg, char *comm_table) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
@@ -146,7 +146,7 @@ static int amax(int *ll, int n) {
   return rv;
 }
 
-static void zeroth_comm_table(mpk_t *mg, int *comm_table,
+static void zeroth_comm_table(mpk_t *mg, char *comm_table,
                              int *store_part) {
   int n = mg->n;
   int *ll = mg->llist[0]->level;
@@ -169,7 +169,7 @@ static void zeroth_comm_table(mpk_t *mg, int *comm_table,
   }
 }
 
-static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
+static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
                              int *store_part) {
   int n = mg->n;
   int *pl = mg->plist[phase]->part;
@@ -190,7 +190,7 @@ static void phase_comm_table(int phase, mpk_t *mg, int *comm_table,
   }
 }
 
-static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part) {
+static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
   int n = mg->n;
   int nlevel = mg->nlevel;
   int npart = mg->npart;
@@ -216,7 +216,7 @@ static void skirt_comm_table(mpk_t *mg, int *comm_table, int *store_part) {
   } // end partition loop
 }
 
-static void fill_counts(int phase, int *comm_table, mpk_t *mg,
+static void fill_counts(int phase, char *comm_table, mpk_t *mg,
                               comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -268,7 +268,7 @@ static void alloc_bufs(int phase, comm_data_t *cd) {
   assert(cd->idx_rbufs[phase] != NULL);
 }
 
-static void fill_idx_buffers(int phase, int *comm_table, mpk_t *mg,
+static void fill_idx_buffers(int phase, char *comm_table, mpk_t *mg,
                              comm_data_t *cd) {
   // Needs idx buffers allocated.
   int rank;
@@ -296,7 +296,7 @@ static void fill_idx_buffers(int phase, int *comm_table, mpk_t *mg,
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */
-static void fill_comm_data(int phase, int *comm_table, mpk_t *mg,
+static void fill_comm_data(int phase, char *comm_table, mpk_t *mg,
                            comm_data_t *cd) {
   // Fills cd members from the information from comm_table.
   fill_counts(phase, comm_table, mg, cd);
@@ -305,7 +305,7 @@ static void fill_comm_data(int phase, int *comm_table, mpk_t *mg,
   fill_idx_buffers(phase, comm_table, mg, cd);
 }
 
-void testcomm_table(mpk_t *mg, int *comm_table, int phase, int rank) {
+void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
   if (rank == 0) {
     printf("Testing and printing commtable in a text doc\n");
     char name[100];
@@ -341,7 +341,7 @@ void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
   assert(mg != NULL);
   printf("preparing mpi buffers for communication...");
 
-  int *comm_table = new_comm_table(mg);
+  char *comm_table = new_comm_table(mg);
   int *store_part = new_store_part(mg);
 
   if (mg->nphase > 0) {
