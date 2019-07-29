@@ -97,8 +97,11 @@ int main(int argc, char **argv) {
 
   prep_mpk(mg, vv);
 
-  for (int i = 0; i < mg->n; i++)
+  for (int i = 0; i < mg->n; i++) {
     vv[i] = 1.0;
+    vv[i] += (i % 2 == 0 ? -0.001 * i: +0.001 * i);
+    // printf("vv: %lf\n", vv[i]);
+  }
   for (int i = 0; i < mg->n * mg->nlevel; i++)
     vv[mg->n + i] = -1.0;		/* dummy */
 
