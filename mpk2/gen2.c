@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   int n = size;
 
   if (strcmp(argv[1], "m5p") == 0) {
-    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n);
+    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n + n * n);
 
     int i, j;
     for (i=0; i< n; i++)
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
       }
 
   } else if (strcmp(argv[1], "t5p") == 0) {
-    fprintf(f, "%d %d\n", n * n, 2 * n * n);
+    fprintf(f, "%d %d\n", n * n, 3 * n * n);
 
     int i, j;
     for (i=0; i< n; i++)
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
       }
 
   } else if (strcmp(argv[1], "m7p") == 0) {
-    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n + (n-1) * (n-1));
+    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n + (n-1) * (n-1) + n * n);
 
     int i, j;
     for (i=0; i< n; i++)
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
       }
 
   } else if (strcmp(argv[1], "m9p") == 0) {
-    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n + 2 * (n-1) * (n-1));
+    fprintf(f, "%d %d\n", n * n, 2 * (n-1) * n + 2 * (n-1) * (n-1) + n * n);
 
     int i, j;
     for (i=0; i< n; i++)
@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
       }
 
   } else if (strcmp(argv[1], "cube") == 0) {
-    fprintf(f, "%d %d\n", n * n * n, 3 * (n-1) * n * n);
+    fprintf(f, "%d %d\n", n * n * n, 3 * (n-1) * n * n + n * n * n);
 
     int i, j, k;
     for (i=0; i< n; i++)
