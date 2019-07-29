@@ -6,7 +6,9 @@
 
 #include "lib.h"
 
-static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static
+// do_task in mpktexec too, defined static
+static void do_task(mpk_t *mg, double *vv, double *val, int phase, int part) {
+
   assert(mg != NULL && vv != NULL);
 
   int n = mg->n;
@@ -24,12 +26,11 @@ static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in 
     int level = tidx / n;
     int l1n = (level - 1) * n;
     int i = tidx - level * n; /*tidx % n*/
-    double a = 1.0 / (ptr[i+1] - ptr[i]); /* simply... */
 
     double s = 0.0;
     int j;
     for (j = ptr[i]; j < ptr[i+1]; j++) {
-      s += a * vv[l1n + col[j]];
+      s += val[j] * vv[l1n + col[j]];
     }
     vv[level * n + i] = s;
   }
@@ -37,7 +38,7 @@ static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in 
   // tl->t1 = omp_get_wtime();
 }
 
-void vexec_mpk(mpk_t *mg, double *vv) {
+void vexec_mpk(mpk_t *mg, double *vv, double *val) {
   assert(mg != NULL && vv != NULL);
 
   int n = mg->n;
@@ -48,10 +49,7 @@ void vexec_mpk(mpk_t *mg, double *vv) {
   int phase;
   for (phase = 0; phase <= nphase; phase ++) {
     int part;
-    //#pragma omp parallel for num_threads(nth) schedule(static,1)
-    //#pragma omp for schedule(dynamic, 1)
-#pragma omp for schedule(static, 1)
     for (part = 0; part < npart; part ++)
-      do_task(mg, vv, phase, part);
+      do_task(mg, vv, val, phase, part);
   }
 }
