@@ -1,4 +1,4 @@
-default : gen gen2 comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest
+default : gen gen2 gen2mtx comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest
 
 gen : gen.c
 	gcc -O3 -o gen gen.c
@@ -15,6 +15,7 @@ skirt : skirt.o lib.o
 format : format.o lib.o
 stat : stat.o lib.o
 driver : driver.o
+gen2mtx : lib.o
 
 MPKOBJ = lib.o mpkread.o mpkprep.o mpkexec.o mpktexec.o spmvexec.o
 mpktest : mpktest.o $(MPKOBJ)
