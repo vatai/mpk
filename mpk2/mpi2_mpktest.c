@@ -197,6 +197,7 @@ static int find_idx(long *ptr, int size, long target) {
 }
 
 void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
+  // TODO(vatai): Put all mptr[phase] into a single array.
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -283,6 +284,9 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 }
 
 void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
   assert(cd->mptr != NULL);
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
@@ -308,29 +312,26 @@ int main(int argc, char* argv[]) {
   // Init MPI
   MPI_Init(&argc, &argv);
 
-  mpk_t *mg = read_mpk(argv[1]);
-
-  int n = mg->n;
-  int nlevel = mg->nlevel;
-
-  // vv stores the vector (vertices) at different levels
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
-  assert(vv != NULL);
-
-  prep_mpk(mg, vv);
-
   int world_size;
   int rank;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  mpk_t *mg = read_mpk(argv[1]);
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
   assert(world_size == mg->npart);
+
+  int n = mg->n;
+  int nlevel = mg->nlevel;
+
+  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
+  assert(vv != NULL);
+
+  prep_mpk(mg, vv);
 
   comm_data_t *cd = new_comm_data(mg);
 
   mpi_prep_mpk(mg, cd);
-
   make_mptr_mcol(mg, cd);
 
   char fname[1024];
