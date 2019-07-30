@@ -224,6 +224,10 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   int *rcount = cd->recvcounts + phase * mg->npart;
   task_t *tl = mg->tlist + phase * mg->npart + rank;
 
+  // alloc and store indices which will be searched
+
+  // alloc size will be sum =0; for() sum += tl->n + phase_rbuf
+
   int *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
   assert(mcol != NULL);
   for (int mi = 0; mi < tl->n; mi++) {
