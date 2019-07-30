@@ -23,7 +23,7 @@ MAKEFILE=makefile
 which mpiicc 2>/dev/null 1>/dev/null && MAKEFILE+=.intel || MAKEFILE+=.gcc
 
 # Force build all.
-make -f $MAKEFILE -B || exit
+make -f $MAKEFILE || exit
 
 # Delete input files.
 echo rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}

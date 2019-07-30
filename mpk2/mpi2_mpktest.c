@@ -181,6 +181,38 @@ static void collect_results(mpk_t *mg, double *vv) {
   free(count);
 }
 
+static void collect_redundancies(mpk_t *mg) {
+  int nelems = mg->n * (mg->nlevel + 1);
+  int *rdnds = malloc(sizeof(*rdnds) * nelems);
+  for (int i = 0; i < nelems; i++) rdnds[i] = 0;
+
+  for (int phase = 0; phase <= mg->nphase; phase++) {
+    for (int part = 0; part < mg->npart; part++) {
+      task_t *tl = mg->tlist + phase * mg->npart + part;
+      for (int ti = 0; ti < tl->n; ti++) {
+        rdnds[tl->idx[ti]]++;
+        // printf("phase %d, part %d, ti %d, rdnds %d\n", phase, part, ti, rdnds[ti]);
+      }
+    }
+  }
+
+  char fname[] = "redundancies.txt";
+  FILE *f = fopen(fname, "w");
+  for (int lvl = 0; lvl <= mg->nlevel; lvl++) {
+    for (int i = 0; i < mg->n; i++) {
+      int rep = rdnds[mg->n * lvl + i];
+      char str[] = "?";
+      if (rep == 0 ) str[0] = '0';
+      else if (rep == 1) str[0] = '_';
+      else if (rep == 2) str[0] = 'o';
+      fprintf(f, str);
+    }
+    fprintf(f, "\n");
+  }
+  free(rdnds);
+  fclose(f);
+};
+
 static int check_results(comm_data_t *cd, double *vv) {
   int size = cd->n * cd->nlevel;
   for (int i = 0; i < size; i++)
@@ -404,8 +436,10 @@ int main(int argc, char* argv[]) {
 
   int result = 0;
   collect_results(mg, vv);
-  if (rank == 0)
+  if (rank == 0) {
     result = check_results(cd, vv);
+    collect_redundancies(mg);
+  }
   del_comm_data(cd);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
