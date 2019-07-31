@@ -337,6 +337,103 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
   }
 }
 
+// NEW_PREP_BEGIN
+
+static int get_rcount(int phase, comm_data_t *cd, char *comm_table) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int rcount = 0;
+  int scount = 0;
+  for (int p = 0; p < cd->npart; p++)
+    for (int i = 0; i < cd->n * cd->nlevel; i++) {
+      int idx = get_ct_idx(cd->mg, p, rank, i);
+      if (comm_table[idx]) {
+        rcount++;
+        scount++;
+      }
+    }
+  return rcount;
+}
+
+// Fill all buffer size variables to make allocation possible.
+static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
+                                  int *store_part) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int tcount = 0;
+  for (int level = 0; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
+                    cd->mg->plist[phase]->part[i];
+      int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
+                  cd->mg->llist[phase]->level[i];
+      if (prevli < level && level <= curli && rank == curpart)
+        tcount++;
+    }
+  }
+  assert((cd->mg->tlist + phase * cd->npart + rank)->n == tcount);
+  (cd->mg->tlist + phase * cd->npart + rank)->n = tcount;
+}
+
+static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table,
+                                int *store_part) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int rcount = 0;
+  int scount = 0;
+  for (int p = 0; p < cd->npart; p++) {
+    for (int i = 0; i < cd->n * cd->nlevel; i++) {
+      int idx = get_ct_idx(cd->mg, p, rank, i);
+      if (comm_table[idx]) rcount++;
+      idx = get_ct_idx(cd->mg, rank, p, i);
+      if (comm_table[idx]) scount++;
+    }
+  }
+
+  /* TODO(vatai): new_perp */
+  /* - no need for rank? */
+  /* - remove assert */
+  assert(rcount == cd->phase_rcnt[phase]);
+  assert(scount == cd->phase_scnt[phase]);
+  cd->phase_rcnt[phase] = rcount;
+  cd->phase_scnt[phase] = scount;
+}
+
+static void new_prep(comm_data_t *cd, char *comm_table, int *store_part) {
+  printf("set_tlist_lengths\n");
+  zeroth_comm_table(cd->mg, comm_table, store_part);
+  new_fill_tlist_counts(0, cd, comm_table, store_part);
+  new_fill_buf_counts(0, cd, comm_table, store_part);
+  for (int phase = 1; phase < cd->nphase; phase++) {
+    phase_comm_table(phase, cd->mg, comm_table, store_part);
+    new_fill_tlist_counts(phase, cd, comm_table, store_part);
+    new_fill_buf_counts(phase, cd, comm_table, store_part);
+  }
+  skirt_comm_table(cd->mg, comm_table, store_part);
+  // STOPED HERE
+  /* new_fill_tlist_counts(cd->nphase, cd, comm_table, store_part); */
+  /* new_fill_buf_counts(cd->nphase, cd, comm_table, store_part); */
+
+  /* new_allocate_bufs(cd); */
+
+  /* fill_tlists() */
+  /* zeroth_comm_table(cd->mg, comm_table, store_part); */
+  /* new_fill_comm_data(phase, comm_table, cd); */
+
+  /* for (int phase = 1; phase < cd->nphase; phase++) { */
+  /*   phase_comm_table(phase, cd->mg, comm_table, store_part); */
+  /*   new_fill_comm_data(phase, cd, comm_table, store_part); */
+  /* } */
+
+  /* skirt_comm_table(cd->mg, comm_table, store_part); */
+  /* new_fill_comm_data(cd->nphase, cd, comm_table, store_part); */
+}
+
+// NEW_PREP_END
+
 /*
  * Allocate and fill `comm_data_t cd`.
  */
@@ -359,6 +456,8 @@ void mpi_prep_mpk(comm_data_t *cd) {
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
   fill_comm_data(cd->nphase, comm_table, cd);
+
+  new_prep(cd, comm_table, store_part);
 
   free(comm_table);
   free(store_part);
