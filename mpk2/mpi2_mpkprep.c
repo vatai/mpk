@@ -106,8 +106,8 @@ static int *new_store_part(mpk_t *mg) {
   return store_part;
 }
 
-static void proc_vertex(int curpart, int i, int l, mpk_t *mg, char *comm_table,
-                        int *store_part) {
+static void fill_comm_table_one_vertex(int curpart, int i, int l, mpk_t *mg,
+                                       char *comm_table, int *store_part) {
   crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
   for (int j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
@@ -163,7 +163,7 @@ static void zeroth_comm_table(mpk_t *mg, char *comm_table,
       int i_vvidx = n * l + i;
       if (0 < l && l <= ll[i] && store_part[i_vvidx] == -1) {
         int curpart = mg->plist[0]->part[i];
-        proc_vertex(curpart, i, l, mg, comm_table, store_part);
+        fill_comm_table_one_vertex(curpart, i, l, mg, comm_table, store_part);
         store_part[i_vvidx] = curpart;
       }
     }
@@ -184,7 +184,7 @@ static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
       int i_vvidx = n * l + i;
       if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
         int curpart = mg->plist[phase]->part[i];
-        proc_vertex(curpart, i, l, mg, comm_table, store_part);
+        fill_comm_table_one_vertex(curpart, i, l, mg, comm_table, store_part);
         store_part[i_vvidx] = curpart;
       }
     }
@@ -209,7 +209,7 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
         int not_over_max = l <= nlevel - sl[p * n + i];
         if (/* store_part[i_vvidx] != -1 && */ above_prevl && skirt_active &&
             not_over_max) {
-          proc_vertex(p, i, l, mg, comm_table, store_part);
+          fill_comm_table_one_vertex(p, i, l, mg, comm_table, store_part);
           store_part[n * l + i] = p;
         }
       }
@@ -365,4 +365,3 @@ void mpi_prep_mpk(comm_data_t *cd) {
   free(store_part);
   printf(" done\n");
 }
-
