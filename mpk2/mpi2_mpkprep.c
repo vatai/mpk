@@ -106,12 +106,12 @@ static int *new_store_part(mpk_t *mg) {
   return store_part;
 }
 
-static void fill_comm_table_one_vertex(int curpart, int i, int l, mpk_t *mg,
+static void fill_comm_table_one_vertex(int curpart, int i, int level, mpk_t *mg,
                                        char *comm_table, int *store_part) {
   crs0_t *g0 = mg->g0;
   assert(g0 != NULL);
   for (int j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
-    int k_vvidx = mg->n * (l - 1) + g0->col[j];       // source vv index
+    int k_vvidx = mg->n * (level - 1) + g0->col[j];   // source vv index
     assert(store_part[k_vvidx] != -1);
     if (store_part[k_vvidx] != curpart) {
       int idx = get_ct_idx(mg, store_part[k_vvidx], curpart, k_vvidx);
@@ -147,8 +147,7 @@ static int amax(int *ll, int n) {
   return rv;
 }
 
-static void zeroth_comm_table(mpk_t *mg, char *comm_table,
-                             int *store_part) {
+static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
   int n = mg->n;
   int *ll = mg->llist[0]->level;
   clear_comm_table(mg, comm_table);
