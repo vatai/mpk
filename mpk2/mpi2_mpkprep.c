@@ -378,8 +378,34 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
   (cd->mg->tlist + phase * cd->npart + rank)->n = tcount;
 }
 
-static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table,
-                                int *store_part) {
+static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
+  int *prevl = cd->mg->llist[cd->nphase - 1]->level;
+  int *pl = cd->mg->plist[0]->part;
+  int prevlmin = 0; // TODO(vatai):
+  if (cd->nphase) {
+    prevlmin = prevl[0];
+    for (int i = 1; i < cd->n; i++)
+      if (prevl[i] < prevlmin)
+        prevlmin = prevl[i];
+  }
+  for (int p = 0; p < cd->npart; p++) {
+    int cnt = 0;
+    task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + p;
+    for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
+      for (int i = 0; i< cd->n; i++) {
+        int prevli = cd->nphase ? prevl[i] : 0;
+        int slpi = cd->mg->sg->levels[p * cd->n + i];
+	if (prevli < level && 0 <= slpi && level <= cd->nlevel - slpi)
+          cnt++;
+      }
+    }
+
+    assert(tl->n == cnt);
+    tl->n = cnt;
+  }
+}
+
+static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -407,16 +433,16 @@ static void new_prep(comm_data_t *cd, char *comm_table, int *store_part) {
   printf("set_tlist_lengths\n");
   zeroth_comm_table(cd->mg, comm_table, store_part);
   new_fill_tlist_counts(0, cd, comm_table, store_part);
-  new_fill_buf_counts(0, cd, comm_table, store_part);
+  new_fill_buf_counts(0, cd, comm_table);
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
     new_fill_tlist_counts(phase, cd, comm_table, store_part);
-    new_fill_buf_counts(phase, cd, comm_table, store_part);
+    new_fill_buf_counts(phase, cd, comm_table);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
   // STOPED HERE
-  /* new_fill_tlist_counts(cd->nphase, cd, comm_table, store_part); */
-  /* new_fill_buf_counts(cd->nphase, cd, comm_table, store_part); */
+  new_fill_skirt_tlist_counts(cd, comm_table);
+  new_fill_buf_counts(cd->nphase, cd, comm_table);
 
   /* new_allocate_bufs(cd); */
 
