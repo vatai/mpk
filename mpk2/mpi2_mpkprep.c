@@ -182,7 +182,7 @@ static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
-      if (prevl[i] < l && l <= ll[i] && store_part[i_vvidx] == -1) {
+      if (prevl[i] < l && l <= ll[i]) {
         int curpart = mg->plist[phase]->part[i];
         fill_comm_table_one_vertex(curpart, i, l, mg, comm_table, store_part);
         store_part[i_vvidx] = curpart;
