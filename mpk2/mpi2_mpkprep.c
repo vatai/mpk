@@ -209,7 +209,8 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
         if (/* store_part[i_vvidx] != -1 && */ above_prevl && skirt_active &&
             not_over_max) {
           fill_comm_table_one_vertex(p, i, l, mg, comm_table, store_part);
-          store_part[n * l + i] = p;
+          if (store_part[n * l + i] == -1)
+            store_part[n * l + i] = p;
         }
       }
     }
