@@ -335,7 +335,7 @@ int main(int argc, char* argv[]) {
 
   comm_data_t *cd = new_comm_data(mg);
 
-  mpi_prep_mpk(mg, cd);
+  mpi_prep_mpk(cd);
   make_mptr_mcol(mg, cd);
 
   char fname[1024];

@@ -4,6 +4,7 @@
 #include "lib.h"
 
 typedef struct {
+  mpk_t *mg;
   int n;
   int nlevel;
   int npart;
@@ -40,7 +41,7 @@ typedef struct {
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
 
-void mpi_prep_mpk(mpk_t*, comm_data_t *);
+void mpi_prep_mpk(comm_data_t *);
 
 comm_data_t *new_comm_data(mpk_t *);
 

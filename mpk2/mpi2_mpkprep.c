@@ -15,6 +15,7 @@ static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
 
 comm_data_t *new_comm_data(mpk_t *mg) {
   comm_data_t *cd = malloc(sizeof(*cd));
+  cd->mg = mg;
   cd->n = mg->n;
   cd->nlevel = mg->nlevel;
   int npart = cd->npart = mg->npart;
@@ -216,36 +217,41 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
   } // end partition loop
 }
 
-static void fill_counts(int phase, char *comm_table, mpk_t *mg,
-                              comm_data_t *cd) {
+// Input:
+// - filled comm_table
+//
+// Output: cd->
+// - phase_scnt[phase], phase_rcnt[phase],
+// - sendcount[phase, part], recvvount[phase, part]
+static void fill_counts(int phase, char *comm_table, comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   cd->phase_scnt[phase] = 0;
   cd->phase_rcnt[phase] = 0;
-  for (int p = 0; p < mg->npart; p++) {
-    cd->sendcounts[phase * mg->npart + p] = 0;
-    cd->recvcounts[phase * mg->npart + p] = 0;
+  for (int p = 0; p < cd->npart; p++) {
+    cd->sendcounts[phase * cd->npart + p] = 0;
+    cd->recvcounts[phase * cd->npart + p] = 0;
   }
-  for (int p = 0; p < mg->npart; p++) {
-    for (int i = 0; i < mg->n * mg->nlevel; i++) {
-      int idx = get_ct_idx(mg, rank, p, i);
+  for (int p = 0; p < cd->npart; p++) {
+    for (int i = 0; i < cd->n * cd->nlevel; i++) {
+      int idx = get_ct_idx(cd->mg, rank, p, i);
       if (comm_table[idx]) {
         cd->phase_scnt[phase]++;
-        cd->sendcounts[phase * mg->npart + p]++;
+        cd->sendcounts[phase * cd->npart + p]++;
       }
-      idx = get_ct_idx(mg, p, rank, i);
+      idx = get_ct_idx(cd->mg, p, rank, i);
       if (comm_table[idx]) {
         cd->phase_rcnt[phase]++;
-        cd->recvcounts[phase * mg->npart + p]++;
+        cd->recvcounts[phase * cd->npart + p]++;
       }
     }
   }
 }
 
-static void fill_displs(int phase, mpk_t *mg, comm_data_t *cd) {
+static void fill_displs(int phase, comm_data_t *cd) {
   // Needs sendcounts and recvcounts filled for phase.
-  for (int p = 0; p < mg->npart; p++) {
-    int idx = phase * mg->npart + p;
+  for (int p = 0; p < cd->npart; p++) {
+    int idx = phase * cd->npart + p;
     if (p == 0) {
       cd->sdispls[idx] = 0;
       cd->rdispls[idx] = 0;
@@ -268,23 +274,22 @@ static void alloc_bufs(int phase, comm_data_t *cd) {
   assert(cd->idx_rbufs[phase] != NULL);
 }
 
-static void fill_idx_buffers(int phase, char *comm_table, mpk_t *mg,
-                             comm_data_t *cd) {
+static void fill_idx_buffers(int phase, char *comm_table, comm_data_t *cd) {
   // Needs idx buffers allocated.
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int scounter = 0;
   int rcounter = 0;
-  for (int p = 0; p < mg->npart; p++) {
+  for (int p = 0; p < cd->npart; p++) {
     // For all vv indices.
-    for (int i = 0; i < mg->nlevel * mg->n; ++i) {
+    for (int i = 0; i < cd->nlevel * cd->n; ++i) {
       // Here p is the destination (to) partition.
-      int sidx = get_ct_idx(mg, rank, p, i);
+      int sidx = get_ct_idx(cd->mg, rank, p, i);
       if (comm_table[sidx]) {
         cd->idx_sbufs[phase][scounter] = i;
         scounter++;
       }
-      int ridx = get_ct_idx(mg, p, rank, i);
+      int ridx = get_ct_idx(cd->mg, p, rank, i);
       if (comm_table[ridx]) {
         cd->idx_rbufs[phase][rcounter] = i;
         rcounter++;
@@ -296,13 +301,12 @@ static void fill_idx_buffers(int phase, char *comm_table, mpk_t *mg,
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */
-static void fill_comm_data(int phase, char *comm_table, mpk_t *mg,
-                           comm_data_t *cd) {
+static void fill_comm_data(int phase, char *comm_table, comm_data_t *cd) {
   // Fills cd members from the information from comm_table.
-  fill_counts(phase, comm_table, mg, cd);
-  fill_displs(phase, mg, cd);
+  fill_counts(phase, comm_table, cd);
+  fill_displs(phase, cd);
   alloc_bufs(phase, cd);
-  fill_idx_buffers(phase, comm_table, mg, cd);
+  fill_idx_buffers(phase, comm_table, cd);
 }
 
 void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
@@ -337,25 +341,25 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 /*
  * Allocate and fill `comm_data_t cd`.
  */
-void mpi_prep_mpk(mpk_t *mg, comm_data_t *cd) {
-  assert(mg != NULL);
+void mpi_prep_mpk(comm_data_t *cd) {
+  assert(cd->mg != NULL);
   printf("preparing mpi buffers for communication...");
 
-  char *comm_table = new_comm_table(mg);
-  int *store_part = new_store_part(mg);
+  char *comm_table = new_comm_table(cd->mg);
+  int *store_part = new_store_part(cd->mg);
 
-  if (mg->nphase > 0) {
-    assert(mg->plist[0] != NULL);
-    zeroth_comm_table(mg, comm_table, store_part);
-    fill_comm_data(0, comm_table, mg, cd);
+  if (cd->nphase > 0) {
+    assert(cd->mg->plist[0] != NULL);
+    zeroth_comm_table(cd->mg, comm_table, store_part);
+    fill_comm_data(0, comm_table, cd);
   }
-  for (int phase = 1; phase < mg->nphase; phase++) {
-    assert(mg->plist[phase] != NULL);
-    phase_comm_table(phase, mg, comm_table, store_part);
-    fill_comm_data(phase, comm_table, mg, cd);
+  for (int phase = 1; phase < cd->nphase; phase++) {
+    assert(cd->mg->plist[phase] != NULL);
+    phase_comm_table(phase, cd->mg, comm_table, store_part);
+    fill_comm_data(phase, comm_table, cd);
   }
-  skirt_comm_table(mg, comm_table, store_part);
-  fill_comm_data(mg->nphase, comm_table, mg, cd);
+  skirt_comm_table(cd->mg, comm_table, store_part);
+  fill_comm_data(cd->nphase, comm_table, cd);
 
   free(comm_table);
   free(store_part);
