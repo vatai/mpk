@@ -363,30 +363,31 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
 }
 
 static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
   int *pl = cd->mg->plist[0]->part;
-  int prevlmin = 0; // TODO(vatai):
+  int prevlmin = 0;
   if (cd->nphase) {
     prevlmin = prevl[0];
     for (int i = 1; i < cd->n; i++)
       if (prevl[i] < prevlmin)
         prevlmin = prevl[i];
   }
-  for (int p = 0; p < cd->npart; p++) {
-    int cnt = 0;
-    task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + p;
-    for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
-      for (int i = 0; i< cd->n; i++) {
-        int prevli = cd->nphase ? prevl[i] : 0;
-        int slpi = cd->mg->sg->levels[p * cd->n + i];
-	if (prevli < level && 0 <= slpi && level <= cd->nlevel - slpi)
-          cnt++;
-      }
+  int count = 0;
+  task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
+  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = cd->nphase ? prevl[i] : 0;
+      // TODO(vatai): new_prep
+      int slpi = cd->mg->sg->levels[rank * cd->n + i];
+      if (prevli < level && 0 <= slpi && level <= cd->nlevel - slpi)
+        count++;
     }
-
-    assert(tl->n == cnt);
-    tl->n = cnt;
   }
+
+  assert(tl->n == count);
+  tl->n = count;
 }
 
 static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
