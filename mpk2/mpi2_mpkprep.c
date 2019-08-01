@@ -340,22 +340,6 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 
 // NEW_PREP_BEGIN
 
-static int get_rcount(int phase, comm_data_t *cd, char *comm_table) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int rcount = 0;
-  int scount = 0;
-  for (int p = 0; p < cd->npart; p++)
-    for (int i = 0; i < cd->n * cd->nlevel; i++) {
-      int idx = get_ct_idx(cd->mg, p, rank, i);
-      if (comm_table[idx]) {
-        rcount++;
-        scount++;
-      }
-    }
-  return rcount;
-}
-
 // Fill all buffer size variables to make allocation possible.
 static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
                                   int *store_part) {
