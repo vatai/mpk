@@ -21,60 +21,60 @@ comm_data_t *new_comm_data(mpk_t *mg) {
   int npart = cd->npart = mg->npart;
   int nphase = cd->nphase = mg->nphase;
 
-  // Send and receive buffers for vertex values (from vv).
-  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
-  assert(cd->vv_sbufs != NULL);
-  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (nphase + 1));
-  assert(cd->vv_rbufs != NULL);
-  // Send and receive buffers for (vv) indices.
-  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (nphase + 1));
-  assert(cd->idx_sbufs != NULL);
-  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (nphase + 1));
-  assert(cd->idx_rbufs != NULL);
-
-  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
-  // p]` are is the number of elements sent/received to/from partition
-  // `p`.
-  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * npart * (nphase + 1));
-  assert(cd->sendcounts != NULL);
   cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
   assert(cd->recvcounts != NULL);
-  cd->phase_scnt = malloc(sizeof(*cd->phase_scnt) * (nphase + 1));
-  assert(cd->phase_scnt != NULL);
-  cd->phase_rcnt = malloc(sizeof(*cd->phase_rcnt) * (nphase + 1));
-  assert(cd->phase_rcnt != NULL);
+  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * npart * (nphase + 1));
+  assert(cd->sendcounts != NULL);
 
-  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
-  // the displacement (index) in the send/receive buffers where the
-  // elements sent to partition/process `p` start.
-  cd->sdispls = malloc(sizeof(*cd->sdispls) * npart * (nphase + 1));
-  assert(cd->sdispls != NULL);
   cd->rdispls = malloc(sizeof(*cd->rdispls) * npart * (nphase + 1));
   assert(cd->rdispls != NULL);
+  cd->sdispls = malloc(sizeof(*cd->sdispls) * npart * (nphase + 1));
+  assert(cd->sdispls != NULL);
+
+  cd->rcount = malloc(sizeof(*cd->rcount) * (nphase + 1));
+  assert(cd->rcount != NULL);
+  cd->mcount = malloc(sizeof(*cd->mcount) * (nphase + 1));
+  assert(cd->mcount != NULL);
+  cd->scount = malloc(sizeof(*cd->scount) * (nphase + 1));
+  assert(cd->scount != NULL);
+
+  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (nphase + 1));
+  assert(cd->idx_rbufs != NULL);
+  cd->idx_mbufs = malloc(sizeof(*cd->idx_mbufs) * (nphase + 1));
+  assert(cd->idx_mbufs != NULL);
+  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (nphase + 1));
+  assert(cd->idx_sbufs != NULL);
+
+  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (nphase + 1));
+  assert(cd->vv_rbufs != NULL);
+  cd->vv_mbufs = malloc(sizeof(*cd->vv_mbufs) * (nphase + 1));
+  assert(cd->vv_mbufs != NULL);
+  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
+  assert(cd->vv_sbufs != NULL);
 
   return cd;
 }
 
 void del_comm_data(comm_data_t *cd) {
-  int i;
-  free(cd->rdispls);
-  free(cd->sdispls);
   free(cd->recvcounts);
   free(cd->sendcounts);
-  free(cd->phase_rcnt);
-  free(cd->phase_scnt);
+  free(cd->rdispls);
+  free(cd->sdispls);
+  free(cd->rcount);
+  free(cd->mcount);
+  free(cd->scount);
 
-  // TODO(vatai): receive buffers can't be deallocated. Why? Check
-  // this after the communication part is written.
-  for (i = 1; i < cd->nphase; i++) {
+  for (int i = 1; i < cd->nphase; i++) {
     free(cd->idx_rbufs[i]);
     free(cd->idx_sbufs[i]);
     free(cd->vv_rbufs[i]);
     free(cd->vv_sbufs[i]);
   }
   free(cd->idx_rbufs);
+  free(cd->idx_mbufs);
   free(cd->idx_sbufs);
   free(cd->vv_rbufs);
+  free(cd->vv_mbufs);
   free(cd->vv_sbufs);
 
   cd->nphase = 0;
@@ -221,13 +221,13 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
 // - filled comm_table
 //
 // Output: cd->
-// - phase_scnt[phase], phase_rcnt[phase],
+// - scount[phase], rcount[phase],
 // - sendcount[phase, part], recvvount[phase, part]
 static void fill_counts(int phase, char *comm_table, comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  cd->phase_scnt[phase] = 0;
-  cd->phase_rcnt[phase] = 0;
+  cd->scount[phase] = 0;
+  cd->rcount[phase] = 0;
   for (int p = 0; p < cd->npart; p++) {
     cd->sendcounts[phase * cd->npart + p] = 0;
     cd->recvcounts[phase * cd->npart + p] = 0;
@@ -236,12 +236,12 @@ static void fill_counts(int phase, char *comm_table, comm_data_t *cd) {
     for (int i = 0; i < cd->n * cd->nlevel; i++) {
       int idx = get_ct_idx(cd->mg, rank, p, i);
       if (comm_table[idx]) {
-        cd->phase_scnt[phase]++;
+        cd->scount[phase]++;
         cd->sendcounts[phase * cd->npart + p]++;
       }
       idx = get_ct_idx(cd->mg, p, rank, i);
       if (comm_table[idx]) {
-        cd->phase_rcnt[phase]++;
+        cd->rcount[phase]++;
         cd->recvcounts[phase * cd->npart + p]++;
       }
     }
@@ -263,14 +263,14 @@ static void fill_displs(int phase, comm_data_t *cd) {
 }
 
 static void alloc_bufs(int phase, comm_data_t *cd) {
-  // Needs phase_scnt and phase_rcnt filled.
-  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * cd->phase_scnt[phase]);
+  // Needs scount and rcount filled.
+  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * cd->scount[phase]);
   assert(cd->vv_sbufs[phase] != NULL);
-  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * cd->phase_rcnt[phase]);
+  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * cd->rcount[phase]);
   assert(cd->vv_rbufs[phase] != NULL);
-  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * cd->phase_scnt[phase]);
+  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * cd->scount[phase]);
   assert(cd->idx_sbufs[phase] != NULL);
-  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * cd->phase_rcnt[phase]);
+  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * cd->rcount[phase]);
   assert(cd->idx_rbufs[phase] != NULL);
 }
 
@@ -409,8 +409,8 @@ static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
     }
   }
 
-  assert(cd->phase_rcnt[phase] == rcount);
-  assert(cd->phase_scnt[phase] == scount);
+  assert(cd->rcount[phase] == rcount);
+  assert(cd->scount[phase] == scount);
 }
 
 static void new_fill_count(comm_data_t *cd, char *comm_table, int *store_part) {
@@ -434,19 +434,19 @@ static void new_alloc_comm_data(comm_data_t *cd) {
 
   long count = 0;
   for (int phase = 0; phase < cd->nphase; phase++) {
-    count += cd->phase_rcnt[phase];
+    count += cd->rcount[phase];
     count += (cd->mg->tlist + phase * cd->npart + rank)->n;
-    count += cd->phase_scnt[phase];
+    count += cd->scount[phase];
   }
   cd->idx_buf = malloc(sizeof(*cd->idx_buf) * count);
   count = 0;
   for (int phase = 0; phase < cd->nphase; phase++) {
     // cd->idx_rbufs[phase] = cd->idx_buf + count;
-    count += cd->phase_rcnt[phase];
+    count += cd->rcount[phase];
     // cd->idx_mbufs = cd->idx_mbufs[phase];
     count += (cd->mg->tlist + phase * cd->npart + rank)->n;
     // cd->idx_sbufs[phase] = cd->idx_buf + count;
-    count += cd->phase_scnt[phase];
+    count += cd->scount[phase];
   }
 }
 

@@ -3,42 +3,39 @@
 
 #include "lib.h"
 
-typedef struct {
+typedef struct comm_table {
   mpk_t *mg;
   int n;
   int nlevel;
   int npart;
   int nphase;
-  // Each phase communicates a different amount, hence pointer to
-  // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
-  // send buffer in phase `p`
 
-  // Receive and send buffers for vertex values (from vv).
-  double **vv_rbufs;
-  double **vv_sbufs;
-  // Receive and send buffers for (vv) indices.
-  long **idx_rbufs;
-  long **idx_sbufs;
-
-  // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
-  // p]` are is the number of elements sent/received to/from partition
-  // `p`.
-  int *phase_rcnt;
-  int *phase_scnt;
+  // npart * (nphase + 1)
   int *recvcounts;
   int *sendcounts;
-
-  // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
-  // the displacement (index) in the send/receive buffers where the
-  // elements sent to partition/process `p` start.
   int *rdispls;
   int *sdispls;
+
+  // nphase + 1
+  int *rcount;
+  int *mcount;
+  int *scount;
+
+  // {r,m,s}count[phase]
+  long **idx_rbufs;
+  long **idx_mbufs;
+  long **idx_sbufs;
+  double **vv_rbufs;
+  double **vv_mbufs;
+  double **vv_sbufs;
+
+  int idx_count;
+  long *idx_buf;
 
   long **mptr;
   long **mcol;
   double **mval;
 
-  long *idx_buf;
 } comm_data_t;
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
