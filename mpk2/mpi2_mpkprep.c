@@ -266,7 +266,7 @@ static void alloc_bufs(int phase, comm_data_t *cd) {
   assert(cd->idx_rbufs[phase] != NULL);
 }
 
-static void fill_idx_buffers(int phase, char *comm_table, comm_data_t *cd) {
+static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
   // Needs idx buffers allocated.
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -297,7 +297,7 @@ static void fill_comm_data(int phase, char *comm_table, comm_data_t *cd) {
   fill_counts(phase, comm_table, cd);
   fill_displs(phase, cd);
   alloc_bufs(phase, cd);
-  fill_idx_buffers(phase, comm_table, cd);
+  fill_idx_rsbuf(phase, comm_table, cd);
 }
 
 void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
@@ -335,8 +335,30 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 /* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
+static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
+  // TODO(vatai): DRY violation - almost the same as fill_tlist_counts
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int count = 0;
+  for (int level = 0; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
+                    cd->mg->plist[phase]->part[i];
+      int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
+                  cd->mg->llist[phase]->level[i];
+      if (prevli < level && level <= curli && rank == curpart) {
+        cd->idx_mbufs[phase][count] = level * cd->n + i;
+        count++;
+      }
+    }
+  }
+}
+
 static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
                                   int *store_part) {
+  // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -447,9 +469,12 @@ static void new_alloc_comm_data(comm_data_t *cd) {
 }
 
 void new_fill_indices(comm_data_t *cd, char *comm_table, int *storstore_part) {
-  // fill_counts(phase, comm_table, cd);
-  // fill_displs(phase, cd);
-  // alloc_bufs(phase, cd);
+  for (int phase = 0; phase < cd->nphase; phase++) {
+    fill_counts(phase, comm_table, cd);
+    fill_displs(phase, cd);
+    fill_idx_mbuf(phase, comm_table, cd);
+    fill_idx_rsbuf(phase, comm_table, cd);
+  }
   // fill_idx_buffers(phase, comm_table, cd);
 }
 
@@ -480,7 +505,8 @@ void mpi_prep_mpk(comm_data_t *cd) {
 
   new_fill_count(cd, comm_table, store_part);
   new_alloc_comm_data(cd);
-  // new_fill_indices(cd, comm_table, storstore_part);
+  new_fill_indices(cd, comm_table, store_part);
+  // Don't forget to fill mbuf!!!
 
   free(comm_table);
   free(store_part);
