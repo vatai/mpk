@@ -189,21 +189,17 @@ static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
 static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
   int n = mg->n;
   int nlevel = mg->nlevel;
-  int npart = mg->npart;
   int nphase = mg->nphase;
   int *sl = mg->sg->levels;
   int prevlmin = min_or_0(mg, nphase - 1);
   clear_comm_table(mg, comm_table);
-  for (int p = 0; p < npart; p++) {
+  for (int p = 0; p < mg->npart; p++) {
     for (int l = prevlmin + 1; l <= nlevel; l++) {
       for (int i = 0; i < n; i++) {
-        // TODO(vatai): Why is the commented out condition breaking
-        // the program?
         int above_prevl = (nphase ? mg->llist[nphase - 1]->level[i] : 0) < l;
         int skirt_active = sl[p * n + i] >= 0;
         int not_over_max = l <= nlevel - sl[p * n + i];
-        if (/* store_part[i_vvidx] != -1 && */ above_prevl && skirt_active &&
-            not_over_max) {
+        if (above_prevl && skirt_active && not_over_max) {
           fill_comm_table_one_vertex(p, i, l, mg, comm_table, store_part);
           if (store_part[n * l + i] == -1)
             store_part[n * l + i] = p;
