@@ -203,7 +203,7 @@ void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
 
   int *ptr = mg->g0->ptr;
   task_t *tl = mg->tlist + phase * mg->npart + rank;
-  int *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
+  long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
   assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < tl->n; mi++) {
@@ -219,7 +219,7 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *ptr = mg->g0->ptr;
   int *col = mg->g0->col;
-  int *mptr = cd->mptr[phase];
+  long *mptr = cd->mptr[phase];
   int *rdisp = cd->rdispls + phase * mg->npart;
   int *rcount = cd->recvcounts + phase * mg->npart;
   task_t *tl = mg->tlist + phase * mg->npart + rank;
@@ -228,7 +228,7 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 
   // alloc size will be sum =0; for() sum += tl->n + phase_rbuf
 
-  int *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
+  long *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
   assert(mcol != NULL);
   for (int mi = 0; mi < tl->n; mi++) {
     long i = tl->idx[mi] % mg->n;

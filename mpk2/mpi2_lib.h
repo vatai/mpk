@@ -33,9 +33,9 @@ typedef struct {
   // elements sent to partition/process `p` start.
   int *sdispls;
   int *rdispls;
+  long **mptr;
+  long **mcol;
 
-  int **mptr;
-  int **mcol;
   // double **mval;
 } comm_data_t;
 
