@@ -13,26 +13,27 @@ typedef struct {
   // pointer.  E.g. `vv_sbufs[phase][i]` is the `i`-th element of the
   // send buffer in phase `p`
 
-  // Send and receive buffers for vertex values (from vv).
-  double **vv_sbufs;
+  // Receive and send buffers for vertex values (from vv).
   double **vv_rbufs;
-  // Send and receive buffers for (vv) indices.
-  long **idx_sbufs;
+  double **vv_sbufs;
+  // Receive and send buffers for (vv) indices.
   long **idx_rbufs;
+  long **idx_sbufs;
 
   // `sendcounts[phase * npart + p]` and `recvcounts[phase * npart +
   // p]` are is the number of elements sent/received to/from partition
   // `p`.
-  int *phase_scnt;
   int *phase_rcnt;
-  int *sendcounts;
+  int *phase_scnt;
   int *recvcounts;
+  int *sendcounts;
 
   // `sdispls[phase * npart + p]` and `rsdispls[phase * npart + p]` is
   // the displacement (index) in the send/receive buffers where the
   // elements sent to partition/process `p` start.
-  int *sdispls;
   int *rdispls;
+  int *sdispls;
+
   long **mptr;
   long **mcol;
 

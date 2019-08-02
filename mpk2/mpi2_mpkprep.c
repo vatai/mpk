@@ -302,7 +302,6 @@ static void fill_idx_buffers(int phase, char *comm_table, comm_data_t *cd) {
  * Convert `comm_table[]` to comm. data `cd`.
  */
 static void fill_comm_data(int phase, char *comm_table, comm_data_t *cd) {
-  // Fills cd members from the information from comm_table.
   fill_counts(phase, comm_table, cd);
   fill_displs(phase, cd);
   alloc_bufs(phase, cd);
@@ -339,6 +338,9 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 }
 
 // NEW_PREP_BEGIN
+/* TODO(vatai): new_perp */
+/* - no need for rank? */
+/* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
 static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
@@ -378,7 +380,7 @@ static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = cd->nphase ? prevl[i] : 0;
-      // TODO(vatai): new_prep
+      // TODO(vatai): new_prep: just for rank
       int slpi = cd->mg->sg->levels[rank * cd->n + i];
       if (prevli < level && 0 <= slpi && level <= cd->nlevel - slpi)
         count++;
@@ -397,15 +399,16 @@ static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
   for (int p = 0; p < cd->npart; p++) {
     for (int i = 0; i < cd->n * cd->nlevel; i++) {
       int idx = get_ct_idx(cd->mg, p, rank, i);
-      if (comm_table[idx]) rcount++;
+      if (comm_table[idx]) {
+        rcount++;
+      }
       idx = get_ct_idx(cd->mg, rank, p, i);
-      if (comm_table[idx]) scount++;
+      if (comm_table[idx]) {
+        scount++;
+      }
     }
   }
 
-  /* TODO(vatai): new_perp */
-  /* - no need for rank? */
-  /* - remove assert */
   assert(cd->phase_rcnt[phase] == rcount);
   assert(cd->phase_scnt[phase] == scount);
 }
@@ -421,23 +424,11 @@ static void new_fill_count(comm_data_t *cd, char *comm_table, int *store_part) {
     new_fill_buf_counts(phase, cd, comm_table);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  // STOPED HERE
   new_fill_skirt_tlist_counts(cd, comm_table);
   new_fill_buf_counts(cd->nphase, cd, comm_table);
 
-  /* new_allocate_bufs(cd); */
 
-  /* fill_tlists() */
-  /* zeroth_comm_table(cd->mg, comm_table, store_part); */
-  /* new_fill_comm_data(phase, comm_table, cd); */
 
-  /* for (int phase = 1; phase < cd->nphase; phase++) { */
-  /*   phase_comm_table(phase, cd->mg, comm_table, store_part); */
-  /*   new_fill_comm_data(phase, cd, comm_table, store_part); */
-  /* } */
-
-  /* skirt_comm_table(cd->mg, comm_table, store_part); */
-  /* new_fill_comm_data(cd->nphase, cd, comm_table, store_part); */
 }
 
 // NEW_PREP_END
