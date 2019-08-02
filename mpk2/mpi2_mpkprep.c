@@ -64,18 +64,14 @@ void del_comm_data(comm_data_t *cd) {
   free(cd->mcount);
   free(cd->scount);
 
-  for (int i = 1; i < cd->nphase; i++) {
-    free(cd->idx_rbufs[i]);
-    free(cd->idx_sbufs[i]);
-    free(cd->vv_rbufs[i]);
-    free(cd->vv_sbufs[i]);
-  }
   free(cd->idx_rbufs);
   free(cd->idx_mbufs);
   free(cd->idx_sbufs);
   free(cd->vv_rbufs);
   free(cd->vv_mbufs);
   free(cd->vv_sbufs);
+
+  free(cd->idx_buf);
 
   cd->nphase = 0;
   cd->npart = 0;
@@ -438,14 +434,15 @@ static void new_alloc_comm_data(comm_data_t *cd) {
     count += (cd->mg->tlist + phase * cd->npart + rank)->n;
     count += cd->scount[phase];
   }
+  cd->idx_count = count;
   cd->idx_buf = malloc(sizeof(*cd->idx_buf) * count);
   count = 0;
   for (int phase = 0; phase < cd->nphase; phase++) {
-    // cd->idx_rbufs[phase] = cd->idx_buf + count;
+    cd->idx_rbufs[phase] = cd->idx_buf + count;
     count += cd->rcount[phase];
-    // cd->idx_mbufs = cd->idx_mbufs[phase];
+    cd->idx_mbufs[phase] = cd->idx_buf + count;
     count += (cd->mg->tlist + phase * cd->npart + rank)->n;
-    // cd->idx_sbufs[phase] = cd->idx_buf + count;
+    cd->idx_sbufs[phase] = cd->idx_buf + count;
     count += cd->scount[phase];
   }
 }
