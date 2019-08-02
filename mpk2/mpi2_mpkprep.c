@@ -426,9 +426,35 @@ static void new_fill_count(comm_data_t *cd, char *comm_table, int *store_part) {
   skirt_comm_table(cd->mg, comm_table, store_part);
   new_fill_skirt_tlist_counts(cd, comm_table);
   new_fill_buf_counts(cd->nphase, cd, comm_table);
+}
 
+static void new_alloc_comm_data(comm_data_t *cd) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  long count = 0;
+  for (int phase = 0; phase < cd->nphase; phase++) {
+    count += cd->phase_rcnt[phase];
+    count += (cd->mg->tlist + phase * cd->npart + rank)->n;
+    count += cd->phase_scnt[phase];
+  }
+  cd->idx_buf = malloc(sizeof(*cd->idx_buf) * count);
+  count = 0;
+  for (int phase = 0; phase < cd->nphase; phase++) {
+    // cd->idx_rbufs[phase] = cd->idx_buf + count;
+    count += cd->phase_rcnt[phase];
+    // cd->idx_mbufs = cd->idx_mbufs[phase];
+    count += (cd->mg->tlist + phase * cd->npart + rank)->n;
+    // cd->idx_sbufs[phase] = cd->idx_buf + count;
+    count += cd->phase_scnt[phase];
+  }
+}
 
+void new_fill_indices(comm_data_t *cd, char *comm_table, int *storstore_part) {
+  // fill_counts(phase, comm_table, cd);
+  // fill_displs(phase, cd);
+  // alloc_bufs(phase, cd);
+  // fill_idx_buffers(phase, comm_table, cd);
 }
 
 // NEW_PREP_END
@@ -457,6 +483,8 @@ void mpi_prep_mpk(comm_data_t *cd) {
   fill_comm_data(cd->nphase, comm_table, cd);
 
   new_fill_count(cd, comm_table, store_part);
+  new_alloc_comm_data(cd);
+  // new_fill_indices(cd, comm_table, storstore_part);
 
   free(comm_table);
   free(store_part);
