@@ -359,7 +359,6 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
     }
   }
   assert((cd->mg->tlist + phase * cd->npart + rank)->n == tcount);
-  (cd->mg->tlist + phase * cd->npart + rank)->n = tcount;
 }
 
 static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
@@ -387,7 +386,6 @@ static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
   }
 
   assert(tl->n == count);
-  tl->n = count;
 }
 
 static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
@@ -408,13 +406,11 @@ static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
   /* TODO(vatai): new_perp */
   /* - no need for rank? */
   /* - remove assert */
-  assert(rcount == cd->phase_rcnt[phase]);
-  assert(scount == cd->phase_scnt[phase]);
-  cd->phase_rcnt[phase] = rcount;
-  cd->phase_scnt[phase] = scount;
+  assert(cd->phase_rcnt[phase] == rcount);
+  assert(cd->phase_scnt[phase] == scount);
 }
 
-static void new_prep(comm_data_t *cd, char *comm_table, int *store_part) {
+static void new_fill_count(comm_data_t *cd, char *comm_table, int *store_part) {
   printf("set_tlist_lengths\n");
   zeroth_comm_table(cd->mg, comm_table, store_part);
   new_fill_tlist_counts(0, cd, comm_table, store_part);
@@ -469,7 +465,7 @@ void mpi_prep_mpk(comm_data_t *cd) {
   skirt_comm_table(cd->mg, comm_table, store_part);
   fill_comm_data(cd->nphase, comm_table, cd);
 
-  new_prep(cd, comm_table, store_part);
+  new_fill_count(cd, comm_table, store_part);
 
   free(comm_table);
   free(store_part);
