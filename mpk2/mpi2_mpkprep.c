@@ -344,7 +344,7 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  int tcount = 0;
+  int count = 0;
   for (int level = 0; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
@@ -353,10 +353,12 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
       int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
                   cd->mg->llist[phase]->level[i];
       if (prevli < level && level <= curli && rank == curpart)
-        tcount++;
+        count++;
     }
   }
-  assert((cd->mg->tlist + phase * cd->npart + rank)->n == tcount);
+  // TODO(vatai): remove this line assert((cd->mg->tlist + phase *
+  // cd->npart + rank)->n == tcount);
+  cd->mcount[phase] = count;
 }
 
 static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
@@ -383,7 +385,8 @@ static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
     }
   }
 
-  assert(tl->n == count);
+  // TODO(vatai): remove this line: assert(tl->n == count);
+  cd->mcount[cd->nphase] = count;
 }
 
 static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
@@ -405,8 +408,8 @@ static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
     }
   }
 
-  assert(cd->rcount[phase] == rcount);
-  assert(cd->scount[phase] == scount);
+  cd->rcount[phase] = rcount;
+  cd->scount[phase] = scount;
 }
 
 static void new_fill_count(comm_data_t *cd, char *comm_table, int *store_part) {
@@ -466,18 +469,18 @@ void mpi_prep_mpk(comm_data_t *cd) {
   char *comm_table = new_comm_table(cd->mg);
   int *store_part = new_store_part(cd->mg);
 
-  if (cd->nphase > 0) {
-    assert(cd->mg->plist[0] != NULL);
-    zeroth_comm_table(cd->mg, comm_table, store_part);
-    fill_comm_data(0, comm_table, cd);
-  }
-  for (int phase = 1; phase < cd->nphase; phase++) {
-    assert(cd->mg->plist[phase] != NULL);
-    phase_comm_table(phase, cd->mg, comm_table, store_part);
-    fill_comm_data(phase, comm_table, cd);
-  }
-  skirt_comm_table(cd->mg, comm_table, store_part);
-  fill_comm_data(cd->nphase, comm_table, cd);
+  /* if (cd->nphase > 0) { */
+  /*   assert(cd->mg->plist[0] != NULL); */
+  /*   zeroth_comm_table(cd->mg, comm_table, store_part); */
+  /*   fill_comm_data(0, comm_table, cd); */
+  /* } */
+  /* for (int phase = 1; phase < cd->nphase; phase++) { */
+  /*   assert(cd->mg->plist[phase] != NULL); */
+  /*   phase_comm_table(phase, cd->mg, comm_table, store_part); */
+  /*   fill_comm_data(phase, comm_table, cd); */
+  /* } */
+  /* skirt_comm_table(cd->mg, comm_table, store_part); */
+  /* fill_comm_data(cd->nphase, comm_table, cd); */
 
   new_fill_count(cd, comm_table, store_part);
   new_alloc_comm_data(cd);
