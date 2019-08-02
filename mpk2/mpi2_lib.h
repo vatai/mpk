@@ -36,8 +36,9 @@ typedef struct {
 
   long **mptr;
   long **mcol;
+  double **mval;
 
-  // double **mval;
+  long *idx_buf;
 } comm_data_t;
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
