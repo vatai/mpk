@@ -520,8 +520,11 @@ void mpi_prep_mpk(comm_data_t *cd) {
   skirt_fill_idx_mbuf(cd, comm_table);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
+  // TODO(vatai): NEXT_LIST below
   // NEXT: del mpk_t *mg;
   // NEXT: continue with mcol devel
+  // NEXT: read_cd
+  // NEXT: remove non-DRY code
   free(comm_table);
   free(store_part);
   printf(" done\n");
