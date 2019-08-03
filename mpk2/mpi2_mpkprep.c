@@ -444,7 +444,7 @@ static void new_alloc_comm_data(comm_data_t *cd) {
   assert(cd->vv_buf != NULL);
 
   count = 0;
-  for (int phase = 0; phase < cd->nphase; phase++) {
+  for (int phase = 0; phase <= cd->nphase; phase++) {
     cd->idx_rbufs[phase] = cd->idx_buf + count;
     cd->vv_rbufs[phase] = cd->vv_buf + count;
     count += cd->rcount[phase];
@@ -490,11 +490,6 @@ void mpi_prep_mpk(comm_data_t *cd) {
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
   fill_idx_mbuf(cd->nphase, comm_table, cd);
-  // PROBLEM: For some reaseon removing the following allocation call
-  // causes causes a crash.  This is strange because the
-  // new_alloc_comm_data should do exactly the same thing as the
-  // problematic line.
-  alloc_bufs(cd->nphase, cd); // in new_alloc_comm_data
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
   // NEXT: check if idx_mbuf is the same as tlist->idx[]
