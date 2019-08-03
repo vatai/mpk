@@ -485,15 +485,6 @@ static void new_alloc_comm_data(comm_data_t *cd) {
   }
 }
 
-static void check_cd(int phase, comm_data_t *cd) {
-  printf(">>>> RUNNING CHECK_CD\n");
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  task_t * tl = cd->mg->tlist + phase * cd->npart + rank;
-  assert(tl->n == cd->mcount[phase]);
-  for (int i = 0; i < cd->mcount[phase]; i++)
-    assert(tl->idx[i] == cd->idx_mbufs[phase][i]);
-}
 // NEWPREP_END
 
 /*
@@ -517,24 +508,18 @@ void mpi_prep_mpk(comm_data_t *cd) {
     assert(cd->mg->plist[0] != NULL);
     zeroth_comm_table(cd->mg, comm_table, store_part);
     fill_idx_mbuf(0, comm_table, cd);
-    check_cd(0, cd);
     fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
     assert(cd->mg->plist[phase] != NULL);
     phase_comm_table(phase, cd->mg, comm_table, store_part);
     fill_idx_mbuf(phase, comm_table, cd);
-    check_cd(phase, cd);
     fill_idx_rsbuf(phase, comm_table, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
   skirt_fill_idx_mbuf(cd, comm_table);
-  check_cd(cd->nphase, cd);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
-  // NEXT: check if idx_mbuf is the same as tlist->idx[]
-  // NEXT: write skirt idx fill
-  // NEXT: check skirt idx fill
   // NEXT: del mpk_t *mg;
   // NEXT: continue with mcol devel
   free(comm_table);
