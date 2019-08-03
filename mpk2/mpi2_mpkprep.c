@@ -71,8 +71,8 @@ void del_comm_data(comm_data_t *cd) {
   free(cd->vv_mbufs);
   free(cd->vv_sbufs);
 
-  // TODO(vatai): new_prep, uncomment
-  /* free(cd->idx_buf); */
+  free(cd->idx_buf);
+  free(cd->vv_buf);
 
   cd->nphase = 0;
   cd->npart = 0;
@@ -336,26 +336,26 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 /* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
-/* static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) { */
-/*   // TODO(vatai): DRY violation - almost the same as fill_tlist_counts */
-/*   int rank; */
-/*   MPI_Comm_rank(MPI_COMM_WORLD, &rank); */
+static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
+  // TODO(vatai): DRY violation - almost the same as fill_tlist_counts
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-/*   int count = 0; */
-/*   for (int level = 0; level <= cd->nlevel; level++) { */
-/*     for (int i = 0; i < cd->n; i++) { */
-/*       int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0; */
-/*       int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] : */
-/*                     cd->mg->plist[phase]->part[i]; */
-/*       int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] : */
-/*                   cd->mg->llist[phase]->level[i]; */
-/*       if (prevli < level && level <= curli && rank == curpart) { */
-/*         cd->idx_mbufs[phase][count] = level * cd->n + i; */
-/*         count++; */
-/*       } */
-/*     } */
-/*   } */
-/* } */
+  int count = 0;
+  for (int level = 0; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
+                    cd->mg->plist[phase]->part[i];
+      int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
+                  cd->mg->llist[phase]->level[i];
+      if (prevli < level && level <= curli && rank == curpart) {
+        cd->idx_mbufs[phase][count] = level * cd->n + i;
+        count++;
+      }
+    }
+  }
+}
 
 static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
                                   int *store_part) {
@@ -408,29 +408,6 @@ static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
   cd->mcount[cd->nphase] = count;
 }
 
-static void new_fill_buf_counts(int phase, comm_data_t *cd, char *comm_table) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  int rcount = 0;
-  int scount = 0;
-  for (int p = 0; p < cd->npart; p++) {
-    for (int i = 0; i < cd->n * cd->nlevel; i++) {
-      int idx = get_ct_idx(cd->mg, p, rank, i);
-      if (comm_table[idx]) {
-        rcount++;
-      }
-      idx = get_ct_idx(cd->mg, rank, p, i);
-      if (comm_table[idx]) {
-        scount++;
-      }
-    }
-  }
-
-  cd->rcount[phase] = rcount;
-  cd->scount[phase] = scount;
-}
-
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
   zeroth_comm_table(cd->mg, comm_table, store_part);
   new_fill_tlist_counts(0, cd, comm_table, store_part);
@@ -453,21 +430,29 @@ static void new_alloc_comm_data(comm_data_t *cd) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   long count = 0;
-  for (int phase = 0; phase < cd->nphase; phase++) {
+  for (int phase = 0; phase <= cd->nphase; phase++) {
+    assert((cd->mg->tlist + phase * cd->npart + rank)->n == cd->mcount[phase]);
     count += cd->rcount[phase];
-    count += (cd->mg->tlist + phase * cd->npart + rank)->n;
+    count += cd->mcount[phase];
     count += cd->scount[phase];
   }
-  cd->idx_count = count;
+  cd->buf_count = count;
+
   cd->idx_buf = malloc(sizeof(*cd->idx_buf) * count);
+  cd->vv_buf = malloc(sizeof(*cd->vv_buf) * count);
   assert(cd->idx_buf != NULL);
+  assert(cd->vv_buf != NULL);
+
   count = 0;
   for (int phase = 0; phase < cd->nphase; phase++) {
     cd->idx_rbufs[phase] = cd->idx_buf + count;
+    cd->vv_rbufs[phase] = cd->vv_buf + count;
     count += cd->rcount[phase];
     cd->idx_mbufs[phase] = cd->idx_buf + count;
-    count += (cd->mg->tlist + phase * cd->npart + rank)->n;
+    cd->vv_mbufs[phase] = cd->vv_buf + count;
+    count += cd->mcount[phase];
     cd->idx_sbufs[phase] = cd->idx_buf + count;
+    cd->vv_sbufs[phase] = cd->vv_buf + count;
     count += cd->scount[phase];
   }
 }
@@ -484,24 +469,39 @@ void mpi_prep_mpk(comm_data_t *cd) {
   char *comm_table = new_comm_table(cd->mg);
   int *store_part = new_store_part(cd->mg);
 
+  // Stage one fill
+  fill_bufsize_rscount_displs(cd, comm_table, store_part);
+
+  // Alloc of stage to memory
+  new_alloc_comm_data(cd);
+
+  // NEXT, add vv_bufs alloc and remove alloc
   if (cd->nphase > 0) {
     assert(cd->mg->plist[0] != NULL);
     zeroth_comm_table(cd->mg, comm_table, store_part);
-    fill_comm_data(0, comm_table, cd);
+    fill_idx_mbuf(0, comm_table, cd);
+    fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
     assert(cd->mg->plist[phase] != NULL);
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    fill_comm_data(phase, comm_table, cd);
+    fill_idx_mbuf(phase, comm_table, cd);
+    fill_idx_rsbuf(phase, comm_table, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  fill_comm_data(cd->nphase, comm_table, cd);
+  fill_idx_mbuf(cd->nphase, comm_table, cd);
+  // PROBLEM: For some reaseon removing the following allocation call
+  // causes causes a crash.  This is strange because the
+  // new_alloc_comm_data should do exactly the same thing as the
+  // problematic line.
+  alloc_bufs(cd->nphase, cd); // in new_alloc_comm_data
+  fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
-  fill_bufsize_rscount_displs(cd, comm_table, store_part);
-  // new_alloc_comm_data(cd);
-
-  // Don't forget to fill mbuf!!!
-
+  // NEXT: check if idx_mbuf is the same as tlist->idx[]
+  // NEXT: write skirt idx fill
+  // NEXT: check skirt idx fill
+  // NEXT: del mpk_t *mg;
+  // NEXT: continue with mcol devel
   free(comm_table);
   free(store_part);
   printf(" done\n");

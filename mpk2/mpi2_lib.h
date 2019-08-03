@@ -29,8 +29,9 @@ typedef struct comm_table {
   double **vv_mbufs;
   double **vv_sbufs;
 
-  int idx_count;
+  int buf_count;
   long *idx_buf;
+  double *vv_buf;
 
   long **mptr;
   long **mcol;
