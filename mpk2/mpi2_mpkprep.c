@@ -216,7 +216,7 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
 // Output: cd->
 // - scount[phase], rcount[phase],
 // - sendcount[phase, part], recvvount[phase, part]
-static void fill_counts(int phase, char *comm_table, comm_data_t *cd) {
+static void fill_rscounts(int phase, comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   cd->scount[phase] = 0;
@@ -295,7 +295,7 @@ static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
  * Convert `comm_table[]` to comm. data `cd`.
  */
 static void fill_comm_data(int phase, char *comm_table, comm_data_t *cd) {
-  fill_counts(phase, comm_table, cd);
+  fill_rscounts(phase, cd, comm_table);
   fill_displs(phase, cd);
   alloc_bufs(phase, cd);
   fill_idx_rsbuf(phase, comm_table, cd);
@@ -357,7 +357,7 @@ static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
   }
 }
 
-static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
+static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
                                   int *store_part) {
   // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
   int rank;
@@ -380,7 +380,7 @@ static void new_fill_tlist_counts(int phase, comm_data_t *cd, char *comm_table,
   cd->mcount[phase] = count;
 }
 
-static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
+static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
@@ -410,18 +410,18 @@ static void new_fill_skirt_tlist_counts(comm_data_t *cd, char *comm_table) {
 
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
   zeroth_comm_table(cd->mg, comm_table, store_part);
-  new_fill_tlist_counts(0, cd, comm_table, store_part);
-  fill_counts(0, comm_table, cd);
+  fill_mcounts(0, cd, comm_table, store_part);
+  fill_rscounts(0, cd, comm_table);
   fill_displs(0, cd);
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    new_fill_tlist_counts(phase, cd, comm_table, store_part);
-    fill_counts(phase, comm_table, cd);
+    fill_mcounts(phase, cd, comm_table, store_part);
+    fill_rscounts(phase, cd, comm_table);
     fill_displs(phase, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  new_fill_skirt_tlist_counts(cd, comm_table);
-  fill_counts(cd->nphase, comm_table, cd);
+  skirt_fill_mcounts(cd, comm_table);
+  fill_rscounts(cd->nphase, cd, comm_table);
   fill_displs(cd->nphase, cd);
 }
 

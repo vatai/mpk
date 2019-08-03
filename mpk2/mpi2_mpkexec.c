@@ -113,7 +113,7 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
     vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
 }
 
-static void do_task(mpk_t *mg, double *vv, int phase, int part) { // do_task in mpktexec too, defined static
+static void do_task(mpk_t *mg, double *vv, int phase, int part) {
   assert(mg != NULL && vv != NULL);
 
   int n = mg->n;
