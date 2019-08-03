@@ -330,12 +330,33 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
   }
 }
 
-// NEW_PREP_BEGIN
+// NEWPREP_BEGIN
 /* TODO(vatai): new_perp */
 /* - no need for rank? */
 /* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
+static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
+                                  int *store_part) {
+  // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  int count = 0;
+  for (int level = 0; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
+                    cd->mg->plist[phase]->part[i];
+      int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
+                  cd->mg->llist[phase]->level[i];
+      if (prevli < level && level <= curli && rank == curpart)
+        count++;
+    }
+  }
+  cd->mcount[phase] = count;
+}
+
 static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
   // TODO(vatai): DRY violation - almost the same as fill_tlist_counts
   int rank;
@@ -357,30 +378,8 @@ static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
   }
 }
 
-static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
-                                  int *store_part) {
-  // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  int count = 0;
-  for (int level = 0; level <= cd->nlevel; level++) {
-    for (int i = 0; i < cd->n; i++) {
-      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
-      int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
-                    cd->mg->plist[phase]->part[i];
-      int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i] :
-                  cd->mg->llist[phase]->level[i];
-      if (prevli < level && level <= curli && rank == curpart)
-        count++;
-    }
-  }
-  // TODO(vatai): remove this line assert((cd->mg->tlist + phase *
-  // cd->npart + rank)->n == tcount);
-  cd->mcount[phase] = count;
-}
-
 static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
+  // TODO(vatai): DRY violation - almost the same as skirt_fill_idx_mbufs
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
@@ -408,6 +407,36 @@ static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
   cd->mcount[cd->nphase] = count;
 }
 
+static void skirt_fill_idx_mbuf(comm_data_t *cd, char *comm_table) {
+  // TODO(vatai): DRY violation - almost the same as skirt_fill_mcount
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int *prevl = cd->mg->llist[cd->nphase - 1]->level;
+  int *pl = cd->mg->plist[0]->part;
+  int prevlmin = 0;
+  if (cd->nphase) {
+    prevlmin = prevl[0];
+    for (int i = 1; i < cd->n; i++)
+      if (prevl[i] < prevlmin)
+        prevlmin = prevl[i];
+  }
+  int count = 0;
+  task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
+  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      int prevli = cd->nphase ? prevl[i] : 0;
+      // TODO(vatai): new_prep: just for rank
+      int slpi = cd->mg->sg->levels[rank * cd->n + i];
+      if (prevli < level && 0 <= slpi && level <= cd->nlevel - slpi) {
+        cd->idx_mbufs[cd->nphase][count] = level * cd->n + i;
+        count++;
+      }
+    }
+  }
+}
+
+// WET (i.e. non-DRY) code above
+
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
   zeroth_comm_table(cd->mg, comm_table, store_part);
   fill_mcounts(0, cd, comm_table, store_part);
@@ -431,7 +460,6 @@ static void new_alloc_comm_data(comm_data_t *cd) {
 
   long count = 0;
   for (int phase = 0; phase <= cd->nphase; phase++) {
-    assert((cd->mg->tlist + phase * cd->npart + rank)->n == cd->mcount[phase]);
     count += cd->rcount[phase];
     count += cd->mcount[phase];
     count += cd->scount[phase];
@@ -457,7 +485,16 @@ static void new_alloc_comm_data(comm_data_t *cd) {
   }
 }
 
-// NEW_PREP_END
+static void check_cd(int phase, comm_data_t *cd) {
+  printf(">>>> RUNNING CHECK_CD\n");
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  task_t * tl = cd->mg->tlist + phase * cd->npart + rank;
+  assert(tl->n == cd->mcount[phase]);
+  for (int i = 0; i < cd->mcount[phase]; i++)
+    assert(tl->idx[i] == cd->idx_mbufs[phase][i]);
+}
+// NEWPREP_END
 
 /*
  * Allocate and fill `comm_data_t cd`.
@@ -480,16 +517,19 @@ void mpi_prep_mpk(comm_data_t *cd) {
     assert(cd->mg->plist[0] != NULL);
     zeroth_comm_table(cd->mg, comm_table, store_part);
     fill_idx_mbuf(0, comm_table, cd);
+    check_cd(0, cd);
     fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
     assert(cd->mg->plist[phase] != NULL);
     phase_comm_table(phase, cd->mg, comm_table, store_part);
     fill_idx_mbuf(phase, comm_table, cd);
+    check_cd(phase, cd);
     fill_idx_rsbuf(phase, comm_table, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  fill_idx_mbuf(cd->nphase, comm_table, cd);
+  skirt_fill_idx_mbuf(cd, comm_table);
+  check_cd(cd->nphase, cd);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
   // NEXT: check if idx_mbuf is the same as tlist->idx[]
