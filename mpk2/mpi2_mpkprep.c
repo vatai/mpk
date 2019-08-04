@@ -432,24 +432,20 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *
   fill_displs(cd->nphase, cd);
 }
 
-static void new_alloc_comm_data(comm_data_t *cd) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  long count = 0;
+static void alloc_bufs(comm_data_t *cd) {
+  cd->buf_count = 0;
   for (int phase = 0; phase <= cd->nphase; phase++) {
-    count += cd->rcount[phase];
-    count += cd->mcount[phase];
-    count += cd->scount[phase];
+    cd->buf_count += cd->rcount[phase];
+    cd->buf_count += cd->mcount[phase];
+    cd->buf_count += cd->scount[phase];
   }
-  cd->buf_count = count;
 
-  cd->idx_buf = malloc(sizeof(*cd->idx_buf) * count);
-  cd->vv_buf = malloc(sizeof(*cd->vv_buf) * count);
+  cd->idx_buf = malloc(sizeof(*cd->idx_buf) * cd->buf_count);
+  cd->vv_buf = malloc(sizeof(*cd->vv_buf) * cd->buf_count);
   assert(cd->idx_buf != NULL);
   assert(cd->vv_buf != NULL);
 
-  count = 0;
+  long count = 0;
   for (int phase = 0; phase <= cd->nphase; phase++) {
     cd->idx_rbufs[phase] = cd->idx_buf + count;
     cd->vv_rbufs[phase] = cd->vv_buf + count;
@@ -478,10 +474,10 @@ void mpi_prep_mpk(comm_data_t *cd) {
   // Stage one fill
   fill_bufsize_rscount_displs(cd, comm_table, store_part);
 
-  // Alloc of stage to memory
-  new_alloc_comm_data(cd);
+  // Alloc of stage two to memory
+  alloc_bufs(cd);
 
-  // NEXT, add vv_bufs alloc and remove alloc
+  // Fill stage two
   if (cd->nphase > 0) {
     assert(cd->mg->plist[0] != NULL);
     zeroth_comm_table(cd->mg, comm_table, store_part);
@@ -499,9 +495,9 @@ void mpi_prep_mpk(comm_data_t *cd) {
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 
   // TODO(vatai): NEXT_LIST below
+  // NEXT: read_cd
   // NEXT: del mpk_t *mg;
   // NEXT: continue with mcol devel
-  // NEXT: read_cd
   // NEXT: remove non-DRY code
   free(comm_table);
   free(store_part);
