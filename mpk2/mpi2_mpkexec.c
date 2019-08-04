@@ -107,14 +107,14 @@ void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
     vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
 }
 
-static void do_task(mpk_t *mg, double *vv, int phase, int part) {
-  assert(mg != NULL && vv != NULL);
+static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
+  assert(cd != NULL && vv != NULL);
 
-  int n = mg->n;
+  int n = cd->n;
 
-  task_t *tl = mg->tlist + phase * mg->npart + part;
-  int *ptr = mg->g0->ptr;
-  int *col = mg->g0->col;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + part;
+  int *ptr = cd->mg->g0->ptr;
+  int *col = cd->mg->g0->col;
 
   // TODO(vatai): tl->th = omp_get_thread_num();
   // TODO(vatai): tl->t0 = omp_get_wtime();
@@ -156,7 +156,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
       do_comm(phase, cd, vv, log_file);
     }
 
-    do_task(mg, vv, phase, cd->rank);
+    do_task(cd, vv, phase, cd->rank);
 
     print_values_of_vv(cd->rank, phase, n, nlevel, vv, dir);
   }
