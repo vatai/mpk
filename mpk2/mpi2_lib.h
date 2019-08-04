@@ -31,7 +31,7 @@ typedef struct comm_table {
   double **vv_sbufs;
 
   int buf_count;
-  long *idx_buf;
+  long *idx_buf; // Important note in iterator() function comments
   double *vv_buf;
 
   long **mptr;

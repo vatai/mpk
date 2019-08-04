@@ -340,19 +340,16 @@ static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
   return prevli < level && 0 <= slpi && level <= cd->nlevel - slpi;
 }
 
-// This is central iteration loop.  Has two "conditional parameters"
-// to avoid code duplication.
-//
-// If fill parameter is 0 (false) then only the cd->mcount[phase] is
-// calculated (before allocation).  If fill is 1 (true) then
-// cd->idx_mbufs[phase] is filled (using cd->mcount[phase] as a
-// counter).
+// This is central iteration loop.
 //
 // The cond() function returns true or false depending if the given
 // vertex (at the given level) needs to be counted/processed.  There
 // are two condition functions (see above), phase_cond and skirt_cond.
 //
-static void iterator(int fill, int cond(int, int, int, comm_data_t *cd),
+// Another "implicit parameter" which changes the behaviour is the
+// value of cd->idx_buf.  If cd->idx_buf == NULL, the idx_mbuf[] is
+// not filled, while if non-NULL it is filled.
+static void iterator(int cond(int, int, int, comm_data_t *cd),
                      int phase, comm_data_t *cd, char *comm_table,
                      int *store_part) {
   int prevlmin = get_prevlmin(phase, cd);
@@ -360,7 +357,7 @@ static void iterator(int fill, int cond(int, int, int, comm_data_t *cd),
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       if (cond(phase, i, level, cd)) {
-        if (fill) {
+        if (cd->idx_buf != NULL) {
           cd->idx_mbufs[phase][cd->mcount[phase]] = level * cd->n + i;
         }
         cd->mcount[phase]++;
@@ -370,18 +367,19 @@ static void iterator(int fill, int cond(int, int, int, comm_data_t *cd),
 }
 
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
+  cd->idx_buf = NULL;
   zeroth_comm_table(cd->mg, comm_table, store_part);
-  iterator(0, phase_cond, 0, cd, comm_table, store_part);
+  iterator(phase_cond, 0, cd, comm_table, store_part);
   fill_rscounts(0, cd, comm_table);
   fill_displs(0, cd);
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    iterator(0, phase_cond, phase, cd, comm_table, store_part);
+    iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_rscounts(phase, cd, comm_table);
     fill_displs(phase, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  iterator(0, skirt_cond, cd->nphase, cd, comm_table, store_part);
+  iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_rscounts(cd->nphase, cd, comm_table);
   fill_displs(cd->nphase, cd);
 }
@@ -416,16 +414,16 @@ static void alloc_bufs(comm_data_t *cd) {
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   if (cd->nphase > 0) {
     zeroth_comm_table(cd->mg, comm_table, store_part);
-    iterator(1, phase_cond, 0, cd, comm_table, store_part);
+    iterator(phase_cond, 0, cd, comm_table, store_part);
     fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    iterator(1, phase_cond, phase, cd, comm_table, store_part);
+    iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  iterator(1, skirt_cond, cd->nphase, cd, comm_table, store_part);
+  iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 }
 
