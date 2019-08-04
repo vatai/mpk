@@ -225,48 +225,7 @@ void make_mcol(comm_data_t *cd, int phase){
       // PROBLEM CODE
       int rsize = rcount[(phase) * cd->npart + cd->rank];
       long *idx_rbuf = cd->idx_rbufs[phase] + cd->rank;
-      int idx = find_idx(idx_rbuf, rsize, target);
-      if (idx == -1)
-        idx = find_idx(tl->idx, tl->n, target);
-
-      // Debug
-      if (idx == -1) {
-        char fname[1024];
-        sprintf(fname, "debug%d.log", cd->rank);
-        FILE *file = fopen(fname, "w");
-        fprintf(file, "TARGET: %ld\n", target);
-        fprintf(file, "PHASE: %d\n", phase);
-        fprintf(file, "WSIZE: %d\n", cd->npart);
-
-        fprintf(file, "idx_buf[0..%d]: ", rsize);
-        for (int j = 0; j < rsize; j++)
-          fprintf(file, "%ld, ", idx_rbuf[j]);
-        fprintf(file, "\n\n");
-
-        fprintf(file, "tl->idx[0..%d]: ", tl->n);
-        for (int j = 0; j < tl->n; j++)
-          fprintf(file, "%ld ", tl->idx[j]);
-        fprintf(file, "\n\n");
-
-        fprintf(file, "idx_rbuf\n");
-        for (int ph = 0; ph <= cd->nphase; ph++) {
-          for (int pt = 0; pt < cd->npart; pt++)
-            fprintf(file, "%ld ", cd->idx_rbufs[ph][pt]);
-          fprintf(file, "\n");
-        }
-        fprintf(file, "\n");
-
-        fprintf(file, "recvcnt\n");
-        for (int ph = 0; ph <= cd->nphase; ph++) {
-          for (int pt = 0; pt < cd->npart; pt++)
-            fprintf(file, "%d ", cd->recvcounts[ph * cd->npart + pt]);
-          fprintf(file, "\n");
-        }
-        fprintf(file, "\n");
-
-        printf("-");
-        fclose(file);
-      }
+      int idx = find_idx(cd->idx_buf, cd->buf_count, target);
     }
   }
   cd->mcol[phase] = mcol;
@@ -289,7 +248,7 @@ void make_mptr_mcol(comm_data_t *cd) {
     /*   printf("%d ", cd->rdispls[i]); */
     /* printf("\n"); */
     // exit(1);
-    // make_mcol(mg, cd, phase);
+    make_mcol(cd, phase);
   }
 }
 
