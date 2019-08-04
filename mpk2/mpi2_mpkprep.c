@@ -255,18 +255,6 @@ static void fill_displs(int phase, comm_data_t *cd) {
   }
 }
 
-static void alloc_bufs(int phase, comm_data_t *cd) {
-  // Needs scount and rcount filled.
-  cd->vv_sbufs[phase] = malloc(sizeof(*cd->vv_sbufs[phase]) * cd->scount[phase]);
-  assert(cd->vv_sbufs[phase] != NULL);
-  cd->vv_rbufs[phase] = malloc(sizeof(*cd->vv_rbufs[phase]) * cd->rcount[phase]);
-  assert(cd->vv_rbufs[phase] != NULL);
-  cd->idx_sbufs[phase] = malloc(sizeof(*cd->idx_sbufs[phase]) * cd->scount[phase]);
-  assert(cd->idx_sbufs[phase] != NULL);
-  cd->idx_rbufs[phase] = malloc(sizeof(*cd->idx_rbufs[phase]) * cd->rcount[phase]);
-  assert(cd->idx_rbufs[phase] != NULL);
-}
-
 static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
   // Needs idx buffers allocated.
   int rank;
@@ -294,13 +282,6 @@ static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
 /*
  * Convert `comm_table[]` to comm. data `cd`.
  */
-static void fill_comm_data(int phase, char *comm_table, comm_data_t *cd) {
-  fill_rscounts(phase, cd, comm_table);
-  fill_displs(phase, cd);
-  alloc_bufs(phase, cd);
-  fill_idx_rsbuf(phase, comm_table, cd);
-}
-
 void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
   if (rank == 0) {
     printf("Testing and printing commtable in a text doc\n");
@@ -398,7 +379,6 @@ static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
   int prevlmin = get_prevlmin(cd->nphase, cd);
   int count = 0;
-  task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = cd->nphase ? prevl[i] : 0;
@@ -420,7 +400,6 @@ static void skirt_fill_idx_mbuf(comm_data_t *cd, char *comm_table) {
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
   int prevlmin = get_prevlmin(cd->nphase, cd);
   int count = 0;
-  task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = cd->nphase ? prevl[i] : 0;
