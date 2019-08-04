@@ -330,8 +330,54 @@ static int get_prevlmin(int phase, comm_data_t *cd) {
   return prevlmin;
 }
 
+static int phase_cond(int phase, int rank, int i, int level, comm_data_t *cd) {
+  int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+  int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i]
+                                    : cd->mg->plist[phase]->part[i];
+  int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i]
+                                  : cd->mg->llist[phase]->level[i];
+  return prevli < level && level <= curli && rank == curpart;
+}
+
+static int skirt_cond(int phase, int rank, int i, int level, comm_data_t *cd) {
+  int prevli = cd->nphase ? cd->mg->llist[cd->nphase - 1]->level[i] : 0;
+  int slpi = cd->mg->sg->levels[rank * cd->n + i];
+  return prevli < level && 0 <= slpi && level <= cd->nlevel - slpi;
+}
+
+// This is central iteration loop.  Has two "conditional parameters"
+// to avoid code duplication.
+//
+// If fill parameter is 0 (false) then only the cd->mcount[phase] is
+// calculated (before allocation).  If fill is 1 (true) then
+// cd->idx_mbufs[phase] is filled (using cd->mcount[phase] as a
+// counter).
+//
+// The cond() function returns true or false depending if the given
+// vertex (at the given level) needs to be counted/processed.  There
+// are two condition functions (see above), phase_cond and skirt_cond.
+//
+static void iterator(int fill, int cond(int, int, int, int, comm_data_t *cd),
+                     int phase, comm_data_t *cd, char *comm_table,
+                     int *store_part) {
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int prevlmin = get_prevlmin(phase, cd);
+  cd->mcount[phase] = 0;
+  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
+    for (int i = 0; i < cd->n; i++) {
+      if (cond(phase, rank, i, level, cd)) {
+        if (fill) {
+          cd->idx_mbufs[phase][cd->mcount[phase]] = level * cd->n + i;
+        }
+        cd->mcount[phase]++;
+      }
+    }
+  }
+}
+
 static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
-                                  int *store_part) {
+                         int *store_part) {
   // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -418,17 +464,20 @@ static void skirt_fill_idx_mbuf(comm_data_t *cd, char *comm_table) {
 
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
   zeroth_comm_table(cd->mg, comm_table, store_part);
-  fill_mcounts(0, cd, comm_table, store_part);
+  // fill_mcounts(0, cd, comm_table, store_part);
+  iterator(0, phase_cond, 0, cd, comm_table, store_part);
   fill_rscounts(0, cd, comm_table);
   fill_displs(0, cd);
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    fill_mcounts(phase, cd, comm_table, store_part);
+    // fill_mcounts(phase, cd, comm_table, store_part);
+    iterator(0, phase_cond, phase, cd, comm_table, store_part);
     fill_rscounts(phase, cd, comm_table);
     fill_displs(phase, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  skirt_fill_mcounts(cd, comm_table);
+  // skirt_fill_mcounts(cd, comm_table);
+  iterator(0, skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_rscounts(cd->nphase, cd, comm_table);
   fill_displs(cd->nphase, cd);
 }
@@ -463,18 +512,22 @@ static void alloc_bufs(comm_data_t *cd) {
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   if (cd->nphase > 0) {
     zeroth_comm_table(cd->mg, comm_table, store_part);
-    fill_idx_mbuf(0, comm_table, cd);
+    // fill_idx_mbuf(0, comm_table, cd);
+    iterator(1, phase_cond, 0, cd, comm_table, store_part);
     fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd->mg, comm_table, store_part);
-    fill_idx_mbuf(phase, comm_table, cd);
+    // fill_idx_mbuf(phase, comm_table, cd);
+    iterator(1, phase_cond, phase, cd, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, cd);
   }
   skirt_comm_table(cd->mg, comm_table, store_part);
-  skirt_fill_idx_mbuf(cd, comm_table);
+  // skirt_fill_idx_mbuf(cd, comm_table);
+  iterator(1, skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 }
+
 // NEWPREP_END
 
 /*
