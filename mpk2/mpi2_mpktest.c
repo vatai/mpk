@@ -187,27 +187,27 @@ static int find_idx(long *ptr, int size, long target) {
   return -1;
 }
 
-void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
+void make_mptr(comm_data_t *cd, int phase){
   // TODO(vatai): Put all mptr[phase] into a single array.
-  int *ptr = mg->g0->ptr;
-  task_t *tl = mg->tlist + phase * mg->npart + cd->rank;
+  int *ptr = cd->mg->g0->ptr;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
   long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
   assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < tl->n; mi++) {
-    int i = tl->idx[mi] % mg->n;
+    int i = tl->idx[mi] % cd->n;
     mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
   }
   cd->mptr[phase] = mptr;
 }
 
-void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
-  int *ptr = mg->g0->ptr;
-  int *col = mg->g0->col;
+void make_mcol(comm_data_t *cd, int phase){
+  int *ptr = cd->mg->g0->ptr;
+  int *col = cd->mg->g0->col;
   long *mptr = cd->mptr[phase];
-  int *rdisp = cd->rdispls + phase * mg->npart;
-  int *rcount = cd->recvcounts + phase * mg->npart;
-  task_t *tl = mg->tlist + phase * mg->npart + cd->rank;
+  int *rdisp = cd->rdispls + phase * cd->npart;
+  int *rcount = cd->recvcounts + phase * cd->npart;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
 
   // alloc and store indices which will be searched
 
@@ -216,8 +216,8 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   long *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
   assert(mcol != NULL);
   for (int mi = 0; mi < tl->n; mi++) {
-    long i = tl->idx[mi] % mg->n;
-    long level = tl->idx[mi] / mg->n;
+    long i = tl->idx[mi] % cd->n;
+    long level = tl->idx[mi] / cd->n;
 
     for (int t = ptr[i]; t < ptr[i + 1]; t++) {
       long target = col[t] + cd->n * (level - 1);
@@ -272,7 +272,7 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
   cd->mcol[phase] = mcol;
 }
 
-void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
+void make_mptr_mcol(comm_data_t *cd) {
   // TODO(vatai): NEXT LIST below
   // NEXT: read_cd
   // NEXT: del mpk_t *mg;
@@ -283,7 +283,7 @@ void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
   assert(cd->mcol != NULL);
 
   for (int phase = 0; phase <= cd->nphase; phase++) {
-    make_mptr(mg, cd, phase);
+    make_mptr(cd, phase);
     /* printf("========= recvcounts[]"); */
     /* for (int i = 0; i < cd->npart; i++) */
     /*   printf("%d ", cd->rdispls[i]); */
@@ -319,7 +319,7 @@ int main(int argc, char* argv[]) {
   comm_data_t *cd = new_comm_data(mg);
 
   mpi_prep_mpk(cd);
-  make_mptr_mcol(mg, cd);
+  make_mptr_mcol(cd);
 
   char fname[1024];
   /* sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank); */
