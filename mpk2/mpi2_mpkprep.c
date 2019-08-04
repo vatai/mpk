@@ -145,6 +145,7 @@ static int amax(int *ll, int n) {
 }
 
 static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
+  assert(mg->plist[0] != NULL);
   int n = mg->n;
   int *ll = mg->llist[0]->level;
   clear_comm_table(mg, comm_table);
@@ -168,8 +169,8 @@ static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
 
 static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
                              int *store_part) {
+  assert(mg->plist[phase] != NULL);
   int n = mg->n;
-  int *pl = mg->plist[phase]->part;
   int *ll = mg->llist[phase]->level;
   int *prevl = mg->llist[phase - 1]->level;
   int lmax = amax(ll, n);
@@ -459,33 +460,13 @@ static void alloc_bufs(comm_data_t *cd) {
   }
 }
 
-// NEWPREP_END
-
-/*
- * Allocate and fill `comm_data_t cd`.
- */
-void mpi_prep_mpk(comm_data_t *cd) {
-  assert(cd->mg != NULL);
-  printf("preparing mpi buffers for communication...");
-
-  char *comm_table = new_comm_table(cd->mg);
-  int *store_part = new_store_part(cd->mg);
-
-  // Stage one fill
-  fill_bufsize_rscount_displs(cd, comm_table, store_part);
-
-  // Alloc of stage two to memory
-  alloc_bufs(cd);
-
-  // Fill stage two
+static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   if (cd->nphase > 0) {
-    assert(cd->mg->plist[0] != NULL);
     zeroth_comm_table(cd->mg, comm_table, store_part);
     fill_idx_mbuf(0, comm_table, cd);
     fill_idx_rsbuf(0, comm_table, cd);
   }
   for (int phase = 1; phase < cd->nphase; phase++) {
-    assert(cd->mg->plist[phase] != NULL);
     phase_comm_table(phase, cd->mg, comm_table, store_part);
     fill_idx_mbuf(phase, comm_table, cd);
     fill_idx_rsbuf(phase, comm_table, cd);
@@ -493,8 +474,29 @@ void mpi_prep_mpk(comm_data_t *cd) {
   skirt_comm_table(cd->mg, comm_table, store_part);
   skirt_fill_idx_mbuf(cd, comm_table);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
+}
+// NEWPREP_END
 
-  // TODO(vatai): NEXT_LIST below
+/*
+ * Allocate and fill `comm_data_t cd`.
+ */
+void mpi_prep_mpk(comm_data_t *cd) {
+  assert(cd != NULL);
+  printf("preparing mpi buffers for communication...");
+
+  char *comm_table = new_comm_table(cd->mg);
+  int *store_part = new_store_part(cd->mg);
+
+  // Fill stage one data
+  fill_bufsize_rscount_displs(cd, comm_table, store_part);
+
+  // Alloc of stage two to memory
+  alloc_bufs(cd);
+
+  // Fill stage two data
+  fill_bufs(cd, comm_table, store_part);
+
+  // TODO(vatai): NEXT LIST below
   // NEXT: read_cd
   // NEXT: del mpk_t *mg;
   // NEXT: continue with mcol devel
