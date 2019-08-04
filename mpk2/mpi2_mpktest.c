@@ -191,10 +191,12 @@ void make_mptr(comm_data_t *cd, int phase){
   // TODO(vatai): Put all mptr[phase] into a single array.
   int *ptr = cd->mg->g0->ptr;
   task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
+  assert(tl->n == cd->mcount[phase]);
   long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
   assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < tl->n; mi++) {
+    assert(tl->idx[mi] == cd->idx_mbufs[phase][mi]);
     int i = tl->idx[mi] % cd->n;
     mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
   }
