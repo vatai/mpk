@@ -341,9 +341,17 @@ static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
   // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int *prevl = cd->mg->llist[phase - 1]->level;
+  int prevlmin = 0;
+  if (phase > 0) {
+    prevlmin = prevl[0];
+    for (int i = 1; i < cd->n; i++)
+      if (prevl[i] < prevlmin)
+        prevlmin = prevl[i];
+  }
 
   int count = 0;
-  for (int level = 0; level <= cd->nlevel; level++) {
+  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
       int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
@@ -361,9 +369,17 @@ static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
   // TODO(vatai): DRY violation - almost the same as fill_tlist_counts
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int *prevl = cd->mg->llist[phase - 1]->level;
+  int prevlmin = 0;
+  if (phase > 0) {
+    prevlmin = prevl[0];
+    for (int i = 1; i < cd->n; i++)
+      if (prevl[i] < prevlmin)
+        prevlmin = prevl[i];
+  }
 
   int count = 0;
-  for (int level = 0; level <= cd->nlevel; level++) {
+  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
       int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
       int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i] :
