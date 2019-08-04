@@ -446,10 +446,6 @@ void mpi_prep_mpk(comm_data_t *cd) {
   // Fill stage two data
   fill_bufs(cd, comm_table, store_part);
 
-  // TODO(vatai): NEXT LIST below
-  // NEXT: read_cd
-  // NEXT: del mpk_t *mg;
-  // NEXT: continue with mcol devel
   free(comm_table);
   free(store_part);
   printf(" done\n");

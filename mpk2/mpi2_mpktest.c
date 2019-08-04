@@ -273,6 +273,10 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 }
 
 void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
+  // TODO(vatai): NEXT LIST below
+  // NEXT: read_cd
+  // NEXT: del mpk_t *mg;
+  // NEXT: continue with mcol devel
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
   assert(cd->mptr != NULL);
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
