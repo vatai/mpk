@@ -9,6 +9,7 @@ typedef struct comm_table {
   int nlevel;
   int npart;
   int nphase;
+  int rank;
 
   // npart * (nphase + 1)
   int *recvcounts;

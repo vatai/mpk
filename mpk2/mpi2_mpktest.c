@@ -19,11 +19,8 @@ void test_allltoall_inputs(comm_data_t *cd) {
   int n = cd->n;
   int npart = cd->npart;
 
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
   char name[100];
-  sprintf(name,"%d_out_mpi_alltoall.log",rank);
+  sprintf(name,"%d_out_mpi_alltoall.log", cd->rank);
   FILE *f = fopen(name, "w");
   if (f == NULL) {
     fprintf(stderr, "cannot open %s\n", name);
@@ -129,18 +126,18 @@ static int *alloc_fill_count(mpk_t *mg) {
   return count;
 }
 
-static void recv_copy(mpk_t *mg, int *count, double *vv) {
-  for (int part = 1; part < mg->npart; part++) {
+static void recv_copy(comm_data_t *cd, int *count, double *vv) {
+  for (int part = 1; part < cd->mg->npart; part++) {
     double *buf = malloc(sizeof(*buf) * count[part]);
     assert(buf != NULL);
     MPI_Recv(buf, count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
     // PHASE LOOP
-    for (int phase = 0; phase <= mg->nphase; phase++) {
-      task_t *tl = mg->tlist + phase * mg->npart + part;
+    for (int phase = 0; phase <= cd->nphase; phase++) {
+      task_t *tl = cd->mg->tlist + phase * cd->npart + part;
       for (int i = 0; i < tl->n; i++) {
         long val = tl->idx[i];
-        if (val >= mg->n * (mg->nlevel + 1))
+        if (val >= cd->n * (cd->nlevel + 1))
           printf("tl->idx[i]: %ld\n", tl->idx[i]);
         vv[tl->idx[i]] = buf[i];
       }
@@ -149,34 +146,28 @@ static void recv_copy(mpk_t *mg, int *count, double *vv) {
   }
 }
 
-static void copy_send(mpk_t *mg, int *count, double *vv) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  double *buf = malloc(sizeof(*buf) * count[rank]);
+static void copy_send(comm_data_t *cd, int *count, double *vv) {
+  double *buf = malloc(sizeof(*buf) * count[cd->rank]);
   assert(buf != NULL);
 
   // PHASE LOOP
-  for (int phase = 0; phase <= mg->nphase; phase++) {
-    task_t *tl = mg->tlist + phase * mg->npart + rank;
+  for (int phase = 0; phase <= cd->mg->nphase; phase++) {
+    task_t *tl = cd->mg->tlist + phase * cd->mg->npart + cd->rank;
     for (int i = 0; i < tl->n; i++)
       buf[i] = vv[tl->idx[i]];
   }
 
-  MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(buf, count[cd->rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
   free(buf);
 }
 
-static void collect_results(mpk_t *mg, double *vv) {
-  int rank, worldsize;
-  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+static void collect_results(comm_data_t *cd, double *vv) {
+  int *count = alloc_fill_count(cd->mg);
 
-  int *count = alloc_fill_count(mg);
-
-  if (rank == 0)
-    recv_copy(mg, count, vv);
+  if (cd->rank == 0)
+    recv_copy(cd, count, vv);
   else
-    copy_send(mg, count, vv);
+    copy_send(cd, count, vv);
 
   free(count);
 }
@@ -198,11 +189,8 @@ static int find_idx(long *ptr, int size, long target) {
 
 void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
   // TODO(vatai): Put all mptr[phase] into a single array.
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
   int *ptr = mg->g0->ptr;
-  task_t *tl = mg->tlist + phase * mg->npart + rank;
+  task_t *tl = mg->tlist + phase * mg->npart + cd->rank;
   long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
   assert(mptr != NULL);
   mptr[0] = 0;
@@ -214,15 +202,12 @@ void make_mptr(mpk_t *mg, comm_data_t *cd, int phase){
 }
 
 void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
-  int rank, worldsize;
-  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *ptr = mg->g0->ptr;
   int *col = mg->g0->col;
   long *mptr = cd->mptr[phase];
   int *rdisp = cd->rdispls + phase * mg->npart;
   int *rcount = cd->recvcounts + phase * mg->npart;
-  task_t *tl = mg->tlist + phase * mg->npart + rank;
+  task_t *tl = mg->tlist + phase * mg->npart + cd->rank;
 
   // alloc and store indices which will be searched
 
@@ -238,8 +223,8 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
       long target = col[t] + cd->n * (level - 1);
 
       // PROBLEM CODE
-      int rsize = rcount[(phase) * cd->npart + rank];
-      long *idx_rbuf = cd->idx_rbufs[phase] + rank;
+      int rsize = rcount[(phase) * cd->npart + cd->rank];
+      long *idx_rbuf = cd->idx_rbufs[phase] + cd->rank;
       int idx = find_idx(idx_rbuf, rsize, target);
       if (idx == -1)
         idx = find_idx(tl->idx, tl->n, target);
@@ -247,11 +232,11 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
       // Debug
       if (idx == -1) {
         char fname[1024];
-        sprintf(fname, "debug%d.log", rank);
+        sprintf(fname, "debug%d.log", cd->rank);
         FILE *file = fopen(fname, "w");
         fprintf(file, "TARGET: %ld\n", target);
         fprintf(file, "PHASE: %d\n", phase);
-        fprintf(file, "WSIZE: %d\n", worldsize);
+        fprintf(file, "WSIZE: %d\n", cd->npart);
 
         fprintf(file, "idx_buf[0..%d]: ", rsize);
         for (int j = 0; j < rsize; j++)
@@ -288,9 +273,6 @@ void make_mcol(mpk_t *mg, comm_data_t *cd, int phase){
 }
 
 void make_mptr_mcol(mpk_t *mg, comm_data_t *cd) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
   cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
   assert(cd->mptr != NULL);
   cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
@@ -318,12 +300,9 @@ int main(int argc, char* argv[]) {
 
   int world_size;
   int rank;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   mpk_t *mg = read_mpk(argv[1]);
   printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
-  assert(world_size == mg->npart);
 
   int n = mg->n;
   int nlevel = mg->nlevel;
@@ -408,7 +387,7 @@ int main(int argc, char* argv[]) {
   // check_error(vv, n, nlevel);
 
   int result = 0;
-  collect_results(mg, vv);
+  collect_results(cd, vv);
   if (rank == 0)
     result = check_results(cd, vv);
   del_comm_data(cd);

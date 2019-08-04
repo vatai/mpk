@@ -18,8 +18,12 @@ comm_data_t *new_comm_data(mpk_t *mg) {
   cd->mg = mg;
   cd->n = mg->n;
   cd->nlevel = mg->nlevel;
+  MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
   int npart = cd->npart = mg->npart;
   int nphase = cd->nphase = mg->nphase;
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  assert(world_size == mg->npart);
 
   cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
   assert(cd->recvcounts != NULL);
@@ -218,8 +222,6 @@ static void skirt_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
 // - scount[phase], rcount[phase],
 // - sendcount[phase, part], recvvount[phase, part]
 static void fill_rscounts(int phase, comm_data_t *cd, char *comm_table) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   cd->scount[phase] = 0;
   cd->rcount[phase] = 0;
   for (int p = 0; p < cd->npart; p++) {
@@ -228,12 +230,12 @@ static void fill_rscounts(int phase, comm_data_t *cd, char *comm_table) {
   }
   for (int p = 0; p < cd->npart; p++) {
     for (int i = 0; i < cd->n * cd->nlevel; i++) {
-      int idx = get_ct_idx(cd->mg, rank, p, i);
+      int idx = get_ct_idx(cd->mg, cd->rank, p, i);
       if (comm_table[idx]) {
         cd->scount[phase]++;
         cd->sendcounts[phase * cd->npart + p]++;
       }
-      idx = get_ct_idx(cd->mg, p, rank, i);
+      idx = get_ct_idx(cd->mg, p, cd->rank, i);
       if (comm_table[idx]) {
         cd->rcount[phase]++;
         cd->recvcounts[phase * cd->npart + p]++;
@@ -258,20 +260,18 @@ static void fill_displs(int phase, comm_data_t *cd) {
 
 static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
   // Needs idx buffers allocated.
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int scounter = 0;
   int rcounter = 0;
   for (int p = 0; p < cd->npart; p++) {
     // For all vv indices.
     for (int i = 0; i < cd->nlevel * cd->n; ++i) {
       // Here p is the destination (to) partition.
-      int sidx = get_ct_idx(cd->mg, rank, p, i);
+      int sidx = get_ct_idx(cd->mg, cd->rank, p, i);
       if (comm_table[sidx]) {
         cd->idx_sbufs[phase][scounter] = i;
         scounter++;
       }
-      int ridx = get_ct_idx(cd->mg, p, rank, i);
+      int ridx = get_ct_idx(cd->mg, p, cd->rank, i);
       if (comm_table[ridx]) {
         cd->idx_rbufs[phase][rcounter] = i;
         rcounter++;
@@ -314,8 +314,6 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 
 // NEWPREP_BEGIN
 /* TODO(vatai): new_perp */
-/* - no need for rank? */
-/* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
 static int get_prevlmin(int phase, comm_data_t *cd) {
@@ -330,18 +328,18 @@ static int get_prevlmin(int phase, comm_data_t *cd) {
   return prevlmin;
 }
 
-static int phase_cond(int phase, int rank, int i, int level, comm_data_t *cd) {
+static int phase_cond(int phase, int i, int level, comm_data_t *cd) {
   int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
   int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i]
                                     : cd->mg->plist[phase]->part[i];
-  int curli = phase == cd->nphase ? cd->mg->sg->levels[rank * cd->n + i]
+  int curli = phase == cd->nphase ? cd->mg->sg->levels[cd->rank * cd->n + i]
                                   : cd->mg->llist[phase]->level[i];
-  return prevli < level && level <= curli && rank == curpart;
+  return prevli < level && level <= curli && cd->rank == curpart;
 }
 
-static int skirt_cond(int phase, int rank, int i, int level, comm_data_t *cd) {
+static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
   int prevli = cd->nphase ? cd->mg->llist[cd->nphase - 1]->level[i] : 0;
-  int slpi = cd->mg->sg->levels[rank * cd->n + i];
+  int slpi = cd->mg->sg->levels[cd->rank * cd->n + i];
   return prevli < level && 0 <= slpi && level <= cd->nlevel - slpi;
 }
 
@@ -357,16 +355,14 @@ static int skirt_cond(int phase, int rank, int i, int level, comm_data_t *cd) {
 // vertex (at the given level) needs to be counted/processed.  There
 // are two condition functions (see above), phase_cond and skirt_cond.
 //
-static void iterator(int fill, int cond(int, int, int, int, comm_data_t *cd),
+static void iterator(int fill, int cond(int, int, int, comm_data_t *cd),
                      int phase, comm_data_t *cd, char *comm_table,
                      int *store_part) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int prevlmin = get_prevlmin(phase, cd);
   cd->mcount[phase] = 0;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
-      if (cond(phase, rank, i, level, cd)) {
+      if (cond(phase, i, level, cd)) {
         if (fill) {
           cd->idx_mbufs[phase][cd->mcount[phase]] = level * cd->n + i;
         }

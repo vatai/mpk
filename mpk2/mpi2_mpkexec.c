@@ -29,12 +29,9 @@ void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char
   return;
 }
 
-void log_tlist(mpk_t *mg, int phase, FILE *log_file) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  task_t *tl = mg->tlist + phase * mg->npart + rank;
-  int n = mg->n;
+void log_tlist(comm_data_t *cd, int phase, FILE *log_file) {
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
+  int n = cd->n;
   for (int i = 0; i < tl->n; i++) {
     int idx = tl->idx[i];
     int level = idx / n;
@@ -69,16 +66,13 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
   }
 }
 
-void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
-             FILE *log_file) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int npart = mg->npart;
+void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
+  int npart = cd->npart;
 
   // Log tlist.
-  fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", rank,
+  fprintf(log_file, "\n\n==== TLIST: part/rank %d : phase %d ====)\n", cd->rank,
           phase);
-  log_tlist(mg, phase, log_file);
+  log_tlist(cd, phase, log_file);
 
   // Copy data to send buffers.
   int stotal = cd->sendcounts[npart * phase + npart - 1] +
@@ -87,7 +81,7 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
     cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
 
   // Log send buffers.
-  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", rank,
+  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", cd->rank,
           phase);
   log_cd(cd->vv_sbufs[phase], cd->idx_sbufs[phase],
          cd->sendcounts + npart * phase, cd->sdispls + npart * phase, cd->n,
@@ -100,7 +94,7 @@ void do_comm(int phase, mpk_t *mg, comm_data_t *cd, double *vv,
                 MPI_DOUBLE, MPI_COMM_WORLD);
 
   // Log receive buffers.
-  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", rank,
+  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", cd->rank,
           phase);
   log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase],
          cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
@@ -145,8 +139,6 @@ static void do_task(mpk_t *mg, double *vv, int phase, int part) {
 }
 
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   assert(mg != NULL && vv != NULL && cd != NULL);
 
   int n = mg->n;
@@ -155,18 +147,18 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
   int nphase = mg->nphase;
 
   char fname[1024];
-  sprintf(fname, "mpi_comm_in_exec_rank-%d.log", rank);
+  sprintf(fname, "mpi_comm_in_exec_rank-%d.log", cd->rank);
   FILE *log_file = fopen(fname, "w");
 
   int phase;
   for (phase = 0; phase <= nphase; phase++) {
     if (phase > 0 || nphase == 0) {
-      do_comm(phase, mg, cd, vv, log_file);
+      do_comm(phase, cd, vv, log_file);
     }
 
-    do_task(mg, vv, phase, rank);
+    do_task(mg, vv, phase, cd->rank);
 
-    print_values_of_vv(rank, phase, n, nlevel, vv, dir);
+    print_values_of_vv(cd->rank, phase, n, nlevel, vv, dir);
   }
   fclose(log_file);
 }
