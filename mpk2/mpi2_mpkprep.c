@@ -336,11 +336,7 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 /* - remove assert */
 
 // Fill all buffer size variables to make allocation possible.
-static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
-                                  int *store_part) {
-  // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+static int get_prevlmin(int phase, comm_data_t *cd) {
   int *prevl = cd->mg->llist[phase - 1]->level;
   int prevlmin = 0;
   if (phase > 0) {
@@ -349,7 +345,15 @@ static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
       if (prevl[i] < prevlmin)
         prevlmin = prevl[i];
   }
+  return prevlmin;
+}
 
+static void fill_mcounts(int phase, comm_data_t *cd, char *comm_table,
+                                  int *store_part) {
+  // TODO(vatai): DRY violation - almost the same as fill_idx_mbufs
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int prevlmin = get_prevlmin(phase, cd);
   int count = 0;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
@@ -370,14 +374,7 @@ static void fill_idx_mbuf(int phase, char *comm_table, comm_data_t *cd) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[phase - 1]->level;
-  int prevlmin = 0;
-  if (phase > 0) {
-    prevlmin = prevl[0];
-    for (int i = 1; i < cd->n; i++)
-      if (prevl[i] < prevlmin)
-        prevlmin = prevl[i];
-  }
-
+  int prevlmin = get_prevlmin(phase, cd);
   int count = 0;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
     for (int i = 0; i < cd->n; i++) {
@@ -399,13 +396,7 @@ static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
-  int prevlmin = 0;
-  if (cd->nphase) {
-    prevlmin = prevl[0];
-    for (int i = 1; i < cd->n; i++)
-      if (prevl[i] < prevlmin)
-        prevlmin = prevl[i];
-  }
+  int prevlmin = get_prevlmin(cd->nphase, cd);
   int count = 0;
   task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
@@ -427,13 +418,7 @@ static void skirt_fill_idx_mbuf(comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
-  int prevlmin = 0;
-  if (cd->nphase) {
-    prevlmin = prevl[0];
-    for (int i = 1; i < cd->n; i++)
-      if (prevl[i] < prevlmin)
-        prevlmin = prevl[i];
-  }
+  int prevlmin = get_prevlmin(cd->nphase, cd);
   int count = 0;
   task_t *tl = cd->mg->tlist + cd->nphase * cd->npart + rank;
   for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
