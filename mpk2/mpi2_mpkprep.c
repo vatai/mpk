@@ -383,7 +383,6 @@ static void skirt_fill_mcounts(comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
-  int *pl = cd->mg->plist[0]->part;
   int prevlmin = 0;
   if (cd->nphase) {
     prevlmin = prevl[0];
@@ -412,7 +411,6 @@ static void skirt_fill_idx_mbuf(comm_data_t *cd, char *comm_table) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int *prevl = cd->mg->llist[cd->nphase - 1]->level;
-  int *pl = cd->mg->plist[0]->part;
   int prevlmin = 0;
   if (cd->nphase) {
     prevlmin = prevl[0];
