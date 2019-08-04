@@ -312,9 +312,6 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
   }
 }
 
-// NEWPREP_BEGIN
-/* TODO(vatai): new_perp */
-
 // Fill all buffer size variables to make allocation possible.
 static int get_prevlmin(int phase, comm_data_t *cd) {
   int *prevl = cd->mg->llist[phase - 1]->level;
@@ -432,8 +429,6 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 }
 
-// NEWPREP_END
-
 /*
  * Allocate and fill `comm_data_t cd`.
  */
@@ -457,7 +452,6 @@ void mpi_prep_mpk(comm_data_t *cd) {
   // NEXT: read_cd
   // NEXT: del mpk_t *mg;
   // NEXT: continue with mcol devel
-  // NEXT: remove non-DRY code
   free(comm_table);
   free(store_part);
   printf(" done\n");
