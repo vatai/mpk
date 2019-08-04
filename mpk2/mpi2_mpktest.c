@@ -223,10 +223,6 @@ void make_mcol(comm_data_t *cd, int phase){
 
     for (int t = ptr[i]; t < ptr[i + 1]; t++) {
       long target = col[t] + cd->n * (level - 1);
-
-      // PROBLEM CODE
-      int rsize = rcount[(phase) * cd->npart + cd->rank];
-      long *idx_rbuf = cd->idx_rbufs[phase] + cd->rank;
       int idx = find_idx(cd->idx_buf, cd->buf_count, target);
     }
   }
