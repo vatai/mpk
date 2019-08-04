@@ -261,12 +261,7 @@ int main(int argc, char* argv[]) {
   // Init MPI
   MPI_Init(&argc, &argv);
 
-  int world_size;
-  int rank;
-
   mpk_t *mg = read_mpk(argv[1]);
-  printf("world_size: %d, nphase: %d\n", world_size, mg->npart);
-
   int n = mg->n;
   int nlevel = mg->nlevel;
 
@@ -316,7 +311,7 @@ int main(int argc, char* argv[]) {
   check_error(vv, n, nlevel);
 
   for (i=0; i< n; i++)
-    if (mg->plist[0]->part[i] == rank)
+    if (mg->plist[0]->part[i] == cd->rank)
       vv[i] = 1.0;
     else
       vv[i] = -100.0;
@@ -326,7 +321,7 @@ int main(int argc, char* argv[]) {
   // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, cd, argv[1]);
 
-  sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], rank);
+  sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], cd->rank);
   FILE *vv_log_file = fopen(fname, "w");
   int ns = sqrt(n);
   for (int level = 0; level < nlevel + 1; level++) {
@@ -351,7 +346,7 @@ int main(int argc, char* argv[]) {
 
   int result = 0;
   collect_results(cd, vv);
-  if (rank == 0)
+  if (cd->rank == 0)
     result = check_results(cd, vv);
   del_comm_data(cd);
   free(vv);
