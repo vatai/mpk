@@ -180,7 +180,7 @@ static int check_results(comm_data_t *cd, double *vv) {
   return 0;
 };
 
-static int find_idx(long *ptr, int size, long target) {
+int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
     if (ptr[i] == target)
       return i;

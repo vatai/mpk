@@ -9,7 +9,7 @@
 #include "lib.h"
 #include "mpi2_lib.h"
 
-void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
+static void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
   char fname[1024];
   sprintf(fname,"%s/vv_after_phase_%d_with_rank%d", dir, phase, rank);
   FILE *vv_log_file = fopen(fname, "w");
@@ -66,7 +66,10 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
   }
 }
 
-void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
+// TODO(vatai): delete this, see trivial optimisation below
+int find_idx(long *ptr, int size, long target);
+
+static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
   int npart = cd->npart;
 
   // Log tlist.

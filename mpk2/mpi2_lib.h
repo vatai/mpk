@@ -48,6 +48,4 @@ comm_data_t *new_comm_data(mpk_t *);
 
 void del_comm_data(comm_data_t *);
 
-void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir);
-
 #endif
