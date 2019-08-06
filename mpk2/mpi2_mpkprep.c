@@ -159,6 +159,7 @@ static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
     comm_table[idx] = 1;
   }
   int lmax = amax(ll, n);
+  if (lmax > mg->nlevel) lmax = mg->nlevel;
   for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
@@ -178,6 +179,7 @@ static void phase_comm_table(int phase, mpk_t *mg, char *comm_table,
   int *ll = mg->llist[phase]->level;
   int *prevl = mg->llist[phase - 1]->level;
   int lmax = amax(ll, n);
+  if (lmax > mg->nlevel) lmax = mg->nlevel;
   int prevlmin = min_or_0(mg, phase - 1);
   clear_comm_table(mg, comm_table);
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
