@@ -285,6 +285,15 @@ int main(int argc, char* argv[]) {
       vv[i] = -100.0;
   for (i=0; i< n * nlevel; i++)
     vv[n + i] = -1.0;		/* dummy */
+
+  // NEW CODE
+  for (int i = 0; i < cd->buf_count; i++) {
+    cd->vv_buf[i] = -42;
+  }
+  for (int i = 0; i < cd->rcount[0]; i++) {
+    cd->vv_rbufs[0][i] = 1.0;
+  }
+
   mpi_exec_mpk(mg, vv, cd, argv[1]);
 
   char fname[1024];
