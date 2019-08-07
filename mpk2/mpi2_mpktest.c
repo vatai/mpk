@@ -242,11 +242,6 @@ void make_mptr_mcol(comm_data_t *cd) {
 
   for (int phase = 0; phase <= cd->nphase; phase++) {
     make_mptr(cd, phase);
-    /* printf("========= recvcounts[]"); */
-    /* for (int i = 0; i < cd->npart; i++) */
-    /*   printf("%d ", cd->rdispls[i]); */
-    /* printf("\n"); */
-    // exit(1);
     make_mcol(cd, phase);
   }
 }
@@ -274,40 +269,12 @@ int main(int argc, char* argv[]) {
   mpi_prep_mpk(cd);
   make_mptr_mcol(cd);
 
-  char fname[1024];
-  /* sprintf(fname, "%s/mptr-rank%d.log", argv[1], rank); */
-  /* FILE *mptr_log_file = fopen(fname, "w"); */
-  /* for (int phase = 0; phase <= mg->nphase; phase++) { */
-  /*   task_t *tl = mg->tlist + phase * mg->npart + rank; */
-  /*   for (int i = 0; i < 10 && i < tl->n; i++) { */
-  /*     long idx = tl->idx[i]; */
-  /*     long imod = idx % mg->n; */
-  /*     fprintf(mptr_log_file, "idx %ld, idx mod n %ld, ptr[%ld] %d, mptr[%d] %d\n", */
-  /*             idx, imod, imod, mg->g0->ptr[imod], i, cd.mptr[phase][i]); */
-  /*   } */
-  /* } */
-  /* fclose(mptr_log_file); */
-
-  // test_allltoall_inputs(cd);
-
   int i;
   for (i = 0; i < n; i++)
     vv[i] = 1.0;
   for (i = 0; i < n * nlevel; i++)
     vv[n + i] = -1.0;		/* dummy */
-
   double min;
-  // SpMV multiplication (sequential) is carried out and minimum time
-  // is reported.
-  for (i = 0; i < 5; i++) {
-    // TODO(vatai): double t0 = omp_get_wtime();
-    spmv_exec_seq(mg->g0, vv, nlevel);
-    // TODO(vatai): double t1 = omp_get_wtime();
-    // if (i == 0 || min > t1 - t0)
-    //   min = t1 - t0;
-  }
-  printf("seq spmv time= %e\n", min);
-  check_error(vv, n, nlevel);
 
   for (i=0; i< n; i++)
     if (mg->plist[0]->part[i] == cd->rank)
@@ -316,10 +283,9 @@ int main(int argc, char* argv[]) {
       vv[i] = -100.0;
   for (i=0; i< n * nlevel; i++)
     vv[n + i] = -1.0;		/* dummy */
-  // for (i = 0; i < 5; i++) {
-  // double t0 = omp_get_wtime();
   mpi_exec_mpk(mg, vv, cd, argv[1]);
 
+  char fname[1024];
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], cd->rank);
   FILE *vv_log_file = fopen(fname, "w");
   int ns = sqrt(n);
@@ -334,14 +300,6 @@ int main(int argc, char* argv[]) {
     fprintf(vv_log_file, "\n\n");
   }
   fclose(vv_log_file);
-  // double t1 = omp_get_wtime();
-
-  // show_exinfo(mg);
-  // if (i == 0 || min > t1 - t0)
-  // min = t1 - t0;
-  // }
-  // printf("spmv nth= %d time= %e\n", nth, min);
-  // check_error(vv, n, nlevel);
 
   int result = 0;
   collect_results(cd, vv);

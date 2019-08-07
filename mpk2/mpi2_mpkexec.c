@@ -90,7 +90,6 @@ static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
          cd->sendcounts + npart * phase, cd->sdispls + npart * phase, cd->n,
          log_file);
 
-  // Do communication.
   MPI_Alltoallv(cd->vv_sbufs[phase], cd->sendcounts + npart * phase,
                 cd->sdispls + npart * phase, MPI_DOUBLE, cd->vv_rbufs[phase],
                 cd->recvcounts + npart * phase, cd->rdispls + npart * phase,
@@ -137,7 +136,6 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
     }
     vv[level * n + i] = s;
   }
-
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
 
@@ -158,9 +156,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
     if (phase > 0 || nphase == 0) {
       do_comm(phase, cd, vv, log_file);
     }
-
     do_task(cd, vv, phase, cd->rank);
-
     print_values_of_vv(cd->rank, phase, n, nlevel, vv, dir);
   }
   fclose(log_file);
