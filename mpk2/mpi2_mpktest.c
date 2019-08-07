@@ -217,14 +217,16 @@ void make_mcol(comm_data_t *cd, int phase){
 
   long *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
   assert(mcol != NULL);
-  for (int mi = 0; mi < tl->n; mi++) {
-    long i = tl->idx[mi] % cd->n;
-    long level = tl->idx[mi] / cd->n;
+  for (int mi = 0; mi < cd->mcount[phase]; mi++) {
+    assert(cd->idx_mbufs[phase][mi] == tl->idx[mi]);
+    long idx = cd->idx_mbufs[phase][mi];
+    long i = idx % cd->n;
+    long level = idx / cd->n;
 
-    for (int t = ptr[i]; t < ptr[i + 1]; t++) {
-      long target = col[t] + cd->n * (level - 1);
+    for (int j = ptr[i]; j < ptr[i + 1]; j++) {
+      long target = col[j] + cd->n * (level - 1);
       int idx = find_idx(cd->idx_buf, cd->buf_count, target);
-      mcol[t - ptr[i] + mptr[mi]] = idx;
+      mcol[j - ptr[i] + mptr[mi]] = idx;
     }
   }
   cd->mcol[phase] = mcol;
