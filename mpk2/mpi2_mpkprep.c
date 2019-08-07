@@ -186,10 +186,11 @@ static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
-      if (prevl[i] < l && l <= ll[i]) {
+      if (prevl[i] < l && l <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
         int curpart = cd->mg->plist[phase]->part[i];
         fill_comm_table_one_vertex(curpart, i, l, cd->mg, comm_table, store_part);
-        store_part[i_vvidx] = curpart;
+        if (cd->idx_buf == NULL)
+          store_part[i_vvidx] = curpart;
       }
     }
   }
@@ -211,7 +212,8 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part)
         if (above_prevl && skirt_active && not_over_max) {
           fill_comm_table_one_vertex(p, i, l, cd->mg, comm_table, store_part);
           if (store_part[n * l + i] == -1)
-            store_part[n * l + i] = p;
+            if (cd->idx_buf == NULL)
+              store_part[n * l + i] = p;
         }
       }
     }
