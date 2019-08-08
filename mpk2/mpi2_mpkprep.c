@@ -317,10 +317,10 @@ void testcomm_table(mpk_t *mg, char *comm_table, int phase, int rank) {
 
 // Fill all buffer size variables to make allocation possible.
 static int get_prevlmin(int phase, comm_data_t *cd) {
-  int *prevl = cd->mg->llist[phase - 1]->level;
   int prevlmin = 0;
   if (phase > 0) {
-    prevlmin = prevl[0];
+    int *prevl = cd->mg->llist[phase - 1]->level;
+    int prevlmin = prevl[0];
     for (int i = 1; i < cd->n; i++)
       if (prevl[i] < prevlmin)
         prevlmin = prevl[i];
@@ -371,10 +371,12 @@ static void iterator(int cond(int, int, int, comm_data_t *cd),
 
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
   cd->idx_buf = NULL;
-  zeroth_comm_table(cd->mg, comm_table, store_part);
-  iterator(phase_cond, 0, cd, comm_table, store_part);
-  fill_rscounts(0, cd, comm_table);
-  fill_displs(0, cd);
+  if (cd->nphase) {
+    zeroth_comm_table(cd->mg, comm_table, store_part);
+    iterator(phase_cond, 0, cd, comm_table, store_part);
+    fill_rscounts(0, cd, comm_table);
+    fill_displs(0, cd);
+  }
   for (int phase = 1; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part);
     iterator(phase_cond, phase, cd, comm_table, store_part);
