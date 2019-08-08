@@ -80,8 +80,12 @@ static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
   // Copy data to send buffers.
   int stotal = cd->sendcounts[npart * phase + npart - 1] +
                cd->sdispls[npart * phase + npart - 1];
-  for (int i = 0; i < stotal; ++i)
+  for (int i = 0; i < stotal; i++) {
     cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
+    int bidx = find_idx(cd->idx_buf, cd->buf_count, cd->idx_sbufs[phase][i]);
+    assert(bidx != -1);
+    assert(cd->idx_buf + bidx < cd->idx_sbufs[phase] + i);
+  }
 
   // Log send buffers.
   fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", cd->rank,
@@ -135,6 +139,31 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
       s += a * vv[l1n + col[j]];
     }
     vv[level * n + i] = s;
+  }
+
+  long *idx_mbuf = cd->idx_mbufs[phase];
+  long *mptr = cd->mptr[phase];
+  long *mcol = cd->mcol[phase];
+  double *vv_mbuf = cd->vv_mbufs[phase];
+
+  assert(cd->mcount[phase] == tl->n);
+  for (int mi = 0; mi < cd->mcount[phase]; mi++) {
+    long idx = idx_mbuf[mi];
+    assert(idx == tl->idx[mi]);
+    long i = idx % cd->n;
+    assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
+    double b = 1.0 / (mptr[mi + 1] - mptr[mi]);
+    double tmp = 0.0;
+    for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++){
+      long mjdx = cd->idx_buf[mcol[mj]]; // assert
+      int j = mj - mptr[mi] + ptr[i]; // assert
+      long jdx = col[j] + cd->n * (idx / cd->n - 1); // assert
+      assert(jdx == mjdx);
+      if (cd->vv_buf[mcol[mj]] != 1.0) printf(">> do_tasks: phase: %d\n", phase);
+      // assert(cd->vv_buf[mcol[mj]] == 1.0);
+      tmp += b * cd->vv_buf[mcol[mj]];
+    }
+    vv_mbuf[mi] = tmp;
   }
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
