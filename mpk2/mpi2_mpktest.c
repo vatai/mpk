@@ -206,16 +206,18 @@ void make_mptr(comm_data_t *cd, int phase){
 void make_mcol(comm_data_t *cd, int phase){
   int *ptr = cd->mg->g0->ptr;
   int *col = cd->mg->g0->col;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
+
   long *mptr = cd->mptr[phase];
   int *rdisp = cd->rdispls + phase * cd->npart;
   int *rcount = cd->recvcounts + phase * cd->npart;
-  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
 
   // alloc and store indices which will be searched
 
   // alloc size will be sum =0; for() sum += tl->n + phase_rbuf
 
-  long *mcol = malloc(sizeof(*mcol) * mptr[tl->n]);
+  assert(tl->n == cd->mcount[phase]);
+  long *mcol = malloc(sizeof(*mcol) * mptr[cd->mcount[phase]]);
   assert(mcol != NULL);
   for (int mi = 0; mi < cd->mcount[phase]; mi++) {
     assert(cd->idx_mbufs[phase][mi] == tl->idx[mi]);
@@ -223,6 +225,7 @@ void make_mcol(comm_data_t *cd, int phase){
     long i = idx % cd->n;
     long level = idx / cd->n;
 
+    assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
     for (int j = ptr[i]; j < ptr[i + 1]; j++) {
       long target = col[j] + cd->n * (level - 1);
       int idx = find_idx(cd->idx_buf, cd->buf_count, target);
