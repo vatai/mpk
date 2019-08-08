@@ -211,9 +211,7 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part)
         int not_over_max = l <= nlevel - sl[p * n + i];
         if (above_prevl && skirt_active && not_over_max) {
           fill_comm_table_one_vertex(p, i, l, cd->mg, comm_table, store_part);
-          if (store_part[n * l + i] == -1)
-            if (cd->idx_buf == NULL)
-              store_part[n * l + i] = p;
+          store_part[n * l + i] = p;
         }
       }
     }
