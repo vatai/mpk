@@ -81,10 +81,12 @@ static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
   int stotal = cd->sendcounts[npart * phase + npart - 1] +
                cd->sdispls[npart * phase + npart - 1];
   for (int i = 0; i < stotal; i++) {
-    cd->vv_sbufs[phase][i] = vv[cd->idx_sbufs[phase][i]];
+    // TODO(vatai): trivial optimisation
     int bidx = find_idx(cd->idx_buf, cd->buf_count, cd->idx_sbufs[phase][i]);
     assert(bidx != -1);
     assert(cd->idx_buf + bidx < cd->idx_sbufs[phase] + i);
+    assert(cd->vv_buf[bidx] == 1.0);
+    cd->vv_sbufs[phase][i] = cd->vv_buf[bidx];
   }
 
   // Log send buffers.
