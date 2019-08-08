@@ -108,11 +108,12 @@ static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
          cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
          log_file);
 
+  // TODO(vatai): remove after correct mcol
   // Copy from receive buffers.
-  int rtotal = cd->recvcounts[npart * phase + npart - 1] +
-               cd->rdispls[npart * phase + npart - 1];
-  for (int i = 0; i < rtotal; ++i)
-    vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i];
+  /* int rtotal = cd->recvcounts[npart * phase + npart - 1] + */
+  /*              cd->rdispls[npart * phase + npart - 1]; */
+  /* for (int i = 0; i < rtotal; ++i) */
+  /*   vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i]; */
 }
 
 static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
@@ -161,8 +162,9 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
       int j = mj - mptr[mi] + ptr[i]; // assert
       long jdx = col[j] + cd->n * (idx / cd->n - 1); // assert
       assert(jdx == mjdx);
-      if (cd->vv_buf[mcol[mj]] != 1.0) printf(">> do_tasks: phase: %d\n", phase);
-      // assert(cd->vv_buf[mcol[mj]] == 1.0);
+      if (cd->vv_buf[mcol[mj]] != 1.0)
+        printf(">> do_tasks: phase: %d\n", phase);
+      assert(cd->vv_buf[mcol[mj]] == 1.0);
       tmp += b * cd->vv_buf[mcol[mj]];
     }
     vv_mbuf[mi] = tmp;
@@ -189,6 +191,9 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
     }
     do_task(cd, vv, phase, cd->rank);
     print_values_of_vv(cd->rank, phase, n, nlevel, vv, dir);
+  }
+  for (int i = 0; i < cd->buf_count; i++) {
+    vv[cd->idx_buf[i]] = cd->vv_buf[i];
   }
   fclose(log_file);
 }
