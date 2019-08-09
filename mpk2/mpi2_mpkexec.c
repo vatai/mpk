@@ -141,7 +141,6 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
     for (j = ptr[i]; j < ptr[i+1]; j++) {
       s += a * vv[l1n + col[j]];
     }
-    vv[level * n + i] = s;
   }
 
   long *idx_mbuf = cd->idx_mbufs[phase];
