@@ -185,7 +185,7 @@ void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
 
   int phase;
   for (phase = 0; phase <= nphase; phase++) {
-    if (phase > 0 || nphase == 0) {
+    if (phase > 0) {
       do_comm(phase, cd, vv, log_file);
     }
     do_task(cd, vv, phase, cd->rank);
