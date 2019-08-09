@@ -56,7 +56,7 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
     long idx = idx_bufs[i];
     int level = idx / n;
     int j = idx % n;
-    fprintf(log_file, "[%5d] %8.3f, %8d (level: %d, j: %d)\n", i, vv_bufs[i],
+    fprintf(log_file, "[%5d] %8.3f, %8ld (level: %d, j: %d)\n", i, vv_bufs[i],
             idx, level, j);
   }
 
@@ -128,8 +128,7 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
   // TODO(vatai): tl->th = omp_get_thread_num();
   // TODO(vatai): tl->t0 = omp_get_wtime();
 
-  int t;
-  for (t=0; t< tl->n; t++) {
+  for (int t=0; t< tl->n; t++) {
     int tidx = tl->idx[t];
     int level = tidx / n;
     int l1n = (level - 1) * n;
@@ -174,22 +173,16 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
 void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
   assert(mg != NULL && vv != NULL && cd != NULL);
 
-  int n = mg->n;
-  int npart = mg->npart;
-  int nlevel = mg->nlevel;
-  int nphase = mg->nphase;
-
   char fname[1024];
   sprintf(fname, "mpi_comm_in_exec_rank-%d.log", cd->rank);
   FILE *log_file = fopen(fname, "w");
 
-  int phase;
-  for (phase = 0; phase <= nphase; phase++) {
+  for (int phase = 0; phase <= mg->nphase; phase++) {
     if (phase > 0) {
       do_comm(phase, cd, vv, log_file);
     }
     do_task(cd, vv, phase, cd->rank);
-    print_values_of_vv(cd->rank, phase, n, nlevel, vv, dir);
+    print_values_of_vv(cd->rank, phase, mg->n, mg->nlevel, vv, dir);
   }
   for (int i = 0; i < cd->buf_count; i++) {
     vv[cd->idx_buf[i]] = cd->vv_buf[i];
