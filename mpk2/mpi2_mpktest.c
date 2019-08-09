@@ -203,7 +203,7 @@ void make_mptr(comm_data_t *cd, int phase){
   cd->mptr[phase] = mptr;
 }
 
-void make_mcol(comm_data_t *cd, int phase){
+void make_mcol(comm_data_t *cd, int phase) {
   int *ptr = cd->mg->g0->ptr;
   int *col = cd->mg->g0->col;
   task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
