@@ -161,7 +161,11 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
       long jdx = col[j] + cd->n * (idx / cd->n - 1); // assert
       assert(jdx == mjdx);
       if (cd->vv_buf[mcol[mj]] != 1.0)
-        printf(">> do_tasks: phase: %d, mcol: %ld, vv: %lf\n", phase, mcol[mj], cd->vv_buf[mcol[mj]]);
+        printf(
+            ">>>> [p%d] do_tasks: phase: %d; idx_mbuf[%d]=%ld, mcol[%d]: %ld, "
+            "vv: %lf\n",
+            cd->rank, phase, mj, cd->idx_mbufs[phase][mj], mj, mcol[mj],
+            cd->vv_buf[mcol[mj]]);
       assert(cd->vv_buf[mcol[mj]] == 1.0);
       tmp += b * cd->vv_buf[mcol[mj]];
     }

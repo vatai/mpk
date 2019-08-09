@@ -229,6 +229,7 @@ void make_mcol(comm_data_t *cd, int phase) {
     for (int j = ptr[i]; j < ptr[i + 1]; j++) {
       long target = col[j] + cd->n * (level - 1);
       int idx = find_idx(cd->idx_buf, cd->buf_count, target);
+      printf(">> mkmcol [p%d]: found tgt=%ld @ idx=%d\n", cd->rank, target, idx);
       mcol[j - ptr[i] + mptr[mi]] = idx;
     }
   }
