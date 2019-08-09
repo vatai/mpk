@@ -432,6 +432,52 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 }
 
+static void buf_dbg(comm_data_t *cd) {
+  // DEBUG BEGIN //
+  char fname[1024];
+  sprintf(fname, "buf_dbg-rank%d.log", cd->rank);
+  FILE *file = fopen(fname, "w");
+  fprintf(file, "=== %s ===\n", fname);
+  fprintf(file, "idx_mbufs[0]:");
+  long level = -1;
+  for (int i = 0; i < cd->mcount[0]; i++) {
+    long idx = cd->idx_mbufs[0][i];
+    if (level != idx / cd->n) {
+      level = idx / cd->n;
+      fprintf(file, "\n>level-%ld>", level);
+    }
+    fprintf(file, "%ld ", idx % cd->n);
+  }
+  fprintf(file, "\n");
+
+  fprintf(file, "idx_rbufs[0]:");
+  level = -1;
+  for (int i = 0; i < cd->rcount[0]; i++) {
+    long idx = cd->idx_rbufs[0][i];
+    if (level != idx / cd->n) {
+      level = idx / cd->n;
+      fprintf(file, "\n>level-%ld>", level);
+    }
+    fprintf(file, "%ld ", idx % cd->n);
+  }
+  fprintf(file, "\n");
+
+  fprintf(file, "idx_sbufs[0]:");
+  level = -1;
+  for (int i = 0; i < cd->scount[0]; i++) {
+    long idx = cd->idx_sbufs[0][i];
+    if (level != idx / cd->n) {
+      level = idx / cd->n;
+      fprintf(file, "\n>level-%ld>", level);
+    }
+    fprintf(file, "%ld ", idx % cd->n);
+  }
+  fprintf(file, "\n");
+
+  fclose(file);
+  // DEBUG END //
+}
+
 static void ct_dbg(comm_data_t *cd, char *comm_table, char *fn) {
   // DEBUG BEGIN //
   char fname[1024];
@@ -474,6 +520,7 @@ void mpi_prep_mpk(comm_data_t *cd) {
 
   // Fill stage two data
   fill_bufs(cd, comm_table, store_part);
+  buf_dbg(cd);
 
   free(comm_table);
   free(store_part);
