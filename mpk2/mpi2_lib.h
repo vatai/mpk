@@ -40,7 +40,7 @@ typedef struct comm_table {
 
 } comm_data_t;
 
-void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir);
+void mpi_exec_mpk(comm_data_t *cd);
 
 void mpi_prep_mpk(comm_data_t *);
 

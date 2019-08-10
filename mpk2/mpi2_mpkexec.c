@@ -9,26 +9,6 @@
 #include "lib.h"
 #include "mpi2_lib.h"
 
-static void print_values_of_vv(int rank, int phase, int n, int nlevel, double *vv, char *dir) {
-  char fname[1024];
-  sprintf(fname,"%s/vv_after_phase_%d_with_rank%d", dir, phase, rank);
-  FILE *vv_log_file = fopen(fname, "w");
-  int ns = sqrt(n);
-  for (int level = 0; level < nlevel + 1; level++) {
-    fprintf(vv_log_file, "> level(%3d): \n", level);
-    for (int i = 0; i < n; i++) {
-      if (i % ns == 0) {
-        fprintf(vv_log_file, "\n");
-      }
-      fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
-    }
-    fprintf(vv_log_file, "\n\n");
-  }
-  fclose(vv_log_file);
-
-  return;
-}
-
 void log_tlist(comm_data_t *cd, int phase, FILE *log_file) {
   task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
   int n = cd->n;
@@ -69,7 +49,7 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
 // TODO(vatai): delete this, see trivial optimisation below
 int find_idx(long *ptr, int size, long target);
 
-static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
+static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
   int npart = cd->npart;
 
   // Log tlist.
@@ -107,17 +87,10 @@ static void do_comm(int phase, comm_data_t *cd, double *vv, FILE *log_file) {
   log_cd(cd->vv_rbufs[phase], cd->idx_rbufs[phase],
          cd->recvcounts + npart * phase, cd->rdispls + npart * phase, cd->n,
          log_file);
-
-  // TODO(vatai): remove after correct mcol
-  // Copy from receive buffers.
-  /* int rtotal = cd->recvcounts[npart * phase + npart - 1] + */
-  /*              cd->rdispls[npart * phase + npart - 1]; */
-  /* for (int i = 0; i < rtotal; ++i) */
-  /*   vv[cd->idx_rbufs[phase][i]] = cd->vv_rbufs[phase][i]; */
 }
 
-static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
-  assert(cd != NULL && vv != NULL);
+static void do_task(comm_data_t *cd, int phase, int part) {
+  assert(cd != NULL);
 
   int n = cd->n;
 
@@ -127,20 +100,6 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
 
   // TODO(vatai): tl->th = omp_get_thread_num();
   // TODO(vatai): tl->t0 = omp_get_wtime();
-
-  for (int t=0; t< tl->n; t++) {
-    int tidx = tl->idx[t];
-    int level = tidx / n;
-    int l1n = (level - 1) * n;
-    int i = tidx - level * n; /*tidx % n*/
-    double a = 1.0 / (ptr[i+1] - ptr[i]); /* simply... */
-
-    double s = 0.0;
-    int j;
-    for (j = ptr[i]; j < ptr[i+1]; j++) {
-      s += a * vv[l1n + col[j]];
-    }
-  }
 
   long *idx_mbuf = cd->idx_mbufs[phase];
   long *mptr = cd->mptr[phase];
@@ -168,22 +127,18 @@ static void do_task(comm_data_t *cd, double *vv, int phase, int part) {
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
 
-void mpi_exec_mpk(mpk_t *mg, double *vv, comm_data_t *cd, char *dir) {
-  assert(mg != NULL && vv != NULL && cd != NULL);
+void mpi_exec_mpk(comm_data_t *cd) {
+  assert(cd != NULL);
 
   char fname[1024];
   sprintf(fname, "mpi_comm_in_exec_rank-%d.log", cd->rank);
   FILE *log_file = fopen(fname, "w");
 
-  for (int phase = 0; phase <= mg->nphase; phase++) {
+  for (int phase = 0; phase <= cd->nphase; phase++) {
     if (phase > 0) {
-      do_comm(phase, cd, vv, log_file);
+      do_comm(phase, cd, log_file);
     }
-    do_task(cd, vv, phase, cd->rank);
-    print_values_of_vv(cd->rank, phase, mg->n, mg->nlevel, vv, dir);
-  }
-  for (int i = 0; i < cd->buf_count; i++) {
-    vv[cd->idx_buf[i]] = cd->vv_buf[i];
+    do_task(cd, phase, cd->rank);
   }
   fclose(log_file);
 }

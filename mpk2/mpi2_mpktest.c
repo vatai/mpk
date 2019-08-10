@@ -297,7 +297,12 @@ int main(int argc, char* argv[]) {
     cd->vv_rbufs[0][i] = 1.0;
   }
 
-  mpi_exec_mpk(mg, vv, cd, argv[1]);
+  mpi_exec_mpk(cd);
+
+  // Copy from cd to vv[]
+  for (int i = 0; i < cd->buf_count; i++) {
+    vv[cd->idx_buf[i]] = cd->vv_buf[i];
+  }
 
   char fname[1024];
   sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], cd->rank);
