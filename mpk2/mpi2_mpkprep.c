@@ -13,6 +13,13 @@ static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
   return mg->nlevel * mg->n * from_part_to_part + vv_idx;
 }
 
+static int find_idx(long *ptr, int size, long target) {
+  for (int i = 0; i < size; i++)
+    if (ptr[i] == target)
+      return i;
+  return -1;
+}
+
 comm_data_t *new_comm_data(mpk_t *mg) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->mg = mg;
@@ -55,6 +62,11 @@ comm_data_t *new_comm_data(mpk_t *mg) {
   assert(cd->vv_mbufs != NULL);
   cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
   assert(cd->vv_sbufs != NULL);
+
+  cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
+  assert(cd->mptr != NULL);
+  cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
+  assert(cd->mcol != NULL);
 
   return cd;
 }
@@ -410,6 +422,54 @@ static void alloc_bufs(comm_data_t *cd) {
   }
 }
 
+static void fill_mptr(comm_data_t *cd, int phase){
+  // TODO(vatai): Put all mptr[phase] into a single array.
+  int *ptr = cd->mg->g0->ptr;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
+  assert(tl->n == cd->mcount[phase]);
+  long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
+  assert(mptr != NULL);
+  mptr[0] = 0;
+  for (int mi = 0; mi < tl->n; mi++) {
+    assert(tl->idx[mi] == cd->idx_mbufs[phase][mi]);
+    int i = tl->idx[mi] % cd->n;
+    mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
+  }
+  cd->mptr[phase] = mptr;
+}
+
+static void fill_mcol(comm_data_t *cd, int phase) {
+  int *ptr = cd->mg->g0->ptr;
+  int *col = cd->mg->g0->col;
+  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
+
+  long *mptr = cd->mptr[phase];
+  int *rdisp = cd->rdispls + phase * cd->npart;
+  int *rcount = cd->recvcounts + phase * cd->npart;
+
+  // alloc and store indices which will be searched
+
+  // alloc size will be sum =0; for() sum += tl->n + phase_rbuf
+
+  assert(tl->n == cd->mcount[phase]);
+  long *mcol = malloc(sizeof(*mcol) * mptr[cd->mcount[phase]]);
+  assert(mcol != NULL);
+  for (int mi = 0; mi < cd->mcount[phase]; mi++) {
+    assert(cd->idx_mbufs[phase][mi] == tl->idx[mi]);
+    long idx = cd->idx_mbufs[phase][mi];
+    long i = idx % cd->n;
+    long level = idx / cd->n;
+
+    assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
+    for (int j = ptr[i]; j < ptr[i + 1]; j++) {
+      long target = col[j] + cd->n * (level - 1);
+      int idx = find_idx(cd->idx_buf, cd->buf_count, target);
+      mcol[j - ptr[i] + mptr[mi]] = idx;
+    }
+  }
+  cd->mcol[phase] = mcol;
+}
+
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   clear_comm_table(cd->mg, comm_table);
   init_comm_table(cd->mg, comm_table);
@@ -418,14 +478,18 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
     iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, cd);
     clear_comm_table(cd->mg, comm_table);
+    fill_mptr(cd, phase);
+    fill_mcol(cd, phase);
   }
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
+  fill_mptr(cd, cd->nphase);
+  fill_mcol(cd, cd->nphase);
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
   // data from idx_buf to sbuf.
-  for (int i = 0 ; i < cd->buf_scount; i++) {
+  for (int i = 0; i < cd->buf_scount; i++) {
     int vv_idx = cd->idx_sbuf[i];
     int buf_idx = find_idx(cd->idx_buf, cd->buf_count, vv_idx);
     cd->idx_sbuf[i] = buf_idx;
