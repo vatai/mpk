@@ -378,18 +378,24 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
 
 static void alloc_bufs(comm_data_t *cd) {
   cd->buf_count = 0;
+  cd->buf_scount = 0;
   for (int phase = 0; phase <= cd->nphase; phase++) {
     cd->buf_count += cd->rcount[phase];
     cd->buf_count += cd->mcount[phase];
-    cd->buf_count += cd->scount[phase];
+    cd->buf_scount += cd->scount[phase];
   }
 
   cd->idx_buf = malloc(sizeof(*cd->idx_buf) * cd->buf_count);
+  cd->idx_sbuf = malloc(sizeof(*cd->idx_sbuf) * cd->buf_scount);
   cd->vv_buf = malloc(sizeof(*cd->vv_buf) * cd->buf_count);
+  cd->vv_sbuf = malloc(sizeof(*cd->vv_sbuf) * cd->buf_scount);
   assert(cd->idx_buf != NULL);
+  assert(cd->idx_sbuf != NULL);
   assert(cd->vv_buf != NULL);
+  assert(cd->vv_sbuf != NULL);
 
   long count = 0;
+  long scount = 0;
   for (int phase = 0; phase <= cd->nphase; phase++) {
     cd->idx_rbufs[phase] = cd->idx_buf + count;
     cd->vv_rbufs[phase] = cd->vv_buf + count;
@@ -397,9 +403,10 @@ static void alloc_bufs(comm_data_t *cd) {
     cd->idx_mbufs[phase] = cd->idx_buf + count;
     cd->vv_mbufs[phase] = cd->vv_buf + count;
     count += cd->mcount[phase];
-    cd->idx_sbufs[phase] = cd->idx_buf + count;
-    cd->vv_sbufs[phase] = cd->vv_buf + count;
-    count += cd->scount[phase];
+
+    cd->idx_sbufs[phase] = cd->idx_sbuf + scount;
+    cd->vv_sbufs[phase] = cd->vv_sbuf + scount;
+    scount += cd->scount[phase];
   }
 }
 
