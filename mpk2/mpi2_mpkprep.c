@@ -139,7 +139,8 @@ static void clear_comm_table(mpk_t *mg, char *comm_table) {
 }
 
 static int min_or_0(mpk_t *mg, int phm1) {
-  if (mg->nphase == 0 || phm1 == -1) return 0;
+  if (mg->nphase == 0 || phm1 == -1)
+    return 0;
   int *ll = mg->llist[phm1]->level;
   int rv = ll[0];
   for (int i = 0; i < mg->n; i++)
@@ -148,11 +149,16 @@ static int min_or_0(mpk_t *mg, int phm1) {
   return rv;
 }
 
-static int amax(int *ll, int n) {
+static int max_or_nlevel(comm_data_t *cd, int phase) {
+  if (cd->nphase == phase)
+    return cd->nlevel;
+  int *ll = cd->mg->llist[phase]->level;
   int rv = ll[0];
-  for (int i = 0; i < n; i++)
+  for (int i = 1; i < cd->n; i++)
     if (ll[i] > rv)
       rv = ll[i];
+  if (rv > cd->nlevel)
+    return cd->nlevel;
   return rv;
 }
 
@@ -161,16 +167,15 @@ static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
   assert(cd->mg->plist[phase] != NULL);
   int n = cd->n;
   int *ll = cd->mg->llist[phase]->level;
-  int lmax = amax(ll, n);
-  if (lmax > cd->nlevel) lmax = cd->nlevel;
+  int lmax = max_or_nlevel(cd, phase);
   int prevlmin = min_or_0(cd->mg, phase - 1);
-  for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
+  for (int level = prevlmin + 1; level <= lmax; level++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
-      int i_vvidx = n * l + i;
+      int i_vvidx = n * level + i;
       int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
-      if (prevli < l && l <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
+      if (prevli < level && level <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
         int curpart = cd->mg->plist[phase]->part[i];
-        fill_comm_table_one_vertex(curpart, i, l, cd->mg, comm_table, store_part);
+        fill_comm_table_one_vertex(curpart, i, level, cd->mg, comm_table, store_part);
         if (cd->idx_buf == NULL)
           store_part[i_vvidx] = curpart;
       }
@@ -188,15 +193,15 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table,
   if (cd->nphase == 0)
     init_comm_table(cd->mg, comm_table);
   for (int p = 0; p < cd->npart; p++) {
-    for (int l = prevlmin + 1; l <= nlevel; l++) {
+    for (int level = prevlmin + 1; level <= nlevel; level++) {
       for (int i = 0; i < n; i++) {
         int above_prevl =
-            (nphase ? cd->mg->llist[nphase - 1]->level[i] : 0) < l;
+            (nphase ? cd->mg->llist[nphase - 1]->level[i] : 0) < level;
         int skirt_active = sl[p * n + i] >= 0;
-        int not_over_max = l <= nlevel - sl[p * n + i];
+        int not_over_max = level <= nlevel - sl[p * n + i];
         if (above_prevl && skirt_active && not_over_max) {
-          fill_comm_table_one_vertex(p, i, l, cd->mg, comm_table, store_part);
-          store_part[n * l + i] = p;
+          fill_comm_table_one_vertex(p, i, level, cd->mg, comm_table, store_part);
+          store_part[n * level + i] = p;
         }
       }
     }
@@ -342,7 +347,8 @@ static void iterator(int cond(int, int, int, comm_data_t *cd),
                      int *store_part) {
   int prevlmin = get_prevlmin(phase, cd);
   cd->mcount[phase] = 0;
-  for (int level = prevlmin + 1; level <= cd->nlevel; level++) {
+  int max = max_or_nlevel(cd, phase);
+  for (int level = prevlmin + 1; level <= max; level++) {
     for (int i = 0; i < cd->n; i++) {
       if (cond(phase, i, level, cd)) {
         if (cd->idx_buf != NULL) {
