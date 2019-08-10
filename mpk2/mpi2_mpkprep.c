@@ -156,18 +156,18 @@ static int amax(int *ll, int n) {
   return rv;
 }
 
-static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
-  assert(mg->plist[0] != NULL);
-  int n = mg->n;
-  int *ll = mg->llist[0]->level;
+static void zeroth_comm_table(comm_data_t *cd, char *comm_table, int *store_part) {
+  assert(cd->mg->plist[0] != NULL);
+  int n = cd->n;
+  int *ll = cd->mg->llist[0]->level;
   int lmax = amax(ll, n);
-  if (lmax > mg->nlevel) lmax = mg->nlevel;
+  if (lmax > cd->nlevel) lmax = cd->nlevel;
   for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
       if (0 < l && l <= ll[i] && store_part[i_vvidx] == -1) {
-        int curpart = mg->plist[0]->part[i];
-        fill_comm_table_one_vertex(curpart, i, l, mg, comm_table, store_part);
+        int curpart = cd->mg->plist[0]->part[i];
+        fill_comm_table_one_vertex(curpart, i, l, cd->mg, comm_table, store_part);
         store_part[i_vvidx] = curpart;
       }
     }
@@ -379,7 +379,7 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
   clear_comm_table(cd->mg, comm_table);
   init_comm_table(cd->mg, comm_table);
   if (cd->nphase) {
-    zeroth_comm_table(cd->mg, comm_table, store_part);
+    zeroth_comm_table(cd, comm_table, store_part);
     iterator(phase_cond, 0, cd, comm_table, store_part);
     fill_rscounts(0, cd, comm_table);
     fill_displs(0, cd);
@@ -427,7 +427,7 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   clear_comm_table(cd->mg, comm_table);
   init_comm_table(cd->mg, comm_table);
   if (cd->nphase > 0) {
-    zeroth_comm_table(cd->mg, comm_table, store_part);
+    zeroth_comm_table(cd, comm_table, store_part);
     iterator(phase_cond, 0, cd, comm_table, store_part);
     fill_idx_rsbuf(0, comm_table, cd);
   }
