@@ -107,6 +107,14 @@ static int *new_store_part(mpk_t *mg) {
   return store_part;
 }
 
+static void init_comm_table(mpk_t *mg, char *comm_table) {
+  for (int i = 0; i < mg->n; i++) {
+    int part = mg->plist[0]->part[i];
+    int idx = get_ct_idx(mg, part, part, i);
+    comm_table[idx] = 1;
+  }
+}
+
 static void fill_comm_table_one_vertex(int curpart, int i, int level, mpk_t *mg,
                                        char *comm_table, int *store_part) {
   crs0_t *g0 = mg->g0;
@@ -152,12 +160,6 @@ static void zeroth_comm_table(mpk_t *mg, char *comm_table, int *store_part) {
   assert(mg->plist[0] != NULL);
   int n = mg->n;
   int *ll = mg->llist[0]->level;
-  clear_comm_table(mg, comm_table);
-  for (int i = 0; i < n; i++) {
-    int part = mg->plist[0]->part[i];
-    int idx = get_ct_idx(mg, part, part, i);
-    comm_table[idx] = 1;
-  }
   int lmax = amax(ll, n);
   if (lmax > mg->nlevel) lmax = mg->nlevel;
   for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
@@ -203,6 +205,8 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part)
   int *sl = cd->mg->sg->levels;
   int prevlmin = min_or_0(cd->mg, nphase - 1);
   clear_comm_table(cd->mg, comm_table);
+  if (cd->nphase == 0)
+    init_comm_table(cd->mg, comm_table);
   for (int p = 0; p < cd->npart; p++) {
     for (int l = prevlmin + 1; l <= nlevel; l++) {
       for (int i = 0; i < n; i++) {
@@ -216,16 +220,6 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part)
       }
     }
   } // end partition loop
-
-  // TODO(vatai): Potentially make this a separate function, and
-  // remove the need for "first_comm_table"
-  if (cd->nphase == 0) {
-    for (int i = 0; i < n; i++) {
-      int part = cd->mg->plist[0]->part[i];
-      int idx = get_ct_idx(cd->mg, part, part, i);
-      comm_table[idx] = 1;
-    }
-  }
 }
 
 // Input:
@@ -382,6 +376,8 @@ static void iterator(int cond(int, int, int, comm_data_t *cd),
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
                                         int *store_part) {
   cd->idx_buf = NULL;
+  clear_comm_table(cd->mg, comm_table);
+  init_comm_table(cd->mg, comm_table);
   if (cd->nphase) {
     zeroth_comm_table(cd->mg, comm_table, store_part);
     iterator(phase_cond, 0, cd, comm_table, store_part);
@@ -428,6 +424,8 @@ static void alloc_bufs(comm_data_t *cd) {
 }
 
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
+  clear_comm_table(cd->mg, comm_table);
+  init_comm_table(cd->mg, comm_table);
   if (cd->nphase > 0) {
     zeroth_comm_table(cd->mg, comm_table, store_part);
     iterator(phase_cond, 0, cd, comm_table, store_part);
