@@ -138,9 +138,9 @@ static void clear_comm_table(mpk_t *mg, char *comm_table) {
     comm_table[i] = 0;
 }
 
-static int min_or_0(mpk_t *mg, int phase) {
-  if (mg->nphase == 0) return 0;
-  int *ll = mg->llist[phase]->level;
+static int min_or_0(mpk_t *mg, int phm1) {
+  if (mg->nphase == 0 || phm1 == -1) return 0;
+  int *ll = mg->llist[phm1]->level;
   int rv = ll[0];
   for (int i = 0; i < mg->n; i++)
     if (ll[i] < rv)
