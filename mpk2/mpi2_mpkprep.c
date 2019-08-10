@@ -216,6 +216,16 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part)
       }
     }
   } // end partition loop
+
+  // TODO(vatai): Potentially make this a separate function, and
+  // remove the need for "first_comm_table"
+  if (cd->nphase == 0) {
+    for (int i = 0; i < n; i++) {
+      int part = cd->mg->plist[0]->part[i];
+      int idx = get_ct_idx(cd->mg, part, part, i);
+      comm_table[idx] = 1;
+    }
+  }
 }
 
 // Input:
