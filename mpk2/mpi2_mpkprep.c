@@ -379,7 +379,8 @@ static void iterator(int cond(int, int, int, comm_data_t *cd),
   }
 }
 
-static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table, int *store_part) {
+static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
+                                        int *store_part) {
   cd->idx_buf = NULL;
   if (cd->nphase) {
     zeroth_comm_table(cd->mg, comm_table, store_part);
