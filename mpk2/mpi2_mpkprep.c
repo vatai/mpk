@@ -443,74 +443,6 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
 }
 
-static void buf_dbg(comm_data_t *cd) {
-  // DEBUG BEGIN //
-  char fname[1024];
-  sprintf(fname, "buf_dbg-rank%d.log", cd->rank);
-  FILE *file = fopen(fname, "w");
-  fprintf(file, "=== %s ===\n", fname);
-  fprintf(file, "idx_mbufs[0]:");
-  long level = -1;
-  for (int i = 0; i < cd->mcount[0]; i++) {
-    long idx = cd->idx_mbufs[0][i];
-    if (level != idx / cd->n) {
-      level = idx / cd->n;
-      fprintf(file, "\n>level-%ld>", level);
-    }
-    fprintf(file, "%ld ", idx % cd->n);
-  }
-  fprintf(file, "\n");
-
-  fprintf(file, "idx_rbufs[0]:");
-  level = -1;
-  for (int i = 0; i < cd->rcount[0]; i++) {
-    long idx = cd->idx_rbufs[0][i];
-    if (level != idx / cd->n) {
-      level = idx / cd->n;
-      fprintf(file, "\n>level-%ld>", level);
-    }
-    fprintf(file, "%ld ", idx % cd->n);
-  }
-  fprintf(file, "\n");
-
-  fprintf(file, "idx_sbufs[0]:");
-  level = -1;
-  for (int i = 0; i < cd->scount[0]; i++) {
-    long idx = cd->idx_sbufs[0][i];
-    if (level != idx / cd->n) {
-      level = idx / cd->n;
-      fprintf(file, "\n>level-%ld>", level);
-    }
-    fprintf(file, "%ld ", idx % cd->n);
-  }
-  fprintf(file, "\n");
-
-  fclose(file);
-  // DEBUG END //
-}
-
-static void ct_dbg(comm_data_t *cd, char *comm_table, char *fn) {
-  // DEBUG BEGIN //
-  char fname[1024];
-  sprintf(fname, "ct_dbg-%s-rank%d.log", fn, cd->rank);
-  FILE *file = fopen(fname, "w");
-  fprintf(file, "=== %s ===\n", fname);
-  fprintf(file, "ct of %d\n", cd->rank);
-  for (int level = 0; level < cd->nlevel; level++) {
-    fprintf(file, ">> level: %d\n", level);
-    for (int i = 0; i < cd->n; i++) {
-      for (int from = 0; from < cd->npart; from++) {
-        for (int to = 0; to < cd->npart; to++) {
-          if (comm_table[get_ct_idx(cd->mg, from, to, level * cd->n + i)])
-            fprintf(file, "(%d:%d->%d)\n", i, from, to);
-        }
-      }
-    }
-  }
-  fclose(file);
-  // DEBUG END //
-}
-
 /*
  * Allocate and fill `comm_data_t cd`.
  */
@@ -523,15 +455,12 @@ void mpi_prep_mpk(comm_data_t *cd) {
 
   // Fill stage one data
   fill_bufsize_rscount_displs(cd, comm_table, store_part);
-  ct_dbg(cd, comm_table, "1");
 
   // Alloc of stage two to memory
   alloc_bufs(cd);
-  ct_dbg(cd, comm_table, "2");
 
   // Fill stage two data
   fill_bufs(cd, comm_table, store_part);
-  buf_dbg(cd);
 
   free(comm_table);
   free(store_part);
