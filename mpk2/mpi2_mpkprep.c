@@ -156,39 +156,19 @@ static int amax(int *ll, int n) {
   return rv;
 }
 
-static void zeroth_comm_table(comm_data_t *cd, char *comm_table, int *store_part) {
-  assert(cd->mg->plist[0] != NULL);
-  int n = cd->n;
-  int *ll = cd->mg->llist[0]->level;
-  int lmax = amax(ll, n);
-  if (lmax > cd->nlevel) lmax = cd->nlevel;
-  for (int l = 1; l <= lmax; l++) { // initially prevlmin =0
-    for (int i = 0; i < n; i++) {
-      int i_vvidx = n * l + i;
-      if (0 < l && l <= ll[i] && store_part[i_vvidx] == -1) {
-        int curpart = cd->mg->plist[0]->part[i];
-        fill_comm_table_one_vertex(curpart, i, l, cd->mg, comm_table, store_part);
-        store_part[i_vvidx] = curpart;
-      }
-    }
-  }
-}
-
 static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
                              int *store_part) {
   assert(cd->mg->plist[phase] != NULL);
-  assert(0 < phase && phase < cd->nphase);
   int n = cd->n;
   int *ll = cd->mg->llist[phase]->level;
-  int *prevl = cd->mg->llist[phase - 1]->level;
   int lmax = amax(ll, n);
   if (lmax > cd->nlevel) lmax = cd->nlevel;
   int prevlmin = min_or_0(cd->mg, phase - 1);
-  clear_comm_table(cd->mg, comm_table);
   for (int l = prevlmin + 1; l <= lmax; l++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * l + i;
-      if (prevl[i] < l && l <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
+      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      if (prevli < l && l <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
         int curpart = cd->mg->plist[phase]->part[i];
         fill_comm_table_one_vertex(curpart, i, l, cd->mg, comm_table, store_part);
         if (cd->idx_buf == NULL)
@@ -198,19 +178,20 @@ static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
   }
 }
 
-static void skirt_comm_table(comm_data_t *cd, char *comm_table, int *store_part) {
+static void skirt_comm_table(comm_data_t *cd, char *comm_table,
+                             int *store_part) {
   int n = cd->n;
   int nlevel = cd->nlevel;
   int nphase = cd->nphase;
   int *sl = cd->mg->sg->levels;
   int prevlmin = min_or_0(cd->mg, nphase - 1);
-  clear_comm_table(cd->mg, comm_table);
   if (cd->nphase == 0)
     init_comm_table(cd->mg, comm_table);
   for (int p = 0; p < cd->npart; p++) {
     for (int l = prevlmin + 1; l <= nlevel; l++) {
       for (int i = 0; i < n; i++) {
-        int above_prevl = (nphase ? cd->mg->llist[nphase - 1]->level[i] : 0) < l;
+        int above_prevl =
+            (nphase ? cd->mg->llist[nphase - 1]->level[i] : 0) < l;
         int skirt_active = sl[p * n + i] >= 0;
         int not_over_max = l <= nlevel - sl[p * n + i];
         if (above_prevl && skirt_active && not_over_max) {
@@ -378,17 +359,12 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
   cd->idx_buf = NULL;
   clear_comm_table(cd->mg, comm_table);
   init_comm_table(cd->mg, comm_table);
-  if (cd->nphase) {
-    zeroth_comm_table(cd, comm_table, store_part);
-    iterator(phase_cond, 0, cd, comm_table, store_part);
-    fill_rscounts(0, cd, comm_table);
-    fill_displs(0, cd);
-  }
-  for (int phase = 1; phase < cd->nphase; phase++) {
+  for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part);
     iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_rscounts(phase, cd, comm_table);
     fill_displs(phase, cd);
+    clear_comm_table(cd->mg, comm_table);
   }
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
@@ -426,15 +402,11 @@ static void alloc_bufs(comm_data_t *cd) {
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   clear_comm_table(cd->mg, comm_table);
   init_comm_table(cd->mg, comm_table);
-  if (cd->nphase > 0) {
-    zeroth_comm_table(cd, comm_table, store_part);
-    iterator(phase_cond, 0, cd, comm_table, store_part);
-    fill_idx_rsbuf(0, comm_table, cd);
-  }
-  for (int phase = 1; phase < cd->nphase; phase++) {
+  for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part);
     iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, cd);
+    clear_comm_table(cd->mg, comm_table);
   }
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
