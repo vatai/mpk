@@ -190,8 +190,6 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table,
   int nphase = cd->nphase;
   int *sl = cd->mg->sg->levels;
   int prevlmin = min_or_0(cd->mg, nphase - 1);
-  if (cd->nphase == 0)
-    init_comm_table(cd->mg, comm_table);
   for (int p = 0; p < cd->npart; p++) {
     for (int level = prevlmin + 1; level <= nlevel; level++) {
       for (int i = 0; i < n; i++) {
