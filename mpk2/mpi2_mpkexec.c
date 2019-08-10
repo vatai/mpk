@@ -58,9 +58,7 @@ static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
   log_tlist(cd, phase, log_file);
 
   // Copy data to send buffers.
-  int stotal = cd->sendcounts[npart * phase + npart - 1] +
-               cd->sdispls[npart * phase + npart - 1];
-  for (int i = 0; i < stotal; i++) {
+  for (int i = 0; i < cd->scount[phase]; i++) {
     // TODO(vatai): trivial optimisation
     int bidx = find_idx(cd->idx_buf, cd->buf_count, cd->idx_sbufs[phase][i]);
     assert(bidx != -1);
