@@ -47,8 +47,6 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
 }
 
 // TODO(vatai): delete this, see trivial optimisation below
-int find_idx(long *ptr, int size, long target);
-
 static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
   int npart = cd->npart;
 
@@ -59,12 +57,8 @@ static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
 
   // Copy data to send buffers.
   for (int i = 0; i < cd->scount[phase]; i++) {
-    // TODO(vatai): trivial optimisation
-    int bidx = find_idx(cd->idx_buf, cd->buf_count, cd->idx_sbufs[phase][i]);
-    assert(bidx != -1);
-    assert(cd->idx_buf + bidx < cd->idx_sbufs[phase] + i);
-    assert(cd->vv_buf[bidx] == 1.0);
-    cd->vv_sbufs[phase][i] = cd->vv_buf[bidx];
+    int buf_idx = cd->idx_sbufs[phase][i];
+    cd->vv_sbufs[phase][i] = cd->vv_buf[buf_idx];
   }
 
   // Log send buffers.

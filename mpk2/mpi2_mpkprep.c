@@ -422,6 +422,14 @@ static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, cd);
+
+  // Store the idx_buf indices, because idx_sbufs are used for copying
+  // data from idx_buf to sbuf.
+  for (int i = 0 ; i < cd->buf_scount; i++) {
+    int vv_idx = cd->idx_sbuf[i];
+    int buf_idx = find_idx(cd->idx_buf, cd->buf_count, vv_idx);
+    cd->idx_sbuf[i] = buf_idx;
+  }
 }
 
 /*
