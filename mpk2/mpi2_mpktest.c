@@ -297,17 +297,6 @@ int main(int argc, char* argv[]) {
     cd->vv_rbufs[0][i] = 1.0;
   }
 
-  // DEBUG BEGIN //
-  assert(cd->vv_buf == cd->vv_rbufs[0]);
-  printf(">> main() rcount[0]=%d; ", cd->rcount[0]);
-  for (int i = 0; i < cd->rcount[0]; i++) printf("%f ", cd->vv_rbufs[0][i]);
-  printf("\n");
-
-  printf(">> main() scount[0]=%d; ", cd->scount[0]);
-  for (int i = 0; i < cd->scount[0]; i++) printf("%f ", cd->vv_sbufs[0][i]);
-  printf("\n");
-  // DEBUG END //
-
   mpi_exec_mpk(mg, vv, cd, argv[1]);
 
   char fname[1024];
