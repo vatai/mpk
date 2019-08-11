@@ -5,11 +5,17 @@
 
 typedef struct comm_table {
   mpk_t *mg;
+  char *dir;
   int n;
   int nlevel;
   int npart;
   int nphase;
   int rank;
+
+  crs0_t *graph;
+  part_t **plist;
+  level_t **llist;
+  skirt_t *skirt;
 
   // npart * (nphase + 1)
   int *recvcounts;
