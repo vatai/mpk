@@ -126,19 +126,19 @@ static int *alloc_fill_count(mpk_t *mg) {
   return count;
 }
 
-static void recv_copy(comm_data_t *cd, int *count, double *vv) {
-  assert(cd->mg->npart == cd->npart); // REMOVE
-  for (int part = 1; part < cd->mg->npart; part++) {
+static void recv_copy(mpk_t *mg, int *count, double *vv) {
+  assert(mg->npart == mg->npart); // REMOVE
+  for (int part = 1; part < mg->npart; part++) {
     double *buf = malloc(sizeof(*buf) * count[part]);
     assert(buf != NULL);
     MPI_Recv(buf, count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
-    // PHASE LOOP
-    for (int phase = 0; phase <= cd->nphase; phase++) {
-      task_t *tl = cd->mg->tlist + phase * cd->npart + part;
+    // TODO(vatai): write distributed recv_copy
+    for (int phase = 0; phase <= mg->nphase; phase++) {
+      task_t *tl = mg->tlist + phase * mg->npart + part;
       for (int i = 0; i < tl->n; i++) {
         long val = tl->idx[i];
-        if (val >= cd->n * (cd->nlevel + 1))
+        if (val >= mg->n * (mg->nlevel + 1))
           printf("tl->idx[i]: %ld\n", tl->idx[i]);
         vv[tl->idx[i]] = buf[i];
       }
@@ -147,28 +147,28 @@ static void recv_copy(comm_data_t *cd, int *count, double *vv) {
   }
 }
 
-static void copy_send(comm_data_t *cd, int *count, double *vv) {
-  double *buf = malloc(sizeof(*buf) * count[cd->rank]);
+static void copy_send(mpk_t *mg, int rank, int *count, double *vv) {
+  double *buf = malloc(sizeof(*buf) * count[rank]);
   assert(buf != NULL);
 
-  // PHASE LOOP
-  for (int phase = 0; phase <= cd->mg->nphase; phase++) {
-    task_t *tl = cd->mg->tlist + phase * cd->mg->npart + cd->rank;
+  // TODO(vatai): write distributed copy_send
+  for (int phase = 0; phase <= mg->nphase; phase++) {
+    task_t *tl = mg->tlist + phase * mg->npart + rank;
     for (int i = 0; i < tl->n; i++)
       buf[i] = vv[tl->idx[i]];
   }
 
-  MPI_Send(buf, count[cd->rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
   free(buf);
 }
 
-static void collect_results(comm_data_t *cd, double *vv) {
-  int *count = alloc_fill_count(cd->mg);
+static void collect_results(mpk_t *mg, int rank, double *vv) {
+  int *count = alloc_fill_count(mg);
 
-  if (cd->rank == 0)
-    recv_copy(cd, count, vv);
+  if (rank == 0)
+    recv_copy(mg, count, vv);
   else
-    copy_send(cd, count, vv);
+    copy_send(mg, rank, count, vv);
 
   free(count);
 }
@@ -201,7 +201,6 @@ int main(int argc, char* argv[]) {
   assert(vv != NULL);
 
   prep_mpk(mg, vv);
-
   comm_data_t *cd = new_comm_data(argv[1]);
   cd->mg = mg;
   mpi_prep_mpk(cd);
@@ -214,7 +213,7 @@ int main(int argc, char* argv[]) {
   double min;
 
   for (i=0; i< n; i++)
-    if (mg->plist[0]->part[i] == cd->rank)
+    if (cd->plist[0]->part[i] == cd->rank)
       vv[i] = 1.0;
     else
       vv[i] = -100.0;
@@ -253,7 +252,7 @@ int main(int argc, char* argv[]) {
   fclose(vv_log_file);
 
   int result = 0;
-  collect_results(cd, vv);
+  collect_results(mg, cd->rank, vv);
   if (cd->rank == 0)
     result = check_results(cd, vv);
   del_comm_data(cd);
