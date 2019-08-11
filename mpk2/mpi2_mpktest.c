@@ -127,6 +127,7 @@ static int *alloc_fill_count(mpk_t *mg) {
 }
 
 static void recv_copy(comm_data_t *cd, int *count, double *vv) {
+  assert(cd->mg->npart == cd->npart); // REMOVE
   for (int part = 1; part < cd->mg->npart; part++) {
     double *buf = malloc(sizeof(*buf) * count[part]);
     assert(buf != NULL);
@@ -201,8 +202,8 @@ int main(int argc, char* argv[]) {
 
   prep_mpk(mg, vv);
 
-  comm_data_t *cd = new_comm_data(mg, argv[1]);
-
+  comm_data_t *cd = new_comm_data(argv[1]);
+  cd->mg = mg;
   mpi_prep_mpk(cd);
 
   int i;

@@ -131,10 +131,9 @@ static void fill_skirt(comm_data_t *cd) {
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
-comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
+comm_data_t *new_comm_data(char *dir) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->dir = dir;
-  cd->mg = mg;
   MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
   read_dir(cd);
   read_matrix(cd);
@@ -234,77 +233,78 @@ void del_comm_data(comm_data_t *cd) {
 }
 
 // TODO(vatai): group with comm_table
-static char *new_comm_table(mpk_t *mg) {
+static char *new_comm_table(int n, int npart, int nlevel) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
-  int num_ct_elem = mg->nlevel * mg->n * mg->npart * mg->npart;
-  char *ct = malloc(sizeof(*ct) * num_ct_elem);
+  int num_elem = nlevel * n * npart * npart;
+  char *ct = malloc(sizeof(*ct) * num_elem);
   assert(ct != NULL);
   return ct;
 }
 
 // TODO(vatai): group with prep?
-static int *new_store_part(mpk_t *mg) {
+static int *new_store_part(comm_data_t *cd) {
   // Initialise store_part[i] to be the id of the 0th partition for
   // level 0, and -1 for all other levels
-  int n = mg->n;
-  int *pl = mg->plist[0]->part;
-  int sp_num_elem = n * (mg->nlevel + 1);
+  int n = cd->n;
+  int *pl = cd->plist[0]->part;
+  int sp_num_elem = n * (cd->nlevel + 1);
   int *store_part = (int*) malloc(sizeof(*store_part) * sp_num_elem);
   assert(store_part != NULL);
-  for (int i = 0; i < n * (mg->nlevel + 1); i++)
+  for (int i = 0; i < n * (cd->nlevel + 1); i++)
     store_part[i] = i < n ? pl[i] : -1;
   return store_part;
 }
 
 // TODO(vatai): group with comm_table
-static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
-  int from_part_to_part = mg->npart * src_part + tgt_part;
-  return mg->nlevel * mg->n * from_part_to_part + vv_idx;
+static int get_ct_idx(comm_data_t *cd, int src_part, int tgt_part, int vv_idx) {
+  int from_part_to_part = cd->npart * src_part + tgt_part;
+  return cd->nlevel * cd->n * from_part_to_part + vv_idx;
 }
 
 // TODO(vatai): group with comm_table
-static void init_comm_table(mpk_t *mg, char *comm_table) {
-  for (int i = 0; i < mg->n; i++) {
-    int part = mg->plist[0]->part[i];
-    int idx = get_ct_idx(mg, part, part, i);
+static void init_comm_table(comm_data_t *cd, char *comm_table) {
+  for (int i = 0; i < cd->n; i++) {
+    int part = cd->plist[0]->part[i];
+    int idx = get_ct_idx(cd, part, part, i);
     comm_table[idx] = 1;
   }
 }
 
 // TODO(vatai): group with comm_table
-static void fill_comm_table_one_vertex(int curpart, int i, int level, mpk_t *mg,
-                                       char *comm_table, int *store_part) {
-  crs0_t *g0 = mg->g0;
+static void fill_comm_table_one_vertex(int curpart, int i, int level,
+                                       comm_data_t *cd, char *comm_table,
+                                       int *store_part) {
+  crs0_t *g0 = cd->graph;
   assert(g0 != NULL);
   for (int j = g0->ptr[i]; j < g0->ptr[i + 1]; j++) { // All neighbours
-    int k_vvidx = mg->n * (level - 1) + g0->col[j];   // source vv index
+    int k_vvidx = cd->n * (level - 1) + g0->col[j];   // source vv index
     assert(store_part[k_vvidx] != -1);
     if (store_part[k_vvidx] != curpart) {
-      int idx = get_ct_idx(mg, store_part[k_vvidx], curpart, k_vvidx);
+      int idx = get_ct_idx(cd, store_part[k_vvidx], curpart, k_vvidx);
       comm_table[idx] = 1;
     }
   }
 }
 
 // TODO(vatai): group with comm_table
-static void clear_comm_table(mpk_t *mg, char *comm_table) {
+static void clear_comm_table(comm_data_t *cd, char *comm_table) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
   // (npart).
-  int N = mg->nlevel * mg->n * mg->npart * mg->npart;
+  int N = cd->nlevel * cd->n * cd->npart * cd->npart;
   for (int i = 0; i < N; i++)
     comm_table[i] = 0;
 }
 
 // TODO(vatai): group with comm_table
-static int min_or_0(mpk_t *mg, int phm1) {
-  if (mg->nphase == 0 || phm1 == -1)
+static int min_or_0(comm_data_t *cd, int phm1) {
+  if (cd->nphase == 0 || phm1 == -1)
     return 0;
-  int *ll = mg->llist[phm1]->level;
+  int *ll = cd->llist[phm1]->level;
   int rv = ll[0];
-  for (int i = 0; i < mg->n; i++)
+  for (int i = 0; i < cd->n; i++)
     if (ll[i] < rv)
       rv = ll[i];
   return rv;
@@ -314,7 +314,7 @@ static int min_or_0(mpk_t *mg, int phm1) {
 static int max_or_nlevel(comm_data_t *cd, int phase) {
   if (cd->nphase == phase)
     return cd->nlevel;
-  int *ll = cd->mg->llist[phase]->level;
+  int *ll = cd->llist[phase]->level;
   int rv = ll[0];
   for (int i = 1; i < cd->n; i++)
     if (ll[i] > rv)
@@ -327,18 +327,18 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
 // TODO(vatai): group with comm_table
 static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
                              int *store_part) {
-  assert(cd->mg->plist[phase] != NULL);
+  assert(cd->plist[phase] != NULL);
   int n = cd->n;
-  int *ll = cd->mg->llist[phase]->level;
+  int *ll = cd->llist[phase]->level;
   int lmax = max_or_nlevel(cd, phase);
-  int prevlmin = min_or_0(cd->mg, phase - 1);
+  int prevlmin = min_or_0(cd, phase - 1);
   for (int level = prevlmin + 1; level <= lmax; level++) { // initially prevlmin =0
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * level + i;
-      int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
+      int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
       if (prevli < level && level <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
-        int curpart = cd->mg->plist[phase]->part[i];
-        fill_comm_table_one_vertex(curpart, i, level, cd->mg, comm_table, store_part);
+        int curpart = cd->plist[phase]->part[i];
+        fill_comm_table_one_vertex(curpart, i, level, cd, comm_table, store_part);
         if (cd->idx_buf == NULL)
           store_part[i_vvidx] = curpart;
       }
@@ -352,17 +352,17 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table,
   int n = cd->n;
   int nlevel = cd->nlevel;
   int nphase = cd->nphase;
-  int *sl = cd->mg->sg->levels;
-  int prevlmin = min_or_0(cd->mg, nphase - 1);
+  int *sl = cd->skirt->levels;
+  int prevlmin = min_or_0(cd, nphase - 1);
   for (int p = 0; p < cd->npart; p++) {
     for (int level = prevlmin + 1; level <= nlevel; level++) {
       for (int i = 0; i < n; i++) {
         int above_prevl =
-            (nphase ? cd->mg->llist[nphase - 1]->level[i] : 0) < level;
+            (nphase ? cd->llist[nphase - 1]->level[i] : 0) < level;
         int skirt_active = sl[p * n + i] >= 0;
         int not_over_max = level <= nlevel - sl[p * n + i];
         if (above_prevl && skirt_active && not_over_max) {
-          fill_comm_table_one_vertex(p, i, level, cd->mg, comm_table, store_part);
+          fill_comm_table_one_vertex(p, i, level, cd, comm_table, store_part);
           store_part[n * level + i] = p;
         }
       }
@@ -385,12 +385,12 @@ static void fill_rscounts(int phase, comm_data_t *cd, char *comm_table) {
   }
   for (int p = 0; p < cd->npart; p++) {
     for (int i = 0; i < cd->n * cd->nlevel; i++) {
-      int idx = get_ct_idx(cd->mg, cd->rank, p, i);
+      int idx = get_ct_idx(cd, cd->rank, p, i);
       if (comm_table[idx]) {
         cd->scount[phase]++;
         cd->sendcounts[phase * cd->npart + p]++;
       }
-      idx = get_ct_idx(cd->mg, p, cd->rank, i);
+      idx = get_ct_idx(cd, p, cd->rank, i);
       if (comm_table[idx]) {
         cd->rcount[phase]++;
         cd->recvcounts[phase * cd->npart + p]++;
@@ -421,12 +421,12 @@ static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
     // For all vv indices.
     for (int i = 0; i < cd->nlevel * cd->n; ++i) {
       // Here p is the destination (to) partition.
-      int sidx = get_ct_idx(cd->mg, cd->rank, p, i);
+      int sidx = get_ct_idx(cd, cd->rank, p, i);
       if (comm_table[sidx]) {
         cd->idx_sbufs[phase][scounter] = i;
         scounter++;
       }
-      int ridx = get_ct_idx(cd->mg, p, cd->rank, i);
+      int ridx = get_ct_idx(cd, p, cd->rank, i);
       if (comm_table[ridx]) {
         cd->idx_rbufs[phase][rcounter] = i;
         rcounter++;
@@ -439,7 +439,7 @@ static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
 static int get_prevlmin(int phase, comm_data_t *cd) {
   int prevlmin = 0;
   if (phase > 0) {
-    int *prevl = cd->mg->llist[phase - 1]->level;
+    int *prevl = cd->llist[phase - 1]->level;
     int prevlmin = prevl[0];
     for (int i = 1; i < cd->n; i++)
       if (prevl[i] < prevlmin)
@@ -449,17 +449,17 @@ static int get_prevlmin(int phase, comm_data_t *cd) {
 }
 
 static int phase_cond(int phase, int i, int level, comm_data_t *cd) {
-  int prevli = phase ? cd->mg->llist[phase - 1]->level[i] : 0;
-  int curpart = phase == cd->nphase ? cd->mg->plist[0]->part[i]
-                                    : cd->mg->plist[phase]->part[i];
-  int curli = phase == cd->nphase ? cd->mg->sg->levels[cd->rank * cd->n + i]
-                                  : cd->mg->llist[phase]->level[i];
+  int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
+  int curpart = phase == cd->nphase ? cd->plist[0]->part[i]
+                                    : cd->plist[phase]->part[i];
+  int curli = phase == cd->nphase ? cd->skirt->levels[cd->rank * cd->n + i]
+                                  : cd->llist[phase]->level[i];
   return prevli < level && level <= curli && cd->rank == curpart;
 }
 
 static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
-  int prevli = cd->nphase ? cd->mg->llist[cd->nphase - 1]->level[i] : 0;
-  int slpi = cd->mg->sg->levels[cd->rank * cd->n + i];
+  int prevli = cd->nphase ? cd->llist[cd->nphase - 1]->level[i] : 0;
+  int slpi = cd->skirt->levels[cd->rank * cd->n + i];
   return prevli < level && 0 <= slpi && level <= cd->nlevel - slpi;
 }
 
@@ -493,14 +493,14 @@ static void iterator(int cond(int, int, int, comm_data_t *cd),
 static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
                                         int *store_part) {
   cd->idx_buf = NULL;
-  clear_comm_table(cd->mg, comm_table);
-  init_comm_table(cd->mg, comm_table);
+  clear_comm_table(cd, comm_table);
+  init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part);
     iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_rscounts(phase, cd, comm_table);
     fill_displs(phase, cd);
-    clear_comm_table(cd->mg, comm_table);
+    clear_comm_table(cd, comm_table);
   }
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
@@ -544,38 +544,29 @@ static void alloc_bufs(comm_data_t *cd) {
 
 static void fill_mptr(comm_data_t *cd, int phase){
   // TODO(vatai): Put all mptr[phase] into a single array.
-  int *ptr = cd->mg->g0->ptr;
-  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
-  assert(tl->n == cd->mcount[phase]);
-  long *mptr = malloc(sizeof(*mptr) * (tl->n + 1));
+  int *ptr = cd->graph->ptr;
+  int mcount = cd->mcount[phase];
+  long *mptr = malloc(sizeof(*mptr) * (mcount + 1));
+  long *idx_mbuf = cd->idx_mbufs[phase];
   assert(mptr != NULL);
   mptr[0] = 0;
-  for (int mi = 0; mi < tl->n; mi++) {
-    assert(tl->idx[mi] == cd->idx_mbufs[phase][mi]);
-    int i = tl->idx[mi] % cd->n;
+  for (int mi = 0; mi < mcount; mi++) {
+    assert(idx_mbuf[mi] == cd->idx_mbufs[phase][mi]);
+    int i = idx_mbuf[mi] % cd->n;
     mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
   }
   cd->mptr[phase] = mptr;
 }
 
 static void fill_mcol(comm_data_t *cd, int phase) {
-  int *ptr = cd->mg->g0->ptr;
-  int *col = cd->mg->g0->col;
-  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
-
+  int *ptr = cd->graph->ptr;
+  int *col = cd->graph->col;
   long *mptr = cd->mptr[phase];
-  int *rdisp = cd->rdispls + phase * cd->npart;
-  int *rcount = cd->recvcounts + phase * cd->npart;
+  int mcount = cd->mcount[phase];
 
-  // alloc and store indices which will be searched
-
-  // alloc size will be sum =0; for() sum += tl->n + phase_rbuf
-
-  assert(tl->n == cd->mcount[phase]);
-  long *mcol = malloc(sizeof(*mcol) * mptr[cd->mcount[phase]]);
+  long *mcol = malloc(sizeof(*mcol) * mptr[mcount]);
   assert(mcol != NULL);
   for (int mi = 0; mi < cd->mcount[phase]; mi++) {
-    assert(cd->idx_mbufs[phase][mi] == tl->idx[mi]);
     long idx = cd->idx_mbufs[phase][mi];
     long i = idx % cd->n;
     long level = idx / cd->n;
@@ -591,13 +582,13 @@ static void fill_mcol(comm_data_t *cd, int phase) {
 }
 
 static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
-  clear_comm_table(cd->mg, comm_table);
-  init_comm_table(cd->mg, comm_table);
+  clear_comm_table(cd, comm_table);
+  init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part);
     iterator(phase_cond, phase, cd, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, cd);
-    clear_comm_table(cd->mg, comm_table);
+    clear_comm_table(cd, comm_table);
     fill_mptr(cd, phase);
     fill_mcol(cd, phase);
   }
@@ -623,8 +614,8 @@ void mpi_prep_mpk(comm_data_t *cd) {
   assert(cd != NULL);
   printf("preparing mpi buffers for communication...");
 
-  char *comm_table = new_comm_table(cd->mg);
-  int *store_part = new_store_part(cd->mg);
+  char *comm_table = new_comm_table(cd->n, cd->npart, cd->nlevel);
+  int *store_part = new_store_part(cd);
 
   // Fill stage one data
   fill_bufsize_rscount_displs(cd, comm_table, store_part);
