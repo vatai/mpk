@@ -37,8 +37,9 @@ typedef struct comm_table {
   double *vv_buf;
   double *vv_sbuf;
 
-  long **mptr;
-  long **mcol;
+  // nphase + 1
+  long **mptr; // cd->mcount[phase] + 1
+  long **mcol; // cd->mptr[phase][cd->mcount[phase]]
   double **mval;
 
 } comm_data_t;

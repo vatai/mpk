@@ -46,7 +46,6 @@ void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
   }
 }
 
-// TODO(vatai): delete this, see trivial optimisation below
 static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
   int npart = cd->npart;
 

@@ -94,6 +94,7 @@ void del_comm_data(comm_data_t *cd) {
   cd->npart = 0;
   cd->nlevel = 0;
   cd->n = 0;
+  free(cd);
 }
 
 static char *new_comm_table(mpk_t *mg) {
