@@ -76,6 +76,61 @@ static void alloc_mpk_data(comm_data_t *cd) {
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
+static void fill_part(int phase, comm_data_t *cd) {
+  char fname[1024];
+  FILE *f;
+  sprintf(fname, "%s/g%d.part.%d", cd->dir, phase, cd->npart);
+  printf("  reading %s...\n", fname);
+
+  f = fopen(fname, "r");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+
+  part_t *pg = new_part(cd->graph);
+  read_part(f, pg);
+  fclose(f);
+  cd->plist[phase] = pg;
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+static void fill_level(int phase, comm_data_t *cd) {
+  char fname[1024];
+  FILE *f;
+  sprintf(fname, "%s/l%d", cd->dir, phase);
+  printf("  reading %s...\n", fname);
+
+  f = fopen(fname, "r");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+
+  level_t *lg = new_level(cd->plist[phase]);
+  read_level(f, lg); // fclose(f); ... in read_level
+  cd->llist[phase] = lg;
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+static void fill_skirt(comm_data_t *cd) {
+  char fname[1024];
+  FILE *f;
+  sprintf(fname, "%s/s%d", cd->dir, cd->nphase);
+  printf("  reading %s...\n", fname);
+
+  f = fopen(fname, "r");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+
+  skirt_t *sk = new_skirt(cd->plist[0]);
+  read_skirt(f, sk, cd->nlevel); // fclose(f); in read_skirt
+  cd->skirt = sk;
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
 comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->dir = dir;
@@ -84,10 +139,16 @@ comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
   read_dir(cd);
   read_matrix(cd);
   alloc_mpk_data(cd);
+  for (int phase = 0; phase < cd->nphase; phase++) {
+    fill_part(phase, cd);
+    fill_level(phase, cd);
+  }
+  if (cd->nphase == 0)
+    fill_part(0, cd);
+  fill_skirt(cd);
 
   int npart = cd->npart;
   int nphase = cd->nphase;
-  assert(cd->n == mg->n);
 
   cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
   assert(cd->recvcounts != NULL);
