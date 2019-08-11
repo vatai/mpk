@@ -23,37 +23,71 @@ static void dir_name_error(char *dir) {
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
-static void read_dir(char *dir, comm_data_t *cd) {
+static void read_dir(comm_data_t *cd) {
   int i = 0, j = 0;
-  for (j= strlen(dir); j >= 0; j--) {
-    if (dir[j] == '_') i++;
+  for (j= strlen(cd->dir); j >= 0; j--) {
+    if (cd->dir[j] == '_') i++;
     if (i == 3) break;
   }
-  if (!(i == 3 && j >= 0 && dir[j] == '_'))
-    dir_name_error(dir);
+  if (!(i == 3 && j >= 0 && cd->dir[j] == '_'))
+    dir_name_error(cd->dir);
 
   cd->npart = cd->nlevel = cd->nphase = -1;
-  i = sscanf(dir+j, "_%d_%d_%d", &cd->npart, &cd->nlevel, &cd->nphase);
+  i = sscanf(cd->dir + j, "_%d_%d_%d", &cd->npart, &cd->nlevel, &cd->nphase);
   if (i != 3)
-    dir_name_error(dir);
+    dir_name_error(cd->dir);
   assert(cd->npart > 0 && cd->nlevel > 0 && cd->nphase >= 0);
+
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  assert(world_size == cd->npart);
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+static void read_matrix(comm_data_t *cd) {
+  char fname[1024];
+  FILE *f;
+  sprintf(fname, "%s/g0", cd->dir);
+  f = fopen(fname, "r");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+  crs0_t *g0 = read_crs(f); // Closes f
+  cd->graph = g0;
+  cd->n = g0->n;
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+static void alloc_mpk_data(comm_data_t *cd) {
+  if (cd->nphase == 0) { // PA1
+    cd->plist = (part_t**) malloc(sizeof(part_t*));
+    cd->llist = NULL;
+  } else {
+    cd->plist = (part_t**) malloc(sizeof(part_t*) * cd->nphase);
+    cd->llist = (level_t**) malloc(sizeof(level_t*) * cd->nphase);
+    int i;
+    for (i=0; i< cd->nphase; i++) {
+      cd->plist[i] = NULL;
+      cd->llist[i] = NULL;
+    }
+  }
+  cd->skirt = NULL;
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
 comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
   comm_data_t *cd = malloc(sizeof(*cd));
-  MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
-  read_dir(dir, cd);
+  cd->dir = dir;
   cd->mg = mg;
-  assert(cd->nlevel == mg->nlevel);
-  assert(cd->npart == mg->npart);
-  assert(cd->nphase == mg->nphase);
+  MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
+  read_dir(cd);
+  read_matrix(cd);
+  alloc_mpk_data(cd);
+
   int npart = cd->npart;
   int nphase = cd->nphase;
-  cd->n = mg->n;
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  assert(world_size == mg->npart);
+  assert(cd->n == mg->n);
 
   cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
   assert(cd->recvcounts != NULL);
@@ -86,9 +120,9 @@ comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
   cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
   assert(cd->vv_sbufs != NULL);
 
-  cd->mptr = malloc(sizeof(*cd->mptr) * (cd->nphase + 1));
+  cd->mptr = malloc(sizeof(*cd->mptr) * (nphase + 1));
   assert(cd->mptr != NULL);
-  cd->mcol = malloc(sizeof(*cd->mcol) * (cd->nphase + 1));
+  cd->mcol = malloc(sizeof(*cd->mcol) * (nphase + 1));
   assert(cd->mcol != NULL);
 
   return cd;
