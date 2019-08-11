@@ -111,75 +111,41 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-static int *alloc_fill_count(mpk_t *mg) {
-  int *count = malloc(sizeof(*count) * mg->npart);
-  assert(count != NULL);
-  for (int part = 0; part < mg->npart; part++)
-    count[part] = 0;
-
-  for (int phase = 0; phase <= mg->nphase; phase++) {
-    for (int part = 0; part < mg->npart; part++) {
-      task_t *tl = mg->tlist + phase * mg->npart + part;
-      count[part] += tl->n;
-    }
-  }
-  return count;
-}
-
-static void recv_copy(mpk_t *mg, int *count, double *vv) {
-  assert(mg->npart == mg->npart); // REMOVE
-  for (int part = 1; part < mg->npart; part++) {
-    double *buf = malloc(sizeof(*buf) * count[part]);
-    assert(buf != NULL);
-    MPI_Recv(buf, count[part], MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
+static void recv_copy_results(comm_data_t *cd, double *vv) {
+  for (int part = 1; part < cd->npart; part++){
+    int buf_count;
+    MPI_Recv(&buf_count, 1, MPI_INT, part, 0, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
-    // TODO(vatai): write distributed recv_copy
-    for (int phase = 0; phase <= mg->nphase; phase++) {
-      task_t *tl = mg->tlist + phase * mg->npart + part;
-      for (int i = 0; i < tl->n; i++) {
-        long val = tl->idx[i];
-        if (val >= mg->n * (mg->nlevel + 1))
-          printf("tl->idx[i]: %ld\n", tl->idx[i]);
-        vv[tl->idx[i]] = buf[i];
-      }
-    }
-    free(buf);
+    long *idx_buf = malloc(sizeof(*idx_buf) * buf_count);
+    double *vv_buf = malloc(sizeof(*idx_buf) * buf_count);
+    MPI_Recv(idx_buf, buf_count, MPI_LONG, part, 0, MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+    MPI_Recv(vv_buf, buf_count, MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
+             MPI_STATUS_IGNORE);
+    for (int i = 0; i < buf_count; i++)
+      vv[idx_buf[i]] = vv_buf[i];
   }
 }
 
-static void copy_send(mpk_t *mg, int rank, int *count, double *vv) {
-  double *buf = malloc(sizeof(*buf) * count[rank]);
-  assert(buf != NULL);
-
-  // TODO(vatai): write distributed copy_send
-  for (int phase = 0; phase <= mg->nphase; phase++) {
-    task_t *tl = mg->tlist + phase * mg->npart + rank;
-    for (int i = 0; i < tl->n; i++)
-      buf[i] = vv[tl->idx[i]];
-  }
-
-  MPI_Send(buf, count[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-  free(buf);
-}
-
-static void collect_results(mpk_t *mg, int rank, double *vv) {
-  int *count = alloc_fill_count(mg);
-
-  if (rank == 0)
-    recv_copy(mg, count, vv);
-  else
-    copy_send(mg, rank, count, vv);
-
-  free(count);
+static void send_results(comm_data_t *cd, double *vv) {
+  MPI_Send(&cd->buf_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(cd->idx_buf, cd->buf_count, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(cd->vv_buf, cd->buf_count, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
 }
 
 static int check_results(comm_data_t *cd, double *vv) {
-  int size = cd->n * cd->nlevel;
-  for (int i = 0; i < size; i++)
-    if (vv[cd->n + i] != 1.0)
-      return -1;
-  return 0;
-};
+  if (cd->rank == 0) {
+    recv_copy_results(cd, vv);
+    int size = cd->n * cd->nlevel;
+    for (int i = 0; i < size; i++)
+      if (vv[cd->n + i] != 1.0)
+        return -1;
+    return 0;
+  } else {
+    send_results(cd, vv);
+    return 0;
+  }
+}
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -188,7 +154,6 @@ int main(int argc, char* argv[]) {
   }
   // TODO(vatai): NEXT LIST below
   // NEXT: read_cd
-  // NEXT: del mpk_t *mg;
 
   // Init MPI
   MPI_Init(&argc, &argv);
@@ -250,10 +215,7 @@ int main(int argc, char* argv[]) {
   }
   fclose(vv_log_file);
 
-  int result = 0;
-  collect_results(mg, cd->rank, vv);
-  if (cd->rank == 0)
-    result = check_results(cd, vv);
+  int result = check_results(cd, vv);
   del_comm_data(cd);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
