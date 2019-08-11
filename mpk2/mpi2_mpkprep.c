@@ -195,6 +195,7 @@ void del_comm_data(comm_data_t *cd) {
   free(cd->sendcounts);
   free(cd->rdispls);
   free(cd->sdispls);
+
   free(cd->rcount);
   free(cd->mcount);
   free(cd->scount);
@@ -207,12 +208,28 @@ void del_comm_data(comm_data_t *cd) {
   free(cd->vv_sbufs);
 
   free(cd->idx_buf);
+  free(cd->idx_sbuf);
   free(cd->vv_buf);
+  free(cd->vv_sbuf);
 
-  cd->nphase = 0;
-  cd->npart = 0;
-  cd->nlevel = 0;
-  cd->n = 0;
+  for (int phase = 0; phase <= cd->nphase; phase++) {
+    free(cd->mptr[phase]);
+    free(cd->mcol[phase]);
+    // free(cd->mval[phase]); // TODO(vatai): when allocate
+  }
+  free(cd->mptr);
+  free(cd->mcol);
+  // free(cd->mval);
+
+  del_crs(cd->graph);
+  for (int phase = 0; phase < cd->nphase; phase++) {
+    del_part(cd->plist[phase]);
+    del_level(cd->llist[phase]);
+  }
+  if (cd->nphase == 0) {
+    del_part(cd->plist[0]);
+  }
+  del_skirt(cd->skirt);
   free(cd);
 }
 
