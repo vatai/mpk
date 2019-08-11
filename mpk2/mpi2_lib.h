@@ -48,7 +48,7 @@ void mpi_exec_mpk(comm_data_t *cd);
 
 void mpi_prep_mpk(comm_data_t *);
 
-comm_data_t *new_comm_data(mpk_t *);
+comm_data_t *new_comm_data(mpk_t *, char *);
 
 void del_comm_data(comm_data_t *);
 

@@ -20,14 +20,42 @@ static int find_idx(long *ptr, int size, long target) {
   return -1;
 }
 
-comm_data_t *new_comm_data(mpk_t *mg) {
+// TODO(vatai): move to mpi2_comm_data.c
+static void dir_name_error(char *dir) {
+  fprintf(stderr, "  unknwon directory naming %s\n", dir);
+  fprintf(stderr, "  expecting ghead_npart_nlevel_nphase\n");
+  exit(1);
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+static void read_dir(char *dir, comm_data_t *cd) {
+  int i = 0, j = 0;
+  for (j= strlen(dir); j >= 0; j--) {
+    if (dir[j] == '_') i++;
+    if (i == 3) break;
+  }
+  if (!(i == 3 && j >= 0 && dir[j] == '_'))
+    dir_name_error(dir);
+
+  cd->npart = cd->nlevel = cd->nphase = -1;
+  i = sscanf(dir+j, "_%d_%d_%d", &cd->npart, &cd->nlevel, &cd->nphase);
+  if (i != 3)
+    dir_name_error(dir);
+  assert(cd->npart > 0 && cd->nlevel > 0 && cd->nphase >= 0);
+}
+
+// TODO(vatai): move to mpi2_comm_data.c
+comm_data_t *new_comm_data(mpk_t *mg, char *dir) {
   comm_data_t *cd = malloc(sizeof(*cd));
-  cd->mg = mg;
-  cd->n = mg->n;
-  cd->nlevel = mg->nlevel;
   MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
-  int npart = cd->npart = mg->npart;
-  int nphase = cd->nphase = mg->nphase;
+  read_dir(dir, cd);
+  cd->mg = mg;
+  assert(cd->nlevel == mg->nlevel);
+  assert(cd->npart == mg->npart);
+  assert(cd->nphase == mg->nphase);
+  int npart = cd->npart;
+  int nphase = cd->nphase;
+  cd->n = mg->n;
   int world_size;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   assert(world_size == mg->npart);
@@ -71,6 +99,7 @@ comm_data_t *new_comm_data(mpk_t *mg) {
   return cd;
 }
 
+// TODO(vatai): move to mpi2_comm_data.c
 void del_comm_data(comm_data_t *cd) {
   free(cd->recvcounts);
   free(cd->sendcounts);
