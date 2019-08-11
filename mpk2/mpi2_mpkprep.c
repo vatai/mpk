@@ -8,11 +8,6 @@
 #include "lib.h"
 #include "mpi2_lib.h"
 
-static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
-  int from_part_to_part = mg->npart * src_part + tgt_part;
-  return mg->nlevel * mg->n * from_part_to_part + vv_idx;
-}
-
 static int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
     if (ptr[i] == target)
@@ -126,6 +121,7 @@ void del_comm_data(comm_data_t *cd) {
   free(cd);
 }
 
+// TODO(vatai): group with comm_table
 static char *new_comm_table(mpk_t *mg) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
@@ -136,6 +132,7 @@ static char *new_comm_table(mpk_t *mg) {
   return ct;
 }
 
+// TODO(vatai): group with prep?
 static int *new_store_part(mpk_t *mg) {
   // Initialise store_part[i] to be the id of the 0th partition for
   // level 0, and -1 for all other levels
@@ -149,6 +146,13 @@ static int *new_store_part(mpk_t *mg) {
   return store_part;
 }
 
+// TODO(vatai): group with comm_table
+static int get_ct_idx(mpk_t *mg, int src_part, int tgt_part, int vv_idx) {
+  int from_part_to_part = mg->npart * src_part + tgt_part;
+  return mg->nlevel * mg->n * from_part_to_part + vv_idx;
+}
+
+// TODO(vatai): group with comm_table
 static void init_comm_table(mpk_t *mg, char *comm_table) {
   for (int i = 0; i < mg->n; i++) {
     int part = mg->plist[0]->part[i];
@@ -157,6 +161,7 @@ static void init_comm_table(mpk_t *mg, char *comm_table) {
   }
 }
 
+// TODO(vatai): group with comm_table
 static void fill_comm_table_one_vertex(int curpart, int i, int level, mpk_t *mg,
                                        char *comm_table, int *store_part) {
   crs0_t *g0 = mg->g0;
@@ -171,6 +176,7 @@ static void fill_comm_table_one_vertex(int curpart, int i, int level, mpk_t *mg,
   }
 }
 
+// TODO(vatai): group with comm_table
 static void clear_comm_table(mpk_t *mg, char *comm_table) {
   // Communication of which vertex (n) from which level (nlevel)
   // from which process/partition (npart) to which process/partition
@@ -180,6 +186,7 @@ static void clear_comm_table(mpk_t *mg, char *comm_table) {
     comm_table[i] = 0;
 }
 
+// TODO(vatai): group with comm_table
 static int min_or_0(mpk_t *mg, int phm1) {
   if (mg->nphase == 0 || phm1 == -1)
     return 0;
@@ -191,6 +198,7 @@ static int min_or_0(mpk_t *mg, int phm1) {
   return rv;
 }
 
+// TODO(vatai): group with comm_table
 static int max_or_nlevel(comm_data_t *cd, int phase) {
   if (cd->nphase == phase)
     return cd->nlevel;
@@ -204,6 +212,7 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
   return rv;
 }
 
+// TODO(vatai): group with comm_table
 static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
                              int *store_part) {
   assert(cd->mg->plist[phase] != NULL);
@@ -225,6 +234,7 @@ static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
   }
 }
 
+// TODO(vatai): group with comm_table
 static void skirt_comm_table(comm_data_t *cd, char *comm_table,
                              int *store_part) {
   int n = cd->n;
