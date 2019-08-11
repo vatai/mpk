@@ -4,7 +4,6 @@
 #include "lib.h"
 
 typedef struct comm_table {
-  mpk_t *mg;
   char *dir;
   int n;
   int nlevel;

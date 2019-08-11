@@ -202,7 +202,6 @@ int main(int argc, char* argv[]) {
 
   prep_mpk(mg, vv);
   comm_data_t *cd = new_comm_data(argv[1]);
-  cd->mg = mg;
   mpi_prep_mpk(cd);
 
   int i;

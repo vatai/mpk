@@ -10,10 +10,11 @@
 #include "mpi2_lib.h"
 
 void log_tlist(comm_data_t *cd, int phase, FILE *log_file) {
-  task_t *tl = cd->mg->tlist + phase * cd->npart + cd->rank;
   int n = cd->n;
-  for (int i = 0; i < tl->n; i++) {
-    int idx = tl->idx[i];
+  int mcount = cd->mcount[phase];
+  long *idx_mbuf = cd->idx_mbufs[phase];
+  for (int i = 0; i < mcount; i++) {
+    int idx = idx_mbuf[i];
     int level = idx / n;
     int j = idx % n;
     fprintf(log_file, "%d (level:%3d, i: %3d)\n", idx, level, j);
@@ -80,37 +81,23 @@ static void do_comm(int phase, comm_data_t *cd, FILE *log_file) {
          log_file);
 }
 
-static void do_task(comm_data_t *cd, int phase, int part) {
-  assert(cd != NULL);
-
-  int n = cd->n;
-
-  task_t *tl = cd->mg->tlist + phase * cd->npart + part;
-  int *ptr = cd->mg->g0->ptr;
-  int *col = cd->mg->g0->col;
-
+static void do_task(comm_data_t *cd, int phase) {
   // TODO(vatai): tl->th = omp_get_thread_num();
   // TODO(vatai): tl->t0 = omp_get_wtime();
 
+  int n = cd->n;
+  int mcount = cd->mcount[phase];
   long *idx_mbuf = cd->idx_mbufs[phase];
   long *mptr = cd->mptr[phase];
   long *mcol = cd->mcol[phase];
   double *vv_mbuf = cd->vv_mbufs[phase];
 
-  assert(cd->mcount[phase] == tl->n);
-  for (int mi = 0; mi < cd->mcount[phase]; mi++) {
+  for (int mi = 0; mi < mcount; mi++) {
     long idx = idx_mbuf[mi];
-    assert(idx == tl->idx[mi]);
     long i = idx % cd->n;
-    assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
     double b = 1.0 / (mptr[mi + 1] - mptr[mi]);
     double tmp = 0.0;
     for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++){
-      long mjdx = cd->idx_buf[mcol[mj]]; // assert
-      int j = mj - mptr[mi] + ptr[i]; // assert
-      long jdx = col[j] + cd->n * (idx / cd->n - 1); // assert
-      assert(jdx == mjdx);
-      assert(cd->vv_buf[mcol[mj]] == 1.0);
       tmp += b * cd->vv_buf[mcol[mj]];
     }
     vv_mbuf[mi] = tmp;
@@ -129,7 +116,7 @@ void mpi_exec_mpk(comm_data_t *cd) {
     if (phase > 0) {
       do_comm(phase, cd, log_file);
     }
-    do_task(cd, phase, cd->rank);
+    do_task(cd, phase);
   }
   fclose(log_file);
 }
