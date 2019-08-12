@@ -6,8 +6,7 @@
 
 #include <mpi.h>
 
-#include "lib.h"
-#include "mpi2_lib.h"
+#include "comm_data.h"
 
 #define DETAIL 0
 #define ONEVEC 0

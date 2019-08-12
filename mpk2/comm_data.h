@@ -1,5 +1,5 @@
-#ifndef _MPI_LIB_H_
-#define _MPI_LIB_H_
+#ifndef _COMM_DATA_H_
+#define _COMM_DATA_H_
 
 #include "lib.h"
 

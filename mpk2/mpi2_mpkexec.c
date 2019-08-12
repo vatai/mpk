@@ -6,8 +6,7 @@
 #include <mpi.h>
 #include <math.h>
 
-#include "lib.h"
-#include "mpi2_lib.h"
+#include "comm_data.h"
 
 void log_tlist(buffers_t *bufs, int phase, FILE *log_file) {
   int n = bufs->n;
