@@ -23,7 +23,7 @@ mpktest : mpktest.o $(MPKOBJ)
 MPIMPKOBJ = mpi_mpkprep.o mpi_mpkexec.c
 mpi_mpktest : mpi_mpktest.o $(MPIMPKOBJ) $(MPKOBJ)
 
-MPI2MPKOBJ = mpi2_mpkprep.o mpi2_mpkexec.o
+MPI2MPKOBJ = mpi2_mpkprep.o mpi2_mpkexec.o buffers.o
 mpi2_mpktest : mpi2_mpktest.o $(MPI2MPKOBJ) $(MPKOBJ)
 
 mpkrun : mpkvexec.o lib.o mpkread.o mpkprep.o spmvexec.o

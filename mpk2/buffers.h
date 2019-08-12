@@ -46,7 +46,7 @@ buffers_t *new_bufs(comm_data_t *);
 
 void del_bufs(buffers_t *);
 
-void mpi_prep_mpk(comm_data_t *, buffers_t *);
+void fill_buffers(comm_data_t *, buffers_t *);
 
 void mpi_exec_mpk(buffers_t *);
 

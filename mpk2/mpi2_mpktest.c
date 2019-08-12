@@ -156,15 +156,13 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "usage: %s dirname\n", argv[0]);
     exit(1);
   }
-  // TODO(vatai): NEXT LIST below
-  // NEXT: read_cd
 
   // Init MPI
   MPI_Init(&argc, &argv);
 
   comm_data_t *cd = new_comm_data(argv[1]);
   buffers_t *bufs = new_bufs(cd);
-  mpi_prep_mpk(cd, bufs);
+  fill_buffers(cd, bufs);
 
   int n = cd->n;
   int nlevel = cd->nlevel;
