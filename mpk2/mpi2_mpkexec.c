@@ -90,8 +90,8 @@ static void do_task(buffers_t *bufs, int phase) {
   int n = bufs->n;
   int mcount = bufs->mcount[phase];
   long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
-  long *mptr = bufs->mptr[phase];
-  long *mcol = bufs->mcol[phase];
+  long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
+  long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
   double *vv_mbuf = bufs->vv_buf + bufs->mbuf_offsets[phase];
 
   for (int mi = 0; mi < mcount; mi++) {

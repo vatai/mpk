@@ -11,6 +11,8 @@ typedef struct buffers_t {
   int rank;
   int buf_count;
   int buf_scount;
+  int mptr_count;
+  int mcol_count;
 
   // npart * (nphase + 1)
   int *recvcounts;
@@ -22,18 +24,17 @@ typedef struct buffers_t {
   int *rcount;
   int *mcount;
   int *scount;
-
-  // nphase + 1
   int *rbuf_offsets;
   int *mbuf_offsets;
   int *sbuf_offsets;
+  int *mptr_offsets;
+  int *mcol_offsets;
 
   long *idx_buf; // Important note in iterator() function comments
   long *idx_sbuf;
-
-  // nphase + 1
-  long **mptr; // cd->mcount[phase] + 1
-  long **mcol; // cd->mptr[phase][cd->mcount[phase]]
+  long *mptr_buf;
+  long *mcol_buf;
+  // TODO(vatai): don't forget, 6 variables to read/write
 
   double *vv_buf; // TODO(vatai): separate use
   double *vv_sbuf; // TODO(vatai): separate use

@@ -263,23 +263,30 @@ static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
 static void alloc_bufs(buffers_t *bufs) {
   bufs->buf_count = 0;
   bufs->buf_scount = 0;
+  bufs->mptr_count = 0;
   for (int phase = 0; phase <= bufs->nphase; phase++) {
     bufs->buf_count += bufs->rcount[phase];
     bufs->buf_count += bufs->mcount[phase];
     bufs->buf_scount += bufs->scount[phase];
+    bufs->mptr_count += bufs->mcount[phase] + 1;
   }
 
   bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
   bufs->idx_sbuf = malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
-  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
-  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
+  bufs->mptr_buf = malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
   assert(bufs->idx_buf != NULL);
   assert(bufs->idx_sbuf != NULL);
+  assert(bufs->mptr_buf != NULL);
+
+  // TODO(vatai): separate use
+  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
+  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
   assert(bufs->vv_buf != NULL);
   assert(bufs->vv_sbuf != NULL);
 
   long count = 0;
   long scount = 0;
+  long mptrcount = 0;
   for (int phase = 0; phase <= bufs->nphase; phase++) {
     bufs->rbuf_offsets[phase] = count;
     count += bufs->rcount[phase];
@@ -289,22 +296,10 @@ static void alloc_bufs(buffers_t *bufs) {
 
     bufs->sbuf_offsets[phase] = scount;
     scount += bufs->scount[phase];
-  }
-}
 
-static void fill_mptr(comm_data_t *cd, buffers_t *bufs, int phase) {
-  // TODO(vatai): Put all mptr[phase] into a single array.
-  int *ptr = cd->graph->ptr;
-  int mcount = bufs->mcount[phase];
-  long *mptr = malloc(sizeof(*mptr) * (mcount + 1));
-  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
-  assert(mptr != NULL);
-  mptr[0] = 0;
-  for (int mi = 0; mi < mcount; mi++) {
-    int i = idx_mbuf[mi] % cd->n;
-    mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
+    bufs->mptr_offsets[phase] = mptrcount;
+    mptrcount += bufs->mcount[phase] + 1;
   }
-  bufs->mptr[phase] = mptr;
 }
 
 static int find_idx(long *ptr, int size, long target) {
@@ -314,27 +309,53 @@ static int find_idx(long *ptr, int size, long target) {
   return -1;
 }
 
-static void fill_mcol(comm_data_t *cd, buffers_t *bufs, int phase) {
+static void fill_mptr(comm_data_t *cd, buffers_t *bufs, int phase) {
+  int *ptr = cd->graph->ptr;
+  int mcount = bufs->mcount[phase];
+  long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
+  assert(mptr != NULL);
+  mptr[0] = 0;
+  for (int mi = 0; mi < mcount; mi++) {
+    int i = idx_mbuf[mi] % cd->n;
+    mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
+  }
+}
+
+static void alloc_mcol(buffers_t *bufs) {
+  bufs->mcol_count = 0;
+  for (int phase = 0; phase <= bufs->nphase; phase++) {
+    long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
+    int mcount = bufs->mcount[phase];
+    bufs->mcol_offsets[phase] = bufs->mcol_count;
+    bufs->mcol_count += mptr[mcount];
+  }
+  bufs->mcol_buf = malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
+  assert(bufs->mcol_buf != NULL);
+}
+
+static void fill_mcol(comm_data_t *cd, buffers_t *bufs) {
   int *ptr = cd->graph->ptr;
   int *col = cd->graph->col;
-  long *mptr = bufs->mptr[phase];
-  int mcount = bufs->mcount[phase];
-  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
-  long *mcol = malloc(sizeof(*mcol) * mptr[mcount]);
-  assert(mcol != NULL);
-  for (int mi = 0; mi < mcount; mi++) {
-    long idx = idx_mbuf[mi];
-    long i = idx % cd->n;
-    long level = idx / cd->n;
+  for (int phase = 0; phase <= bufs->nphase; phase++){
+    long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
+    int mcount = bufs->mcount[phase];
+    long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
+    long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
+    assert(mcol != NULL);
+    for (int mi = 0; mi < mcount; mi++) {
+      long idx = idx_mbuf[mi];
+      long i = idx % cd->n;
+      long level = idx / cd->n;
 
-    assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
-    for (int j = ptr[i]; j < ptr[i + 1]; j++) {
-      long target = col[j] + cd->n * (level - 1);
-      int idx = find_idx(bufs->idx_buf, bufs->buf_count, target);
-      mcol[j - ptr[i] + mptr[mi]] = idx;
+      assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
+      for (int j = ptr[i]; j < ptr[i + 1]; j++) {
+        long target = col[j] + cd->n * (level - 1);
+        int idx = find_idx(bufs->idx_buf, bufs->buf_count, target);
+        mcol[j - ptr[i] + mptr[mi]] = idx;
+      }
     }
   }
-  bufs->mcol[phase] = mcol;
 }
 
 static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
@@ -347,13 +368,15 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
     fill_idx_rsbuf(phase, comm_table, bufs);
     clear_comm_table(cd, comm_table);
     fill_mptr(cd, bufs, phase);
-    fill_mcol(cd, bufs, phase);
   }
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, bufs);
   fill_mptr(cd, bufs, cd->nphase);
-  fill_mcol(cd, bufs, cd->nphase);
+
+  alloc_mcol(bufs);
+  fill_mcol(cd, bufs);
+  printf(">>>> breaking point\n");
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
   // data from idx_buf to sbuf.
@@ -417,10 +440,10 @@ void alloc_bufs0(buffers_t *bufs) {
   bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
   assert(bufs->rbuf_offsets != NULL);
 
-  bufs->mptr = malloc(sizeof(*bufs->mptr) * (nphase + 1));
-  assert(bufs->mptr != NULL);
-  bufs->mcol = malloc(sizeof(*bufs->mcol) * (nphase + 1));
-  assert(bufs->mcol != NULL);
+  bufs->mptr_offsets = malloc(sizeof(*bufs->mptr_offsets) * (nphase + 1));
+  assert(bufs->mptr_offsets != NULL);
+  bufs->mcol_offsets = malloc(sizeof(*bufs->mcol_offsets) * (nphase + 1));
+  assert(bufs->mcol_offsets != NULL);
 }
 
 buffers_t *new_bufs(comm_data_t *cd) {
@@ -453,14 +476,13 @@ void del_bufs(buffers_t *bufs) {
   free(bufs->vv_buf);
   free(bufs->vv_sbuf);
 
-  for (int phase = 0; phase <= bufs->nphase; phase++) {
-    free(bufs->mptr[phase]);
-    free(bufs->mcol[phase]);
-    // free(cd->mval[phase]); // TODO(vatai): when allocate
-  }
-  free(bufs->mptr);
-  free(bufs->mcol);
-  // free(cd->mval);
+  free(bufs->mptr_buf);
+  free(bufs->mcol_buf);
+  // free(cd->mval_buf); // TODO(vatai): separate when allocate
+
+  free(bufs->mptr_offsets);
+  free(bufs->mcol_offsets);
+  // free(cd->mval_offsets); ?? or same as mcol?
   free(bufs);
 }
 
