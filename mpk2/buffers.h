@@ -52,6 +52,6 @@ void mpi_exec_mpk(buffers_t *);
 
 void write_buffers(buffers_t *, char *);
 
-buffers_t *read_buffers(char *);
+buffers_t *read_buffers(char *, int);
 
 #endif

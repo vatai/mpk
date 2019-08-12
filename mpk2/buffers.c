@@ -525,6 +525,7 @@ void write_buffers(buffers_t *bufs, char *dir) {
   fwrite(&bufs->buf_scount, sizeof(bufs->buf_scount), count, file);
   fwrite(&bufs->mptr_count, sizeof(bufs->mptr_count), count, file);
   fwrite(&bufs->mcol_count, sizeof(bufs->mcol_count), count, file);
+
   count = bufs->npart * (bufs->nphase + 1);
   fwrite(bufs->recvcounts, sizeof(*bufs->recvcounts), count, file);
   fwrite(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
@@ -542,21 +543,20 @@ void write_buffers(buffers_t *bufs, char *dir) {
   // variable length vectors
   fwrite(bufs->idx_buf, sizeof(*bufs->idx_buf), bufs->buf_count, file);
   fwrite(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), bufs->buf_scount, file);
-  fwrite(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->buf_count, file);
-  fwrite(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->buf_count, file);
+  fwrite(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->mptr_count, file);
+  fwrite(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->mcol_count, file);
 
   fclose(file);
 }
 
-buffers_t *read_buffers(char *dir) {
-  int count;
+buffers_t *read_buffers(char *dir, int rank) {
   buffers_t *bufs = malloc(sizeof(*bufs));
 
   char fname[1024];
-  sprintf(fname, "%s/rank%d.bufs", dir, bufs->rank);
-  FILE *file = fopen(fname, "w");
+  sprintf(fname, "%s/rank%d.bufs", dir, rank);
+  FILE *file = fopen(fname, "r");
 
-  count = 1;
+  int count = 1;
   fread(&bufs->n, sizeof(bufs->n), count, file);
   fread(&bufs->npart, sizeof(bufs->npart), count, file);
   fread(&bufs->nlevel, sizeof(bufs->nlevel), count, file);
@@ -564,6 +564,8 @@ buffers_t *read_buffers(char *dir) {
   fread(&bufs->rank, sizeof(bufs->rank), count, file);
   fread(&bufs->buf_count, sizeof(bufs->buf_count), count, file);
   fread(&bufs->buf_scount, sizeof(bufs->buf_scount), count, file);
+  fread(&bufs->mptr_count, sizeof(bufs->mptr_count), count, file);
+  fread(&bufs->mcol_count, sizeof(bufs->mcol_count), count, file);
 
   alloc_bufs0(bufs);
 
@@ -579,12 +581,21 @@ buffers_t *read_buffers(char *dir) {
   fread(bufs->rbuf_offsets, sizeof(*bufs->rbuf_offsets), count, file);
   fread(bufs->mbuf_offsets, sizeof(*bufs->mbuf_offsets), count, file);
   fread(bufs->sbuf_offsets, sizeof(*bufs->sbuf_offsets), count, file);
+  fread(bufs->mptr_offsets, sizeof(*bufs->mptr_offsets), count, file);
+  fread(bufs->mcol_offsets, sizeof(*bufs->mcol_offsets), count, file);
   // variable length vectors
+  bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
   fread(bufs->idx_buf, sizeof(*bufs->idx_buf), bufs->buf_count, file);
+  bufs->idx_sbuf = malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
   fread(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), bufs->buf_scount, file);
-  fread(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->buf_count, file);
-  fread(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->buf_count, file);
+  bufs->mptr_buf = malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
+  fread(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->mptr_count, file);
+  bufs->mcol_buf = malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
+  fread(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->mcol_count, file);
 
+  bufs->vv_buf = NULL;
+  bufs->vv_sbuf = NULL;
+  bufs->mval_buf = NULL;
   fclose(file);
   return bufs;
 }
