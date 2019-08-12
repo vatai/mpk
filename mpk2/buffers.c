@@ -376,7 +376,6 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
 
   alloc_mcol(bufs);
   fill_mcol(cd, bufs);
-  printf(">>>> breaking point\n");
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
   // data from idx_buf to sbuf.
@@ -432,13 +431,6 @@ void alloc_bufs0(buffers_t *bufs) {
   assert(bufs->mbuf_offsets != NULL);
   bufs->sbuf_offsets = malloc(sizeof(*bufs->sbuf_offsets) * (nphase + 1));
   assert(bufs->sbuf_offsets != NULL);
-
-  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
-  assert(bufs->rbuf_offsets != NULL);
-  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
-  assert(bufs->rbuf_offsets != NULL);
-  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
-  assert(bufs->rbuf_offsets != NULL);
 
   bufs->mptr_offsets = malloc(sizeof(*bufs->mptr_offsets) * (nphase + 1));
   assert(bufs->mptr_offsets != NULL);
