@@ -14,6 +14,7 @@
 #define ONEENT 0
 #define TRANS 0
 
+/*
 void test_allltoall_inputs(comm_data_t *cd) {
   printf("testing all inputs and printing out_mpi_alltoall:\n");
   int n = cd->n;
@@ -71,6 +72,7 @@ void test_allltoall_inputs(comm_data_t *cd) {
   }
   fclose(f);
 }
+*/
 
 void show_exinfo(mpk_t *mg) {
   assert(mg != NULL);
@@ -111,8 +113,8 @@ void check_error(double *vv, int n, int nlevel) {
   printf("error %e\n", sqrt(e/n));
 }
 
-static void recv_copy_results(comm_data_t *cd, double *vv) {
-  for (int part = 1; part < cd->npart; part++){
+static void recv_copy_results(buffers_t *bufs, double *vv) {
+  for (int part = 1; part < bufs->npart; part++){
     int buf_count;
     MPI_Recv(&buf_count, 1, MPI_INT, part, 0, MPI_COMM_WORLD,
              MPI_STATUS_IGNORE);
@@ -127,22 +129,22 @@ static void recv_copy_results(comm_data_t *cd, double *vv) {
   }
 }
 
-static void send_results(comm_data_t *cd, double *vv) {
-  MPI_Send(&cd->buf_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-  MPI_Send(cd->idx_buf, cd->buf_count, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-  MPI_Send(cd->vv_buf, cd->buf_count, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+static void send_results(buffers_t *bufs, double *vv) {
+  MPI_Send(&bufs->buf_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(bufs->idx_buf, bufs->buf_count, MPI_LONG, 0, 0, MPI_COMM_WORLD);
+  MPI_Send(bufs->vv_buf, bufs->buf_count, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
 }
 
-static int check_results(comm_data_t *cd, double *vv) {
-  if (cd->rank == 0) {
-    recv_copy_results(cd, vv);
-    int size = cd->n * cd->nlevel;
+static int check_results(buffers_t *bufs, double *vv) {
+  if (bufs->rank == 0) {
+    recv_copy_results(bufs, vv);
+    int size = bufs->n * bufs->nlevel;
     for (int i = 0; i < size; i++)
-      if (vv[cd->n + i] != 1.0)
+      if (vv[bufs->n + i] != 1.0)
         return -1;
     return 0;
   } else {
-    send_results(cd, vv);
+    send_results(bufs, vv);
     return 0;
   }
 }
@@ -167,7 +169,8 @@ int main(int argc, char* argv[]) {
 
   prep_mpk(mg, vv);
   comm_data_t *cd = new_comm_data(argv[1]);
-  mpi_prep_mpk(cd);
+  buffers_t *bufs = new_bufs(cd);
+  mpi_prep_mpk(cd, bufs);
 
   int i;
   for (i = 0; i < n; i++)
@@ -185,18 +188,18 @@ int main(int argc, char* argv[]) {
     vv[n + i] = -1.0;		/* dummy */
 
   // NEW CODE
-  for (int i = 0; i < cd->buf_count; i++) {
-    cd->vv_buf[i] = -42;
+  for (int i = 0; i < bufs->buf_count; i++) {
+    bufs->vv_buf[i] = -42;
   }
-  for (int i = 0; i < cd->rcount[0]; i++) {
-    cd->vv_rbufs[0][i] = 1.0;
+  for (int i = 0; i < bufs->rcount[0]; i++) {
+    bufs->vv_rbufs[0][i] = 1.0;
   }
 
-  mpi_exec_mpk(cd);
+  mpi_exec_mpk(bufs);
 
   // Copy from cd to vv[]
-  for (int i = 0; i < cd->buf_count; i++) {
-    vv[cd->idx_buf[i]] = cd->vv_buf[i];
+  for (int i = 0; i < bufs->buf_count; i++) {
+    vv[bufs->idx_buf[i]] = bufs->vv_buf[i];
   }
 
   char fname[1024];
@@ -215,8 +218,9 @@ int main(int argc, char* argv[]) {
   }
   fclose(vv_log_file);
 
-  int result = check_results(cd, vv);
+  int result = check_results(bufs, vv);
   del_comm_data(cd);
+  del_bufs(bufs);
   free(vv);
   // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
   MPI_Finalize();

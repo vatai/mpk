@@ -15,6 +15,18 @@ typedef struct comm_table {
   part_t **plist;
   level_t **llist;
   skirt_t *skirt;
+} comm_data_t;
+
+comm_data_t *new_comm_data(char *);
+
+void del_comm_data(comm_data_t *);
+
+typedef struct buffers_t {
+  int n;
+  int nlevel;
+  int npart;
+  int nphase;
+  int rank;
 
   // npart * (nphase + 1)
   int *recvcounts;
@@ -46,15 +58,14 @@ typedef struct comm_table {
   long **mptr; // cd->mcount[phase] + 1
   long **mcol; // cd->mptr[phase][cd->mcount[phase]]
   double **mval;
+} buffers_t;
 
-} comm_data_t;
+buffers_t *new_bufs(comm_data_t *);
 
-void mpi_exec_mpk(comm_data_t *cd);
+void del_bufs(buffers_t *);
 
-void mpi_prep_mpk(comm_data_t *);
+void mpi_prep_mpk(comm_data_t *, buffers_t *);
 
-comm_data_t *new_comm_data(char *);
-
-void del_comm_data(comm_data_t *);
+void mpi_exec_mpk(buffers_t *);
 
 #endif

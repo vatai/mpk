@@ -146,80 +146,90 @@ comm_data_t *new_comm_data(char *dir) {
     fill_part(0, cd);
   fill_skirt(cd);
 
-  int npart = cd->npart;
-  int nphase = cd->nphase;
-
-  cd->recvcounts = malloc(sizeof(*cd->recvcounts) * npart * (nphase + 1));
-  assert(cd->recvcounts != NULL);
-  cd->sendcounts = malloc(sizeof(*cd->sendcounts) * npart * (nphase + 1));
-  assert(cd->sendcounts != NULL);
-
-  cd->rdispls = malloc(sizeof(*cd->rdispls) * npart * (nphase + 1));
-  assert(cd->rdispls != NULL);
-  cd->sdispls = malloc(sizeof(*cd->sdispls) * npart * (nphase + 1));
-  assert(cd->sdispls != NULL);
-
-  cd->rcount = malloc(sizeof(*cd->rcount) * (nphase + 1));
-  assert(cd->rcount != NULL);
-  cd->mcount = malloc(sizeof(*cd->mcount) * (nphase + 1));
-  assert(cd->mcount != NULL);
-  cd->scount = malloc(sizeof(*cd->scount) * (nphase + 1));
-  assert(cd->scount != NULL);
-
-  cd->idx_rbufs = malloc(sizeof(*cd->idx_rbufs) * (nphase + 1));
-  assert(cd->idx_rbufs != NULL);
-  cd->idx_mbufs = malloc(sizeof(*cd->idx_mbufs) * (nphase + 1));
-  assert(cd->idx_mbufs != NULL);
-  cd->idx_sbufs = malloc(sizeof(*cd->idx_sbufs) * (nphase + 1));
-  assert(cd->idx_sbufs != NULL);
-
-  cd->vv_rbufs = malloc(sizeof(*cd->vv_rbufs) * (nphase + 1));
-  assert(cd->vv_rbufs != NULL);
-  cd->vv_mbufs = malloc(sizeof(*cd->vv_mbufs) * (nphase + 1));
-  assert(cd->vv_mbufs != NULL);
-  cd->vv_sbufs = malloc(sizeof(*cd->vv_sbufs) * (nphase + 1));
-  assert(cd->vv_sbufs != NULL);
-
-  cd->mptr = malloc(sizeof(*cd->mptr) * (nphase + 1));
-  assert(cd->mptr != NULL);
-  cd->mcol = malloc(sizeof(*cd->mcol) * (nphase + 1));
-  assert(cd->mcol != NULL);
-
   return cd;
+}
+
+buffers_t *new_bufs(comm_data_t *cd) {
+  buffers_t *bufs = malloc(sizeof(*bufs));
+  bufs->n = cd->n;
+  bufs->rank = cd->rank;
+  bufs->nlevel = cd->nlevel;
+  int npart = bufs->npart = cd->npart;
+  int nphase = bufs->nphase = cd->nphase;
+
+  bufs->recvcounts = malloc(sizeof(*bufs->recvcounts) * npart * (nphase + 1));
+  assert(bufs->recvcounts != NULL);
+  bufs->sendcounts = malloc(sizeof(*bufs->sendcounts) * npart * (nphase + 1));
+  assert(bufs->sendcounts != NULL);
+
+  bufs->rdispls = malloc(sizeof(*bufs->rdispls) * npart * (nphase + 1));
+  assert(bufs->rdispls != NULL);
+  bufs->sdispls = malloc(sizeof(*bufs->sdispls) * npart * (nphase + 1));
+  assert(bufs->sdispls != NULL);
+
+  bufs->rcount = malloc(sizeof(*bufs->rcount) * (nphase + 1));
+  assert(bufs->rcount != NULL);
+  bufs->mcount = malloc(sizeof(*bufs->mcount) * (nphase + 1));
+  assert(bufs->mcount != NULL);
+  bufs->scount = malloc(sizeof(*bufs->scount) * (nphase + 1));
+  assert(bufs->scount != NULL);
+
+  bufs->idx_rbufs = malloc(sizeof(*bufs->idx_rbufs) * (nphase + 1));
+  assert(bufs->idx_rbufs != NULL);
+  bufs->idx_mbufs = malloc(sizeof(*bufs->idx_mbufs) * (nphase + 1));
+  assert(bufs->idx_mbufs != NULL);
+  bufs->idx_sbufs = malloc(sizeof(*bufs->idx_sbufs) * (nphase + 1));
+  assert(bufs->idx_sbufs != NULL);
+
+  bufs->vv_rbufs = malloc(sizeof(*bufs->vv_rbufs) * (nphase + 1));
+  assert(bufs->vv_rbufs != NULL);
+  bufs->vv_mbufs = malloc(sizeof(*bufs->vv_mbufs) * (nphase + 1));
+  assert(bufs->vv_mbufs != NULL);
+  bufs->vv_sbufs = malloc(sizeof(*bufs->vv_sbufs) * (nphase + 1));
+  assert(bufs->vv_sbufs != NULL);
+
+  bufs->mptr = malloc(sizeof(*bufs->mptr) * (nphase + 1));
+  assert(bufs->mptr != NULL);
+  bufs->mcol = malloc(sizeof(*bufs->mcol) * (nphase + 1));
+  assert(bufs->mcol != NULL);
+
+  return bufs;
+}
+
+void del_bufs(buffers_t *bufs) {
+  free(bufs->recvcounts);
+  free(bufs->sendcounts);
+  free(bufs->rdispls);
+  free(bufs->sdispls);
+
+  free(bufs->rcount);
+  free(bufs->mcount);
+  free(bufs->scount);
+
+  free(bufs->idx_rbufs);
+  free(bufs->idx_mbufs);
+  free(bufs->idx_sbufs);
+  free(bufs->vv_rbufs);
+  free(bufs->vv_mbufs);
+  free(bufs->vv_sbufs);
+
+  free(bufs->idx_buf);
+  free(bufs->idx_sbuf);
+  free(bufs->vv_buf);
+  free(bufs->vv_sbuf);
+
+  for (int phase = 0; phase <= bufs->nphase; phase++) {
+    free(bufs->mptr[phase]);
+    free(bufs->mcol[phase]);
+    // free(cd->mval[phase]); // TODO(vatai): when allocate
+  }
+  free(bufs->mptr);
+  free(bufs->mcol);
+  // free(cd->mval);
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
 void del_comm_data(comm_data_t *cd) {
-  free(cd->recvcounts);
-  free(cd->sendcounts);
-  free(cd->rdispls);
-  free(cd->sdispls);
-
-  free(cd->rcount);
-  free(cd->mcount);
-  free(cd->scount);
-
-  free(cd->idx_rbufs);
-  free(cd->idx_mbufs);
-  free(cd->idx_sbufs);
-  free(cd->vv_rbufs);
-  free(cd->vv_mbufs);
-  free(cd->vv_sbufs);
-
-  free(cd->idx_buf);
-  free(cd->idx_sbuf);
-  free(cd->vv_buf);
-  free(cd->vv_sbuf);
-
-  for (int phase = 0; phase <= cd->nphase; phase++) {
-    free(cd->mptr[phase]);
-    free(cd->mcol[phase]);
-    // free(cd->mval[phase]); // TODO(vatai): when allocate
-  }
-  free(cd->mptr);
-  free(cd->mcol);
-  // free(cd->mval);
-
   del_crs(cd->graph);
   for (int phase = 0; phase < cd->nphase; phase++) {
     del_part(cd->plist[phase]);
@@ -258,16 +268,17 @@ static int *new_store_part(comm_data_t *cd) {
 }
 
 // TODO(vatai): group with comm_table
-static int get_ct_idx(comm_data_t *cd, int src_part, int tgt_part, int vv_idx) {
-  int from_part_to_part = cd->npart * src_part + tgt_part;
-  return cd->nlevel * cd->n * from_part_to_part + vv_idx;
+static int get_ct_idx(int src_part, int tgt_part, int vv_idx, int n, int npart,
+                      int nlevel) {
+  int from_part_to_part = npart * src_part + tgt_part;
+  return nlevel * n * from_part_to_part + vv_idx;
 }
 
 // TODO(vatai): group with comm_table
 static void init_comm_table(comm_data_t *cd, char *comm_table) {
   for (int i = 0; i < cd->n; i++) {
     int part = cd->plist[0]->part[i];
-    int idx = get_ct_idx(cd, part, part, i);
+    int idx = get_ct_idx(part, part, i, cd->n, cd->npart, cd->nlevel);
     comm_table[idx] = 1;
   }
 }
@@ -282,7 +293,8 @@ static void fill_comm_table_one_vertex(int curpart, int i, int level,
     int k_vvidx = cd->n * (level - 1) + g0->col[j];   // source vv index
     assert(store_part[k_vvidx] != -1);
     if (store_part[k_vvidx] != curpart) {
-      int idx = get_ct_idx(cd, store_part[k_vvidx], curpart, k_vvidx);
+      int idx = get_ct_idx(store_part[k_vvidx], curpart, k_vvidx, cd->n,
+                           cd->npart, cd->nlevel);
       comm_table[idx] = 1;
     }
   }
@@ -325,8 +337,9 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
 }
 
 // TODO(vatai): group with comm_table
-static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
-                             int *store_part) {
+static void phase_comm_table(int phase, comm_data_t *cd, buffers_t *bufs,
+                             char *comm_table, int *store_part) {
+  // TODO(vatai): first_run
   assert(cd->plist[phase] != NULL);
   int n = cd->n;
   int *ll = cd->llist[phase]->level;
@@ -336,10 +349,12 @@ static void phase_comm_table(int phase, comm_data_t *cd, char *comm_table,
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * level + i;
       int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
-      if (prevli < level && level <= ll[i] && (cd->idx_buf != NULL || store_part[i_vvidx] == -1)) {
+      if (prevli < level && level <= ll[i] &&
+          (bufs->idx_buf != NULL || store_part[i_vvidx] == -1)) {
         int curpart = cd->plist[phase]->part[i];
-        fill_comm_table_one_vertex(curpart, i, level, cd, comm_table, store_part);
-        if (cd->idx_buf == NULL)
+        fill_comm_table_one_vertex(curpart, i, level, cd, comm_table,
+                                   store_part);
+        if (bufs->idx_buf == NULL)
           store_part[i_vvidx] = curpart;
       }
     }
@@ -376,59 +391,61 @@ static void skirt_comm_table(comm_data_t *cd, char *comm_table,
 // Output: cd->
 // - scount[phase], rcount[phase],
 // - sendcount[phase, part], recvvount[phase, part]
-static void fill_rscounts(int phase, comm_data_t *cd, char *comm_table) {
-  cd->scount[phase] = 0;
-  cd->rcount[phase] = 0;
-  for (int p = 0; p < cd->npart; p++) {
-    cd->sendcounts[phase * cd->npart + p] = 0;
-    cd->recvcounts[phase * cd->npart + p] = 0;
+static void fill_rscounts(int phase, buffers_t *bufs, char *comm_table) {
+  int idx;
+  bufs->scount[phase] = 0;
+  bufs->rcount[phase] = 0;
+  for (int p = 0; p < bufs->npart; p++) {
+    bufs->sendcounts[phase * bufs->npart + p] = 0;
+    bufs->recvcounts[phase * bufs->npart + p] = 0;
   }
-  for (int p = 0; p < cd->npart; p++) {
-    for (int i = 0; i < cd->n * cd->nlevel; i++) {
-      int idx = get_ct_idx(cd, cd->rank, p, i);
+  for (int p = 0; p < bufs->npart; p++) {
+    for (int i = 0; i < bufs->n * bufs->nlevel; i++) {
+      idx = get_ct_idx(bufs->rank, p, i, bufs->n, bufs->npart, bufs->nlevel);
       if (comm_table[idx]) {
-        cd->scount[phase]++;
-        cd->sendcounts[phase * cd->npart + p]++;
+        bufs->scount[phase]++;
+        bufs->sendcounts[phase * bufs->npart + p]++;
       }
-      idx = get_ct_idx(cd, p, cd->rank, i);
+      idx = get_ct_idx(p, bufs->rank, i, bufs->n, bufs->npart, bufs->nlevel);
       if (comm_table[idx]) {
-        cd->rcount[phase]++;
-        cd->recvcounts[phase * cd->npart + p]++;
+        bufs->rcount[phase]++;
+        bufs->recvcounts[phase * bufs->npart + p]++;
       }
     }
   }
 }
 
-static void fill_displs(int phase, comm_data_t *cd) {
+static void fill_displs(int phase, buffers_t *bufs) {
   // Needs sendcounts and recvcounts filled for phase.
-  for (int p = 0; p < cd->npart; p++) {
-    int idx = phase * cd->npart + p;
+  for (int p = 0; p < bufs->npart; p++) {
+    int idx = phase * bufs->npart + p;
     if (p == 0) {
-      cd->sdispls[idx] = 0;
-      cd->rdispls[idx] = 0;
+      bufs->sdispls[idx] = 0;
+      bufs->rdispls[idx] = 0;
     } else {
-      cd->sdispls[idx] = cd->sdispls[idx - 1] + cd->sendcounts[idx - 1];
-      cd->rdispls[idx] = cd->rdispls[idx - 1] + cd->recvcounts[idx - 1];
+      bufs->sdispls[idx] = bufs->sdispls[idx - 1] + bufs->sendcounts[idx - 1];
+      bufs->rdispls[idx] = bufs->rdispls[idx - 1] + bufs->recvcounts[idx - 1];
     }
   }
 }
 
-static void fill_idx_rsbuf(int phase, char *comm_table, comm_data_t *cd) {
+static void fill_idx_rsbuf(int phase, char *comm_table, buffers_t *bufs) {
   // Needs idx buffers allocated.
+  int idx;
   int scounter = 0;
   int rcounter = 0;
-  for (int p = 0; p < cd->npart; p++) {
+  for (int p = 0; p < bufs->npart; p++) {
     // For all vv indices.
-    for (int i = 0; i < cd->nlevel * cd->n; ++i) {
+    for (int i = 0; i < bufs->nlevel * bufs->n; ++i) {
       // Here p is the destination (to) partition.
-      int sidx = get_ct_idx(cd, cd->rank, p, i);
-      if (comm_table[sidx]) {
-        cd->idx_sbufs[phase][scounter] = i;
+      idx = get_ct_idx(bufs->rank, p, i, bufs->n, bufs->npart, bufs->nlevel);
+      if (comm_table[idx]) {
+        bufs->idx_sbufs[phase][scounter] = i;
         scounter++;
       }
-      int ridx = get_ct_idx(cd, p, cd->rank, i);
-      if (comm_table[ridx]) {
-        cd->idx_rbufs[phase][rcounter] = i;
+      idx = get_ct_idx(p, bufs->rank, i, bufs->n, bufs->npart, bufs->nlevel);
+      if (comm_table[idx]) {
+        bufs->idx_rbufs[phase][rcounter] = i;
         rcounter++;
       }
     }
@@ -472,145 +489,145 @@ static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
 // Another "implicit parameter" which changes the behaviour is the
 // value of cd->idx_buf.  If cd->idx_buf == NULL, the idx_mbuf[] is
 // not filled, while if non-NULL it is filled.
-static void iterator(int cond(int, int, int, comm_data_t *cd),
-                     int phase, comm_data_t *cd, char *comm_table,
+static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
+                     comm_data_t *cd, buffers_t *bufs, char *comm_table,
                      int *store_part) {
   int prevlmin = get_prevlmin(phase, cd);
-  cd->mcount[phase] = 0;
+  bufs->mcount[phase] = 0;
   int max = max_or_nlevel(cd, phase);
   for (int level = prevlmin + 1; level <= max; level++) {
     for (int i = 0; i < cd->n; i++) {
       if (cond(phase, i, level, cd)) {
-        if (cd->idx_buf != NULL) {
-          cd->idx_mbufs[phase][cd->mcount[phase]] = level * cd->n + i;
+        if (bufs->idx_buf != NULL) {
+          bufs->idx_mbufs[phase][bufs->mcount[phase]] = level * cd->n + i;
         }
-        cd->mcount[phase]++;
+        bufs->mcount[phase]++;
       }
     }
   }
 }
 
-static void fill_bufsize_rscount_displs(comm_data_t *cd, char *comm_table,
-                                        int *store_part) {
-  cd->idx_buf = NULL;
+static void fill_bufsize_rscount_displs(comm_data_t *cd, buffers_t *bufs,
+                                        char *comm_table, int *store_part) {
+  bufs->idx_buf = NULL;
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
-    phase_comm_table(phase, cd, comm_table, store_part);
-    iterator(phase_cond, phase, cd, comm_table, store_part);
-    fill_rscounts(phase, cd, comm_table);
-    fill_displs(phase, cd);
+    phase_comm_table(phase, cd, bufs, comm_table, store_part);
+    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    fill_rscounts(phase, bufs, comm_table);
+    fill_displs(phase, bufs);
     clear_comm_table(cd, comm_table);
   }
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
-  fill_rscounts(cd->nphase, cd, comm_table);
-  fill_displs(cd->nphase, cd);
+  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  fill_rscounts(cd->nphase, bufs, comm_table);
+  fill_displs(cd->nphase, bufs);
 }
 
-static void alloc_bufs(comm_data_t *cd) {
-  cd->buf_count = 0;
-  cd->buf_scount = 0;
-  for (int phase = 0; phase <= cd->nphase; phase++) {
-    cd->buf_count += cd->rcount[phase];
-    cd->buf_count += cd->mcount[phase];
-    cd->buf_scount += cd->scount[phase];
+static void alloc_bufs(buffers_t *bufs) {
+  bufs->buf_count = 0;
+  bufs->buf_scount = 0;
+  for (int phase = 0; phase <= bufs->nphase; phase++) {
+    bufs->buf_count += bufs->rcount[phase];
+    bufs->buf_count += bufs->mcount[phase];
+    bufs->buf_scount += bufs->scount[phase];
   }
 
-  cd->idx_buf = malloc(sizeof(*cd->idx_buf) * cd->buf_count);
-  cd->idx_sbuf = malloc(sizeof(*cd->idx_sbuf) * cd->buf_scount);
-  cd->vv_buf = malloc(sizeof(*cd->vv_buf) * cd->buf_count);
-  cd->vv_sbuf = malloc(sizeof(*cd->vv_sbuf) * cd->buf_scount);
-  assert(cd->idx_buf != NULL);
-  assert(cd->idx_sbuf != NULL);
-  assert(cd->vv_buf != NULL);
-  assert(cd->vv_sbuf != NULL);
+  bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
+  bufs->idx_sbuf = malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
+  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
+  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
+  assert(bufs->idx_buf != NULL);
+  assert(bufs->idx_sbuf != NULL);
+  assert(bufs->vv_buf != NULL);
+  assert(bufs->vv_sbuf != NULL);
 
   long count = 0;
   long scount = 0;
-  for (int phase = 0; phase <= cd->nphase; phase++) {
-    cd->idx_rbufs[phase] = cd->idx_buf + count;
-    cd->vv_rbufs[phase] = cd->vv_buf + count;
-    count += cd->rcount[phase];
-    cd->idx_mbufs[phase] = cd->idx_buf + count;
-    cd->vv_mbufs[phase] = cd->vv_buf + count;
-    count += cd->mcount[phase];
+  for (int phase = 0; phase <= bufs->nphase; phase++) {
+    bufs->idx_rbufs[phase] = bufs->idx_buf + count;
+    bufs->vv_rbufs[phase] = bufs->vv_buf + count;
+    count += bufs->rcount[phase];
+    bufs->idx_mbufs[phase] = bufs->idx_buf + count;
+    bufs->vv_mbufs[phase] = bufs->vv_buf + count;
+    count += bufs->mcount[phase];
 
-    cd->idx_sbufs[phase] = cd->idx_sbuf + scount;
-    cd->vv_sbufs[phase] = cd->vv_sbuf + scount;
-    scount += cd->scount[phase];
+    bufs->idx_sbufs[phase] = bufs->idx_sbuf + scount;
+    bufs->vv_sbufs[phase] = bufs->vv_sbuf + scount;
+    scount += bufs->scount[phase];
   }
 }
 
-static void fill_mptr(comm_data_t *cd, int phase){
+static void fill_mptr(comm_data_t *cd, buffers_t* bufs, int phase){
   // TODO(vatai): Put all mptr[phase] into a single array.
   int *ptr = cd->graph->ptr;
-  int mcount = cd->mcount[phase];
+  int mcount = bufs->mcount[phase];
   long *mptr = malloc(sizeof(*mptr) * (mcount + 1));
-  long *idx_mbuf = cd->idx_mbufs[phase];
+  long *idx_mbuf = bufs->idx_mbufs[phase];
   assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < mcount; mi++) {
-    assert(idx_mbuf[mi] == cd->idx_mbufs[phase][mi]);
+    assert(idx_mbuf[mi] == bufs->idx_mbufs[phase][mi]);
     int i = idx_mbuf[mi] % cd->n;
     mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
   }
-  cd->mptr[phase] = mptr;
+  bufs->mptr[phase] = mptr;
 }
 
-static void fill_mcol(comm_data_t *cd, int phase) {
+static void fill_mcol(comm_data_t *cd, buffers_t *bufs, int phase) {
   int *ptr = cd->graph->ptr;
   int *col = cd->graph->col;
-  long *mptr = cd->mptr[phase];
-  int mcount = cd->mcount[phase];
+  long *mptr = bufs->mptr[phase];
+  int mcount = bufs->mcount[phase];
 
   long *mcol = malloc(sizeof(*mcol) * mptr[mcount]);
   assert(mcol != NULL);
-  for (int mi = 0; mi < cd->mcount[phase]; mi++) {
-    long idx = cd->idx_mbufs[phase][mi];
+  for (int mi = 0; mi < bufs->mcount[phase]; mi++) {
+    long idx = bufs->idx_mbufs[phase][mi];
     long i = idx % cd->n;
     long level = idx / cd->n;
 
     assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
     for (int j = ptr[i]; j < ptr[i + 1]; j++) {
       long target = col[j] + cd->n * (level - 1);
-      int idx = find_idx(cd->idx_buf, cd->buf_count, target);
+      int idx = find_idx(bufs->idx_buf, bufs->buf_count, target);
       mcol[j - ptr[i] + mptr[mi]] = idx;
     }
   }
-  cd->mcol[phase] = mcol;
+  bufs->mcol[phase] = mcol;
 }
 
-static void fill_bufs(comm_data_t *cd, char *comm_table, int *store_part) {
+static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table, int *store_part) {
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
-    phase_comm_table(phase, cd, comm_table, store_part);
-    iterator(phase_cond, phase, cd, comm_table, store_part);
-    fill_idx_rsbuf(phase, comm_table, cd);
+    phase_comm_table(phase, cd, bufs, comm_table, store_part);
+    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    fill_idx_rsbuf(phase, comm_table, bufs);
     clear_comm_table(cd, comm_table);
-    fill_mptr(cd, phase);
-    fill_mcol(cd, phase);
+    fill_mptr(cd, bufs, phase);
+    fill_mcol(cd, bufs, phase);
   }
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, comm_table, store_part);
-  fill_idx_rsbuf(cd->nphase, comm_table, cd);
-  fill_mptr(cd, cd->nphase);
-  fill_mcol(cd, cd->nphase);
+  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  fill_idx_rsbuf(cd->nphase, comm_table, bufs);
+  fill_mptr(cd, bufs, cd->nphase);
+  fill_mcol(cd, bufs, cd->nphase);
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
   // data from idx_buf to sbuf.
-  for (int i = 0; i < cd->buf_scount; i++) {
-    int vv_idx = cd->idx_sbuf[i];
-    int buf_idx = find_idx(cd->idx_buf, cd->buf_count, vv_idx);
-    cd->idx_sbuf[i] = buf_idx;
+  for (int i = 0; i < bufs->buf_scount; i++) {
+    int vv_idx = bufs->idx_sbuf[i];
+    int buf_idx = find_idx(bufs->idx_buf, bufs->buf_count, vv_idx);
+    bufs->idx_sbuf[i] = buf_idx;
   }
 }
 
 /*
  * Allocate and fill `comm_data_t cd`.
  */
-void mpi_prep_mpk(comm_data_t *cd) {
+void mpi_prep_mpk(comm_data_t *cd, buffers_t *bufs) {
   assert(cd != NULL);
   printf("preparing mpi buffers for communication...");
 
@@ -618,13 +635,13 @@ void mpi_prep_mpk(comm_data_t *cd) {
   int *store_part = new_store_part(cd);
 
   // Fill stage one data
-  fill_bufsize_rscount_displs(cd, comm_table, store_part);
+  fill_bufsize_rscount_displs(cd, bufs, comm_table, store_part);
 
   // Alloc of stage two to memory
-  alloc_bufs(cd);
+  alloc_bufs(bufs);
 
   // Fill stage two data
-  fill_bufs(cd, comm_table, store_part);
+  fill_bufs(cd, bufs, comm_table, store_part);
 
   free(comm_table);
   free(store_part);
