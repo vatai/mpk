@@ -382,13 +382,9 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, buffers_t *bufs,
   fill_displs(cd->nphase, bufs);
 }
 
-buffers_t *new_bufs(comm_data_t *cd) {
-  buffers_t *bufs = malloc(sizeof(*bufs));
-  bufs->n = cd->n;
-  bufs->rank = cd->rank;
-  bufs->nlevel = cd->nlevel;
-  int npart = bufs->npart = cd->npart;
-  int nphase = bufs->nphase = cd->nphase;
+void alloc_bufs0(buffers_t *bufs) {
+  int npart = bufs->npart;
+  int nphase = bufs->nphase;
 
   bufs->recvcounts = malloc(sizeof(*bufs->recvcounts) * npart * (nphase + 1));
   assert(bufs->recvcounts != NULL);
@@ -425,7 +421,16 @@ buffers_t *new_bufs(comm_data_t *cd) {
   assert(bufs->mptr != NULL);
   bufs->mcol = malloc(sizeof(*bufs->mcol) * (nphase + 1));
   assert(bufs->mcol != NULL);
+}
 
+buffers_t *new_bufs(comm_data_t *cd) {
+  buffers_t *bufs = malloc(sizeof(*bufs));
+  bufs->n = cd->n;
+  bufs->npart = cd->npart;
+  bufs->nlevel = cd->nlevel;
+  bufs->nphase = cd->nphase;
+  bufs->rank = cd->rank;
+  alloc_bufs0(bufs);
   return bufs;
 }
 
@@ -482,3 +487,52 @@ void fill_buffers(comm_data_t *cd, buffers_t *bufs) {
   free(store_part);
   printf(" done\n");
 }
+
+void write_buffers(buffers_t *bufs, char *dir) {
+  int count;
+  char fname[1024];
+  sprintf(fname, "%s/rank%d.bufs", dir, bufs->rank);
+  FILE *file = fopen(fname, "w");
+
+  count = 1;
+  fwrite(&bufs->n, sizeof(bufs->n), count, file);
+  fwrite(&bufs->npart, sizeof(bufs->npart), count, file);
+  fwrite(&bufs->nlevel, sizeof(bufs->nlevel), count, file);
+  fwrite(&bufs->nphase, sizeof(bufs->nphase), count, file);
+  fwrite(&bufs->rank, sizeof(bufs->rank), count, file);
+  count = bufs->npart * (bufs->nphase + 1);
+  fwrite(bufs->recvcounts, sizeof(*bufs->recvcounts), count, file);
+  fwrite(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
+  fwrite(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
+  fwrite(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
+  count = bufs->nphase + 1;
+
+  fclose(file);
+}
+
+buffers_t *read_buffers(char *dir) {
+  int count;
+  buffers_t *bufs = malloc(sizeof(*bufs));
+
+  char fname[1024];
+  sprintf(fname, "%s/rank%d.bufs", dir, bufs->rank);
+  FILE *file = fopen(fname, "w");
+
+  count = 1;
+  fread(&bufs->n, sizeof(bufs->n), count, file);
+  fread(&bufs->npart, sizeof(bufs->npart), count, file);
+  fread(&bufs->nlevel, sizeof(bufs->nlevel), count, file);
+  fread(&bufs->nphase, sizeof(bufs->nphase), count, file);
+  fread(&bufs->rank, sizeof(bufs->rank), count, file);
+
+  alloc_bufs0(bufs);
+
+  count = bufs->npart * (bufs->nphase + 1);
+  fread(bufs->recvcounts, sizeof(*bufs->recvcounts), count, file);
+  fread(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
+  fread(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
+  fread(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
+  count = bufs->nphase + 1;
+  return bufs;
+}
+
