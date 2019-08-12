@@ -164,26 +164,8 @@ int main(int argc, char* argv[]) {
   buffers_t *bufs = new_bufs(cd);
   fill_buffers(cd, bufs);
 
-  int n = cd->n;
-  int nlevel = cd->nlevel;
-
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
+  double *vv = (double*) malloc(sizeof(double) * cd->n * (cd->nlevel+1));
   assert(vv != NULL);
-
-  int i;
-  for (i = 0; i < n; i++)
-    vv[i] = 1.0;
-  for (i = 0; i < n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
-  double min;
-
-  for (i=0; i< n; i++)
-    if (cd->plist[0]->part[i] == cd->rank)
-      vv[i] = 1.0;
-    else
-      vv[i] = -100.0;
-  for (i=0; i< n * nlevel; i++)
-    vv[n + i] = -1.0;		/* dummy */
 
   // NEW CODE
   for (int i = 0; i < bufs->buf_count; i++) {
@@ -195,30 +177,16 @@ int main(int argc, char* argv[]) {
 
   mpi_exec_mpk(bufs);
 
-  // Copy from cd to vv[]
+  // Copy from buf to vv[]
   for (int i = 0; i < bufs->buf_count; i++) {
     vv[bufs->idx_buf[i]] = bufs->vv_buf[i];
   }
 
-  char fname[1024];
-  sprintf(fname, "%s/vv_after_mpi_exec_rank%d.log", argv[1], cd->rank);
-  FILE *vv_log_file = fopen(fname, "w");
-  int ns = sqrt(n);
-  for (int level = 0; level < nlevel + 1; level++) {
-    fprintf(vv_log_file, "> level(%3d): \n", level);
-    for (int i = 0; i < n; i++) {
-      if (i % ns == 0) {
-        fprintf(vv_log_file, "\n");
-      }
-      fprintf(vv_log_file, " %8.3f", vv[level * n + i]);
-    }
-    fprintf(vv_log_file, "\n\n");
-  }
-  fclose(vv_log_file);
-
   int result = check_results(bufs, vv);
+
   del_comm_data(cd);
   del_bufs(bufs);
+
   free(vv);
   MPI_Finalize();
   return result;
