@@ -163,6 +163,7 @@ int main(int argc, char* argv[]) {
   comm_data_t *cd = new_comm_data(argv[1]);
   buffers_t *bufs = new_bufs(cd);
   fill_buffers(cd, bufs);
+  alloc_val_bufs(bufs);
 
   double *vv = (double*) malloc(sizeof(double) * cd->n * (cd->nlevel+1));
   assert(vv != NULL);

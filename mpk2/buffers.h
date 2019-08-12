@@ -34,14 +34,15 @@ typedef struct buffers_t {
   long *idx_sbuf;
   long *mptr_buf;
   long *mcol_buf;
-  // TODO(vatai): don't forget, 6 variables to read/write
 
-  double *vv_buf; // TODO(vatai): separate use
-  double *vv_sbuf; // TODO(vatai): separate use
-  double **mval; // TODO(vatai): separate use
+  double *vv_buf;
+  double *vv_sbuf;
+  double *mval_buf;
 } buffers_t;
 
 buffers_t *new_bufs(comm_data_t *);
+
+void alloc_val_bufs(buffers_t *);
 
 void del_bufs(buffers_t *);
 

@@ -278,12 +278,6 @@ static void alloc_bufs(buffers_t *bufs) {
   assert(bufs->idx_sbuf != NULL);
   assert(bufs->mptr_buf != NULL);
 
-  // TODO(vatai): separate use
-  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
-  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
-  assert(bufs->vv_buf != NULL);
-  assert(bufs->vv_sbuf != NULL);
-
   long count = 0;
   long scount = 0;
   long mptrcount = 0;
@@ -436,6 +430,11 @@ void alloc_bufs0(buffers_t *bufs) {
   assert(bufs->mptr_offsets != NULL);
   bufs->mcol_offsets = malloc(sizeof(*bufs->mcol_offsets) * (nphase + 1));
   assert(bufs->mcol_offsets != NULL);
+
+  // use alloc_val_bufs for these
+  bufs->vv_buf = NULL;
+  bufs->vv_sbuf = NULL;
+  bufs->mval_buf = NULL;
 }
 
 buffers_t *new_bufs(comm_data_t *cd) {
@@ -447,6 +446,14 @@ buffers_t *new_bufs(comm_data_t *cd) {
   bufs->rank = cd->rank;
   alloc_bufs0(bufs);
   return bufs;
+}
+
+void alloc_val_bufs(buffers_t *bufs) {
+  // TODO(vatai): eventually mval
+  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
+  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
+  assert(bufs->vv_buf != NULL);
+  assert(bufs->vv_sbuf != NULL);
 }
 
 void del_bufs(buffers_t *bufs) {
@@ -465,16 +472,19 @@ void del_bufs(buffers_t *bufs) {
 
   free(bufs->idx_buf);
   free(bufs->idx_sbuf);
-  free(bufs->vv_buf);
-  free(bufs->vv_sbuf);
 
   free(bufs->mptr_buf);
   free(bufs->mcol_buf);
-  // free(cd->mval_buf); // TODO(vatai): separate when allocate
 
   free(bufs->mptr_offsets);
   free(bufs->mcol_offsets);
-  // free(cd->mval_offsets); ?? or same as mcol?
+
+  if (bufs->vv_buf != NULL)
+    free(bufs->vv_buf);
+  if (bufs->vv_sbuf != NULL)
+    free(bufs->vv_sbuf);
+  if (bufs->mval_buf != NULL)
+    free(bufs->mval_buf);
   free(bufs);
 }
 
