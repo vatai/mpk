@@ -497,12 +497,24 @@ void write_buffers(buffers_t *bufs, char *dir) {
   fwrite(&bufs->nlevel, sizeof(bufs->nlevel), count, file);
   fwrite(&bufs->nphase, sizeof(bufs->nphase), count, file);
   fwrite(&bufs->rank, sizeof(bufs->rank), count, file);
+  fwrite(&bufs->buf_count, sizeof(bufs->buf_count), count, file);
+  fwrite(&bufs->buf_scount, sizeof(bufs->buf_scount), count, file);
   count = bufs->npart * (bufs->nphase + 1);
   fwrite(bufs->recvcounts, sizeof(*bufs->recvcounts), count, file);
   fwrite(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
   fwrite(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
   fwrite(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
   count = bufs->nphase + 1;
+  fwrite(bufs->rcount, sizeof(*bufs->rcount), count, file);
+  fwrite(bufs->mcount, sizeof(*bufs->mcount), count, file);
+  fwrite(bufs->scount, sizeof(*bufs->scount), count, file);
+  fwrite(bufs->rbuf_offsets, sizeof(*bufs->rbuf_offsets), count, file);
+  fwrite(bufs->mbuf_offsets, sizeof(*bufs->mbuf_offsets), count, file);
+  fwrite(bufs->sbuf_offsets, sizeof(*bufs->sbuf_offsets), count, file);
+  count = bufs->buf_count;
+  fwrite(bufs->idx_buf, sizeof(*bufs->idx_buf), count, file);
+  count = bufs->buf_scount;
+  fwrite(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), count, file);
 
   fclose(file);
 }
@@ -521,6 +533,8 @@ buffers_t *read_buffers(char *dir) {
   fread(&bufs->nlevel, sizeof(bufs->nlevel), count, file);
   fread(&bufs->nphase, sizeof(bufs->nphase), count, file);
   fread(&bufs->rank, sizeof(bufs->rank), count, file);
+  fread(&bufs->buf_count, sizeof(bufs->buf_count), count, file);
+  fread(&bufs->buf_scount, sizeof(bufs->buf_scount), count, file);
 
   alloc_bufs0(bufs);
 
@@ -530,6 +544,18 @@ buffers_t *read_buffers(char *dir) {
   fread(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
   fread(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
   count = bufs->nphase + 1;
+  fread(bufs->rcount, sizeof(*bufs->rcount), count, file);
+  fread(bufs->mcount, sizeof(*bufs->mcount), count, file);
+  fread(bufs->scount, sizeof(*bufs->scount), count, file);
+  fread(bufs->rbuf_offsets, sizeof(*bufs->rbuf_offsets), count, file);
+  fread(bufs->mbuf_offsets, sizeof(*bufs->mbuf_offsets), count, file);
+  fread(bufs->sbuf_offsets, sizeof(*bufs->sbuf_offsets), count, file);
+  count = bufs->buf_count;
+  fread(bufs->idx_buf, sizeof(*bufs->idx_buf), count, file);
+  count = bufs->buf_scount;
+  fread(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), count, file);
+
+  fclose(file);
   return bufs;
 }
 
