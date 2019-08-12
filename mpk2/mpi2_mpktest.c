@@ -7,6 +7,7 @@
 #include <mpi.h>
 
 #include "comm_data.h"
+#include "buffers.h"
 
 #define DETAIL 0
 #define ONEVEC 0

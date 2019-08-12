@@ -6,6 +6,7 @@
 #include <mpi.h>
 
 #include "comm_data.h"
+#include "buffers.h"
 
 static int find_idx(long *ptr, int size, long target) {
   for (int i = 0; i < size; i++)
