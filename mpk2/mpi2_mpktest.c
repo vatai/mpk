@@ -126,6 +126,8 @@ static void recv_copy_results(buffers_t *bufs, double *vv) {
              MPI_STATUS_IGNORE);
     for (int i = 0; i < buf_count; i++)
       vv[idx_buf[i]] = vv_buf[i];
+    free(idx_buf);
+    free(vv_buf);
   }
 }
 
@@ -160,17 +162,15 @@ int main(int argc, char* argv[]) {
   // Init MPI
   MPI_Init(&argc, &argv);
 
-  mpk_t *mg = read_mpk(argv[1]);
-  int n = mg->n;
-  int nlevel = mg->nlevel;
-
-  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
-  assert(vv != NULL);
-
-  prep_mpk(mg, vv);
   comm_data_t *cd = new_comm_data(argv[1]);
   buffers_t *bufs = new_bufs(cd);
   mpi_prep_mpk(cd, bufs);
+
+  int n = cd->n;
+  int nlevel = cd->nlevel;
+
+  double *vv = (double*) malloc(sizeof(double) * n * (nlevel+1));
+  assert(vv != NULL);
 
   int i;
   for (i = 0; i < n; i++)
@@ -222,7 +222,6 @@ int main(int argc, char* argv[]) {
   del_comm_data(cd);
   del_bufs(bufs);
   free(vv);
-  // TODO(vatai): del_mpk(mg); // todos added to lib.h and readmpk.c
   MPI_Finalize();
   return result;
 }

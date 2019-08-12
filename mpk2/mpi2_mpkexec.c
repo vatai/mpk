@@ -6,7 +6,6 @@
 #include <mpi.h>
 #include <math.h>
 
-#include "comm_data.h"
 #include "buffers.h"
 
 void log_tlist(buffers_t *bufs, int phase, FILE *log_file) {

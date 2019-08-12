@@ -226,6 +226,7 @@ void del_bufs(buffers_t *bufs) {
   free(bufs->mptr);
   free(bufs->mcol);
   // free(cd->mval);
+  free(bufs);
 }
 
 // TODO(vatai): move to mpi2_comm_data.c
@@ -237,7 +238,10 @@ void del_comm_data(comm_data_t *cd) {
   }
   if (cd->nphase == 0) {
     del_part(cd->plist[0]);
+  } else {
+    free(cd->llist);
   }
+  free(cd->plist);
   del_skirt(cd->skirt);
   free(cd);
 }
