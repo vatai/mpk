@@ -21,13 +21,10 @@ typedef struct buffers_t {
   int *mcount;
   int *scount;
 
-  // {r,m,s}count[phase]
-  long **idx_rbufs;
-  long **idx_mbufs;
-  long **idx_sbufs;
-  double **vv_rbufs;
-  double **vv_mbufs;
-  double **vv_sbufs;
+  // nphase + 1
+  int *rbuf_offsets;
+  int *mbuf_offsets;
+  int *sbuf_offsets;
 
   int buf_count;
   int buf_scount;

@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
     bufs->vv_buf[i] = -42;
   }
   for (int i = 0; i < bufs->rcount[0]; i++) {
-    bufs->vv_rbufs[0][i] = 1.0;
+    bufs->vv_buf[i] = 1.0;
   }
 
   mpi_exec_mpk(bufs);

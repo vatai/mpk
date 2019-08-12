@@ -11,7 +11,7 @@
 void log_tlist(buffers_t *bufs, int phase, FILE *log_file) {
   int n = bufs->n;
   int mcount = bufs->mcount[phase];
-  long *idx_mbuf = bufs->idx_mbufs[phase];
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   for (int i = 0; i < mcount; i++) {
     int idx = idx_mbuf[i];
     int level = idx / n;
@@ -54,30 +54,33 @@ static void do_comm(int phase, buffers_t *bufs, FILE *log_file) {
           phase);
   log_tlist(bufs, phase, log_file);
 
+  int scount = bufs->scount[phase];
+  long *idx_rbuf = bufs->idx_buf + bufs->rbuf_offsets[phase];
+  long *idx_sbuf = bufs->idx_sbuf + bufs->sbuf_offsets[phase];
+  double *vv_rbuf = bufs->vv_buf + bufs->rbuf_offsets[phase];
+  double *vv_sbuf = bufs->vv_sbuf + bufs->sbuf_offsets[phase];
   // Copy data to send buffers.
-  for (int i = 0; i < bufs->scount[phase]; i++) {
-    int buf_idx = bufs->idx_sbufs[phase][i];
-    bufs->vv_sbufs[phase][i] = bufs->vv_buf[buf_idx];
+  for (int i = 0; i < scount; i++) {
+    int buf_idx = idx_sbuf[i];
+    vv_sbuf[i] = bufs->vv_buf[buf_idx];
   }
 
   // Log send buffers.
-  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n", bufs->rank,
-          phase);
-  log_cd(bufs->vv_sbufs[phase], bufs->idx_sbufs[phase],
-         bufs->sendcounts + npart * phase, bufs->sdispls + npart * phase, bufs->n,
-         log_file);
+  fprintf(log_file, "\n\n<<<< SEND: part/rank %d : phase %d >>>>\n\n",
+          bufs->rank, phase);
+  log_cd(vv_sbuf, idx_sbuf, bufs->sendcounts + npart * phase,
+         bufs->sdispls + npart * phase, bufs->n, log_file);
 
-  MPI_Alltoallv(bufs->vv_sbufs[phase], bufs->sendcounts + npart * phase,
-                bufs->sdispls + npart * phase, MPI_DOUBLE, bufs->vv_rbufs[phase],
+  MPI_Alltoallv(vv_sbuf, bufs->sendcounts + npart * phase,
+                bufs->sdispls + npart * phase, MPI_DOUBLE, vv_rbuf,
                 bufs->recvcounts + npart * phase, bufs->rdispls + npart * phase,
                 MPI_DOUBLE, MPI_COMM_WORLD);
 
   // Log receive buffers.
-  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n", bufs->rank,
-          phase);
-  log_cd(bufs->vv_rbufs[phase], bufs->idx_rbufs[phase],
-         bufs->recvcounts + npart * phase, bufs->rdispls + npart * phase, bufs->n,
-         log_file);
+  fprintf(log_file, "\n\n>>>> RECV: part/rank %d : phase %d <<<<\n\n",
+          bufs->rank, phase);
+  log_cd(vv_rbuf, idx_rbuf, bufs->recvcounts + npart * phase,
+         bufs->rdispls + npart * phase, bufs->n, log_file);
 }
 
 static void do_task(buffers_t *bufs, int phase) {
@@ -86,10 +89,10 @@ static void do_task(buffers_t *bufs, int phase) {
 
   int n = bufs->n;
   int mcount = bufs->mcount[phase];
-  long *idx_mbuf = bufs->idx_mbufs[phase];
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   long *mptr = bufs->mptr[phase];
   long *mcol = bufs->mcol[phase];
-  double *vv_mbuf = bufs->vv_mbufs[phase];
+  double *vv_mbuf = bufs->vv_buf + bufs->mbuf_offsets[phase];
 
   for (int mi = 0; mi < mcount; mi++) {
     long idx = idx_mbuf[mi];

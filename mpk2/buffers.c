@@ -184,18 +184,20 @@ static void fill_idx_rsbuf(int phase, char *comm_table, buffers_t *bufs) {
   int idx;
   int scounter = 0;
   int rcounter = 0;
+  long *idx_rbuf = bufs->idx_buf + bufs->rbuf_offsets[phase];
+  long *idx_sbuf = bufs->idx_sbuf + bufs->sbuf_offsets[phase];
   for (int p = 0; p < bufs->npart; p++) {
     // For all vv indices.
     for (int i = 0; i < bufs->nlevel * bufs->n; ++i) {
       // Here p is the destination (to) partition.
       idx = get_ct_idx(bufs->rank, p, i, bufs->n, bufs->npart, bufs->nlevel);
       if (comm_table[idx]) {
-        bufs->idx_sbufs[phase][scounter] = i;
+        idx_sbuf[scounter] = i;
         scounter++;
       }
       idx = get_ct_idx(p, bufs->rank, i, bufs->n, bufs->npart, bufs->nlevel);
       if (comm_table[idx]) {
-        bufs->idx_rbufs[phase][rcounter] = i;
+        idx_rbuf[rcounter] = i;
         rcounter++;
       }
     }
@@ -245,11 +247,12 @@ static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
   int prevlmin = get_prevlmin(phase, cd);
   bufs->mcount[phase] = 0;
   int max = max_or_nlevel(cd, phase);
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   for (int level = prevlmin + 1; level <= max; level++) {
     for (int i = 0; i < cd->n; i++) {
       if (cond(phase, i, level, cd)) {
         if (bufs->idx_buf != NULL) {
-          bufs->idx_mbufs[phase][bufs->mcount[phase]] = level * cd->n + i;
+          idx_mbuf[bufs->mcount[phase]] = level * cd->n + i;
         }
         bufs->mcount[phase]++;
       }
@@ -278,15 +281,13 @@ static void alloc_bufs(buffers_t *bufs) {
   long count = 0;
   long scount = 0;
   for (int phase = 0; phase <= bufs->nphase; phase++) {
-    bufs->idx_rbufs[phase] = bufs->idx_buf + count;
-    bufs->vv_rbufs[phase] = bufs->vv_buf + count;
+    bufs->rbuf_offsets[phase] = count;
     count += bufs->rcount[phase];
-    bufs->idx_mbufs[phase] = bufs->idx_buf + count;
-    bufs->vv_mbufs[phase] = bufs->vv_buf + count;
+
+    bufs->mbuf_offsets[phase] = count;
     count += bufs->mcount[phase];
 
-    bufs->idx_sbufs[phase] = bufs->idx_sbuf + scount;
-    bufs->vv_sbufs[phase] = bufs->vv_sbuf + scount;
+    bufs->sbuf_offsets[phase] = scount;
     scount += bufs->scount[phase];
   }
 }
@@ -296,11 +297,10 @@ static void fill_mptr(comm_data_t *cd, buffers_t *bufs, int phase) {
   int *ptr = cd->graph->ptr;
   int mcount = bufs->mcount[phase];
   long *mptr = malloc(sizeof(*mptr) * (mcount + 1));
-  long *idx_mbuf = bufs->idx_mbufs[phase];
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   assert(mptr != NULL);
   mptr[0] = 0;
   for (int mi = 0; mi < mcount; mi++) {
-    assert(idx_mbuf[mi] == bufs->idx_mbufs[phase][mi]);
     int i = idx_mbuf[mi] % cd->n;
     mptr[mi + 1] = mptr[mi] + ptr[i + 1] - ptr[i];
   }
@@ -319,11 +319,11 @@ static void fill_mcol(comm_data_t *cd, buffers_t *bufs, int phase) {
   int *col = cd->graph->col;
   long *mptr = bufs->mptr[phase];
   int mcount = bufs->mcount[phase];
-
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   long *mcol = malloc(sizeof(*mcol) * mptr[mcount]);
   assert(mcol != NULL);
-  for (int mi = 0; mi < bufs->mcount[phase]; mi++) {
-    long idx = bufs->idx_mbufs[phase][mi];
+  for (int mi = 0; mi < mcount; mi++) {
+    long idx = idx_mbuf[mi];
     long i = idx % cd->n;
     long level = idx / cd->n;
 
@@ -403,19 +403,19 @@ void alloc_bufs0(buffers_t *bufs) {
   bufs->scount = malloc(sizeof(*bufs->scount) * (nphase + 1));
   assert(bufs->scount != NULL);
 
-  bufs->idx_rbufs = malloc(sizeof(*bufs->idx_rbufs) * (nphase + 1));
-  assert(bufs->idx_rbufs != NULL);
-  bufs->idx_mbufs = malloc(sizeof(*bufs->idx_mbufs) * (nphase + 1));
-  assert(bufs->idx_mbufs != NULL);
-  bufs->idx_sbufs = malloc(sizeof(*bufs->idx_sbufs) * (nphase + 1));
-  assert(bufs->idx_sbufs != NULL);
+  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
+  assert(bufs->rbuf_offsets != NULL);
+  bufs->mbuf_offsets = malloc(sizeof(*bufs->mbuf_offsets) * (nphase + 1));
+  assert(bufs->mbuf_offsets != NULL);
+  bufs->sbuf_offsets = malloc(sizeof(*bufs->sbuf_offsets) * (nphase + 1));
+  assert(bufs->sbuf_offsets != NULL);
 
-  bufs->vv_rbufs = malloc(sizeof(*bufs->vv_rbufs) * (nphase + 1));
-  assert(bufs->vv_rbufs != NULL);
-  bufs->vv_mbufs = malloc(sizeof(*bufs->vv_mbufs) * (nphase + 1));
-  assert(bufs->vv_mbufs != NULL);
-  bufs->vv_sbufs = malloc(sizeof(*bufs->vv_sbufs) * (nphase + 1));
-  assert(bufs->vv_sbufs != NULL);
+  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
+  assert(bufs->rbuf_offsets != NULL);
+  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
+  assert(bufs->rbuf_offsets != NULL);
+  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
+  assert(bufs->rbuf_offsets != NULL);
 
   bufs->mptr = malloc(sizeof(*bufs->mptr) * (nphase + 1));
   assert(bufs->mptr != NULL);
@@ -444,12 +444,9 @@ void del_bufs(buffers_t *bufs) {
   free(bufs->mcount);
   free(bufs->scount);
 
-  free(bufs->idx_rbufs);
-  free(bufs->idx_mbufs);
-  free(bufs->idx_sbufs);
-  free(bufs->vv_rbufs);
-  free(bufs->vv_mbufs);
-  free(bufs->vv_sbufs);
+  free(bufs->rbuf_offsets);
+  free(bufs->mbuf_offsets);
+  free(bufs->sbuf_offsets);
 
   free(bufs->idx_buf);
   free(bufs->idx_sbuf);
