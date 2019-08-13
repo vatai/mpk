@@ -2,11 +2,13 @@
 #
 # Simple script to build and test all programs.
 #
-NAME=mesh5p
-SIZE=10
-NPART=2
-NLEVEL=20
-NPHASE=6
+# Set these variables to modify them
+NAME=${NAME:=mesh5p}
+SIZE=${SIZE:=10}
+NPART=${NPART:=2}
+NLEVEL=${NLEVEL:=20}
+NPHASE=${NPHASE:=6}
+
 DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 
 cd "$(dirname "$0")"
