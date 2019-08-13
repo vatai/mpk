@@ -7,7 +7,6 @@
 *.co
 *~
 *.o
-.*
 
 input/*/
 *.tar.gz
