@@ -126,7 +126,7 @@ void collect_results(buffers_t *bufs, double *vv) {
       MPI_Recv(&buf_count, 1, MPI_INT, part, 0, MPI_COMM_WORLD,
                MPI_STATUS_IGNORE);
       long *idx_buf = malloc(sizeof(*idx_buf) * buf_count);
-      double *vv_buf = malloc(sizeof(*idx_buf) * buf_count);
+      double *vv_buf = malloc(sizeof(*vv_buf) * buf_count);
       MPI_Recv(idx_buf, buf_count, MPI_LONG, part, 0, MPI_COMM_WORLD,
                MPI_STATUS_IGNORE);
       MPI_Recv(vv_buf, buf_count, MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
