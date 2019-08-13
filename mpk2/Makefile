@@ -5,7 +5,6 @@ LDLIBS = -fopenmp -lm
 default : gen gen2 gen2mtx comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest mpkrun mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
 
 gen : gen.c
-	gcc -O3 -o gen gen.c
 
 lib.o : lib.c lib.h
 comp.o : comp.c lib.h

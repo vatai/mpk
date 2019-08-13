@@ -17,22 +17,18 @@ cd "$(dirname "$0")"
 rm *.log
 
 # Force build all.
-make || exit -1
+make mpi2_mpkexecbufs_val || exit -1
 
 # Delete input files.
-echo rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 
 # Check `gen`, `driver` and `mpktest`
 # usage: ./gen type size ghead
 # usage: ./driver ghead npart nlevel nphase
-echo test_builds.sh: generating data
 # Old ./gen needs to be run for ./driver (metis doesn't support loops).
 ./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE || exit 1
 # Our program supports loops, so overwrite the g0 file.
 ./gen2 m5p $SIZE $NAME$SIZE && cp -f $NAME$SIZE.g0 $DIRNAME/g0 || exit 2
-
-echo $0: testing OpenMP version
 
 # POST PROCESSING
 #
@@ -46,11 +42,10 @@ done
 # OpenMP version
 # ./mpktest $DIRNAME || exit 3
 
-echo $0: testing MPI version
-# MPI version
+# MPI2 version: read/write buffers
 mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME || exit 4
-mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
-
+# mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
+mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 4
 # ./mpkrun $DIRNAME || exit 6
 
 # python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
