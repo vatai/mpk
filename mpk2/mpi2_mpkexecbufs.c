@@ -36,8 +36,9 @@ int main(int argc, char *argv[]) {
     vv[bufs->idx_buf[i]] = bufs->vv_buf[i];
   }
 
-  int result = check_results(bufs, vv);
+  collect_results(bufs, vv);
 
+  int result = check_results(bufs, vv);
   del_bufs(bufs);
 
   free(vv);
