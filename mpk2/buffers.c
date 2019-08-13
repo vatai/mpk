@@ -555,6 +555,10 @@ buffers_t *read_buffers(char *dir, int rank) {
   char fname[1024];
   sprintf(fname, "%s/rank%d.bufs", dir, rank);
   FILE *file = fopen(fname, "r");
+  if (file == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
 
   int count = 1;
   fread(&bufs->n, sizeof(bufs->n), count, file);
