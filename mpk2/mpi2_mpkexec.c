@@ -120,6 +120,8 @@ void mpi_exec_mpk(buffers_t *bufs) {
 }
 
 void collect_results(buffers_t *bufs, double *vv) {
+  for (int i = 0; i < bufs->buf_count; i++)
+    vv[bufs->idx_buf[i]] = bufs->vv_buf[i];
   if (bufs->rank == 0) { // recv & copy
     for (int part = 1; part < bufs->npart; part++) {
       int buf_count;
