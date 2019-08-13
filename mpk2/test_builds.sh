@@ -17,7 +17,7 @@ cd "$(dirname "$0")"
 rm *.log
 
 # Force build all.
-make mpi2_mpkexecbufs_val || exit -1
+make || exit -1
 
 # Delete input files.
 rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
@@ -45,7 +45,7 @@ done
 # MPI2 version: read/write buffers
 mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME || exit 4
 # mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
-mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 4
+mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 6
 # ./mpkrun $DIRNAME || exit 6
 
 # python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit

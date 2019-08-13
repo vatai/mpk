@@ -531,6 +531,7 @@ void write_buffers(buffers_t *bufs, char *dir) {
   fwrite(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
   fwrite(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
   fwrite(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
+
   count = bufs->nphase + 1;
   fwrite(bufs->rcount, sizeof(*bufs->rcount), count, file);
   fwrite(bufs->mcount, sizeof(*bufs->mcount), count, file);
@@ -540,11 +541,15 @@ void write_buffers(buffers_t *bufs, char *dir) {
   fwrite(bufs->sbuf_offsets, sizeof(*bufs->sbuf_offsets), count, file);
   fwrite(bufs->mptr_offsets, sizeof(*bufs->mptr_offsets), count, file);
   fwrite(bufs->mcol_offsets, sizeof(*bufs->mcol_offsets), count, file);
+
   // variable length vectors
   fwrite(bufs->idx_buf, sizeof(*bufs->idx_buf), bufs->buf_count, file);
   fwrite(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), bufs->buf_scount, file);
   fwrite(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->mptr_count, file);
   fwrite(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->mcol_count, file);
+  // If we don't use bufs->mval_buf
+  if (bufs->mval_buf != NULL)
+    fwrite(bufs->mval_buf, sizeof(*bufs->mval_buf), bufs->mcol_count, file);
 
   fclose(file);
 }
@@ -578,6 +583,7 @@ buffers_t *read_buffers(char *dir, int rank) {
   fread(bufs->sendcounts, sizeof(*bufs->sendcounts), count, file);
   fread(bufs->rdispls, sizeof(*bufs->rdispls), count, file);
   fread(bufs->sdispls, sizeof(*bufs->sdispls), count, file);
+
   count = bufs->nphase + 1;
   fread(bufs->rcount, sizeof(*bufs->rcount), count, file);
   fread(bufs->mcount, sizeof(*bufs->mcount), count, file);
@@ -587,6 +593,7 @@ buffers_t *read_buffers(char *dir, int rank) {
   fread(bufs->sbuf_offsets, sizeof(*bufs->sbuf_offsets), count, file);
   fread(bufs->mptr_offsets, sizeof(*bufs->mptr_offsets), count, file);
   fread(bufs->mcol_offsets, sizeof(*bufs->mcol_offsets), count, file);
+
   // variable length vectors
   bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
   fread(bufs->idx_buf, sizeof(*bufs->idx_buf), bufs->buf_count, file);
@@ -597,9 +604,18 @@ buffers_t *read_buffers(char *dir, int rank) {
   bufs->mcol_buf = malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
   fread(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->mcol_count, file);
 
+  // If we don't use bufs->mval_buf
+  bufs->mval_buf = malloc(sizeof(*bufs->mval_buf) * bufs->mcol_count);
+  int chread =
+      fread(bufs->mval_buf, sizeof(*bufs->mval_buf), bufs->mcol_count, file);
+  if (chread < bufs->mcol_count){
+    free(bufs->mval_buf);
+    bufs->mval_buf = NULL;
+  }
+
+  // These should be allocated with alloc_val_bufs()!
   bufs->vv_buf = NULL;
   bufs->vv_sbuf = NULL;
-  bufs->mval_buf = NULL;
   fclose(file);
   return bufs;
 }
