@@ -16,12 +16,8 @@ cd "$(dirname "$0")"
 # Remove logs.
 rm *.log
 
-# Select makefile.
-MAKEFILE=makefile
-which mpiicc 2>/dev/null 1>/dev/null && MAKEFILE+=.intel || MAKEFILE+=.gcc
-
 # Force build all.
-make -f $MAKEFILE || exit -1
+make || exit -1
 
 # Delete input files.
 echo rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
