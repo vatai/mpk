@@ -10,6 +10,9 @@ format.o : format.c lib.h
 stat.o : stat.c lib.h
 driver.o : driver.c lib.h
 
+comm_data.o : comm_data.h lib.h
+buffers.o : buffers.h comm_data.h lib.h
+
 comp : comp.o lib.o
 skirt : skirt.o lib.o
 format : format.o lib.o
@@ -20,10 +23,6 @@ gen2mtx : lib.o
 MPKOBJ = lib.o mpkread.o mpkprep.o mpkexec.o mpktexec.o spmvexec.o
 mpktest : mpktest.o $(MPKOBJ)
 
-MPIMPKOBJ = mpi_mpkprep.o mpi_mpkexec.c
-mpi_mpktest : mpi_mpktest.o $(MPIMPKOBJ) $(MPKOBJ)
-
-MPI2MPKOBJ = mpi2_mpkprep.o mpi2_mpkexec.o buffers.o
-mpi2_mpktest : mpi2_mpktest.o $(MPI2MPKOBJ) $(MPKOBJ)
-
+mpi_mpktest : mpi_mpkprep.o mpi_mpkexec.o lib.o mpkread.o mpkprep.o spmvexec.o
+mpi2_mpktest : mpi2_mpktest.o mpi2_mpkexec.o comm_data.o buffers.o lib.o
 mpkrun : mpkvexec.o lib.o mpkread.o mpkprep.o spmvexec.o
