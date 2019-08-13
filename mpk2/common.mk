@@ -1,4 +1,4 @@
-default : gen gen2 gen2mtx comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest mpkrun
+default : gen gen2 gen2mtx comp skirt format driver stat mpktest mpi_mpktest mpi2_mpktest mpkrun mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
 
 gen : gen.c
 	gcc -O3 -o gen gen.c
@@ -26,3 +26,6 @@ mpktest : mpktest.o $(MPKOBJ)
 mpi_mpktest : mpi_mpkprep.o mpi_mpkexec.o lib.o mpkread.o mpkprep.o spmvexec.o
 mpi2_mpktest : mpi2_mpktest.o mpi2_mpkexec.o comm_data.o buffers.o lib.o
 mpkrun : mpkvexec.o lib.o mpkread.o mpkprep.o spmvexec.o
+mpi2_mpkwrtbufs : buffers.o comm_data.o lib.o
+mpi2_mpkexecbufs : buffers.o comm_data.o mpi2_mpkexec.o lib.o
+mpi2_mpkexecbufs_val : buffers.o comm_data.o mpi2_mpkexec.o lib.o

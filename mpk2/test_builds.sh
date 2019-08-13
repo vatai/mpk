@@ -1,17 +1,13 @@
 #!/bin/bash
-# !KEEP IN SYNC WITH MAKEFILE!
 #
 # Simple script to build and test all programs.
 #
-# TODO(vatai): Expand this file with further tests, possibly for the
-# time of writing mpi_mpktest, check if both mpktest versions give the
-# same results.
-
 NAME=mesh5p
 SIZE=10
 NPART=2
 NLEVEL=20
 NPHASE=6
+DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 
 cd "$(dirname "$0")"
 
@@ -33,10 +29,12 @@ rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # usage: ./gen type size ghead
 # usage: ./driver ghead npart nlevel nphase
 echo test_builds.sh: generating data
-./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE
+# Old ./gen needs to be run for ./driver (metis doesn't support loops).
+./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE || exit 1
+# Our program supports loops, so overwrite the g0 file.
+./gen2 m5p $SIZE $NAME$SIZE && cp -f $NAME$SIZE.g0 $DIRNAME/g0 || exit 2
 
-echo test_builds.sh: testing OpenMP version
-DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+echo $0: testing OpenMP version
 
 # POST PROCESSING
 #
@@ -47,11 +45,14 @@ for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
 
-# Check OpenMP version
-./mpktest $DIRNAME || exit
+# OpenMP version
+# ./mpktest $DIRNAME || exit 3
 
-echo test_builds.sh: testing MPI version
-# Check MPI version
-mpirun -n $NPART ./mpi2_mpktest $DIRNAME || exit
+echo $0: testing MPI version
+# MPI version
+mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME || exit 4
+mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
+
+# ./mpkrun $DIRNAME || exit 6
 
 # python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
