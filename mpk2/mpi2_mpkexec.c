@@ -111,16 +111,12 @@ static void do_task(buffers_t *bufs, int phase) {
   // TODO(vatai): tl->th = omp_get_thread_num();
   // TODO(vatai): tl->t0 = omp_get_wtime();
 
-  int n = bufs->n;
   int mcount = bufs->mcount[phase];
-  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
   double *vv_mbuf = bufs->vv_buf + bufs->mbuf_offsets[phase];
 
   for (int mi = 0; mi < mcount; mi++) {
-    long idx = idx_mbuf[mi];
-    long i = idx % bufs->n;
     double b = 1.0 / (mptr[mi + 1] - mptr[mi]);
     double tmp = 0.0;
     for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++){
