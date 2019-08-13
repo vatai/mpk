@@ -8,6 +8,7 @@
 
 #include "comm_data.h"
 #include "buffers.h"
+#include "mpi2_mpkexec.h"
 
 #define DETAIL 0
 #define ONEVEC 0
@@ -111,44 +112,6 @@ void check_error(double *vv, int n, int nlevel) {
     e += (v - 1.0) * (v - 1.0);
   }
   printf("error %e\n", sqrt(e/n));
-}
-
-static void recv_copy_results(buffers_t *bufs, double *vv) {
-  for (int part = 1; part < bufs->npart; part++){
-    int buf_count;
-    MPI_Recv(&buf_count, 1, MPI_INT, part, 0, MPI_COMM_WORLD,
-             MPI_STATUS_IGNORE);
-    long *idx_buf = malloc(sizeof(*idx_buf) * buf_count);
-    double *vv_buf = malloc(sizeof(*idx_buf) * buf_count);
-    MPI_Recv(idx_buf, buf_count, MPI_LONG, part, 0, MPI_COMM_WORLD,
-             MPI_STATUS_IGNORE);
-    MPI_Recv(vv_buf, buf_count, MPI_DOUBLE, part, 0, MPI_COMM_WORLD,
-             MPI_STATUS_IGNORE);
-    for (int i = 0; i < buf_count; i++)
-      vv[idx_buf[i]] = vv_buf[i];
-    free(idx_buf);
-    free(vv_buf);
-  }
-}
-
-static void send_results(buffers_t *bufs, double *vv) {
-  MPI_Send(&bufs->buf_count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-  MPI_Send(bufs->idx_buf, bufs->buf_count, MPI_LONG, 0, 0, MPI_COMM_WORLD);
-  MPI_Send(bufs->vv_buf, bufs->buf_count, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-}
-
-static int check_results(buffers_t *bufs, double *vv) {
-  if (bufs->rank == 0) {
-    recv_copy_results(bufs, vv);
-    int size = bufs->n * bufs->nlevel;
-    for (int i = 0; i < size; i++)
-      if (vv[bufs->n + i] != 1.0)
-        return -1;
-    return 0;
-  } else {
-    send_results(bufs, vv);
-    return 0;
-  }
 }
 
 int main(int argc, char* argv[]) {
