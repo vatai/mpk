@@ -1,20 +1,9 @@
 #include <assert.h>
-#include <stdlib.h>
 #include <mpi.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "buffers.h"
-
-static crs0_t *read_matrix(char *dir) {
-  char fname[1024];
-  FILE *f;
-  sprintf(fname, "%s/g0", dir);
-  f = fopen(fname, "r");
-  if (f == NULL) {
-    fprintf(stderr, "cannot open %s\n", fname);
-    exit(1);
-  }
-  return read_crs(f); // Closes f
-}
 
 static double *alloc_read_val(crs0_t *g0, char *dir) {
   double *val = malloc(sizeof(*val) * g0->ptr[g0->n]);
@@ -74,9 +63,8 @@ int main(int argc, char* argv[]) {
   buffers_t *bufs = new_bufs(cd);
   fill_buffers(cd, bufs);
 
-  crs0_t *graph = read_matrix(argv[1]);
-  double *val = alloc_read_val(graph, argv[1]);
-  alloc_fill_mval(bufs, val, graph);
+  double *val = alloc_read_val(cd->graph, argv[1]);
+  alloc_fill_mval(bufs, val, cd->graph);
 
   write_buffers(bufs, argv[1]);
 
