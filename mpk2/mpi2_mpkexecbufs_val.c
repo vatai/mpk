@@ -18,33 +18,29 @@ static void do_task(buffers_t *bufs, int phase) {
 
   for (int mi = 0; mi < mcount; mi++) {
     double tmp = 0.0;
-    for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++){
-      // TODO(vatai): Is thsi OK?
+    for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++)
       tmp += mval[mj] * bufs->vv_buf[mcol[mj]];
-    }
     vv_mbuf[mi] = tmp;
   }
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
 
 static void do_comm(int phase, buffers_t *bufs, FILE *log_file) {
-  int npart = bufs->npart;
-
+  int offset = bufs->npart * phase;
   int scount = bufs->scount[phase];
   long *idx_sbuf = bufs->idx_sbuf + bufs->sbuf_offsets[phase];
   double *vv_rbuf = bufs->vv_buf + bufs->rbuf_offsets[phase];
   double *vv_sbuf = bufs->vv_sbuf + bufs->sbuf_offsets[phase];
+
   // Copy data to send buffers.
   for (int i = 0; i < scount; i++) {
     int buf_idx = idx_sbuf[i];
     vv_sbuf[i] = bufs->vv_buf[buf_idx];
   }
 
-  MPI_Alltoallv(vv_sbuf, bufs->sendcounts + npart * phase,
-                bufs->sdispls + npart * phase, MPI_DOUBLE, vv_rbuf,
-                bufs->recvcounts + npart * phase, bufs->rdispls + npart * phase,
-                MPI_DOUBLE, MPI_COMM_WORLD);
-
+  MPI_Alltoallv(vv_sbuf, bufs->sendcounts + offset, bufs->sdispls + offset,
+                MPI_DOUBLE, vv_rbuf, bufs->recvcounts + offset,
+                bufs->rdispls + offset, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
 static void mpk_exec_bufs_val(buffers_t *bufs) {
