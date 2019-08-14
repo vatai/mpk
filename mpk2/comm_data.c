@@ -14,6 +14,16 @@ void dir_name_error(char *dir) {
   exit(1);
 }
 
+void cond_assert_npart(comm_data_t *cd) {
+  int flag;
+  MPI_Initialized(&flag);
+  if (flag) {
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    assert(world_size == cd->npart);
+  }
+}
+
 static void read_dir(comm_data_t *cd) {
   int i = 0, j = 0;
   for (j = strlen(cd->dir); j >= 0; j--) {
@@ -30,10 +40,6 @@ static void read_dir(comm_data_t *cd) {
   if (i != 3)
     dir_name_error(cd->dir);
   assert(cd->npart > 0 && cd->nlevel > 0 && cd->nphase >= 0);
-
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  assert(world_size == cd->npart);
 }
 
 static void alloc_mpk_data(comm_data_t *cd) {
@@ -143,11 +149,12 @@ double *alloc_read_val(crs0_t *g0, char *dir) {
   return val;
 }
 
-comm_data_t *new_comm_data(char *dir) {
+comm_data_t *new_comm_data(char *dir, int rank) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->dir = dir;
-  MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
+  cd->rank = rank;
   read_dir(cd);
+  cond_assert_npart(cd);
   cd->graph = read_matrix(dir);
   cd->n = cd->graph->n;
   alloc_mpk_data(cd);

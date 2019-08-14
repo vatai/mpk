@@ -122,8 +122,9 @@ int main(int argc, char* argv[]) {
 
   // Init MPI
   MPI_Init(&argc, &argv);
-
-  comm_data_t *cd = new_comm_data(argv[1]);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  comm_data_t *cd = new_comm_data(argv[1], rank);
   buffers_t *bufs = new_bufs(cd);
   fill_buffers(cd, bufs);
   write_buffers(bufs, argv[1]);
