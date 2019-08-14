@@ -8,7 +8,7 @@
 #include "buffers.h"
 #include "comm_data.h"
 
-static void dir_name_error(char *dir) {
+void dir_name_error(char *dir) {
   fprintf(stderr, "  unknwon directory naming %s\n", dir);
   fprintf(stderr, "  expecting ghead_npart_nlevel_nphase\n");
   exit(1);
@@ -34,20 +34,6 @@ static void read_dir(comm_data_t *cd) {
   int world_size;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   assert(world_size == cd->npart);
-}
-
-static void read_matrix(comm_data_t *cd) {
-  char fname[1024];
-  FILE *f;
-  sprintf(fname, "%s/g0", cd->dir);
-  f = fopen(fname, "r");
-  if (f == NULL) {
-    fprintf(stderr, "cannot open %s\n", fname);
-    exit(1);
-  }
-  crs0_t *g0 = read_crs(f); // Closes f
-  cd->graph = g0;
-  cd->n = g0->n;
 }
 
 static void alloc_mpk_data(comm_data_t *cd) {
@@ -118,6 +104,18 @@ static void fill_skirt(comm_data_t *cd) {
   cd->skirt = sk;
 }
 
+crs0_t *read_matrix(char *dir) {
+  char fname[1024];
+  FILE *f;
+  sprintf(fname, "%s/g0", dir);
+  f = fopen(fname, "r");
+  if (f == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+  return read_crs(f); // Closes f
+}
+
 double *alloc_read_val(crs0_t *g0, char *dir) {
   double *val = malloc(sizeof(*val) * g0->ptr[g0->n]);
   assert(val != NULL);
@@ -150,7 +148,8 @@ comm_data_t *new_comm_data(char *dir) {
   cd->dir = dir;
   MPI_Comm_rank(MPI_COMM_WORLD, &cd->rank);
   read_dir(cd);
-  read_matrix(cd);
+  cd->graph = read_matrix(dir);
+  cd->n = cd->graph->n;
   alloc_mpk_data(cd);
   for (int phase = 0; phase < cd->nphase; phase++) {
     fill_part(phase, cd);

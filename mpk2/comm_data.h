@@ -17,6 +17,10 @@ typedef struct comm_table {
   skirt_t *skirt;
 } comm_data_t;
 
+void dir_name_error(char *);
+
+crs0_t *read_matrix(char *);
+
 double *alloc_read_val(crs0_t *g0, char *dir);
 
 comm_data_t *new_comm_data(char *);
