@@ -118,6 +118,33 @@ static void fill_skirt(comm_data_t *cd) {
   cd->skirt = sk;
 }
 
+double *alloc_read_val(crs0_t *g0, char *dir) {
+  double *val = malloc(sizeof(*val) * g0->ptr[g0->n]);
+  assert(val != NULL);
+
+  int cnt = 0; // Check for 3x '_'!
+  for (int i = strlen(dir); 0 <= i; i--)
+    if (dir[i] == '_') cnt++;
+  assert(cnt == 3);
+
+  cnt = 0; // Find first '_'!
+  while (dir[cnt] != '_') cnt++;
+
+  char fname[1024]; // Open file!
+  sprintf(fname, "%s", dir);
+  sprintf(fname + cnt, "%s", ".val");
+  FILE *file = fopen(fname, "r");
+  if (file == NULL) {
+    fprintf(stderr, "cannot open %s\n", fname);
+    exit(1);
+  }
+  for (int i = 0; i < g0->ptr[g0->n]; i++)
+    fscanf(file, "%lf ", val + i);
+
+  fclose(file);
+  return val;
+}
+
 comm_data_t *new_comm_data(char *dir) {
   comm_data_t *cd = malloc(sizeof(*cd));
   cd->dir = dir;

@@ -17,6 +17,8 @@ typedef struct comm_table {
   skirt_t *skirt;
 } comm_data_t;
 
+double *alloc_read_val(crs0_t *g0, char *dir);
+
 comm_data_t *new_comm_data(char *);
 
 void del_comm_data(comm_data_t *);
