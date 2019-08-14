@@ -71,6 +71,12 @@ static void write_results(buffers_t *bufs, double *vv, char *dir) {
     fprintf(file, "\n");
   }
   fclose(file);
+
+  int count = bufs->n * (bufs->nlevel + 1);
+  sprintf(fname, "%s/results.bin", dir);
+  file = fopen(fname, "wb");
+  fwrite(vv, sizeof(*vv), count, file);
+  fclose(file);
 }
 
 int main(int argc, char *argv[]) {
