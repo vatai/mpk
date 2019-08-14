@@ -4,9 +4,9 @@
 #
 # Set these variables to modify them
 NAME=${NAME:=mesh5p}
-SIZE=${SIZE:=10}
+SIZE=${SIZE:=100}
 NPART=${NPART:=2}
-NLEVEL=${NLEVEL:=20}
+NLEVEL=${NLEVEL:=10}
 NPHASE=${NPHASE:=6}
 
 DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
@@ -46,7 +46,7 @@ set -x # Uncomment this line to make verbose.
 # MPI2 version: read/write buffers
 mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
 mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
-mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
+time mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
 # ./mpkrun $DIRNAME || exit 13
 ./verify_val $DIRNAME || exit 14
 

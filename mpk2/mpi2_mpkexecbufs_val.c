@@ -90,7 +90,21 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < bufs->rcount[0]; i++)
     bufs->vv_buf[i] = 1.0;
 
-  mpk_exec_bufs_val(bufs); // Do the calculation.
+  const int nreps = 5;
+  double mintime;
+  for (int t = 0; t < nreps; t++) {
+    double start = MPI_Wtime();
+    MPI_Barrier(MPI_COMM_WORLD);
+    mpk_exec_bufs_val(bufs); // Do the calculation.
+    MPI_Barrier(MPI_COMM_WORLD);
+    double newtime = MPI_Wtime() - start;
+    if (t == 0)
+      mintime = newtime;
+    else
+      mintime = newtime < mintime ? newtime: mintime;
+  }
+  double wtick = MPI_Wtime();
+  printf("Min time for %d runs is %lf (Wtick: %lf)\n", nreps, mintime, wtick);
 
   // Collect the results on rank == 0.
   double *vv = (double*) malloc(sizeof(double) * bufs->n * (bufs->nlevel+1));
