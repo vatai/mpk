@@ -25,12 +25,7 @@ static void alloc_fill_mval(buffers_t *bufs, double *val, crs0_t *g) {
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "usage: %s dirname\n", argv[0]);
-    exit(1);
-  }
-
-  // Init MPI
+  check_args(argc, argv[0]);
   MPI_Init(&argc, &argv);
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

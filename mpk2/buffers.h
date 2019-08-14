@@ -40,6 +40,8 @@ typedef struct buffers_t {
   double *mval_buf;
 } buffers_t;
 
+void check_args(int argc, char *argv0);
+
 buffers_t *new_bufs(comm_data_t *);
 
 void alloc_val_bufs(buffers_t *);

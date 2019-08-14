@@ -437,6 +437,13 @@ static void alloc_bufs0(buffers_t *bufs) {
   bufs->mval_buf = NULL;
 }
 
+void check_args(int argc, char *argv0) {
+  if (argc != 2) {
+    fprintf(stderr, "usage: %s dirname\n", argv0);
+    exit(1);
+  }
+}
+
 buffers_t *new_bufs(comm_data_t *cd) {
   buffers_t *bufs = malloc(sizeof(*bufs));
   bufs->n = cd->n;
