@@ -398,7 +398,7 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, buffers_t *bufs,
   fill_displs(cd->nphase, bufs);
 }
 
-void alloc_bufs0(buffers_t *bufs) {
+static void alloc_bufs0(buffers_t *bufs) {
   int npart = bufs->npart;
   int nphase = bufs->nphase;
 

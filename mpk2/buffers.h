@@ -48,8 +48,6 @@ void del_bufs(buffers_t *);
 
 void fill_buffers(comm_data_t *, buffers_t *);
 
-void mpi_exec_mpk(buffers_t *);
-
 void write_buffers(buffers_t *, char *);
 
 buffers_t *read_buffers(char *, int);

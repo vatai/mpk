@@ -20,8 +20,8 @@ static void log_tlist(buffers_t *bufs, int phase, FILE *log_file) {
   }
 }
 
-static void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs, int n,
-            FILE *log_file) {
+static void log_cd(double *vv_bufs, long *idx_bufs, int *count, int *displs,
+                   int n, FILE *log_file) {
   int npart;
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
 
