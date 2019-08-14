@@ -26,7 +26,7 @@ rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # usage: ./gen type size ghead
 # usage: ./driver ghead npart nlevel nphase
 # Old ./gen needs to be run for ./driver (metis doesn't support loops).
-./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE || exit 1
+./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
 # Our program supports loops, so overwrite the g0 file.
 ./gen2 m5p $SIZE $NAME$SIZE && cp -f $NAME$SIZE.g0 $DIRNAME/g0 || exit 2
 
@@ -39,12 +39,13 @@ for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
 
+set -x
 # OpenMP version
 # ./mpktest $DIRNAME || exit 3
 
 # MPI2 version: read/write buffers
-mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME || exit 4
-# mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
+mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 4
+mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 5
 mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 6
 # ./mpkrun $DIRNAME || exit 6
 
