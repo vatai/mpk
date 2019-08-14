@@ -1,3 +1,12 @@
+/*
+ * Author: Emil Vatai <emil.vatai@gmail.com>
+ * Date: 2019-08-14
+ *
+ * This little program performs a sequential MPK and writes the output
+ * in binary for other implementations to compare.
+ *
+ */
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -5,6 +14,14 @@
 
 #include "lib.h"
 #include "comm_data.h"
+
+void write_results_bin(double *vv, int count, char *dir){
+  char fname[1024];
+  sprintf(fname, "%s/gold_result.bin", dir);
+  FILE *file = fopen(fname, "wb");
+  fwrite(vv, sizeof(*vv), count, file);
+  fclose(file);
+}
 
 static int get_nleve(char *dir) {
   int i = 0, j = 0;
@@ -52,11 +69,7 @@ int main(int argc, char *argv[]) {
     double *out = vv + (level + 1) * graph->n;
     spmv(in, out, graph, val);
   }
-  char fname[1024];
-  sprintf(fname, "%s/gold_result.bin", argv[1]);
-  FILE *file = fopen(fname, "wb");
-  fwrite(vv, sizeof(*vv), count, file);
-  fclose(file);
+  write_results_bin(vv, count, argv[1]);
   free(val);
   free(vv);
   del_crs(graph);

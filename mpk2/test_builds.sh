@@ -39,7 +39,7 @@ for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
 
-#set -x
+set -x # Uncomment this line to make verbose.
 # OpenMP version
 # ./mpktest $DIRNAME || exit 3
 
@@ -48,6 +48,6 @@ mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
 mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
 mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
 # ./mpkrun $DIRNAME || exit 13
-./mpi2_verify_val $DIRNAME || exit 14
+./verify_val $DIRNAME || exit 14
 
 # python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
