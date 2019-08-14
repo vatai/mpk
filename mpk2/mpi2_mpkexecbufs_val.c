@@ -25,7 +25,7 @@ static void do_task(buffers_t *bufs, int phase) {
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
 
-static void do_comm(int phase, buffers_t *bufs, FILE *log_file) {
+static void do_comm(int phase, buffers_t *bufs) {
   int offset = bufs->npart * phase;
   int scount = bufs->scount[phase];
   long *idx_sbuf = bufs->idx_sbuf + bufs->sbuf_offsets[phase];
@@ -44,16 +44,11 @@ static void do_comm(int phase, buffers_t *bufs, FILE *log_file) {
 }
 
 static void mpk_exec_bufs_val(buffers_t *bufs) {
-  char fname[1024];
-  sprintf(fname, "mpi_comm_in_exec_rank-%d.log", bufs->rank);
-  FILE *log_file = fopen(fname, "w");
-
   do_task(bufs, 0);
   for (int phase = 1; phase <= bufs->nphase; phase++) {
-    do_comm(phase, bufs, log_file);
+    do_comm(phase, bufs);
     do_task(bufs, phase);
   }
-  fclose(log_file);
 }
 
 static void write_results(buffers_t *bufs, double *vv, char *dir) {
