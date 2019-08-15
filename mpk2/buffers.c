@@ -232,6 +232,20 @@ static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
   return prevli < level && 0 <= slpi && level <= cd->nlevel - slpi;
 }
 
+static void reset_mcount(int phase, buffers_t *bufs) {
+  bufs->mcount[phase] = 0;
+}
+
+static void idx_mbuf_core(int phase, int i, int level, buffers_t *bufs) {
+  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
+  idx_mbuf[bufs->mcount[phase]] = level * bufs->n + i;
+  bufs->mcount[phase]++;
+}
+
+static void mcount_core(int phase, int i, int level, buffers_t *bufs) {
+  bufs->mcount[phase]++;
+}
+
 // This is central iteration loop.
 //
 // The cond() function returns true or false depending if the given
@@ -241,23 +255,18 @@ static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
 // Another "implicit parameter" which changes the behaviour is the
 // value of cd->idx_buf.  If cd->idx_buf == NULL, the idx_mbuf[] is
 // not filled, while if non-NULL it is filled.
-static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
+static void iterator(int cond(int, int, int, comm_data_t *cd),
+                     void init(int, buffers_t *),
+                     void core(int, int, int, buffers_t *), int phase,
                      comm_data_t *cd, buffers_t *bufs, char *comm_table,
                      int *store_part) {
+  init(phase, bufs);
   int prevlmin = get_prevlmin(phase, cd);
-  bufs->mcount[phase] = 0;
   int max = max_or_nlevel(cd, phase);
-  long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
-  for (int level = prevlmin + 1; level <= max; level++) {
-    for (int i = 0; i < cd->n; i++) {
-      if (cond(phase, i, level, cd)) {
-        if (bufs->idx_buf != NULL) {
-          idx_mbuf[bufs->mcount[phase]] = level * cd->n + i;
-        }
-        bufs->mcount[phase]++;
-      }
-    }
-  }
+  for (int level = prevlmin + 1; level <= max; level++)
+    for (int i = 0; i < cd->n; i++)
+      if (cond(phase, i, level, cd))
+        core(phase, i, level, bufs);
 }
 
 static void alloc_bufs(buffers_t *bufs) {
@@ -358,13 +367,15 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, bufs, comm_table, store_part);
-    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    iterator(phase_cond, reset_mcount, idx_mbuf_core, phase, cd, bufs,
+             comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, bufs);
     clear_comm_table(cd, comm_table);
     fill_mptr(cd, bufs, phase);
   }
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  iterator(skirt_cond, reset_mcount, idx_mbuf_core, cd->nphase, cd, bufs,
+           comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, bufs);
   fill_mptr(cd, bufs, cd->nphase);
 
@@ -387,13 +398,15 @@ static void fill_bufsize_rscount_displs(comm_data_t *cd, buffers_t *bufs,
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, bufs, comm_table, store_part);
-    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    iterator(phase_cond, reset_mcount, mcount_core, phase, cd, bufs, comm_table,
+             store_part);
     fill_rscounts(phase, bufs, comm_table);
     fill_displs(phase, bufs);
     clear_comm_table(cd, comm_table);
   }
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  iterator(skirt_cond, reset_mcount, mcount_core, cd->nphase, cd, bufs,
+           comm_table, store_part);
   fill_rscounts(cd->nphase, bufs, comm_table);
   fill_displs(cd->nphase, bufs);
 }
