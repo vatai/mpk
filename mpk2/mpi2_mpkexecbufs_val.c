@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <mpi.h>
+#include <omp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +26,41 @@ static void do_task(buffers_t *bufs, int phase) {
   // TODO(vatai): tl->t1 = omp_get_wtime();
 }
 
+static void do_task_omp(buffers_t *bufs, int phase) {
+  int mcount = bufs->mcount[phase];
+  int block_size_log2 = 4;
+  int block_size = 1 << block_size_log2;
+  int quo = mcount / block_size;
+  int rem = mcount % block_size;
+
+  long *mptr = bufs->mptr_buf + bufs->mptr_offsets[phase];
+  long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
+  double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
+  double *vv_mbuf = bufs->vv_buf + bufs->mbuf_offsets[phase];
+
+#pragma omp parallel num_threads(4) private(phase)
+  for (int mio = 0; mio < quo; mio++) {
+    int begin = mio << block_size_log2;
+    int end = begin + block_size;
+    for (int mi = begin; mi < end; mi++) {
+      double tmp = 0.0;
+#pragma omp for schedule(dynamic, 2)
+      for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++)
+        tmp += mval[mj] * bufs->vv_buf[mcol[mj]];
+      vv_mbuf[mi] = tmp;
+    }
+  }
+  int begin = quo << block_size_log2;
+  int end = begin + rem;
+  for (int mi = begin ; mi < end; mi++) {
+    double tmp = 0.0;
+#pragma omp for schedule(dynamic, 2)
+    for (int mj = mptr[mi]; mj < mptr[mi + 1]; mj++)
+      tmp += mval[mj] * bufs->vv_buf[mcol[mj]];
+    vv_mbuf[mi] = tmp;
+  }
+}
+
 static void do_comm(int phase, buffers_t *bufs) {
   int offset = bufs->npart * phase;
   int scount = bufs->scount[phase];
@@ -46,8 +82,10 @@ static void do_comm(int phase, buffers_t *bufs) {
 static void mpk_exec_bufs_val(buffers_t *bufs) {
   do_task(bufs, 0);
   for (int phase = 1; phase <= bufs->nphase; phase++) {
-    do_comm(phase, bufs);
-    do_task(bufs, phase);
+    {
+      do_comm(phase, bufs);
+      do_task(bufs, phase);
+    }
   }
 }
 
@@ -77,6 +115,10 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   buffers_t *bufs = read_buffers(argv[1], rank);
   alloc_val_bufs(bufs);
+
+  omp_set_num_threads(2);
+  int num_threads = omp_get_num_threads();
+  printf("omp_get_num_threads() = %d\n", num_threads);
 
   // Fill part of input vector in current partition.
   for (int i = 0; i < bufs->rcount[0]; i++)
