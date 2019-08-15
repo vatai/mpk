@@ -113,7 +113,7 @@ static void fill_skirt(comm_data_t *cd) {
 crs0_t *read_matrix(char *dir) {
   char fname[1024];
   FILE *f;
-  sprintf(fname, "%s/g0", dir);
+  sprintf(fname, "%s/loop.g0", dir);
   f = fopen(fname, "r");
   if (f == NULL) {
     fprintf(stderr, "cannot open %s\n", fname);

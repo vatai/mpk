@@ -28,7 +28,7 @@ rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # Old ./gen needs to be run for ./driver (metis doesn't support loops).
 ./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
 # Our program supports loops, so overwrite the g0 file.
-./gen2 m5p $SIZE $NAME$SIZE && cp -f $NAME$SIZE.g0 $DIRNAME/g0 || exit 2
+./gen2 m5p $SIZE $NAME$SIZE && cp $NAME$SIZE.loop.g0 $DIRNAME/loop.g0 || exit 2
 
 # POST PROCESSING
 #
