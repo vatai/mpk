@@ -2,7 +2,7 @@ CC=$(shell which mpiicc 1>/dev/null 2>/dev/null && echo mpiicc || echo mpicc)
 CFLAGS = -O3 -fopenmp
 LDLIBS = -fopenmp -lm
 
-UTILS = gen gen2 gen2mtx mtx2gen comp skirt format driver stat verify_val comm_count
+UTILS = gen gen2 gen2mtx mtx2gen comp skirt format driver stat verify_val work_count
 OMPBIN = mpktest mpkrun
 MPI1BIN = mpi_mpktest
 MPI2BIN = mpi2_mpktest mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
@@ -44,4 +44,4 @@ mpi2_mpkwrtbufs : buffers.o comm_data.o lib.o
 mpi2_mpkexecbufs : buffers.o comm_data.o mpi2_mpkexec.o lib.o
 mpi2_mpkexecbufs_val : buffers.o comm_data.o mpi2_mpkexec.o lib.o
 verify_val : comm_data.o lib.o
-comm_count : buffers.o
+work_count : comm_data.o buffers.o lib.o
