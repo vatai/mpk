@@ -14,7 +14,7 @@ function proc_file {
             NPHASE=${phs} NLEVEL=${lvl} ./test_mtx.sh ${NAME}.mtx
         done
     done
-    rm -rf ${NAME}
+    # rm -rf ${NAME}
 }
 
 function proc_dir {
