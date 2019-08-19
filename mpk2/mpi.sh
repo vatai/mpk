@@ -1,4 +1,6 @@
 #!/bin/bash
+#SBATCH -p p
+#SBATCH -N 2
 #
 # Simple script to build and test all programs.
 #
@@ -10,14 +12,14 @@ NLEVEL=${NLEVEL:=10}
 NPHASE=${NPHASE:=6}
 
 DIRNAME=${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
+echo dirname is $DIRNAME
 
-cd "$(dirname "$0")"
 
 # Remove logs.
 rm *.log
 
 # Force build all.
-make || exit -1
+# make || exit -1
 
 # Delete input files.
 rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
@@ -26,9 +28,9 @@ rm -rf ${NAME}${SIZE}_${NPART}_${NLEVEL}_${NPHASE}
 # usage: ./gen type size ghead
 # usage: ./driver ghead npart nlevel nphase
 # Old ./gen needs to be run for ./driver (metis doesn't support loops).
-./gen m5p $SIZE $NAME$SIZE && ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
+srun -N 1 ./gen m5p $SIZE $NAME$SIZE && srun -N 1 ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
 # Our program supports loops, so overwrite the g0 file.
-./gen2 m5p $SIZE $NAME$SIZE && cp $NAME$SIZE.loop.g0 $DIRNAME/loop.g0 || exit 2
+srun -N 1 ./gen2 m5p $SIZE $NAME$SIZE && cp $NAME$SIZE.loop.g0 $DIRNAME/loop.g0 || exit 2
 
 # POST PROCESSING
 #
@@ -44,9 +46,9 @@ set -x # Uncomment this line to make verbose.
 # ./mpktest $DIRNAME || exit 3
 
 # MPI2 version: read/write buffers
-mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
-mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
-mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
+srun -N $NPART mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
+srun -N $NPART mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
+srun -N $NPART mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
 # ./mpkrun $DIRNAME || exit 13
 ./verify_val $DIRNAME || exit 14
 diff $DIRNAME/gold_result.bin $DIRNAME/results.bin

@@ -1,6 +1,0 @@
-
-CC = mpiicc
-CFLAGS = -O3 -qopenmp
-LDLIBS = -qopenmp
-
-include common.mk

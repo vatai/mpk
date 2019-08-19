@@ -1,13 +1,16 @@
 *
 !/**/
 !*.*
+!Makefile
 
 *.log*
 *.g0
 *.co
+*.loop.g0
+*.val
+*.mtx
 *~
 *.o
-.*
 
 input/*/
 *.tar.gz
@@ -22,7 +25,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json

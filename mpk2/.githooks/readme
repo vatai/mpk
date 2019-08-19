@@ -1,0 +1,7 @@
+Link these files to the .git/hooks dir.
+
+This should/could be automated with:
+
+  cd $(git rev-parse --show-toplevel)/.git/hooks
+
+but for now please do it manually.

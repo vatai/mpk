@@ -1,6 +1,0 @@
-
-CC = mpicc
-CFLAGS = -O3 -fopenmp
-LDLIBS = -fopenmp -lm
-
-include common.mk
