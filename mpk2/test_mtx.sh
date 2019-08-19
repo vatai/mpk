@@ -13,7 +13,7 @@ DIRNAME=${NAME}_${NPART}_${NLEVEL}_${NPHASE}
 echo dirname: $DIRNAME
 echo loopfile: $LOOPFILE
 
-test -f $NAME.g0 || test -f $NAME.loop.g0 || test -f $NAME.val || ./mtx2gen $MTXFILE
+test -f $G0FILE || test -f $LOOPFILE || test -f $NAME.val || ./mtx2gen $MTXFILE
 ./driver $NAME $NPART $NLEVEL $NPHASE
 cp -f $LOOPFILE $DIRNAME/loop.g0
 

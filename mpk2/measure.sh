@@ -15,7 +15,7 @@ function proc_file {
 function proc_dir {
     ls $1
     ls $1 | while read file; do
-        FULL=${BOP}/$file
+        FULL=$1/$file
         proc_file ${FULL}
     done
 }
