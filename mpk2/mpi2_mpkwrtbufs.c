@@ -30,8 +30,11 @@ int main(int argc, char* argv[]) {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   comm_data_t *cd = new_comm_data(argv[1], rank);
+  printf("Finished new_comm_data().\n");
   buffers_t *bufs = new_bufs(cd);
+  printf("Finished new_bufs().\n");
   fill_buffers(cd, bufs);
+  printf("Finished fill_buffers().\n");
 
   double *val = alloc_read_val(cd->graph, argv[1]);
   alloc_fill_mval(bufs, val, cd->graph);
