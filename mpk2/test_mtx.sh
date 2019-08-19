@@ -22,9 +22,10 @@ cp -f $LOOPFILE $DIRNAME/loop.g0
 # ./mpktest $DIRNAME || exit 3
 
 # MPI2 version: read/write buffers
-mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
-mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
-mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
-# ./mpkrun $DIRNAME || exit 13
-./verify_val $DIRNAME || exit 14
+mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null
+# mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME
+mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME
+# ./mpkrun $DIRNAME
+./verify_val $DIRNAME
 diff $DIRNAME/gold_result.bin $DIRNAME/results.bin
+./work_count $DIRNAME
