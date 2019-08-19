@@ -6,6 +6,9 @@
 *.log*
 *.g0
 *.co
+*.loop.g0
+*.val
+*.mtx
 *~
 *.o
 
