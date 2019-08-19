@@ -90,7 +90,7 @@ void write_crs_as_gen(int M, int nz, int *I, int *J, double *val, char *fn) {
 
   sprintf(fname, "%s.loop.g0", fn);
   FILE *fl = fopen(fname, "w");
-  fprintf(fl, "%d %d\n", M, nz / 2);
+  fprintf(fl, "%d %d\n", M, (nz + numdiag) / 2);
 
   sprintf(fname, "%s.val", fn);
   FILE *fv = fopen(fname, "w");
