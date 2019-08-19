@@ -1,10 +1,5 @@
 #!/bin/bash -x
 
-BASEDIR=~/Downloads
-MCP=${BASEDIR}/mincom-paper
-OPP=${BASEDIR}/opt-paper
-BOP=${BASEDIR}/both-paper
-
 function proc_file {
     NAME=$(echo $(basename $1) | sed s/\.tar\.gz//)
     tar xzf $1
@@ -22,8 +17,10 @@ function proc_dir {
     ls $1 | while read file; do
         FULL=${BOP}/$file
         proc_file ${FULL}
-        break ## remove this
     done
 }
 
-proc_dir ${BOP}
+BASEDIR=~/Downloads
+proc_dir ${BASEDIR}/mincom-paper
+proc_dir ${BASEDIR}/opt-paper
+proc_dir ${BASEDIR}/both-paper
