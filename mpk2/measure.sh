@@ -11,7 +11,7 @@ function proc_file {
     mv ${NAME}/${NAME}.mtx .
     for lvl in $(seq 10 10 20); do # 10 20 .. 50
         for phs in 2; do
-            NPHASE=${phs} NLEVEL=${lvl} ./test_mtx.sh ${NAME}.mtx
+            NPART=16 NPHASE=${phs} NLEVEL=${lvl} ./test_mtx.sh ${NAME}.mtx
         done
     done
     # rm -rf ${NAME}
