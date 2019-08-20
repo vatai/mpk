@@ -298,13 +298,6 @@ static void alloc_bufs(buffers_t *bufs) {
   }
 }
 
-static int find_idx(long *ptr, int size, long target) {
-  for (int i = 0; i < size; i++)
-    if (ptr[i] == target)
-      return i;
-  return -1;
-}
-
 static void fill_mptr(comm_data_t *cd, buffers_t *bufs, int phase) {
   int *ptr = cd->graph->ptr;
   int mcount = bufs->mcount[phase];
@@ -330,7 +323,7 @@ static void alloc_mcol(buffers_t *bufs) {
   assert(bufs->mcol_buf != NULL);
 }
 
-static void fill_mcol(comm_data_t *cd, buffers_t *bufs) {
+static void fill_mcol(comm_data_t *cd, buffers_t *bufs, int *find_idx) {
   int *ptr = cd->graph->ptr;
   int *col = cd->graph->col;
   for (int phase = 0; phase <= bufs->nphase; phase++){
@@ -347,7 +340,7 @@ static void fill_mcol(comm_data_t *cd, buffers_t *bufs) {
       assert(mptr[mi + 1] - mptr[mi] == ptr[i + 1] - ptr[i]);
       for (int j = ptr[i]; j < ptr[i + 1]; j++) {
         long target = col[j] + cd->n * (level - 1);
-        int idx = find_idx(bufs->idx_buf, bufs->buf_count, target);
+        int idx = find_idx[target];
         mcol[j - ptr[i] + mptr[mi]] = idx;
       }
     }
@@ -355,7 +348,7 @@ static void fill_mcol(comm_data_t *cd, buffers_t *bufs) {
 }
 
 static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
-                      int *store_part) {
+                      int *store_part, int *find_idx) {
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
@@ -371,13 +364,13 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
   fill_mptr(cd, bufs, cd->nphase);
 
   alloc_mcol(bufs);
-  fill_mcol(cd, bufs);
+  fill_mcol(cd, bufs, find_idx);
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
   // data from idx_buf to sbuf.
   for (int i = 0; i < bufs->buf_scount; i++) {
     int vv_idx = bufs->idx_sbuf[i];
-    int buf_idx = find_idx(bufs->idx_buf, bufs->buf_count, vv_idx);
+    int buf_idx = find_idx[vv_idx]; // FIX
     bufs->idx_sbuf[i] = buf_idx;
   }
 }
@@ -511,7 +504,12 @@ void fill_buffers(comm_data_t *cd, buffers_t *bufs) {
   alloc_bufs(bufs);
 
   // Fill stage two data
-  fill_bufs(cd, bufs, comm_table, store_part);
+  // TODO(vatai): Combine temporary data
+  int *find_idx = malloc(sizeof(int) * bufs->n * (bufs->nlevel + 1));
+  for (int i = 0; i < bufs->buf_count; i++)
+    find_idx[bufs->idx_buf[i]] = i;
+  fill_bufs(cd, bufs, comm_table, store_part, find_idx);
+  free(find_idx);
 
   free(comm_table);
   free(store_part);
