@@ -14,7 +14,7 @@ function proc_file {
 }
 
 function proc_dir {
-    ls $1 | while read file; do
+     for file in $(ls $1); do
         FULL=$1/$file
         proc_file ${FULL}
     done
