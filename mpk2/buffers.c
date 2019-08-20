@@ -98,7 +98,6 @@ static void phase_comm_table(int phase, comm_data_t *cd, buffers_t *bufs,
   int prevlmin = min_or_0(cd, phase - 1);
   for (int level = prevlmin + 1; level <= lmax;
        level++) { // initially prevlmin =0
-    printf("phase_ct: %d / %d\n", level - prevlmin - 1, lmax - prevlmin - 1);
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * level + i;
       int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
@@ -250,7 +249,6 @@ static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
   int max = max_or_nlevel(cd, phase);
   long *idx_mbuf = bufs->idx_buf + bufs->mbuf_offsets[phase];
   for (int level = prevlmin + 1; level <= max; level++) {
-    printf("iterator %d / %d\n", level - prevlmin - 1, max - prevlmin - 1);
     for (int i = 0; i < cd->n; i++) {
       if (cond(phase, i, level, cd)) {
         if (bufs->idx_buf != NULL) {
