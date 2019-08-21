@@ -3,14 +3,17 @@
 function proc_file {
     NAME=$(echo $(basename $1) | sed s/\.tar\.gz//)
     tar xzf $1
-    MTXNAME=$(echo ${NAME} | sed s/_/-/g).mtx
-    mv ${NAME}/${NAME}.mtx ${MTXNAME}
+    CNAME=$(echo ${NAME} | sed s/_/-/g)
+    mv ${NAME}/${NAME}.mtx ${CNAME}.mtx
+    rm -rf ${NAME}
+
+    npart=16
     for lvl in $(seq 10 10 20); do # 10 20 .. 50
         for phs in 0 1 2 3; do
-            NPART=16 NPHASE=${phs} NLEVEL=${lvl} ./test_mtx.sh ${MTXNAME}
+            NPART=${npart} NPHASE=${phs} NLEVEL=${lvl} ./test_mtx.sh ${CNAME}.mtx
+            rm -rf ${CNAME}_${npart}_${lvl}_${phs}
         done
     done
-    # rm -rf ${NAME}
 }
 
 function proc_dir {
