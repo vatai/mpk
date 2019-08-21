@@ -1,5 +1,5 @@
 CC=$(shell which mpiicc 1>/dev/null 2>/dev/null && echo mpiicc || echo mpicc)
-CFLAGS = -O3 -fopenmp
+CFLAGS = -g -fopenmp
 LDLIBS = -fopenmp -lm
 
 UTILS = gen gen2 gen2mtx mtx2gen comp skirt format driver stat verify_val work_count
