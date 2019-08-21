@@ -62,7 +62,12 @@ int mm_read_sparse(
 
   int ii = 0;
   for (i = 0; i < nz; i++) {
-    fscanf(f, "%d %d %lg\n", &I[ii], &J[ii], &val[ii]);
+    if (!mm_is_pattern(matcode)) {
+      fscanf(f, "%d %d %lg\n", &I[ii], &J[ii], &val[ii]);
+    } else {
+      fscanf(f, "%d %d\n", &I[ii], &J[ii]);
+      val[ii] = 1.0;
+    }
     I[ii]--; /* adjust from 1-based to 0-based */
     J[ii]--;
     ii++;
