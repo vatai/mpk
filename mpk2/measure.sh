@@ -14,6 +14,7 @@ function proc_file {
             rm -rf ${CNAME}_${npart}_${lvl}_${phs}
         done
     done
+    rm -rf ${CNAME}*
 }
 
 function proc_dir {
