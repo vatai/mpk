@@ -35,7 +35,6 @@ int mm_read_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_,
     return -1;
   }
   int sym = mm_is_symmetric(matcode);
-  assert(sym);
 
   if (mm_read_mtx_crd_size(f, &M, &N, &nz) != 0) {
     fprintf(stderr,
