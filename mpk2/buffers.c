@@ -345,8 +345,12 @@ static void fill_mcol(comm_data_t *cd, buffers_t *bufs, int *find_idx) {
   }
 }
 
-static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
-                      int *store_part, int *find_idx) {
+static void fill_bufs(
+    comm_data_t *cd,
+    buffers_t *bufs,
+    char *comm_table,
+    int *store_part)
+{
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
@@ -360,8 +364,21 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
   iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
   fill_idx_rsbuf(cd->nphase, comm_table, bufs);
   fill_mptr(cd, bufs, cd->nphase);
+}
 
+static void fill_mcol_sbuf(
+    comm_data_t *cd,
+    buffers_t *bufs)
+{
   alloc_mcol(bufs);
+
+  // TODO(vatai): Combine temporary data
+  int N = bufs->n * (bufs->nlevel + 1);
+  int *find_idx = malloc(sizeof(int) * N);
+  for (int i = 0; i < bufs->buf_count; i++) {
+    int idx = bufs->idx_buf[i];
+    find_idx[idx] = i;
+  }
   fill_mcol(cd, bufs, find_idx);
 
   // Store the idx_buf indices, because idx_sbufs are used for copying
@@ -371,6 +388,7 @@ static void fill_bufs(comm_data_t *cd, buffers_t *bufs, char *comm_table,
     int buf_idx = find_idx[vv_idx]; // FIX
     bufs->idx_sbuf[i] = buf_idx;
   }
+  free(find_idx);
 }
 
 static void fill_bufsize_rscount_displs(comm_data_t *cd, buffers_t *bufs,
@@ -503,11 +521,8 @@ void fill_buffers(comm_data_t *cd, buffers_t *bufs) {
 
   // Fill stage two data
   // TODO(vatai): Combine temporary data
-  int *find_idx = malloc(sizeof(int) * bufs->n * (bufs->nlevel + 1));
-  for (int i = 0; i < bufs->buf_count; i++)
-    find_idx[bufs->idx_buf[i]] = i;
-  fill_bufs(cd, bufs, comm_table, store_part, find_idx);
-  free(find_idx);
+  fill_bufs(cd, bufs, comm_table, store_part);
+  fill_mcol_sbuf(cd, bufs);
 
   free(comm_table);
   free(store_part);
