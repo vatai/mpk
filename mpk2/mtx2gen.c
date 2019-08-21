@@ -10,8 +10,15 @@
 #include "lib.h"
 #include "mmio.h"
 
-int mm_read_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_,
-                   int **I_, int **J_) {
+int mm_read_sparse(
+    const char *fname,
+    int *M_,
+    int *N_,
+    int *nz_,
+    double **val_,
+    int **I_,
+    int **J_)
+{
   FILE *f;
   MM_typecode matcode;
   int M, N, nz;
@@ -78,7 +85,14 @@ int mm_read_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_,
   return 0;
 }
 
-void write_crs_as_gen(int M, int nz, int *I, int *J, double *val, char *fn) {
+void write_crs_as_gen(
+    int M,
+    int nz,
+    int *I,
+    int *J,
+    double *val,
+    char *fn)
+{
   char fname[1024];
 
   sprintf(fname, "%s.g0", fn);
