@@ -1,4 +1,5 @@
-CC=$(shell which mpiicc 1>/dev/null 2>/dev/null && echo mpiicc || echo mpicc)
+# CC=$(shell which mpiicc 1>/dev/null 2>/dev/null && echo mpiicc || echo mpicc)
+CC=mpicc
 CFLAGS = -g -fopenmp
 LDLIBS = -fopenmp -lm
 
