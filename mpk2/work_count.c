@@ -63,6 +63,41 @@ int count_min_ops(comm_data_t *cd) {
   return (cd->nlevel * sum);
 }
 
+void redundancy(buffers_t **bufs_arr) {
+  // This subprogram checks for redundancies, i.e. if a vertex was
+  // both sent and calculated on a partition.
+  int npart = bufs_arr[0]->npart;
+  int size = bufs_arr[0]->n * (bufs_arr[0]->nlevel + 1);
+  char *tmp = malloc(sizeof(*tmp) * size);
+  for (int p = 0; p < npart; p++) {
+    buffers_t* bufs = bufs_arr[p];
+    for (int phase = 0; phase <= bufs->nphase; phase++) {
+      // Clear tmp[].
+      for (int i = 0; i < size; i++)
+        tmp[i] = 0;
+      // For every index in the current rbuf set the first bit.
+      int rcount = bufs->rcount[phase];
+      long *rbuf = bufs->idx_buf + bufs->rbuf_offsets[phase];
+      for (int ri = 0; ri < rcount; ri++)
+        tmp[rbuf[ri]] += 1;
+      for (int ph = 0; ph <= bufs->nphase; ph++) {
+        // For every index in all mbufs (for all phases) set the
+        // second bit.
+        int mcount = bufs->mcount[ph];
+        long *mbuf = bufs->idx_buf + bufs->mbuf_offsets[ph];
+        for (int mi = 0; mi < mcount; mi++)
+          tmp[mbuf[mi]] += 2;
+      }
+      for (int i = 0; i < size; i++) {
+        if (tmp[i] == 3) {
+          printf("!!!Redundancy i=%d!!!\n", i);
+          printf("!!!This shouldn't happen (%s::%d)\n", __FILE__, __LINE__);
+        }
+      }
+    }
+  }
+}
+
 void print_header(char *dir) {
   printf("Summary for %s\n", dir);
 }
@@ -95,5 +130,6 @@ int main(int argc, char *argv[]) {
   int nvert = cd->n * cd->nlevel;
   int redops = ops - minops;
   print_ops(ops, minops, redops, nvert);
+  redundancy(bufs_arr);
   return 0;
 }
