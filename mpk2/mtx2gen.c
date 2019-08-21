@@ -114,19 +114,37 @@ void write_crs_as_gen(
   sprintf(fname, "%s.val", fn);
   FILE *fv = fopen(fname, "w");
 
+  int *counts = malloc(sizeof(counts) * M);
+  for (int i = 0; i < M; i++) counts[i] = 0;
+  for (int j = 0; j < nz; j++) counts[I[j]]++;
+
+  int **lookup = malloc(sizeof(*lookup) * M);
+  for (int i = 0; i < M; i++)
+    lookup[i] = malloc(sizeof(*lookup[i]) * counts[i]);
+  for (int i = 0; i < M; i++) counts[i] = 0;
+  for (int j = 0; j < nz; j++) {
+    lookup[I[j]][counts[I[j]]] = j;
+    counts[I[j]]++;
+  }
+
   for (int i = 0; i < M; i++) {
-    for (int j = 0; j < nz; j++) {
-      if (I[j] == i) {
-        if (I[j] != J[j]) {
-          fprintf(f, "%d ", J[j] + 1);
-        }
-        fprintf(fl, "%d ", J[j] + 1);
-        fprintf(fv, "%lf ", val[j]);
+    for (int jj = 0; jj < counts[i]; jj++) {
+      int j = lookup[i][jj];
+      if (I[j] != J[j]) {
+        fprintf(f, "%d ", J[j] + 1);
       }
+      fprintf(fl, "%d ", J[j] + 1);
+      fprintf(fv, "%lf ", val[j]);
     }
     fprintf(f, "\n");
     fprintf(fl, "\n");
   }
+
+  for (int i = 0; i < M; i++)
+    free(lookup[i]);
+  free(lookup);
+  free(counts);
+
   fclose(f);
   fclose(fl);
   fclose(fv);
