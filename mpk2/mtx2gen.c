@@ -43,9 +43,11 @@ int mm_read_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_,
   }
   assert(N == M);
 
-  I = (int *)malloc(2 * nz * sizeof(int));
-  J = (int *)malloc(2 * nz * sizeof(int));
-  val = (double *)malloc(2 * nz * sizeof(double));
+  int mem_nz = sym ? 2 * nz - M : nz;
+
+  I = (int *)malloc(mem_nz * sizeof(int));
+  J = (int *)malloc(mem_nz * sizeof(int));
+  val = (double *)malloc(mem_nz * sizeof(double));
 
   /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
   /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
