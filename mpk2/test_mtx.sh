@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 MTXFILE=$1
-NAME=$(echo $MTXFILE | sed s/\.mtx$//)
+NAME=$(echo $MTXFILE | sed s/\.mtx$// | sed s/_/-/g)
 G0FILE=${NAME}.g0
 LOOPFILE=${NAME}.loop.g0
 
