@@ -398,9 +398,11 @@ static void fill_mcol_sbuf(
   // TODO(vatai): Combine temporary data
   int N = bufs->n * (bufs->nlevel + 1);
   int *find_idx = malloc(sizeof(int) * N);
+  for (int j = 0; j < N; j++) find_idx[j] = -1;
   for (int i = 0; i < bufs->buf_count; i++) {
     int idx = bufs->idx_buf[i];
-    find_idx[idx] = i;
+    if (find_idx[idx] == -1)
+      find_idx[idx] = i;
   }
   fill_mcol(cd, bufs, find_idx);
 
