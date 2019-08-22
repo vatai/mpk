@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "buffers.h"
+#include "reduce_comm.h"
 
 static int *new_store_part(comm_data_t *cd) {
   // Initialise store_part[i] to be the id of the 0th partition for
@@ -100,8 +102,7 @@ static void phase_comm_table(
   int *ll = cd->llist[phase]->level;
   int lmax = max_or_nlevel(cd, phase);
   int prevlmin = min_or_0(cd, phase - 1);
-  for (int level = prevlmin + 1; level <= lmax;
-       level++) { // initially prevlmin =0
+  for (int level = prevlmin + 1; level <= lmax; level++) {
     for (int i = 0; i < n; i++) {
       int i_vvidx = n * level + i;
       int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
@@ -118,43 +119,11 @@ static void phase_comm_table(
   }
 }
 
-static void make_perm(int *perm, comm_data_t *cd, char *comm_table) {
-  int npart = cd->npart;
-  int size = cd->n * cd->nlevel;
-  for (int i = 0; i < npart; i++) {
-    int max = 0;
-    int maxto = 0;
-    for (int j = 0; j < npart; j++) {
-      int sum = 0;
-      for (int k = 0; k < size; k++) {
-        int idx = get_ct_idx(i, j, k, cd->n, npart, cd->nlevel);
-        sum += comm_table[idx];
-      }
-      if (sum > max) {
-        max = sum;
-        maxto = j;
-      }
-    }
-    perm[i] = maxto;
-  }
-}
-
-static void reduce_comm(
-    int phase,
+static void skirt_comm_table(
     comm_data_t *cd,
     char *comm_table,
     int *store_part)
 {
-  int *perm = malloc(sizeof(*perm) * cd->npart);
-  make_perm(perm, cd, comm_table);
-  // assert_perm(perm, cd->npart);
-  // apply_perm_cd(perm, cd);
-  // apply_perm_ct(perm, ct);
-  free(perm);
-}
-
-static void skirt_comm_table(comm_data_t *cd, char *comm_table,
-                             int *store_part) {
   int n = cd->n;
   int nlevel = cd->nlevel;
   int nphase = cd->nphase;
@@ -217,9 +186,7 @@ static void iterator(
     int cond(int, int, int, comm_data_t *cd),
     int phase,
     comm_data_t *cd,
-    buffers_t *bufs,
-    char *comm_table,
-    int *store_part)
+    buffers_t *bufs)
 {
   int prevlmin = get_prevlmin(phase, cd);
   bufs->mcount[phase] = 0;
@@ -293,17 +260,23 @@ static void fill_bufsize_rscount_displs(
   int size = cd->n * (cd->nlevel + 1);
   char *cursp = malloc(sizeof(*cursp) * size);
   for (int phase = 0; phase < cd->nphase; phase++) {
-    reduce_comm(phase, cd, comm_table, store_part);
+    // Clear cursp
     for (int i = 0; i < size; i++) cursp[i] = 0;
     phase_comm_table(phase, cd, comm_table, store_part, cursp);
-    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    if (phase > 0) {
+      reduce_comm(phase, cd, comm_table, store_part, cursp);
+      clear_comm_table(cd, comm_table);
+      for (int i = 0; i < size; i++) if (cursp[i]) store_part[i] = -1;
+      phase_comm_table(phase, cd, comm_table, store_part, cursp);
+    }
+    iterator(phase_cond, phase, cd, bufs);
     fill_rscounts(phase, bufs, comm_table);
     fill_displs(phase, bufs);
     clear_comm_table(cd, comm_table);
   }
   free(cursp);
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  iterator(skirt_cond, cd->nphase, cd, bufs);
   fill_rscounts(cd->nphase, bufs, comm_table);
   fill_displs(cd->nphase, bufs);
 }
@@ -393,13 +366,13 @@ static void fill_bufs(
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
     phase_comm_table(phase, cd, comm_table, store_part, NULL);
-    iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
+    iterator(phase_cond, phase, cd, bufs);
     fill_idx_rsbuf(phase, comm_table, bufs);
     clear_comm_table(cd, comm_table);
     fill_mptr(cd, bufs, phase);
   }
   skirt_comm_table(cd, comm_table, store_part);
-  iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
+  iterator(skirt_cond, cd->nphase, cd, bufs);
   fill_idx_rsbuf(cd->nphase, comm_table, bufs);
   fill_mptr(cd, bufs, cd->nphase);
 }
