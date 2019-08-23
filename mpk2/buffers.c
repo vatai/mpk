@@ -35,10 +35,9 @@ static void clear_comm_table(comm_data_t *cd, char *comm_table) {
     comm_table[i] = 0;
 }
 
-static int get_ct_idx(int src_part, int tgt_part, int vv_idx, int n, int npart,
-                      int nlevel) {
-  int from_part_to_part = npart * src_part + tgt_part;
-  return nlevel * n * from_part_to_part + vv_idx;
+static int get_ct_idx(int src, int tgt, int idx, int n, int npart, int nlevel) {
+  int from_part_to_part = npart * src + tgt;
+  return nlevel * n * from_part_to_part + idx;
 }
 
 static void init_comm_table(comm_data_t *cd, char *comm_table) {
