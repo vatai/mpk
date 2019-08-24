@@ -177,9 +177,14 @@ static int skirt_cond(int phase, int i, int level, comm_data_t *cd) {
 // Another "implicit parameter" which changes the behaviour is the
 // value of cd->idx_buf.  If cd->idx_buf == NULL, the idx_mbuf[] is
 // not filled, while if non-NULL it is filled.
-static void iterator(int cond(int, int, int, comm_data_t *cd), int phase,
-                     comm_data_t *cd, buffers_t *bufs, char *comm_table,
-                     int *store_part) {
+static void iterator(
+    int cond(int, int, int, comm_data_t *cd),
+    int phase,
+    comm_data_t *cd,
+    buffers_t *bufs,
+    char *comm_table,
+    int *store_part)
+{
   int prevlmin = get_prevlmin(phase, cd);
   bufs->mcount[phase] = 0;
   int max = max_or_nlevel(cd, phase);
