@@ -114,6 +114,15 @@ void print_ops(int ops, int minops, int redops, int nvert) {
       ops, nvert, minops, redops);
 }
 
+void save_summary(char *dir, int comm, int ops, int minops, int nvert) {
+  char fname[1024];
+  sprintf(fname, "summary-%s.log", dir);
+  FILE *file = fopen(fname, "w");
+  fprintf(file, "#%14s%15s%15s%15s\n", "communication", "ops", "minops", "nvert");
+  fprintf(file, "%15d%15d%15d%15d\n", comm, ops, minops, nvert);
+  fclose(file);
+}
+
 int main(int argc, char *argv[]) {
   comm_data_t *cd = new_comm_data(argv[1], 0);
   int npart = cd->npart;
@@ -130,6 +139,7 @@ int main(int argc, char *argv[]) {
   int nvert = cd->n * cd->nlevel;
   int redops = ops - minops;
   print_ops(ops, minops, redops, nvert);
+  save_summary(argv[1], elems, ops, minops, nvert);
   redundancy(bufs_arr);
   return 0;
 }
