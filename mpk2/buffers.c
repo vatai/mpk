@@ -90,9 +90,9 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
 static void phase_comm_table(
     int phase,
     comm_data_t *cd,
-    buffers_t *bufs,
     char *comm_table,
-    int *store_part)
+    int *store_part,
+    char *cursp)
 {
   // TODO(vatai): first_run
   assert(cd->plist[phase] != NULL);
@@ -106,11 +106,13 @@ static void phase_comm_table(
       int i_vvidx = n * level + i;
       int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
       if (prevli < level && level <= ll[i] &&
-          (bufs->idx_buf != NULL || store_part[i_vvidx] == -1)) {
+          (cursp == NULL || store_part[i_vvidx] == -1)) {
         int curpart = cd->plist[phase]->part[i];
         proc_vertex(curpart, i, level, cd, comm_table, store_part);
-        if (bufs->idx_buf == NULL)
+        if (cursp != NULL) {
           store_part[i_vvidx] = curpart;
+          cursp[i_vvidx] = 1;
+        }
       }
     }
   }
@@ -253,13 +255,17 @@ static void fill_bufsize_rscount_displs(
   bufs->idx_buf = NULL;
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
+  int size = cd->n * (cd->nlevel + 1);
+  char *cursp = malloc(sizeof(*cursp) * size);
   for (int phase = 0; phase < cd->nphase; phase++) {
-    phase_comm_table(phase, cd, bufs, comm_table, store_part);
+    for (int i = 0; i < size; i++) cursp[i] = 0;
+    phase_comm_table(phase, cd, comm_table, store_part, cursp);
     iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
     fill_rscounts(phase, bufs, comm_table);
     fill_displs(phase, bufs);
     clear_comm_table(cd, comm_table);
   }
+  free(cursp);
   skirt_comm_table(cd, comm_table, store_part);
   iterator(skirt_cond, cd->nphase, cd, bufs, comm_table, store_part);
   fill_rscounts(cd->nphase, bufs, comm_table);
@@ -350,7 +356,7 @@ static void fill_bufs(
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   for (int phase = 0; phase < cd->nphase; phase++) {
-    phase_comm_table(phase, cd, bufs, comm_table, store_part);
+    phase_comm_table(phase, cd, comm_table, store_part, NULL);
     iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
     fill_idx_rsbuf(phase, comm_table, bufs);
     clear_comm_table(cd, comm_table);
