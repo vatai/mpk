@@ -62,7 +62,6 @@ static void fill_part(int phase, comm_data_t *cd) {
   char fname[1024];
   FILE *f;
   sprintf(fname, "%s/g%d.part.%d", cd->dir, phase, cd->npart);
-  printf("  reading %s...\n", fname);
 
   f = fopen(fname, "r");
   if (f == NULL) {
@@ -80,7 +79,6 @@ static void fill_level(int phase, comm_data_t *cd) {
   char fname[1024];
   FILE *f;
   sprintf(fname, "%s/l%d", cd->dir, phase);
-  printf("  reading %s...\n", fname);
 
   f = fopen(fname, "r");
   if (f == NULL) {
@@ -97,7 +95,6 @@ static void fill_skirt(comm_data_t *cd) {
   char fname[1024];
   FILE *f;
   sprintf(fname, "%s/s%d", cd->dir, cd->nphase);
-  printf("  reading %s...\n", fname);
 
   f = fopen(fname, "r");
   if (f == NULL) {

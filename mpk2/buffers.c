@@ -539,7 +539,6 @@ void del_bufs(buffers_t *bufs) {
 
 void fill_buffers(comm_data_t *cd, buffers_t *bufs) {
   assert(cd != NULL);
-  printf("preparing mpi buffers for communication...");
 
   char *comm_table = new_comm_table(cd->n, cd->npart, cd->nlevel);
   int *store_part = new_store_part(cd);
@@ -551,7 +550,6 @@ void fill_buffers(comm_data_t *cd, buffers_t *bufs) {
 
   free(comm_table);
   free(store_part);
-  printf(" done\n");
 }
 
 void write_buffers(buffers_t *bufs, char *dir) {
