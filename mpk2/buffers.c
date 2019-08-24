@@ -88,8 +88,13 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
   return rv;
 }
 
-static void phase_comm_table(int phase, comm_data_t *cd, buffers_t *bufs,
-                             char *comm_table, int *store_part) {
+static void phase_comm_table(
+    int phase,
+    comm_data_t *cd,
+    buffers_t *bufs,
+    char *comm_table,
+    int *store_part)
+{
   // TODO(vatai): first_run
   assert(cd->plist[phase] != NULL);
   int n = cd->n;
