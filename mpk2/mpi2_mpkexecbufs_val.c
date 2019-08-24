@@ -96,7 +96,13 @@ int main(int argc, char *argv[]) {
       mintime = newtime < mintime ? newtime: mintime;
   }
   double wtick = MPI_Wtime();
-  printf("Min time for %d runs is %lf (Wtick: %lf)\n", nreps, mintime, wtick);
+  if (bufs->rank == 0) {
+    printf("Min time for %d runs is %lf (Wtick: %lf)\n", nreps, mintime, wtick);
+    char fname[1024];
+    sprintf(fname, "times-%s.log", argv[1]);
+    FILE *file = fopen(fname, "w");
+    fprintf(file, "time %lf (min of %d)\n", mintime, nreps);
+  }
 
   // Collect the results on rank == 0.
   double *vv = (double*) malloc(sizeof(double) * bufs->n * (bufs->nlevel+1));
