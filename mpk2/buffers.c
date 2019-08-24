@@ -118,6 +118,41 @@ static void phase_comm_table(
   }
 }
 
+static void make_perm(int *perm, comm_data_t *cd, char *comm_table) {
+  int npart = cd->npart;
+  int size = cd->n * cd->nlevel;
+  for (int i = 0; i < npart; i++) {
+    int max = 0;
+    int maxto = 0;
+    for (int j = 0; j < npart; j++) {
+      int sum = 0;
+      for (int k = 0; k < size; k++) {
+        int idx = get_ct_idx(i, j, k, cd->n, npart, cd->nlevel);
+        sum += comm_table[idx];
+      }
+      if (sum > max) {
+        max = sum;
+        maxto = j;
+      }
+    }
+    perm[i] = maxto;
+  }
+}
+
+static void reduce_comm(
+    int phase,
+    comm_data_t *cd,
+    char *comm_table,
+    int *store_part)
+{
+  int *perm = malloc(sizeof(*perm) * cd->npart);
+  make_perm(perm, cd, comm_table);
+  // assert_perm(perm, cd->npart);
+  // apply_perm_cd(perm, cd);
+  // apply_perm_ct(perm, ct);
+  free(perm);
+}
+
 static void skirt_comm_table(comm_data_t *cd, char *comm_table,
                              int *store_part) {
   int n = cd->n;
@@ -258,6 +293,7 @@ static void fill_bufsize_rscount_displs(
   int size = cd->n * (cd->nlevel + 1);
   char *cursp = malloc(sizeof(*cursp) * size);
   for (int phase = 0; phase < cd->nphase; phase++) {
+    reduce_comm(phase, cd, comm_table, store_part);
     for (int i = 0; i < size; i++) cursp[i] = 0;
     phase_comm_table(phase, cd, comm_table, store_part, cursp);
     iterator(phase_cond, phase, cd, bufs, comm_table, store_part);
