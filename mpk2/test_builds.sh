@@ -44,10 +44,11 @@ set -x # Uncomment this line to make verbose.
 # ./mpktest $DIRNAME || exit 3
 
 # MPI2 version: read/write buffers
-mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME 1>/dev/null || exit 10
-mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
+mpirun -n $NPART ./mpi2_mpkwrtbufs $DIRNAME || exit 10
+# mpirun -n $NPART ./mpi2_mpkexecbufs $DIRNAME || exit 11
 mpirun -n $NPART ./mpi2_mpkexecbufs_val $DIRNAME || exit 12
 # ./mpkrun $DIRNAME || exit 13
+./work_count $DIRNAME
 ./verify_val $DIRNAME || exit 14
 diff $DIRNAME/gold_result.bin $DIRNAME/results.bin
 # python merge_vv.py $DIRNAME/vv_after_mpi_exec_rank*.log || exit
