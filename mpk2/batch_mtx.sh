@@ -9,10 +9,10 @@ NPHASEITER=$(seq 0 4)
 
 for NAME in $(ls *.mtx); do #
 # for NAME in m5p t5p cube; do #
+    ./mtx2gen $NAME
     for SIZE in $SIZEITER; do #
         for NPART in $NPARTITER; do #
             for NPHASE in $NPHASEITER; do #
-                ./mtx2gen $NAME
                 SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE ./test_mtx.sh $NAME
             done
         done
