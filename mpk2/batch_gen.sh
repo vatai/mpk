@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/sh -x
 
 SIZEITER="10 100"
-NPARTITER="8 16"
+NPARTITER="4 8"
 NPHASEITER=$(seq 0 4)
 # SIZEITER="10 20"
 # NPARTITER="2 4"
