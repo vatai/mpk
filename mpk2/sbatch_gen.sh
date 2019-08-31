@@ -7,8 +7,8 @@ SIZEITER="10 20"
 NPARTITER="2 4"
 NPHASEITER=$(seq 1 2)
 
-# for NAME in m{3,5,7}p t{3,5,7}p cube; do #
-for NAME in m3p t3p cube; do #
+# for NAME in m{5,7,9}p t{5,7,9}p cube; do #
+for NAME in m5p t5p cube; do #
     for SIZE in $SIZEITER; do #
         for NPART in $NPARTITER; do #
             for NPHASE in $NPHASEITER; do #
