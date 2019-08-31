@@ -12,7 +12,7 @@ for NAME in m3p t3p cube; do #
     for SIZE in $SIZEITER; do #
         for NPART in $NPARTITER; do #
             for NPHASE in $NPHASEITER; do #
-                NAME=$NAME SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE sbatch -N $NPART mpi.sh
+                NAME=$NAME SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE sbatch -N $NPART mpi_gen.sh
             done
         done
     done
