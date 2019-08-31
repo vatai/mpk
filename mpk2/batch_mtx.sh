@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 SIZEITER="10 100"
 NPARTITER="4 8"
