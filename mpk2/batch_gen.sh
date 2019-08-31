@@ -12,7 +12,7 @@ for NAME in m{5,7,9}p; do #
     for SIZE in $SIZEITER; do #
         for NPART in $NPARTITER; do #
             for NPHASE in $NPHASEITER; do #
-                NAME=$NAME SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE ./test_builds.sh
+                NLEVEL=20 NAME=$NAME SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE ./test_builds.sh
             done
         done
     done
