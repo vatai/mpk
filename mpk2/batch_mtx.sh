@@ -12,7 +12,7 @@ for NAME in $(ls *.mtx); do #
     for SIZE in $SIZEITER; do #
         for NPART in $NPARTITER; do #
             for NPHASE in $NPHASEITER; do #
-                NAME=$NAME SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE ./test_mtx.sh
+                SIZE=$SIZE NPART=$NPART NPHASE=$NPHASE ./test_mtx.sh $NAME
             done
         done
     done
