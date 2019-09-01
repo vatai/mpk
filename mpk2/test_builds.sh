@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME=${NAME:=mesh5p}
+NAME=${NAME:=m5p}
 SIZE=${SIZE:=100}
 NPART=${NPART:=4}
 NLEVEL=${NLEVEL:=10}
@@ -15,9 +15,9 @@ make || exit -1
 # Delete input files.
 rm -rf ${DIRNAME}
 
-./gen m5p $SIZE $NAME$SIZE
+./gen $NAME $SIZE $NAME$SIZE
 # Our program supports loops, so overwrite the g0 file.
-./gen2 m5p $SIZE $NAME$SIZE
+./gen2 $NAME $SIZE $NAME$SIZE
 
 ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
 cp $NAME$SIZE.loop.g0 $DIRNAME/loop.g0 || exit 2
