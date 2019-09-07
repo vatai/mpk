@@ -15,7 +15,6 @@
 input/*/
 *.tar.gz
 *.tgz
-metis*
 
 *flymake.c
 *flymake.h
