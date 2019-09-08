@@ -46,3 +46,5 @@ mpi2_mpkexecbufs : buffers.o comm_data.o mpi2_mpkexec.o lib.o reduce_comm.o
 mpi2_mpkexecbufs_val : buffers.o comm_data.o mpi2_mpkexec.o lib.o reduce_comm.o
 verify_val : comm_data.o lib.o
 work_count : comm_data.o buffers.o lib.o reduce_comm.o
+
+mpi2_pmpkwrtbufs : buffers.o comm_data.o lib.o reduce_comm.o
