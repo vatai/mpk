@@ -6,7 +6,7 @@
 #include "buffers.h"
 
 static void alloc_fill_mval(buffers_t *bufs, double *val, crs0_t *g) {
-  bufs->mval_buf = malloc(sizeof(*bufs->mval_buf) * bufs->mcol_count);
+  bufs->mval_buf = (double *)malloc(sizeof(*bufs->mval_buf) * bufs->mcol_count);
   assert(bufs->mval_buf != NULL);
   int *ptr = g->ptr;
   for (int phase = 0; phase <= bufs->nphase; phase++) {

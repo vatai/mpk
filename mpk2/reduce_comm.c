@@ -36,7 +36,7 @@ static void visit_perm(int npart, int *sums, int *tperm, int *perm, int *_max) {
 static void make_perm(int *perm, int *sums, comm_data_t *cd, char *comm_table) {
   int tmp;
   int npart = cd->npart;
-  int *tmpperm = malloc(sizeof(*tmpperm) * npart);
+  int *tmpperm = (int *)malloc(sizeof(*tmpperm) * npart);
   // init perm a1 <= a2 <= .. <= an
   for (int i = 0; i < npart; i++) {
     tmpperm[i] = i;
@@ -73,7 +73,7 @@ static void make_perm(int *perm, int *sums, comm_data_t *cd, char *comm_table) {
 
 // TODO(vatai): remove this
 static void assert_perm(int *perm, int n) {
-  char *tmp = malloc(sizeof(*tmp) * n);
+  char *tmp = (char *)malloc(sizeof(*tmp) * n);
   for (int i = 0; i < n; i++) tmp[i] = 0;
   for (int i = 0; i < n; i++) {
     int pi = perm[i];
@@ -104,7 +104,7 @@ static void apply_perm_sp(
 }
 
 void debug_print(comm_data_t *cd, char *comm_table) {
-  int *sums = malloc(sizeof(*sums) * cd->npart * cd->npart);
+  int *sums = (int *)malloc(sizeof(*sums) * cd->npart * cd->npart);
   make_sums(sums, cd, comm_table);
   if (cd->rank == 0) {
     printf("\n");
@@ -130,7 +130,7 @@ static void debug_(
   FILE *file = fopen(fname, "w");
 
   int npart;
-  int *sums = malloc(sizeof(*sums) * npart * npart);
+  int *sums = (int *)malloc(sizeof(*sums) * npart * npart);
   make_sums(sums, cd, comm_table);
   if (cd->rank == 0) {
     fprintf(file, "\n");
@@ -152,8 +152,8 @@ void reduce_comm(
     int *store_part,
     char *cursp)
 {
-  int *perm = malloc(sizeof(*perm) * cd->npart);
-  int *sums = malloc(sizeof(*sums) * cd->npart * cd->npart);
+  int *perm = (int *)malloc(sizeof(*perm) * cd->npart);
+  int *sums = (int *)malloc(sizeof(*sums) * cd->npart * cd->npart);
   make_sums(sums, cd, comm_table);
   make_perm(perm, sums, cd, comm_table);
 

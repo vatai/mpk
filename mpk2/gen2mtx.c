@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     return 2;
   }
   crs0_t *g = read_crs(g0_file); // closes file
-  double *val = malloc(sizeof(*val) * g->n);
+  double *val = (double *)malloc(sizeof(*val) * g->n);
   read_val(val_file, val, g->ptr[g->n]);
   save_mtx(g, val, mtx_file);
   fclose(mtx_file);

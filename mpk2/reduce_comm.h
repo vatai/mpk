@@ -3,6 +3,10 @@
 
 #include "comm_data.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void debug_print(comm_data_t *cd, char *comm_table);
 
 void reduce_comm(
@@ -11,5 +15,9 @@ void reduce_comm(
     char *comm_table,
     int *store_part,
     char *cursp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

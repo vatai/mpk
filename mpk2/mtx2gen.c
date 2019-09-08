@@ -114,13 +114,13 @@ void write_crs_as_gen(
   sprintf(fname, "%s.val", fn);
   FILE *fv = fopen(fname, "w");
 
-  int *counts = malloc(sizeof(counts) * M);
+  int *counts = (int *)malloc(sizeof(counts) * M);
   for (int i = 0; i < M; i++) counts[i] = 0;
   for (int j = 0; j < nz; j++) counts[I[j]]++;
 
-  int **lookup = malloc(sizeof(*lookup) * M);
+  int **lookup = (int **)malloc(sizeof(*lookup) * M);
   for (int i = 0; i < M; i++)
-    lookup[i] = malloc(sizeof(*lookup[i]) * counts[i]);
+    lookup[i] = (int *)malloc(sizeof(*lookup[i]) * counts[i]);
   for (int i = 0; i < M; i++) counts[i] = 0;
   for (int j = 0; j < nz; j++) {
     lookup[I[j]][counts[I[j]]] = j;

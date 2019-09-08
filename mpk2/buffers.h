@@ -3,6 +3,10 @@
 
 #include "comm_data.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct buffers_t {
   int n;
   int npart;
@@ -53,5 +57,9 @@ void fill_buffers(comm_data_t *, buffers_t *);
 void write_buffers(buffers_t *, char *);
 
 buffers_t *read_buffers(char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

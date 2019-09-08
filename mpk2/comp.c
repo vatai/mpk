@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+
 #include "lib.h"
 
 void print_levels(level_t *lg) {

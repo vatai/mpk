@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   int nlevel = get_nleve(argv[1]);
   double *val = alloc_read_val(graph, argv[1]);
   int count = graph->n * (nlevel + 1);
-  double *vv = malloc(sizeof(*vv) * count);
+  double *vv = (double *)malloc(sizeof(*vv) * count);
   for (int i = 0; i < graph->n; i++)
     vv[i] = 1.0;
   for (int level = 0; level < nlevel; level++) {

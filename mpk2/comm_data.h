@@ -3,6 +3,10 @@
 
 #include "lib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct comm_table {
   char *dir;
   int n;
@@ -26,5 +30,9 @@ double *alloc_read_val(crs0_t *g0, char *dir);
 comm_data_t *new_comm_data(char *dir, int rank);
 
 void del_comm_data(comm_data_t *cd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

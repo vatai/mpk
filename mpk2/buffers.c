@@ -23,7 +23,7 @@ static char *new_comm_table(int n, int npart, int nlevel) {
   // from which process/partition (npart) to which process/partition
   // (npart).
   int num_elem = nlevel * n * npart * npart;
-  char *ct = malloc(sizeof(*ct) * num_elem);
+  char *ct = (char *)malloc(sizeof(*ct) * num_elem);
   assert(ct != NULL);
   return ct;
 }
@@ -258,7 +258,7 @@ static void fill_bufsize_rscount_displs(
   clear_comm_table(cd, comm_table);
   init_comm_table(cd, comm_table);
   int size = cd->n * (cd->nlevel + 1);
-  char *cursp = malloc(sizeof(*cursp) * size);
+  char *cursp = (char *)malloc(sizeof(*cursp) * size);
   for (int phase = 0; phase < cd->nphase; phase++) {
     // Clear cursp
     for (int i = 0; i < size; i++) cursp[i] = 0;
@@ -293,9 +293,9 @@ static void alloc_bufs(buffers_t *bufs)
     bufs->mptr_count += bufs->mcount[phase] + 1;
   }
 
-  bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
-  bufs->idx_sbuf = malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
-  bufs->mptr_buf = malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
+  bufs->idx_buf = (long *)malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
+  bufs->idx_sbuf = (long *)malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
+  bufs->mptr_buf = (long *)malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
   assert(bufs->idx_buf != NULL);
   assert(bufs->idx_sbuf != NULL);
   assert(bufs->mptr_buf != NULL);
@@ -385,7 +385,7 @@ static void alloc_mcol(buffers_t *bufs) {
     bufs->mcol_offsets[phase] = bufs->mcol_count;
     bufs->mcol_count += mptr[mcount];
   }
-  bufs->mcol_buf = malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
+  bufs->mcol_buf = (long *)malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
   assert(bufs->mcol_buf != NULL);
 }
 
@@ -421,7 +421,7 @@ static void fill_mcol_sbuf(
 
   // TODO(vatai): Combine temporary data
   int N = bufs->n * (bufs->nlevel + 1);
-  int *find_idx = malloc(sizeof(int) * N);
+  int *find_idx = (int *)malloc(sizeof(int) * N);
   for (int j = 0; j < N; j++) find_idx[j] = -1;
   for (int i = 0; i < bufs->buf_count; i++) {
     int idx = bufs->idx_buf[i];
@@ -451,33 +451,33 @@ static void alloc_bufs0(buffers_t *bufs) {
   int npart = bufs->npart;
   int nphase = bufs->nphase;
 
-  bufs->recvcounts = malloc(sizeof(*bufs->recvcounts) * npart * (nphase + 1));
+  bufs->recvcounts = (int *)malloc(sizeof(*bufs->recvcounts) * npart * (nphase + 1));
   assert(bufs->recvcounts != NULL);
-  bufs->sendcounts = malloc(sizeof(*bufs->sendcounts) * npart * (nphase + 1));
+  bufs->sendcounts = (int *)malloc(sizeof(*bufs->sendcounts) * npart * (nphase + 1));
   assert(bufs->sendcounts != NULL);
 
-  bufs->rdispls = malloc(sizeof(*bufs->rdispls) * npart * (nphase + 1));
+  bufs->rdispls = (int *)malloc(sizeof(*bufs->rdispls) * npart * (nphase + 1));
   assert(bufs->rdispls != NULL);
-  bufs->sdispls = malloc(sizeof(*bufs->sdispls) * npart * (nphase + 1));
+  bufs->sdispls = (int *)malloc(sizeof(*bufs->sdispls) * npart * (nphase + 1));
   assert(bufs->sdispls != NULL);
 
-  bufs->rcount = malloc(sizeof(*bufs->rcount) * (nphase + 1));
+  bufs->rcount = (int *)malloc(sizeof(*bufs->rcount) * (nphase + 1));
   assert(bufs->rcount != NULL);
-  bufs->mcount = malloc(sizeof(*bufs->mcount) * (nphase + 1));
+  bufs->mcount = (int *)malloc(sizeof(*bufs->mcount) * (nphase + 1));
   assert(bufs->mcount != NULL);
-  bufs->scount = malloc(sizeof(*bufs->scount) * (nphase + 1));
+  bufs->scount = (int *)malloc(sizeof(*bufs->scount) * (nphase + 1));
   assert(bufs->scount != NULL);
 
-  bufs->rbuf_offsets = malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
+  bufs->rbuf_offsets = (int *)malloc(sizeof(*bufs->rbuf_offsets) * (nphase + 1));
   assert(bufs->rbuf_offsets != NULL);
-  bufs->mbuf_offsets = malloc(sizeof(*bufs->mbuf_offsets) * (nphase + 1));
+  bufs->mbuf_offsets = (int *)malloc(sizeof(*bufs->mbuf_offsets) * (nphase + 1));
   assert(bufs->mbuf_offsets != NULL);
-  bufs->sbuf_offsets = malloc(sizeof(*bufs->sbuf_offsets) * (nphase + 1));
+  bufs->sbuf_offsets = (int *)malloc(sizeof(*bufs->sbuf_offsets) * (nphase + 1));
   assert(bufs->sbuf_offsets != NULL);
 
-  bufs->mptr_offsets = malloc(sizeof(*bufs->mptr_offsets) * (nphase + 1));
+  bufs->mptr_offsets = (int *)malloc(sizeof(*bufs->mptr_offsets) * (nphase + 1));
   assert(bufs->mptr_offsets != NULL);
-  bufs->mcol_offsets = malloc(sizeof(*bufs->mcol_offsets) * (nphase + 1));
+  bufs->mcol_offsets = (int *)malloc(sizeof(*bufs->mcol_offsets) * (nphase + 1));
   assert(bufs->mcol_offsets != NULL);
 
   // use alloc_val_bufs for these
@@ -487,7 +487,7 @@ static void alloc_bufs0(buffers_t *bufs) {
 }
 
 buffers_t *new_bufs(comm_data_t *cd) {
-  buffers_t *bufs = malloc(sizeof(*bufs));
+  buffers_t *bufs = (buffers_t *)malloc(sizeof(*bufs));
   bufs->n = cd->n;
   bufs->npart = cd->npart;
   bufs->nlevel = cd->nlevel;
@@ -499,8 +499,8 @@ buffers_t *new_bufs(comm_data_t *cd) {
 
 void alloc_val_bufs(buffers_t *bufs) {
   // TODO(vatai): eventually mval
-  bufs->vv_buf = malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
-  bufs->vv_sbuf = malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
+  bufs->vv_buf = (double *)malloc(sizeof(*bufs->vv_buf) * bufs->buf_count);
+  bufs->vv_sbuf = (double *)malloc(sizeof(*bufs->vv_sbuf) * bufs->buf_scount);
   assert(bufs->vv_buf != NULL);
   assert(bufs->vv_sbuf != NULL);
 }
@@ -598,7 +598,7 @@ void write_buffers(buffers_t *bufs, char *dir) {
 }
 
 buffers_t *read_buffers(char *dir, int rank) {
-  buffers_t *bufs = malloc(sizeof(*bufs));
+  buffers_t *bufs = (buffers_t *)malloc(sizeof(*bufs));
 
   char fname[1024];
   sprintf(fname, "%s/rank%d.bufs", dir, rank);
@@ -638,17 +638,17 @@ buffers_t *read_buffers(char *dir, int rank) {
   fread(bufs->mcol_offsets, sizeof(*bufs->mcol_offsets), count, file);
 
   // variable length vectors
-  bufs->idx_buf = malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
+  bufs->idx_buf = (long *)malloc(sizeof(*bufs->idx_buf) * bufs->buf_count);
   fread(bufs->idx_buf, sizeof(*bufs->idx_buf), bufs->buf_count, file);
-  bufs->idx_sbuf = malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
+  bufs->idx_sbuf = (long *)malloc(sizeof(*bufs->idx_sbuf) * bufs->buf_scount);
   fread(bufs->idx_sbuf, sizeof(*bufs->idx_sbuf), bufs->buf_scount, file);
-  bufs->mptr_buf = malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
+  bufs->mptr_buf = (long *)malloc(sizeof(*bufs->mptr_buf) * bufs->mptr_count);
   fread(bufs->mptr_buf, sizeof(*bufs->mptr_buf), bufs->mptr_count, file);
-  bufs->mcol_buf = malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
+  bufs->mcol_buf = (long *)malloc(sizeof(*bufs->mcol_buf) * bufs->mcol_count);
   fread(bufs->mcol_buf, sizeof(*bufs->mcol_buf), bufs->mcol_count, file);
 
   // If we don't use bufs->mval_buf
-  bufs->mval_buf = malloc(sizeof(*bufs->mval_buf) * bufs->mcol_count);
+  bufs->mval_buf = (double *)malloc(sizeof(*bufs->mval_buf) * bufs->mcol_count);
   int chread =
       fread(bufs->mval_buf, sizeof(*bufs->mval_buf), bufs->mcol_count, file);
   if (chread < bufs->mcol_count){

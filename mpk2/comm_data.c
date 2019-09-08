@@ -120,7 +120,7 @@ crs0_t *read_matrix(char *dir) {
 }
 
 double *alloc_read_val(crs0_t *g0, char *dir) {
-  double *val = malloc(sizeof(*val) * g0->ptr[g0->n]);
+  double *val = (double *)malloc(sizeof(*val) * g0->ptr[g0->n]);
   assert(val != NULL);
 
   int cnt = 0; // Check for 3x '_'!
@@ -147,7 +147,7 @@ double *alloc_read_val(crs0_t *g0, char *dir) {
 }
 
 comm_data_t *new_comm_data(char *dir, int rank) {
-  comm_data_t *cd = malloc(sizeof(*cd));
+  comm_data_t *cd = (comm_data_t *)malloc(sizeof(*cd));
   cd->dir = dir;
   cd->rank = rank;
   read_dir(cd);

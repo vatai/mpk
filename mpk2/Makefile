@@ -1,5 +1,6 @@
 # CC=$(shell which mpiicc 1>/dev/null 2>/dev/null && echo mpiicc || echo mpicc)
-CC=mpicc
+# NOTTESTED CC=$(shell which mpiicpc 1>/dev/null 2>/dev/null && echo mpiicpc || echo mpicxx)
+CC=mpicxx
 CFLAGS = -g -fopenmp
 LDLIBS = -fopenmp -lm
 

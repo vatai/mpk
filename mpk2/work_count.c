@@ -68,7 +68,7 @@ void redundancy(buffers_t **bufs_arr) {
   // both sent and calculated on a partition.
   int npart = bufs_arr[0]->npart;
   int size = bufs_arr[0]->n * (bufs_arr[0]->nlevel + 1);
-  char *tmp = malloc(sizeof(*tmp) * size);
+  char *tmp = (char *)malloc(sizeof(*tmp) * size);
   for (int p = 0; p < npart; p++) {
     buffers_t* bufs = bufs_arr[p];
     for (int phase = 0; phase <= bufs->nphase; phase++) {
@@ -126,7 +126,7 @@ void save_summary(char *dir, int comm, int ops, int minops, int nvert) {
 int main(int argc, char *argv[]) {
   comm_data_t *cd = new_comm_data(argv[1], 0);
   int npart = cd->npart;
-  buffers_t **bufs_arr = malloc(sizeof(*bufs_arr) * npart);
+  buffers_t **bufs_arr = (buffers_t **)malloc(sizeof(*bufs_arr) * npart);
   for (int p = 0; p < npart; p++)
     bufs_arr[p] = read_buffers(argv[1], p);
 

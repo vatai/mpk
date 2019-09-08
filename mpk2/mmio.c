@@ -461,47 +461,47 @@ char  *mm_typecode_to_str(MM_typecode matcode)
 
     /* check for MTX type */
     if (mm_is_matrix(matcode)) 
-        types[0] = MM_MTX_STR;
+      types[0] = (char *)MM_MTX_STR;
     else
         error=1;
 
     /* check for CRD or ARR matrix */
     if (mm_is_sparse(matcode))
-        types[1] = MM_SPARSE_STR;
+      types[1] = (char *)MM_SPARSE_STR;
     else
     if (mm_is_dense(matcode))
-        types[1] = MM_DENSE_STR;
+      types[1] = (char *)MM_DENSE_STR;
     else
         return NULL;
 
     /* check for element data type */
     if (mm_is_real(matcode))
-        types[2] = MM_REAL_STR;
+      types[2] = (char *)MM_REAL_STR;
     else
     if (mm_is_complex(matcode))
-        types[2] = MM_COMPLEX_STR;
+      types[2] = (char *)MM_COMPLEX_STR;
     else
     if (mm_is_pattern(matcode))
-        types[2] = MM_PATTERN_STR;
+      types[2] = (char *)MM_PATTERN_STR;
     else
     if (mm_is_integer(matcode))
-        types[2] = MM_INT_STR;
+      types[2] = (char *)MM_INT_STR;
     else
         return NULL;
 
 
     /* check for symmetry type */
     if (mm_is_general(matcode))
-        types[3] = MM_GENERAL_STR;
+      types[3] = (char *)MM_GENERAL_STR;
     else
     if (mm_is_symmetric(matcode))
-        types[3] = MM_SYMM_STR;
+      types[3] = (char *)MM_SYMM_STR;
     else 
     if (mm_is_hermitian(matcode))
-        types[3] = MM_HERM_STR;
+      types[3] = (char *)MM_HERM_STR;
     else 
     if (mm_is_skew(matcode))
-        types[3] = MM_SKEW_STR;
+      types[3] = (char *)MM_SKEW_STR;
     else
         return NULL;
 
