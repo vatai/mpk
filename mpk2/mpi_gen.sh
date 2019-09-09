@@ -20,4 +20,4 @@ srun -N 1 ./gen2 $NAME $SIZE $NAME$SIZE
 srun -N 1 ./driver $NAME$SIZE $NPART $NLEVEL $NPHASE 1>/dev/null || exit 1
 cp $NAME$SIZE.loop.g0 $DIRNAME/loop.g0 || exit 2
 
-srun -N $NPART ./run_script.sh $DIRNAME
+./srun_script.sh $DIRNAME
