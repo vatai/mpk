@@ -69,17 +69,17 @@ int main(int argc, char *argv[]) {
 
   FILE *g0_file = fopen(g0_fname, "r");
   if (g0_file == NULL) {
-    fprintf(stderr, "Can't open file %s", g0_file);
+    fprintf(stderr, "Can't open file %s", g0_fname);
     return 2;
   }
   FILE *val_file = fopen(val_fname, "r");
   if (val_file == NULL) {
-    fprintf(stderr, "Can't open file %s", val_file);
+    fprintf(stderr, "Can't open file %s", val_fname);
     return 2;
   }
   FILE *mtx_file = fopen(mtx_fname, "w");
   if (mtx_file == NULL) {
-    fprintf(stderr, "Can't open file %s", mtx_file);
+    fprintf(stderr, "Can't open file %s", mtx_fname);
     return 2;
   }
   crs0_t *g = read_crs(g0_file); // closes file

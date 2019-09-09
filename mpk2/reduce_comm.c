@@ -126,7 +126,7 @@ static void debug_(
     int *store_part)
 {
   char fname[1024];
-  sprintf(fname, "debug-comm-phase%d.rank%d.id%d.log", phase, cd->rank);
+  sprintf(fname, "debug-comm-phase%d.rank%d.log", phase, cd->rank);
   FILE *file = fopen(fname, "w");
 
   int npart;
