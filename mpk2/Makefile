@@ -8,7 +8,8 @@ UTILS = gen gen2 gen2mtx mtx2gen comp skirt format driver stat verify_val work_c
 OMPBIN = mpktest mpkrun
 MPI1BIN = mpi_mpktest
 MPI2BIN = mpi2_mpktest mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
-BIN = $(UTILS) $(MPI2BIN)
+MPIPBIN = mpi2_pmpkwrtbufs
+BIN = $(UTILS) $(MPIPBIN)
 
 default : $(BIN)
 
@@ -17,15 +18,15 @@ clean :
 
 gen : gen.c
 
-lib.o : lib.c lib.h
-comp.o : comp.c lib.h
-skirt.o : skirt.c lib.h
-format.o : format.c lib.h
-stat.o : stat.c lib.h
-driver.o : driver.c lib.h
+# lib.o : lib.c lib.h
+# comp.o : comp.c lib.h
+# skirt.o : skirt.c lib.h
+# format.o : format.c lib.h
+# stat.o : stat.c lib.h
+# driver.o : driver.c lib.h
 
-comm_data.o : comm_data.h lib.h
-buffers.o : buffers.h comm_data.h lib.h
+# comm_data.o : comm_data.h lib.h
+# buffers.o : buffers.h comm_data.h lib.h
 
 # binaries
 comp : comp.o lib.o
@@ -48,4 +49,4 @@ mpi2_mpkexecbufs_val : buffers.o comm_data.o mpi2_mpkexec.o lib.o reduce_comm.o
 verify_val : comm_data.o lib.o
 work_count : comm_data.o buffers.o lib.o reduce_comm.o
 
-mpi2_pmpkwrtbufs : buffers.o comm_data.o lib.o reduce_comm.o
+mpi2_pmpkwrtbufs : partial_cd.o
