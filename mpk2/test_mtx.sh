@@ -19,3 +19,5 @@ test -f $G0FILE || test -f $LOOPFILE || test -f $NAME.val || ./mtx2gen $MTXFILE
 cp -f $LOOPFILE $DIRNAME/loop.g0
 
 ./run_script.sh $DIRNAME
+
+rm -rf $DIRNAME
