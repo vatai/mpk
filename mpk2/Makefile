@@ -4,14 +4,14 @@ CC=mpicxx
 CFLAGS = -g -fopenmp
 LDLIBS = -fopenmp -lm
 
-UTILS = gen gen2 gen2mtx mtx2gen comp skirt format driver stat verify_val work_count
+UTILS = gen gen2 gen2mtx mtx2gen
+MPKBASE = comp skirt format driver stat verify_val work_count
 OMPBIN = mpktest mpkrun
-MPI1BIN = mpi_mpktest
-MPI2BIN = mpi2_mpktest mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
+MPI1BIN = $(MPKBASE) mpi_mpktest
+MPI2BIN = $(MPKBASE) mpi2_mpktest mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
 MPIPBIN = mpi2_pmpkwrtbufs
-BIN = $(UTILS) $(MPIPBIN)
 
-default : $(BIN)
+default : $(UTILS) $(MPIPBIN)
 
 clean :
 	rm -rf $(BIN) *.o *~ *.log
