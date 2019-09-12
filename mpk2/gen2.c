@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     goto usage;
   }
 
-  sprintf(s, "%s.val", argv[3]);
+  sprintf(s, "%s.loop.val", argv[3]);
   FILE *fv = fopen(s, "w");
   if (fv == NULL) {
     fprintf(stderr, "cannot open %s\n", s);
