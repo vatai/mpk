@@ -9,11 +9,12 @@
 
 class partial_cd {
 public:
-  partial_cd(const char *_dir, const int _rank, const idx_t _npart,
-             const int nlevels);
+  partial_cd(const char *_dir, const int _rank, const int _world_size,
+             const idx_t _npart, const int nlevels);
 
   const std::string dir;
   const int rank;
+  const int world_size;
   idx_t npart;
   const int nlevels;
 

@@ -6,9 +6,10 @@
 
 int main(int argc, char *argv[])
 {
-  int rank, npart, nlevels;
+  int rank, world_size, npart, nlevels;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // Get npart
   std::stringstream ss(argv[2]);
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
   ss << argv[3];
   ss >> nlevels;
 
-  partial_cd pcd(argv[1], rank, npart, nlevels);
+  partial_cd pcd(argv[1], rank, world_size, npart, nlevels);
 
   MPI_Finalize();
   return 0;

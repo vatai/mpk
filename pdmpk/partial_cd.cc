@@ -8,9 +8,9 @@
 #include "partial_cd.h"
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_dir, const int _rank, const idx_t _npart,
-                       const int _nlevels)
-    : dir{_dir}, rank{_rank}, npart{_npart}, nlevels{_nlevels} //
+partial_cd::partial_cd(const char *_dir, const int _rank, const int _world_size,
+                       const idx_t _npart, const int _nlevels)
+    : dir{_dir}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
 {
   std::ifstream file{this->dir};
 
@@ -119,7 +119,6 @@ void partial_cd::pdmpk_update_levels()
 {
   for (int k = 0; k < nlevels; k++) {
     for (int i = 0; i < n; i++) {
-      // if (cond)
     }
   }
 }
