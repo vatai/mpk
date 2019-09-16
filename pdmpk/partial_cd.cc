@@ -36,11 +36,9 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
 void partial_cd::metis_partition()
 {
   idx_t ov[1];
-  std::vector<idx_t> part(n);
   METIS_PartGraphRecursive(&n, &nnz, ptr.data(), col.data(), NULL, NULL, NULL,
-                           &npart, NULL, NULL, NULL, ov, part.data());
-  for (auto v : part)
-    std::cout << v << ", ";
+                           &npart, NULL, NULL, NULL, ov, partitions.data());
+  for (auto v : partitions) std::cout << v << ", ";
   std::cout << std::endl;
 }
 
@@ -76,14 +74,15 @@ void partial_cd::mtx_fill_size(std::ifstream &file)
 
   ss << line;
   size_t m;
-  ss >> m >> this->n >> this->nnz;
-  if (m != this->n) {
+  ss >> m >> n >> nnz;
+  if (m != n) {
     throw std::logic_error("Matrix not square");
   }
 
-  this->ptr.resize(this->n + 1);
-  this->col.reserve(this->nnz);
-  this->val.reserve(this->nnz);
+  ptr.resize(n + 1);
+  col.reserve(nnz);
+  val.reserve(nnz);
+  partitions.resize(n);
 }
 
 void partial_cd::mtx_fill_vectors(std::ifstream &file)

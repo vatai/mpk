@@ -20,11 +20,13 @@ public:
   const int rank;
   idx_t npart;
 
+  idx_t n;
+  idx_t nnz;
   std::vector<idx_t> ptr;
   std::vector<idx_t> col;
   std::vector<double> val;
-  idx_t n;
-  idx_t nnz;
+
+  std::vector<idx_t> partitions;
 
 private:
   void mtx_check_banner(std::ifstream &file);
