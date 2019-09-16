@@ -1,3 +1,6 @@
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-09-17
+
 #include <iostream>
 #include <sstream>
 #include <mpi.h>

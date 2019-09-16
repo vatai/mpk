@@ -1,3 +1,6 @@
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-09-17
+
 #ifndef _PARTIAL_CD_
 #define _PARTIAL_CD_
 

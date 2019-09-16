@@ -1,3 +1,6 @@
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-09-17
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
