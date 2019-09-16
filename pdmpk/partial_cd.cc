@@ -8,9 +8,9 @@
 #include "partial_cd.h"
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
-    : dir{_dir}, rank{_rank}, npart{_npart}
-{
+partial_cd::partial_cd(const char *_dir, const int _rank, const idx_t _npart,
+                       const int _nlevels)
+    : dir{_dir}, rank{_rank}, npart{_npart}, nlevels{_nlevels} {
   std::ifstream file{this->dir};
 
   mtx_check_banner(file);
@@ -18,20 +18,7 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
   mtx_fill_vectors(file);
 
   metis_partition();
-
-  if (rank == 0) {
-    std::cout << "ptr: ";
-    for (auto v : ptr) std::cout << v << ", ";
-    std::cout << std::endl;
-
-    std::cout << "col: ";
-    for (auto v : col) std::cout << v << ", ";
-    std::cout << std::endl;
-
-    std::cout << "val: ";
-    for (auto v : val) std::cout << v << ", ";
-    std::cout << std::endl;
-  }
+  pdmpk_update_levels();
 }
 
 void partial_cd::metis_partition()
@@ -84,6 +71,8 @@ void partial_cd::mtx_fill_size(std::ifstream &file)
   col.reserve(nnz);
   val.reserve(nnz);
   partitions.resize(n);
+  levels.resize(n);
+  partials.resize(n);
 }
 
 void partial_cd::mtx_fill_vectors(std::ifstream &file)
@@ -108,4 +97,9 @@ void partial_cd::mtx_fill_vectors(std::ifstream &file)
     col.insert(std::end(col), std::begin(Js[i]), std::end(Js[i]));
     val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
+}
+
+void partial_cd::pdmpk_update_levels()
+{
+  for (int k = 0; k < nlevels; k++);
 }

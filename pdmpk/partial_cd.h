@@ -9,11 +9,13 @@
 
 class partial_cd {
 public:
-  partial_cd(const char* _dir, const int _rank, const int _npart);
+  partial_cd(const char *_dir, const int _rank, const idx_t _npart,
+             const int nlevels);
 
   const std::string dir;
   const int rank;
   idx_t npart;
+  const int nlevels;
 
   idx_t n;
   idx_t nnz;
@@ -22,12 +24,16 @@ public:
   std::vector<double> val;
 
   std::vector<idx_t> partitions;
+  std::vector<unsigned short> levels;
+  std::vector<unsigned long> partials;
 
 private:
   void mtx_check_banner(std::ifstream &file);
   void mtx_fill_size(std::ifstream &file);
   void mtx_fill_vectors(std::ifstream &file);
   void metis_partition();
+  // void metis_partition_with_levels();
+  void pdmpk_update_levels();
 };
 
 #endif
