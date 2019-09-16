@@ -22,13 +22,14 @@ public:
   std::vector<idx_t> ptr;
   std::vector<idx_t> col;
   std::vector<double> val;
-  size_t n;
-  size_t nnz;
+  idx_t n;
+  idx_t nnz;
 
 private:
   void check_banner(std::ifstream &file);
   void fill_size(std::ifstream &file);
   void fill_vectors(std::ifstream &file);
+  void metistmp();
 };
 
 #endif

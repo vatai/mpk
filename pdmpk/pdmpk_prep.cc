@@ -8,7 +8,6 @@ int main(int argc, char *argv[])
   int rank = 42;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  std::cout << "Rank: " << rank << std::endl;
   partial_cd pcd(argv[1], rank);
   MPI_Finalize();
   return 0;
