@@ -30,7 +30,7 @@ private:
   void mtx_check_banner(std::ifstream &file);
   void mtx_fill_size(std::ifstream &file);
   void mtx_fill_vectors(std::ifstream &file);
-  void metistmp();
+  void metis_partition();
 };
 
 #endif

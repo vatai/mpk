@@ -16,7 +16,7 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
   mtx_fill_size(file);
   mtx_fill_vectors(file);
 
-  metistmp();
+  metis_partition();
 
   if (rank == 0) {
     std::cout << "ptr: ";
@@ -33,7 +33,7 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
   }
 }
 
-void partial_cd::metistmp()
+void partial_cd::metis_partition()
 {
   idx_t ov[1];
   std::vector<idx_t> part(n);
