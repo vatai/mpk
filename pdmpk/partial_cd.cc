@@ -121,13 +121,30 @@ void partial_cd::pdmpk_update_levels()
   for (int k = 0; was_active and k < nlevels; k++) {
     was_active = false;
     for (int i = 0; i < n; i++) {
-      was_active = was_active or pdmpk_proc_vertex(i, k);
+      was_active = was_active or pdmpk_proc_vertex(i, k + 1);
     }
   }
 }
 
 bool partial_cd::pdmpk_proc_vertex(const idx_t idx, const level_t level)
 {
+  /**
+   * TODO(vatai): this procedure should be called only if the vertex
+   * is in the current partitions.
+   *
+   * Vertex with index at level > 0 is processed.
+   *
+   * The procedure visits all neighbours of v[idx] and if they are in
+   * the current partition it adds them.
+   *
+   * Adding a neighbour means:
+   *
+   * - add it to (levels, partials)
+   *
+   * - add it to buffers
+   *
+   * - update store_partition
+   */
   return true;
 }
 
