@@ -24,11 +24,20 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const idx_t _npart,
 
 void partial_cd::metis_partition()
 {
-  idx_t ov[1];
-  METIS_PartGraphRecursive(&n, &nnz, ptr.data(), col.data(), NULL, NULL, NULL,
-                           &npart, NULL, NULL, NULL, ov, partitions.data());
-  for (auto v : partitions) std::cout << v << ", ";
-  std::cout << std::endl;
+  idx_t retval, nconstr = 1;
+  METIS_PartGraphKway(&n, &nconstr, ptr.data(), col.data(), NULL, NULL, NULL,
+                      &npart, NULL, NULL, NULL, &retval, partitions.data());
+}
+
+void partial_cd::metis_partition_with_levels()
+{
+  idx_t retval, nconstr = 1;
+  idx_t opt[METIS_NOPTIONS];
+  METIS_SetDefaultOptions(opt);
+  opt[METIS_OPTION_UFACTOR] = 1000;
+  METIS_PartGraphKway(&n, &nconstr, ptr.data(), col.data(), NULL, NULL,
+                      weights.data(), &npart, NULL, NULL, opt, &retval,
+                      partitions.data());
 }
 
 void partial_cd::mtx_check_banner(std::ifstream &file)

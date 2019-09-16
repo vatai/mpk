@@ -24,6 +24,7 @@ public:
   std::vector<double> val;
 
   std::vector<idx_t> partitions;
+  std::vector<idx_t> weights;
   std::vector<unsigned short> levels;
   std::vector<unsigned long> partials;
 
@@ -32,7 +33,7 @@ private:
   void mtx_fill_size(std::ifstream &file);
   void mtx_fill_vectors(std::ifstream &file);
   void metis_partition();
-  // void metis_partition_with_levels();
+  void metis_partition_with_levels();
   void pdmpk_update_levels();
 };
 
