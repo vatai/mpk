@@ -52,9 +52,9 @@ private:
   void metis_partition();
   void metis_partition_with_levels();
 
-  void pdmpk_update_levels();
-  bool pdmpk_proc_vertex(const idx_t idx, const level_t level);
-  void pdmpk_update_weights();
+  void update_levels();
+  bool proc_vertex(const idx_t idx, const level_t level);
+  void update_weights();
 };
 
 #endif

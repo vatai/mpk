@@ -17,8 +17,6 @@ crs_t::crs_t(const char *fname)
   mtx_fill_vectors(file);
 }
 
-// mtx
-
 void crs_t::mtx_check_banner(std::ifstream &file)
 {
   std::string banner;
@@ -85,6 +83,8 @@ void crs_t::mtx_fill_vectors(std::ifstream &file)
   }
 }
 
+// partial_cd
+
 partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_size,
                        const idx_t _npart, const level_t _nlevels)
     : crs{_fname}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
@@ -94,7 +94,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_siz
   partials.resize(crs.n);
 
   metis_partition();
-  pdmpk_update_levels();
+  update_levels();
 }
 
 // metis
@@ -125,20 +125,18 @@ void partial_cd::metis_partition_with_levels()
                       &npart, NULL, NULL, opt, &retval, partitions.data());
 }
 
-// pdmpk
-
-void partial_cd::pdmpk_update_levels()
+void partial_cd::update_levels()
 {
   int was_active = true;
   for (int k = 0; was_active and k < nlevels; k++) {
     was_active = false;
     for (int i = 0; i < crs.n; i++) {
-      was_active = was_active or pdmpk_proc_vertex(i, k + 1);
+      was_active = was_active or proc_vertex(i, k + 1);
     }
   }
 }
 
-bool partial_cd::pdmpk_proc_vertex(const idx_t idx, const level_t level)
+bool partial_cd::proc_vertex(const idx_t idx, const level_t level)
 {
   /**
    * TODO(vatai): this procedure should be called only if the vertex
@@ -160,6 +158,6 @@ bool partial_cd::pdmpk_proc_vertex(const idx_t idx, const level_t level)
   return true;
 }
 
-void partial_cd::pdmpk_update_weights()
+void partial_cd::update_weights()
 {
 }
