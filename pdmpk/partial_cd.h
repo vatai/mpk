@@ -4,26 +4,12 @@
 #ifndef _PARTIAL_CD_
 #define _PARTIAL_CD_
 
-#include <fstream>
 #include <string>
 #include <vector>
 
 #include <metis.h>
 
-class crs_t {
- public:
-  crs_t(const char* fname);
-  idx_t n;
-  idx_t nnz;
-  std::vector<idx_t> ptr;
-  std::vector<idx_t> col;
-  std::vector<double> val;
-
- private:
-  void mtx_check_banner(std::ifstream &file);
-  void mtx_fill_size(std::ifstream &file);
-  void mtx_fill_vectors(std::ifstream &file);
-};
+#include "crs_t.h"
 
 class partial_cd {
   /**
