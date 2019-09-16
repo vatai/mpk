@@ -22,10 +22,9 @@ public:
   typedef unsigned short level_t;
   typedef unsigned long long partials_t;
 
-  partial_cd(const char *_dir, const int _rank, const int _world_size,
+  partial_cd(const char *_fname, const int _rank, const int _world_size,
              const idx_t _npart, const level_t nlevels);
 
-  const std::string dir;
   const int rank;
   const int world_size;
   const idx_t npart;
