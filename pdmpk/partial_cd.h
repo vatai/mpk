@@ -17,6 +17,9 @@ class partial_cd {
    *
    * TODO(vatai): resize and init vectors with correct values
    *
+   * TODO(vatai): maybe: encapsulate mpi data
+   *
+   * TODO(vatai): maybe: encapsulate parameters
    */
 public:
   typedef unsigned short level_t;
