@@ -8,6 +8,14 @@
 #include <metis.h>
 
 class partial_cd {
+  /**
+   * TODO(vatai): refactor crs to separate class
+   *
+   * TODO(vatai): assert number of neighbours fits into one of partials
+   *
+   * TODO(vatai): resize and init vectors with correct values
+   *
+   */
 public:
   typedef unsigned short level_t;
   typedef unsigned long long partials_t;
