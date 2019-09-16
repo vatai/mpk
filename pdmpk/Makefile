@@ -1,4 +1,4 @@
-CXX=mpiCC
+CXX=mpicxx
 METISDIR=metis/build/Linux-x86_64
 CXXFLAGS=-I$(METISDIR)/include -L$(METISDIR)/libmetis
 LDLIBS=-lmetis

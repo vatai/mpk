@@ -14,7 +14,7 @@ struct csr {
 
 class partial_cd {
 public:
-  partial_cd(const char* dir, const int rank);
+  partial_cd(const char* _dir, const int _rank);
 
   const std::string dir;
   const int rank;

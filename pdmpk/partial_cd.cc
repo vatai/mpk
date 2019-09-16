@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
@@ -92,33 +93,29 @@ void partial_cd::fill_size(std::ifstream &file)
 void partial_cd::fill_vectors(std::ifstream &file)
 {
   std::string line;
-  std::vector<idx_t> J(this->nnz);
-  J.clear();
+  std::vector<std::vector<idx_t>> Js(this->n);
+  std::vector<std::vector<double>> vs(this->n);
   while (std::getline(file, line)) {
     if (line[0] != '%') {
       std::stringstream ss(line);
       double val;
       int i, j;
       ss >> i >> j >> val;
-      J.push_back(j);
-      this->ptr[i]++;
-
-
-
-      std::cout << "reading: "
-                << i << ", "
-                << j << ", "
-                << val << std::endl;
-      if (j == this->col.size() + 1)
-        this->ptr.push_back(this->col.size());
-      this->col.push_back(i);
-      this->val.push_back(val);
+      i--; j--;
+      ptr[i + 1]++;
+      Js[i].push_back(j);
+      vs[i].push_back(val);
     }
+  }
+  for (int i = 0; i < n; i++) {
+    ptr[i + 1] += ptr[i];
+    col.insert(std::end(col), std::begin(Js[i]), std::end(Js[i]));
+    val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
 }
 
-partial_cd::partial_cd(const char *dir, const int rank) //
-    : dir{dir}, rank{rank}                              //
+partial_cd::partial_cd(const char *_dir, const int _rank) //
+    : dir{_dir}, rank{_rank}                              //
 {
   if (rank == 0) {
     std::ifstream file{this->dir};
@@ -128,14 +125,14 @@ partial_cd::partial_cd(const char *dir, const int rank) //
 
     // metistmp();
 
-    std::cout << "ptr: ";
-    for (auto v : this->ptr)
-      std::cout << v << ", ";
-    std::cout << std::endl;
+    // std::cout << "ptr: ";
+    // for (auto v : this->ptr)
+    //   std::cout << v << ", ";
+    // std::cout << std::endl;
 
-    std::cout << "col: ";
-    for (auto v : this->col)
-      std::cout << v << ", ";
-    std::cout << std::endl;
+    // std::cout << "col: ";
+    // for (auto v : this->col)
+    //   std::cout << v << ", ";
+    // std::cout << std::endl;
   }
 }
