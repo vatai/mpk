@@ -8,43 +8,18 @@
 #include "partial_cd.h"
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_dir, const int _rank, const int _world_size,
-                       const idx_t _npart, const level_t _nlevels)
-    : dir{_dir}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
+crs_t::crs_t(const char *fname)
 {
-  std::ifstream file{this->dir};
+  std::ifstream file{fname};
 
   mtx_check_banner(file);
   mtx_fill_size(file);
   mtx_fill_vectors(file);
-
-  metis_partition();
-  pdmpk_update_levels();
-}
-
-// metis
-
-void partial_cd::metis_partition()
-{
-  idx_t retval, nconstr = 1;
-  METIS_PartGraphKway(&n, &nconstr, ptr.data(), col.data(), NULL, NULL, NULL,
-                      &npart, NULL, NULL, NULL, &retval, partitions.data());
-}
-
-void partial_cd::metis_partition_with_levels()
-{
-  idx_t retval, nconstr = 1;
-  idx_t opt[METIS_NOPTIONS];
-  METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1000;
-  METIS_PartGraphKway(&n, &nconstr, ptr.data(), col.data(), NULL, NULL,
-                      weights.data(), &npart, NULL, NULL, opt, &retval,
-                      partitions.data());
 }
 
 // mtx
 
-void partial_cd::mtx_check_banner(std::ifstream &file)
+void crs_t::mtx_check_banner(std::ifstream &file)
 {
   std::string banner;
   std::getline(file, banner);
@@ -66,7 +41,7 @@ void partial_cd::mtx_check_banner(std::ifstream &file)
   }
 }
 
-void partial_cd::mtx_fill_size(std::ifstream &file)
+void crs_t::mtx_fill_size(std::ifstream &file)
 {
   std::string line;
   std::stringstream ss;
@@ -84,12 +59,9 @@ void partial_cd::mtx_fill_size(std::ifstream &file)
   ptr.resize(n + 1);
   col.reserve(nnz);
   val.reserve(nnz);
-  partitions.resize(n);
-  levels.resize(n);
-  partials.resize(n);
 }
 
-void partial_cd::mtx_fill_vectors(std::ifstream &file)
+void crs_t::mtx_fill_vectors(std::ifstream &file)
 {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);
@@ -113,6 +85,46 @@ void partial_cd::mtx_fill_vectors(std::ifstream &file)
   }
 }
 
+partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_size,
+                       const idx_t _npart, const level_t _nlevels)
+    : crs{_fname}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
+{
+  partitions.resize(crs.n);
+  levels.resize(crs.n);
+  partials.resize(crs.n);
+
+  metis_partition();
+  pdmpk_update_levels();
+}
+
+// metis
+
+void partial_cd::metis_partition()
+{
+  idx_t npart = this->npart;
+  idx_t n = crs.n;
+  idx_t *ptr = (idx_t *)crs.ptr.data();
+  idx_t *col = (idx_t *)crs.col.data();
+  idx_t retval, nconstr = 1;
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL,
+                      NULL, NULL, &npart, NULL, NULL, NULL, &retval,
+                      partitions.data());
+}
+
+void partial_cd::metis_partition_with_levels()
+{
+  idx_t npart = this->npart;
+  idx_t n = crs.n;
+  idx_t *ptr = (idx_t *)crs.ptr.data();
+  idx_t *col = (idx_t *)crs.col.data();
+  idx_t retval, nconstr = 1;
+  idx_t opt[METIS_NOPTIONS];
+  METIS_SetDefaultOptions(opt);
+  opt[METIS_OPTION_UFACTOR] = 1000;
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(),
+                      &npart, NULL, NULL, opt, &retval, partitions.data());
+}
+
 // pdmpk
 
 void partial_cd::pdmpk_update_levels()
@@ -120,7 +132,7 @@ void partial_cd::pdmpk_update_levels()
   int was_active = true;
   for (int k = 0; was_active and k < nlevels; k++) {
     was_active = false;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < crs.n; i++) {
       was_active = was_active or pdmpk_proc_vertex(i, k + 1);
     }
   }

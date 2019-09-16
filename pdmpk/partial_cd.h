@@ -7,10 +7,23 @@
 
 #include <metis.h>
 
+class crs_t {
+ public:
+  crs_t(const char* fname);
+  idx_t n;
+  idx_t nnz;
+  std::vector<idx_t> ptr;
+  std::vector<idx_t> col;
+  std::vector<double> val;
+
+ private:
+  void mtx_check_banner(std::ifstream &file);
+  void mtx_fill_size(std::ifstream &file);
+  void mtx_fill_vectors(std::ifstream &file);
+};
+
 class partial_cd {
   /**
-   * TODO(vatai): refactor crs to separate class
-   *
    * TODO(vatai): assert number of neighbours fits into one of partials
    *
    * TODO(vatai): resize and init vectors with correct values
@@ -26,14 +39,9 @@ public:
   const std::string dir;
   const int rank;
   const int world_size;
-  idx_t npart;
+  const idx_t npart;
   const level_t nlevels;
-
-  idx_t n;
-  idx_t nnz;
-  std::vector<idx_t> ptr;
-  std::vector<idx_t> col;
-  std::vector<double> val;
+  const crs_t crs;
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
@@ -41,10 +49,6 @@ public:
   std::vector<partials_t> partials;
 
 private:
-  void mtx_check_banner(std::ifstream &file);
-  void mtx_fill_size(std::ifstream &file);
-  void mtx_fill_vectors(std::ifstream &file);
-
   void metis_partition();
   void metis_partition_with_levels();
 
