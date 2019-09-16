@@ -9,7 +9,7 @@
 #include "metis.h"
 
 partial_cd::partial_cd(const char *_dir, const int _rank, const int _world_size,
-                       const idx_t _npart, const int _nlevels)
+                       const idx_t _npart, const level_t _nlevels)
     : dir{_dir}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
 {
   std::ifstream file{this->dir};
@@ -117,10 +117,18 @@ void partial_cd::mtx_fill_vectors(std::ifstream &file)
 
 void partial_cd::pdmpk_update_levels()
 {
-  for (int k = 0; k < nlevels; k++) {
+  int was_active = true;
+  for (int k = 0; was_active and k < nlevels; k++) {
+    was_active = false;
     for (int i = 0; i < n; i++) {
+      was_active = was_active or pdmpk_proc_vertex(i, k);
     }
   }
+}
+
+bool partial_cd::pdmpk_proc_vertex(const idx_t idx, const level_t level)
+{
+  return true;
 }
 
 void partial_cd::pdmpk_update_weights()

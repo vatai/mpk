@@ -9,14 +9,17 @@
 
 class partial_cd {
 public:
+  typedef unsigned short level_t;
+  typedef unsigned long long partials_t;
+
   partial_cd(const char *_dir, const int _rank, const int _world_size,
-             const idx_t _npart, const int nlevels);
+             const idx_t _npart, const level_t nlevels);
 
   const std::string dir;
   const int rank;
   const int world_size;
   idx_t npart;
-  const int nlevels;
+  const level_t nlevels;
 
   idx_t n;
   idx_t nnz;
@@ -26,8 +29,8 @@ public:
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
-  std::vector<unsigned short> levels;
-  std::vector<unsigned long> partials;
+  std::vector<level_t> levels;
+  std::vector<partials_t> partials;
 
 private:
   void mtx_check_banner(std::ifstream &file);
@@ -38,6 +41,7 @@ private:
   void metis_partition_with_levels();
 
   void pdmpk_update_levels();
+  bool pdmpk_proc_vertex(const idx_t idx, const level_t level);
   void pdmpk_update_weights();
 };
 
