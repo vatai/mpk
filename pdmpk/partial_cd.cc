@@ -10,7 +10,8 @@
 
 partial_cd::partial_cd(const char *_dir, const int _rank, const idx_t _npart,
                        const int _nlevels)
-    : dir{_dir}, rank{_rank}, npart{_npart}, nlevels{_nlevels} {
+    : dir{_dir}, rank{_rank}, npart{_npart}, nlevels{_nlevels} //
+{
   std::ifstream file{this->dir};
 
   mtx_check_banner(file);
@@ -101,5 +102,9 @@ void partial_cd::mtx_fill_vectors(std::ifstream &file)
 
 void partial_cd::pdmpk_update_levels()
 {
-  for (int k = 0; k < nlevels; k++);
+  for (int k = 0; k < nlevels; k++) {
+    for (int i = 0; i < n; i++) {
+      // if (cond)
+    }
+  }
 }
