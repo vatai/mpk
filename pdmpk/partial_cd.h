@@ -7,11 +7,6 @@
 
 #include <metis.h>
 
-struct csr {
-  size_t n;
-  std::vector<idx_t> ptr;
-};
-
 class partial_cd {
 public:
   partial_cd(const char* _dir, const int _rank, const int _npart);

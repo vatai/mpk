@@ -12,6 +12,7 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
     : dir{_dir}, rank{_rank}, npart{_npart}
 {
   std::ifstream file{this->dir};
+
   mtx_check_banner(file);
   mtx_fill_size(file);
   mtx_fill_vectors(file);
