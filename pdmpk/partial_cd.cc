@@ -8,17 +8,17 @@
 #include "partial_cd.h"
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_dir, const int _rank) //
-    : dir{_dir}, rank{_rank}                              //
+partial_cd::partial_cd(const char *_dir, const int _rank, const int _npart)
+    : dir{_dir}, rank{_rank}, npart{_npart}
 {
+  std::ifstream file{this->dir};
+  mtx_check_banner(file);
+  mtx_fill_size(file);
+  mtx_fill_vectors(file);
+
+  metistmp();
+
   if (rank == 0) {
-    std::ifstream file{this->dir};
-    check_banner(file);
-    fill_size(file);
-    fill_vectors(file);
-
-    metistmp();
-
     std::cout << "ptr: ";
     for (auto v : ptr) std::cout << v << ", ";
     std::cout << std::endl;
@@ -30,23 +30,21 @@ partial_cd::partial_cd(const char *_dir, const int _rank) //
     std::cout << "val: ";
     for (auto v : val) std::cout << v << ", ";
     std::cout << std::endl;
-
   }
 }
 
 void partial_cd::metistmp()
 {
   idx_t ov[1];
-  idx_t k = 3;
   std::vector<idx_t> part(n);
-  METIS_PartGraphRecursive(&n, &nnz, ptr.data(), col.data(), NULL,
-		      NULL, NULL, &k, NULL, NULL,
-		      NULL, ov, part.data());
-  for (auto v : part) std::cout << v << ", ";
+  METIS_PartGraphRecursive(&n, &nnz, ptr.data(), col.data(), NULL, NULL, NULL,
+                           &npart, NULL, NULL, NULL, ov, part.data());
+  for (auto v : part)
+    std::cout << v << ", ";
   std::cout << std::endl;
 }
 
-void partial_cd::check_banner(std::ifstream &file)
+void partial_cd::mtx_check_banner(std::ifstream &file)
 {
   std::string banner;
   std::getline(file, banner);
@@ -68,7 +66,7 @@ void partial_cd::check_banner(std::ifstream &file)
   }
 }
 
-void partial_cd::fill_size(std::ifstream &file)
+void partial_cd::mtx_fill_size(std::ifstream &file)
 {
   std::string line;
   std::stringstream ss;
@@ -88,7 +86,7 @@ void partial_cd::fill_size(std::ifstream &file)
   this->val.reserve(this->nnz);
 }
 
-void partial_cd::fill_vectors(std::ifstream &file)
+void partial_cd::mtx_fill_vectors(std::ifstream &file)
 {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);

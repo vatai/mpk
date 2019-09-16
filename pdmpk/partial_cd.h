@@ -14,10 +14,11 @@ struct csr {
 
 class partial_cd {
 public:
-  partial_cd(const char* _dir, const int _rank);
+  partial_cd(const char* _dir, const int _rank, const int _npart);
 
   const std::string dir;
   const int rank;
+  idx_t npart;
 
   std::vector<idx_t> ptr;
   std::vector<idx_t> col;
@@ -26,9 +27,9 @@ public:
   idx_t nnz;
 
 private:
-  void check_banner(std::ifstream &file);
-  void fill_size(std::ifstream &file);
-  void fill_vectors(std::ifstream &file);
+  void mtx_check_banner(std::ifstream &file);
+  void mtx_fill_size(std::ifstream &file);
+  void mtx_fill_vectors(std::ifstream &file);
   void metistmp();
 };
 
