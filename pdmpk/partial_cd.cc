@@ -123,3 +123,7 @@ void partial_cd::pdmpk_update_levels()
     }
   }
 }
+
+void partial_cd::pdmpk_update_weights()
+{
+}

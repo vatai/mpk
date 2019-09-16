@@ -37,6 +37,7 @@ private:
   void metis_partition_with_levels();
 
   void pdmpk_update_levels();
+  void pdmpk_update_weights();
 };
 
 #endif
