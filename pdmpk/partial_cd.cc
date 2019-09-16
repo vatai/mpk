@@ -22,6 +22,8 @@ partial_cd::partial_cd(const char *_dir, const int _rank, const idx_t _npart,
   pdmpk_update_levels();
 }
 
+// metis
+
 void partial_cd::metis_partition()
 {
   idx_t retval, nconstr = 1;
@@ -39,6 +41,8 @@ void partial_cd::metis_partition_with_levels()
                       weights.data(), &npart, NULL, NULL, opt, &retval,
                       partitions.data());
 }
+
+// mtx
 
 void partial_cd::mtx_check_banner(std::ifstream &file)
 {
@@ -108,6 +112,8 @@ void partial_cd::mtx_fill_vectors(std::ifstream &file)
     val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
 }
+
+// pdmpk
 
 void partial_cd::pdmpk_update_levels()
 {

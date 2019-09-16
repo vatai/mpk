@@ -32,8 +32,10 @@ private:
   void mtx_check_banner(std::ifstream &file);
   void mtx_fill_size(std::ifstream &file);
   void mtx_fill_vectors(std::ifstream &file);
+
   void metis_partition();
   void metis_partition_with_levels();
+
   void pdmpk_update_levels();
 };
 
