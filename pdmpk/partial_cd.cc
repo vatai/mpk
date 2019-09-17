@@ -54,7 +54,8 @@ void partial_cd::update_levels()
     was_active = false;
     for (int idx = 0; idx < crs.n; idx++) {
       if (levels[idx] < lbelow + 1) {  // needs calculations
-        was_active = was_active or proc_vertex(idx, lbelow);
+        // order is here important, because of lazy eval.
+        was_active = proc_vertex(idx, lbelow) or was_active;
       }
     }
     std::cout << "\n lbelow: " << lbelow << std::endl;
