@@ -24,11 +24,10 @@ class partial_cd {
 public:
   typedef unsigned short level_t;
 
-  partial_cd(const char *_fname, const int _rank, const int _world_size,
-             const idx_t _npart, const level_t _nlevels);
+  partial_cd(const char *_fname, const int _rank, const idx_t _npart,
+             const level_t _nlevels);
 
   const int rank;
-  const int world_size;
   const idx_t npart;
   const level_t nlevels;
   const crs_t crs;

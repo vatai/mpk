@@ -11,9 +11,9 @@
 #include "partial_cd.h"
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_size,
-                       const idx_t _npart, const level_t _nlevels)
-    : crs{_fname}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
+partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
+                       const level_t _nlevels)
+    : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
 {
   partitions.resize(crs.n);
   levels.resize(crs.n, 0);

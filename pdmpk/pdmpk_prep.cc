@@ -9,13 +9,13 @@
 
 int main(int argc, char *argv[])
 {
-  int rank, world_size;
+  int rank = 0;
   idx_t npart;
   partial_cd::level_t nlevels;
 
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  // MPI_Init(&argc, &argv);
+  // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // Get npart
   std::stringstream npart_ss(argv[2]);
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
   nlevels_ss >> nlevels;
 
   if (rank == 0) {
-    partial_cd pcd(argv[1], rank, world_size, npart, nlevels);
+    partial_cd pcd(argv[1], rank, npart, nlevels);
   }
 
-  MPI_Finalize();
+  // MPI_Finalize();
   return 0;
 }
