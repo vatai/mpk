@@ -42,6 +42,9 @@ public:
 private:
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t level);
+  bool vertex_needed(const idx_t idx, const level_t level, const idx_t j);
+  bool vertex_available(const idx_t idx, const level_t level, const idx_t j);
+  void add_vertex(const idx_t idx, const level_t level, const idx_t j);
   void update_weights();
 
   void metis_partition();

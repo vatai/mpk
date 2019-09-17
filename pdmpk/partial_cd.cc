@@ -53,11 +53,35 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t level)
    *
    * - update store_partition
    */
+  const idx_t curpart = partitions[idx];
+  for (idx_t t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
+    const idx_t jth = t - crs.ptr[idx];
+    const idx_t j = crs.col[t];
+    const idx_t jpart = partitions[j];
+    if (vertex_needed(idx, level, j) and vertex_available(idx, level, j))
+      add_vertex(idx, level, j);
+  }
   return true;
+}
+
+bool partial_cd::vertex_needed(const idx_t idx, const level_t level, const idx_t j)
+{
+  return true;
+}
+
+bool partial_cd::vertex_available(const idx_t idx, const level_t level, const idx_t j)
+{
+  return true;
+}
+
+void partial_cd::add_vertex(const idx_t idx, const level_t level, const idx_t j)
+{
+  //
 }
 
 void partial_cd::update_weights()
 {
+  //
 }
 
 void partial_cd::metis_partition()
