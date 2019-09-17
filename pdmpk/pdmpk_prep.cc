@@ -18,13 +18,14 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // Get npart
-  std::stringstream ss(argv[2]);
-  ss >> npart;
-  ss.clear();
-  ss << argv[3];
-  ss >> nlevels;
+  std::stringstream npart_ss(argv[2]);
+  npart_ss >> npart;
+  std::stringstream nlevels_ss(argv[3]);
+  nlevels_ss >> nlevels;
 
-  partial_cd pcd(argv[1], rank, world_size, npart, nlevels);
+  if (rank == 0) {
+    partial_cd pcd(argv[1], rank, world_size, npart, nlevels);
+  }
 
   MPI_Finalize();
   return 0;
