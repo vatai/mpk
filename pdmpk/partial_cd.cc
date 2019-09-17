@@ -18,6 +18,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_siz
   partitions.resize(crs.n);
   levels.resize(crs.n, 0);
   partials.resize(crs.nnz, false);
+  store_part.resize(crs.n * (nlevels + 1), -1);
 
   metis_partition();
   update_levels();
@@ -28,93 +29,51 @@ void partial_cd::update_levels()
   // `was_active` is set to true, if there was progress made. If no
   // progress is made, we should not proceed to the next level.
   int was_active = true;
-  for (int level = 0; was_active and level < nlevels; level++) {
+  for (int lbelow = 0; was_active and lbelow < nlevels; lbelow++) {
+
     was_active = false;
     for (int idx = 0; idx < crs.n; idx++) {
-      const bool needs_calculation = levels[idx] < level + 1;
-      if (needs_calculation) {
-        was_active = was_active or proc_vertex(idx, level);
+      if (levels[idx] < lbelow + 1) {  // needs calculations
+        was_active = was_active or proc_vertex(idx, lbelow);
       }
     }
   }
 }
 
 // Process vertex v[idx] at level `level`.
-bool partial_cd::proc_vertex(const idx_t idx, const level_t level)
+// - add it to (levels, partials)
+// - update store_partition,
+// - add it to buffers
+bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
-  /**
-   * TODO(vatai): This procedure should be called only if the vertex
-   * is in the current partitions.
-   *
-   * Vertex with index at level >= 0 is processed.
-   *
-   * The procedure visits all neighbours of v[idx] and if they are in
-   * the current partition it adds them.
-   *
-   * Adding a neighbour means:
-   *
-   * - add it to (levels, partials)
-   *
-   * - add it to buffers
-   *
-   * - update store_partition
-   */
-
   bool retval = false;
+  const idx_t cur_part = partitions[idx];
   for (idx_t t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
-    if (vertex_needed(idx, level, t) and vertex_available(idx, level, t)) {
-      add_vertex(idx, level, t);
+    const idx_t j = crs.col[t];
+    const bool needed = not partials[t];
+    const bool same_part = cur_part == partitions[j];
+    const bool computed = levels[j] >= lbelow - 1;
+    if (needed and same_part and computed) {
+      // Add neighbour `t` to `idx`
+      partials[t] = true;
+      // TODO(vatai): Add v[t, k] to the buffers.
       retval = true;
     }
+  }
+  if (retval == true) {
+    store_part[(lbelow + 1) * crs.n + idx] = cur_part;
+  }
+  if (partial_is_full(idx)) {
+    levels[idx]++;
+    partial_reset(idx);
   }
   return retval;
 }
 
-// TODO(vatai): needs implementation
-bool partial_cd::vertex_needed(const idx_t idx, const level_t level, const idx_t t)
+bool partial_cd::partial_is_full(const idx_t idx)
 {
-  const bool level_check = level;
-  return true;
-}
-
-// Return true if, the vertex `j`, at `level - 1` is computed and in
-// the same partition as idx.
-bool partial_cd::vertex_available(const idx_t idx, const level_t level, const idx_t t)
-{
-  const idx_t j = crs.col[t];
-  const bool same_part = partitions[idx] == partitions[j];
-  const bool computed = levels[j] >= level - 1;
-  return same_part and computed;
-}
-
-// TODO(vatai): needs implementation
-void partial_cd::add_vertex(const idx_t idx, const level_t level, const idx_t t)
-{
-  // 1. Adds it to partials[idx] (increment level[idx] if
-  // partials[idx] are full).
-
-  // TODO(vatai): partials[idx].add(t - ptr[idx]);
-
-  // 2. Update store_part[idx].
-
-  // TODO(vatai): store_part[idx][k] = partition[idx];
-
-  // TODO(vatai): if (partials[idx].full()) { partials[idx].empty();
-  // levels[idx]++;}
-
-  // 3. Add v[t, k] to the buffers.
-}
-
-// TODO(vatai): needs implementation
-void partial_cd::update_weights()
-{
-  //
-}
-
-bool partial_cd::partial_is_full()
-{
-  for (auto v : partials) {
-    if (not v)
+  for (int t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
+    if (not partials[t])
       return false;
   }
   return true;

@@ -35,18 +35,16 @@ public:
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
+  std::vector<idx_t> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
 
 private:
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t level);
-  bool vertex_needed(const idx_t idx, const level_t level, const idx_t j);
-  bool vertex_available(const idx_t idx, const level_t level, const idx_t j);
-  void add_vertex(const idx_t idx, const level_t level, const idx_t j);
   void update_weights();
 
-  bool partial_is_full();
+  bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
 
   void metis_partition();
