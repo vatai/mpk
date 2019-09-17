@@ -16,8 +16,8 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_siz
     : crs{_fname}, rank{_rank}, world_size{_world_size}, npart{_npart}, nlevels{_nlevels}
 {
   partitions.resize(crs.n);
-  levels.resize(crs.n);
-  partials.resize(crs.n);
+  levels.resize(crs.n, 0);
+  partials.resize(crs.nnz, false);
 
   metis_partition();
   update_levels();
