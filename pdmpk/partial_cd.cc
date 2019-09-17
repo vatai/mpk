@@ -40,6 +40,10 @@ void partial_cd::update_levels()
   }
 }
 
+void partial_cd::update_weights()
+{
+}
+
 // Process vertex v[idx] at level `level`.
 // - add it to (levels, partials)
 // - update store_partition,
