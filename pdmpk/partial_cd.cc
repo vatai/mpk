@@ -21,7 +21,27 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_siz
   store_part.resize(crs.n * (nlevels + 1), -1);
 
   metis_partition();
+  debug_print_partitions();
+
   update_levels();
+}
+
+void partial_cd::debug_print_levels()
+{
+  for (int i = 0; i < crs.n; i++) {
+    if (i % 10 == 0) std::cout << std::endl;
+    std::cout << levels[i] << ", ";
+  }
+  std::cout << std::endl;
+}
+
+void partial_cd::debug_print_partitions()
+{
+  for (int i = 0; i < crs.n; i++) {
+    if (i % 10 == 0) std::cout << std::endl;
+    std::cout << partitions[i] << ", ";
+  }
+  std::cout << std::endl;
 }
 
 void partial_cd::update_levels()
@@ -37,11 +57,14 @@ void partial_cd::update_levels()
         was_active = was_active or proc_vertex(idx, lbelow);
       }
     }
+    std::cout << "\n lbelow: " << lbelow << std::endl;
+    debug_print_levels();
   }
 }
 
 void partial_cd::update_weights()
 {
+  //
 }
 
 // Process vertex v[idx] at level `level`.
