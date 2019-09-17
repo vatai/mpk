@@ -13,10 +13,6 @@
 
 class partial_cd {
   /**
-   * TODO(vatai): assert number of neighbours fits into one of partials
-   *
-   * TODO(vatai): resize and init vectors with correct values
-   *
    * TODO(vatai): maybe: encapsulate mpi data
    *
    * TODO(vatai): maybe: encapsulate parameters
@@ -39,12 +35,13 @@ public:
   std::vector<bool> partials;
 
 private:
+  // void debug_print_partials(); // TODO(vatai): implement
   void debug_print_levels();
   void debug_print_partitions();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t level);
-  void update_weights();
+  void update_weights(); // TODO(vatai): implement
 
   bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
