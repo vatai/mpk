@@ -23,34 +23,6 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const int _world_siz
   update_levels();
 }
 
-// metis
-
-void partial_cd::metis_partition()
-{
-  idx_t npart = this->npart;
-  idx_t n = crs.n;
-  idx_t *ptr = (idx_t *)crs.ptr.data();
-  idx_t *col = (idx_t *)crs.col.data();
-  idx_t retval, nconstr = 1;
-  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL,
-                      NULL, NULL, &npart, NULL, NULL, NULL, &retval,
-                      partitions.data());
-}
-
-void partial_cd::metis_partition_with_levels()
-{
-  idx_t npart = this->npart;
-  idx_t n = crs.n;
-  idx_t *ptr = (idx_t *)crs.ptr.data();
-  idx_t *col = (idx_t *)crs.col.data();
-  idx_t retval, nconstr = 1;
-  idx_t opt[METIS_NOPTIONS];
-  METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1000;
-  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(),
-                      &npart, NULL, NULL, opt, &retval, partitions.data());
-}
-
 void partial_cd::update_levels()
 {
   int was_active = true;
@@ -86,4 +58,30 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t level)
 
 void partial_cd::update_weights()
 {
+}
+
+void partial_cd::metis_partition()
+{
+  idx_t npart = this->npart;
+  idx_t n = crs.n;
+  idx_t *ptr = (idx_t *)crs.ptr.data();
+  idx_t *col = (idx_t *)crs.col.data();
+  idx_t retval, nconstr = 1;
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL,
+                      NULL, NULL, &npart, NULL, NULL, NULL, &retval,
+                      partitions.data());
+}
+
+void partial_cd::metis_partition_with_levels()
+{
+  idx_t npart = this->npart;
+  idx_t n = crs.n;
+  idx_t *ptr = (idx_t *)crs.ptr.data();
+  idx_t *col = (idx_t *)crs.col.data();
+  idx_t retval, nconstr = 1;
+  idx_t opt[METIS_NOPTIONS];
+  METIS_SetDefaultOptions(opt);
+  opt[METIS_OPTION_UFACTOR] = 1000;
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(),
+                      &npart, NULL, NULL, opt, &retval, partitions.data());
 }

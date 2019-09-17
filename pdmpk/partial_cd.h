@@ -26,7 +26,7 @@ public:
   typedef unsigned long long partials_t;
 
   partial_cd(const char *_fname, const int _rank, const int _world_size,
-             const idx_t _npart, const level_t nlevels);
+             const idx_t _npart, const level_t _nlevels);
 
   const int rank;
   const int world_size;
@@ -40,12 +40,12 @@ public:
   std::vector<partials_t> partials;
 
 private:
-  void metis_partition();
-  void metis_partition_with_levels();
-
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t level);
   void update_weights();
+
+  void metis_partition();
+  void metis_partition_with_levels();
 };
 
 #endif
