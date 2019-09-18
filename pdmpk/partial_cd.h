@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <metis.h>
 
@@ -30,7 +31,7 @@ public:
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
-  std::vector<idx_t> store_part;
+  std::map<std::pair<idx_t, level_t>, idx_t> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
 

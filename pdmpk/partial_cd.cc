@@ -20,7 +20,6 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   levels.resize(crs.n, 0);
   weights.resize(crs.nnz);
   partials.resize(crs.nnz, false);
-  store_part.resize(crs.n * (nlevels + 1), -1);
 
   std::cout << std::endl << "Phase: 0";
   metis_partition();
@@ -112,14 +111,17 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     const bool same_part = cur_part == partitions[j];
     const bool computed = levels[j] >= lbelow;
     if (needed and same_part and computed) {
-      // Add neighbour `t` to `idx`
-      partials[t] = true;
+      partials[t] = true; // Add neighbour `t` to `idx`
       // TODO(vatai): Add v[t, k] to the buffers.
+      if (store_part.find({lbelow, j}) != end(store_part)) {
+        const auto part = store_part[{lbelow, j}];
+        if (part != cur_part);
+      }
       retval = true;
     }
   }
   if (retval == true) {
-    store_part[(lbelow + 1) * crs.n + idx] = cur_part;
+    store_part[{lbelow + 1, idx}] = cur_part;
   }
   if (partial_is_full(idx)) {
     levels[idx]++;
