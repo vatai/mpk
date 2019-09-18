@@ -17,13 +17,34 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
 {
   partitions.resize(crs.n);
   levels.resize(crs.n, 0);
+  weights.resize(crs.nnz);
   partials.resize(crs.nnz, false);
   store_part.resize(crs.n * (nlevels + 1), -1);
 
   metis_partition();
   debug_print_partitions();
-
   update_levels();
+  debug_print_levels();
+  update_weights();
+
+  metis_partition_with_levels();
+  debug_print_partitions();
+  update_levels();
+  debug_print_levels();
+  update_weights();
+
+  metis_partition_with_levels();
+  debug_print_partitions();
+  update_levels();
+  debug_print_levels();
+  update_weights();
+
+  metis_partition_with_levels();
+  debug_print_partitions();
+  update_levels();
+  debug_print_levels();
+  update_weights();
+
 }
 
 void partial_cd::debug_print_levels()
@@ -58,14 +79,25 @@ void partial_cd::update_levels()
         was_active = proc_vertex(idx, lbelow) or was_active;
       }
     }
-    std::cout << "\n lbelow: " << lbelow << std::endl;
-    debug_print_levels();
   }
 }
 
 void partial_cd::update_weights()
 {
-  //
+  level_t min = *std::min_element(begin(levels), end(levels));
+
+  for (int i = 0; i < crs.n; ++i) {
+    int l0 = levels[i];
+    for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++) {
+      int l1 = levels[crs.col[j]];
+      double w = l0 + l1 - 2 * min;
+      w = 1e+6 / (w + 1);
+      if (w < 1.0)
+        weights[j] = 1;
+      else
+        weights[j] = w;
+    }
+  }
 }
 
 // Process vertex v[idx] at level `level`.

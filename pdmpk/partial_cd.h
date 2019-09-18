@@ -41,7 +41,7 @@ private:
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t level);
-  void update_weights(); // TODO(vatai): implement
+  void update_weights();
 
   bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
