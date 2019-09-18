@@ -128,24 +128,6 @@ void partial_cd::update_levels()
   }
 }
 
-void partial_cd::update_weights()
-{
-  level_t min = *std::min_element(begin(levels), end(levels));
-
-  for (int i = 0; i < crs.n; i++) {
-    int li = levels[i];
-    for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++) {
-      int lj = levels[crs.col[j]];
-      double w = li + lj - 2 * min;
-      w = 1e+6 / (w + 1);
-      if (w < 1.0)
-        weights[j] = 1;
-      else
-        weights[j] = w;
-    }
-  }
-}
-
 // Process vertex v[idx] at level `level`.
 // - add it to (levels, partials)
 // - update store_partition,
@@ -189,6 +171,24 @@ void partial_cd::partial_reset(const idx_t idx)
 {
   for (int t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
     partials[t] = false;
+  }
+}
+
+void partial_cd::update_weights()
+{
+  level_t min = *std::min_element(begin(levels), end(levels));
+
+  for (int i = 0; i < crs.n; i++) {
+    int li = levels[i];
+    for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++) {
+      int lj = levels[crs.col[j]];
+      double w = li + lj - 2 * min;
+      w = 1e+6 / (w + 1);
+      if (w < 1.0)
+        weights[j] = 1;
+      else
+        weights[j] = w;
+    }
   }
 }
 
