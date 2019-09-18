@@ -10,6 +10,7 @@
 
 #include <metis.h>
 
+#include "buffers_t.h"
 #include "crs_t.h"
 
 class partial_cd {
@@ -34,6 +35,8 @@ public:
   std::map<std::pair<idx_t, level_t>, idx_t> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
+
+  buffers_t buffers;
 
 private:
   // void debug_print_partials(); // TODO(vatai): implement
