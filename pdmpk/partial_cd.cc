@@ -90,13 +90,22 @@ void partial_cd::debug_print_levels()
   std::cout << std::endl;
 }
 
-void partial_cd::debug_print_partials() // TODO(vatai): finish this!!!!!!!!
+void partial_cd::debug_print_partials()
 {
   int max = 0;
-  const int width = 4;
+  for (int i = 0; i < crs.n; i++) {
+    const idx_t d = crs.ptr[i + 1] - crs.ptr[i];
+    if (d > max)
+      max = d;
+  }
   for (int i = 0; i < crs.n; i++) {
     if (i % 10 == 0) std::cout << std::endl;
-    std::cout << std::setw(width) << levels[i] << ", ";
+    const idx_t d = crs.ptr[i + 1] - crs.ptr[i];
+    for (int j = 0; j < max - d; j++)
+      std::cout << "_";
+    for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++)
+      std::cout << (partials[j] ? "*" : "O");
+    std::cout << " ";
   }
   std::cout << std::endl;
 }
