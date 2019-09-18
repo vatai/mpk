@@ -118,11 +118,11 @@ void partial_cd::update_weights()
 {
   level_t min = *std::min_element(begin(levels), end(levels));
 
-  for (int i = 0; i < crs.n; ++i) {
-    int l0 = levels[i];
+  for (int i = 0; i < crs.n; i++) {
+    int li = levels[i];
     for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++) {
-      int l1 = levels[crs.col[j]];
-      double w = l0 + l1 - 2 * min;
+      int lj = levels[crs.col[j]];
+      double w = li + lj - 2 * min;
       w = 1e+6 / (w + 1);
       if (w < 1.0)
         weights[j] = 1;
