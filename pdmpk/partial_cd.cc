@@ -28,56 +28,17 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   update_weights();
   debug_print_partitions();
   debug_print_levels();
+  debug_print_partials();
 
-  std::cout << std::endl << "Phase: 1";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 2";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 3";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 4";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 5";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 6";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
-  std::cout << std::endl << "Phase: 7";
-  metis_partition_with_levels();
-  update_levels();
-  update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-
+  for (int i = 0; i < 7; i++) {
+    std::cout << std::endl << "Phase: " << i + 1;
+    metis_partition_with_levels();
+    update_levels();
+    update_weights();
+    debug_print_partitions();
+    debug_print_levels();
+    debug_print_partials();
+  }
 }
 
 void partial_cd::debug_print_levels()
