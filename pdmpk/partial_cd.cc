@@ -119,7 +119,7 @@ void partial_cd::update_levels()
 
     // was_active = false;
     for (int idx = 0; idx < crs.n; idx++) {
-      if (levels[idx] < lbelow + 1) {  // needs calculations
+      if (levels[idx] == lbelow) {  // needs calculations
         // order is here important, because of lazy eval.
         // was_active = proc_vertex(idx, lbelow) or was_active;
         proc_vertex(idx, lbelow);
@@ -158,7 +158,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     const idx_t j = crs.col[t];
     const bool needed = not partials[t];
     const bool same_part = cur_part == partitions[j];
-    const bool computed = levels[j] >= lbelow - 1;
+    const bool computed = levels[j] >= lbelow;
     if (needed and same_part and computed) {
       // Add neighbour `t` to `idx`
       partials[t] = true;
