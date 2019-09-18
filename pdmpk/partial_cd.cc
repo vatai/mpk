@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -81,9 +82,21 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
 
 void partial_cd::debug_print_levels()
 {
+  const int width = 4;
   for (int i = 0; i < crs.n; i++) {
     if (i % 10 == 0) std::cout << std::endl;
-    std::cout << levels[i] << ", ";
+    std::cout << std::setw(width) << levels[i] << ", ";
+  }
+  std::cout << std::endl;
+}
+
+void partial_cd::debug_print_partials() // TODO(vatai): finish this!!!!!!!!
+{
+  int max = 0;
+  const int width = 4;
+  for (int i = 0; i < crs.n; i++) {
+    if (i % 10 == 0) std::cout << std::endl;
+    std::cout << std::setw(width) << levels[i] << ", ";
   }
   std::cout << std::endl;
 }

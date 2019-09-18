@@ -37,6 +37,7 @@ public:
 private:
   // void debug_print_partials(); // TODO(vatai): implement
   void debug_print_levels();
+  void debug_print_partials();
   void debug_print_partitions();
 
   void update_levels();
