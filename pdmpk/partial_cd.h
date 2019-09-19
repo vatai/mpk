@@ -10,6 +10,7 @@
 
 #include <metis.h>
 
+#include "typedefs.h"
 #include "buffers_t.h"
 #include "crs_t.h"
 
@@ -20,8 +21,6 @@ class partial_cd {
    * TODO(vatai): maybe: encapsulate parameters
    */
 public:
-  typedef unsigned short level_t;
-
   partial_cd(const char *_fname, const int _rank, const idx_t _npart,
              const level_t _nlevels);
 

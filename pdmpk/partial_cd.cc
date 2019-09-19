@@ -10,6 +10,7 @@
 #include <string>
 
 #include "partial_cd.h"
+
 #include "metis.h"
 
 partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,

@@ -5,13 +5,14 @@
 #include <sstream>
 #include <mpi.h>
 
+#include "typedefs.h"
 #include "partial_cd.h"
 
 int main(int argc, char *argv[])
 {
   int rank = 0;
   idx_t npart;
-  partial_cd::level_t nlevels;
+  level_t nlevels;
 
   // MPI_Init(&argc, &argv);
   // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
