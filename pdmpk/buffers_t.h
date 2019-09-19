@@ -43,7 +43,8 @@ public:
   // double *vv_buf;
   // double *vv_sbuf;
   // double *mval_buf;
-  void dump();
+  void dump(const int rank);
+  void load(const int rank);
 };
 
 #endif
