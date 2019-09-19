@@ -21,6 +21,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   levels.resize(crs.n, 0);
   weights.resize(crs.nnz);
   partials.resize(crs.nnz, false);
+  bufs.resize(npart);
 
   std::cout << std::endl << "Phase: 0";
   metis_partition();
@@ -106,6 +107,9 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
   const idx_t cur_part = partitions[idx];
+  buffers_t *bufptr = bufs.data() + cur_part;
+  bufptr->pair_mbuf.push_back({idx, lbelow + 1});
+  bufptr->mptr.push_back(0);
   for (idx_t t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
     const idx_t j = crs.col[t];
     const bool needed = not partials[t];
@@ -113,16 +117,23 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     const bool computed = levels[j] >= lbelow;
     if (needed and same_part and computed) {
       partials[t] = true; // Add neighbour `t` to `idx`
-      // TODO(vatai): Add v[t, k] to the buffers.
-      if (store_part.find({lbelow, j}) != end(store_part)) {
-        const auto part = store_part[{lbelow, j}];
-        if (part != cur_part);
+      *(bufptr->mptr.end() - 1)++; // increment last element in mptr
+      const auto loc =
+          std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
+                    std::make_pair(j, lbelow));
+      const auto buf_idx = loc - begin(bufptr->pair_mbuf);
+      bufptr->mcol.push_back(buf_idx);
+      std::cout << "iter diff: " << buf_idx << std::endl;
+
+      if (store_part.find({j, lbelow}) != end(store_part)) {
+        if (store_part[{j, lbelow}] != cur_part) {
+        }
       }
       retval = true;
     }
   }
   if (retval == true) {
-    store_part[{lbelow + 1, idx}] = cur_part;
+    store_part[{idx, lbelow + 1}] = cur_part;
   }
   if (partial_is_full(idx)) {
     levels[idx]++;

@@ -2,6 +2,7 @@
 #define _BUFFERS_T_H_
 
 #include <forward_list>
+#include <vector>
 #include <utility>
 #include <map>
 
@@ -33,7 +34,9 @@ public:
   // int *mptr_offsets;
   // int *mcol_offsets;
 
-  std::forward_list<std::pair<idx_t, level_t>> pair_buf;
+  std::vector<std::pair<idx_t, level_t>> pair_mbuf;
+  std::vector<idx_t> mptr;
+  std::vector<idx_t> mcol;
   // long *idx_buf; // Important note in iterator() function comments
   // long *idx_sbuf;
   std::forward_list<std::pair<idx_t, level_t>> pair_sbuf;

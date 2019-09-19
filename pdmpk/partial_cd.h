@@ -35,7 +35,7 @@ public:
   std::vector<level_t> levels;
   std::vector<bool> partials;
 
-  buffers_t bufs;
+  std::vector<buffers_t> bufs;
 
 private:
   // void debug_print_partials(); // TODO(vatai): implement
