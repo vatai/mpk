@@ -210,6 +210,7 @@ void partial_cd::metis_partition_with_levels()
   idx_t opt[METIS_NOPTIONS];
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000;
+  opt[METIS_OPTION_CONTIG] = 0;
   METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(),
                       &npart, NULL, NULL, opt, &retval, partitions.data());
 }
