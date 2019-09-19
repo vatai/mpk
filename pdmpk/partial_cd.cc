@@ -116,20 +116,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     const bool same_part = cur_part == partitions[j];
     const bool computed = levels[j] >= lbelow;
     if (needed and same_part and computed) {
-      partials[t] = true; // Add neighbour `t` to `idx`
-      *(bufptr->mptr.end() - 1)++; // increment last element in mptr
-      const auto loc =
-          std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
-                    std::make_pair(j, lbelow));
-      const auto buf_idx = loc - begin(bufptr->pair_mbuf);
-      bufptr->mcol.push_back(buf_idx);
-      std::cout << "iter diff: " << buf_idx << std::endl;
-
-      if (store_part.find({j, lbelow}) != end(store_part)) {
-        if (store_part[{j, lbelow}] != cur_part) {
-        }
-      }
-      retval = true;
+      retval = proc_adjacent(idx, lbelow, t);
     }
   }
   if (retval == true) {
@@ -140,6 +127,31 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     partial_reset(idx);
   }
   return retval;
+}
+
+bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
+{
+  buffers_t *bufptr = bufs.data() + partitions[idx];
+  const idx_t j = crs.col[t];
+  const bool needed = not partials[t];
+  const bool same_part = partitions[idx] == partitions[j];
+  const bool computed = levels[j] >= lbelow;
+  if (needed and same_part and computed) {
+    partials[t] = true;          // Add neighbour `t` to `idx`
+    *(bufptr->mptr.end() - 1)++; // increment last element in mptr
+    const auto loc = std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
+                               std::make_pair(j, lbelow));
+    const auto buf_idx = loc - begin(bufptr->pair_mbuf);
+    bufptr->mcol.push_back(buf_idx);
+    std::cout << "iter diff: " << buf_idx << std::endl;
+
+    if (store_part.find({j, lbelow}) != end(store_part)) {
+      if (store_part[{j, lbelow}] != partitions[idx]) {
+      }
+    }
+    return true;
+  }
+  return false;
 }
 
 bool partial_cd::partial_is_full(const idx_t idx)
