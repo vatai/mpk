@@ -83,16 +83,23 @@ void partial_cd::debug_print_partitions()
 
 void partial_cd::update_levels()
 {
-  // `was_active` is set to true, if there was progress made. If no
-  // progress is made, we should not proceed to the next level.
+  // `was_active` is true, if there was progress made at a level. If
+  // no progress is made, the next level is processed.
   bool was_active = true;
+  // `min_level` is important, see NOTE1 below.
   auto min_level = *std::min_element(begin(levels), end(levels));
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {
     was_active = false;
+    // NOTE1: Starting from `min_level` ensures, we start from a level
+    // where progress will be made, and set `was_active` to true
+    // i.e. starting from level 0, might be a problem if all vertices
+    // have level >0, because then, the first round would leave
+    // `was_active` as false, and would terminate prematurely.
     for (int idx = 0; idx < crs.n; idx++) {
       if (levels[idx] == lbelow) {  // needs calculations
+        // Pay attention: short-circuiting can cause problems.
         const auto tmp = proc_vertex(idx, lbelow);
         was_active = tmp or was_active;
       }
