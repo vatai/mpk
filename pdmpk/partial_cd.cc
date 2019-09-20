@@ -85,15 +85,16 @@ void partial_cd::update_levels()
 {
   // `was_active` is set to true, if there was progress made. If no
   // progress is made, we should not proceed to the next level.
-  // int was_active = true;
-  for (int lbelow = 0; /* was_active and */ lbelow < nlevels; lbelow++) {
-
-    // was_active = false;
+  bool was_active = true;
+  auto min_level = *std::min_element(begin(levels), end(levels));
+  // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
+  // vertices col[t] from level=lbelow.
+  for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {
+    was_active = false;
     for (int idx = 0; idx < crs.n; idx++) {
       if (levels[idx] == lbelow) {  // needs calculations
-        // order is here important, because of lazy eval.
-        // was_active = proc_vertex(idx, lbelow) or was_active;
-        proc_vertex(idx, lbelow);
+        const auto tmp = proc_vertex(idx, lbelow);
+        was_active = tmp or was_active;
       }
     }
   }
