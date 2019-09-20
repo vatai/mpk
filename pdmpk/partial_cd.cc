@@ -27,32 +27,32 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   metis_partition();
   update_levels();
   update_weights();
-  debug_print_partitions();
-  debug_print_levels();
-  debug_print_partials();
+  debug_print_partitions(std::cout);
+  debug_print_levels(std::cout);
+  debug_print_partials(std::cout);
 
   for (int i = 0; i < 7; i++) {
     std::cout << std::endl << "Phase: " << i + 1;
     metis_partition_with_levels();
     update_levels();
     update_weights();
-    debug_print_partitions();
-    debug_print_levels();
-    debug_print_partials();
+    debug_print_partitions(std::cout);
+    debug_print_levels(std::cout);
+    debug_print_partials(std::cout);
   }
 }
 
-void partial_cd::debug_print_levels()
+void partial_cd::debug_print_levels(std::ostream &os)
 {
   const int width = 4;
   for (int i = 0; i < crs.n; i++) {
-    if (i % 10 == 0) std::cout << std::endl;
-    std::cout << std::setw(width) << levels[i] << ", ";
+    if (i % 10 == 0) os << std::endl;
+    os << std::setw(width) << levels[i] << ", ";
   }
-  std::cout << std::endl;
+  os << std::endl;
 }
 
-void partial_cd::debug_print_partials()
+void partial_cd::debug_print_partials(std::ostream &os)
 {
   int max = 0;
   for (int i = 0; i < crs.n; i++) {
@@ -61,24 +61,24 @@ void partial_cd::debug_print_partials()
       max = d;
   }
   for (int i = 0; i < crs.n; i++) {
-    if (i % 10 == 0) std::cout << std::endl;
+    if (i % 10 == 0) os << std::endl;
     const idx_t d = crs.ptr[i + 1] - crs.ptr[i];
     for (int j = 0; j < max - d; j++)
-      std::cout << "_";
+      os << "_";
     for (int j = crs.ptr[i]; j < crs.ptr[i + 1]; j++)
-      std::cout << (partials[j] ? "*" : "O");
-    std::cout << " ";
+      os << (partials[j] ? "*" : "O");
+    os << " ";
   }
-  std::cout << std::endl;
+  os << std::endl;
 }
 
-void partial_cd::debug_print_partitions()
+void partial_cd::debug_print_partitions(std::ostream &os)
 {
   for (int i = 0; i < crs.n; i++) {
-    if (i % 10 == 0) std::cout << std::endl;
-    std::cout << partitions[i] << ", ";
+    if (i % 10 == 0) os << std::endl;
+    os << partitions[i] << ", ";
   }
-  std::cout << std::endl;
+  os << std::endl;
 }
 
 void partial_cd::update_levels()

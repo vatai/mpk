@@ -39,9 +39,9 @@ public:
 
 private:
   // void debug_print_partials(); // TODO(vatai): implement
-  void debug_print_levels();
-  void debug_print_partials();
-  void debug_print_partitions();
+  void debug_print_levels(std::ostream &os);
+  void debug_print_partials(std::ostream &os);
+  void debug_print_partitions(std::ostream &os);
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
