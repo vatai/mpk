@@ -23,6 +23,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   partials.resize(crs.nnz, false);
   bufs.resize(npart);
 
+  bufs[rank].record_phase();
   std::cout << std::endl << "Phase: 0";
   metis_partition();
   update_levels();
@@ -33,6 +34,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
 
   for (int i = 0; i < 7; i++) {
     std::cout << std::endl << "Phase: " << i + 1;
+    bufs[rank].record_phase();
     metis_partition_with_levels();
     update_levels();
     update_weights();

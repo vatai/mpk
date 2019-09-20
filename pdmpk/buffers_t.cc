@@ -5,6 +5,13 @@
 
 const std::string FNAME{"bufs"};
 
+void buffers_t::record_phase()
+{
+  offset_mptr.push_back(mptr.size());
+  offset_mcol.push_back(mcol.size());
+  offset_mval.push_back(mval.size());
+}
+
 void buffers_t::dump(const int rank)
 {
   std::stringstream fname;

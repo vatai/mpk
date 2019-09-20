@@ -37,6 +37,12 @@ public:
   std::vector<std::pair<idx_t, level_t>> pair_mbuf;
   std::vector<idx_t> mptr;
   std::vector<idx_t> mcol;
+  std::vector<double> mval;
+
+  std::vector<size_t> offset_mptr;
+  std::vector<size_t> offset_mcol;
+  std::vector<size_t> offset_mval;
+
   // long *idx_buf; // Important note in iterator() function comments
   // long *idx_sbuf;
   std::forward_list<std::pair<idx_t, level_t>> pair_sbuf;
@@ -46,6 +52,8 @@ public:
   // double *vv_buf;
   // double *vv_sbuf;
   // double *mval_buf;
+  void record_phase();
+
   void dump(const int rank);
   void load(const int rank);
 };
