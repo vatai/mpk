@@ -46,6 +46,8 @@ private:
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   bool proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
+  void update_data(const idx_t idx, const level_t level);
   void update_weights();
 
   bool partial_is_full(const idx_t idx);

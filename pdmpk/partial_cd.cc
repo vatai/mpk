@@ -99,44 +99,43 @@ void partial_cd::update_levels()
   }
 }
 
-// Process vertex v[idx] at level `level`.
+// Process vertex v[idx] at level `lbelow + 1`.
 // - add it to (levels, partials)
-// - update store_partition,
+// - update store_part,
 // - add it to buffers
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
-  const idx_t cur_part = partitions[idx];
-  buffers_t *bufptr = bufs.data() + cur_part;
+
+  buffers_t *bufptr = bufs.data() + partitions[idx];
   bufptr->pair_mbuf.push_back({idx, lbelow + 1});
   bufptr->mptr.push_back(0);
+
   for (idx_t t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
-    const idx_t j = crs.col[t];
-    const bool needed = not partials[t];
-    const bool same_part = cur_part == partitions[j];
-    const bool computed = levels[j] >= lbelow;
-    if (needed and same_part and computed) {
+    if (can_add(idx, lbelow, t)) {
       retval = proc_adjacent(idx, lbelow, t);
     }
   }
   if (retval == true) {
-    store_part[{idx, lbelow + 1}] = cur_part;
+    update_data(idx, lbelow + 1);
   }
+  return retval;
+}
+
+void partial_cd::update_data(const idx_t idx, const level_t level)
+{
+  store_part[{idx, level}] = partitions[idx];
   if (partial_is_full(idx)) {
     levels[idx]++;
     partial_reset(idx);
   }
-  return retval;
 }
 
 bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   buffers_t *bufptr = bufs.data() + partitions[idx];
-  const idx_t j = crs.col[t];
-  const bool needed = not partials[t];
-  const bool same_part = partitions[idx] == partitions[j];
-  const bool computed = levels[j] >= lbelow;
-  if (needed and same_part and computed) {
+  const auto j = crs.col[t];
+  if (can_add(idx, lbelow, t)) {
     partials[t] = true;          // Add neighbour `t` to `idx`
     *(bufptr->mptr.end() - 1)++; // increment last element in mptr
     const auto loc = std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
@@ -152,6 +151,15 @@ bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     return true;
   }
   return false;
+}
+
+bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
+{
+  const idx_t j = crs.col[t];
+  const bool needed = not partials[t];
+  const bool same_part = partitions[idx] == partitions[j];
+  const bool computed = levels[j] >= lbelow;
+  return needed and same_part and computed;
 }
 
 bool partial_cd::partial_is_full(const idx_t idx)
