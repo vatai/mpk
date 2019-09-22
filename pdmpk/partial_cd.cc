@@ -100,10 +100,8 @@ void partial_cd::update_levels()
     // have level >0, because then, the first round would leave
     // `was_active` as false, and would terminate prematurely.
     for (int idx = 0; idx < crs.n; idx++) {
-      if (levels[idx] == lbelow) {  // needs calculations
-        // Pay attention: short-circuiting can cause problems.
-        const auto tmp = proc_vertex(idx, lbelow);
-        was_active = tmp or was_active;
+      if (levels[idx] == lbelow and proc_vertex(idx, lbelow)) {
+        was_active = true;
       }
     }
   }
@@ -123,7 +121,8 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 
   for (idx_t t = crs.ptr[idx]; t < crs.ptr[idx + 1]; t++) {
     if (can_add(idx, lbelow, t)) {
-      retval = proc_adjacent(idx, lbelow, t);
+      proc_adjacent(idx, lbelow, t);
+      retval = true;
     }
   }
   if (retval == true) {
@@ -141,7 +140,7 @@ void partial_cd::update_data(const idx_t idx, const level_t level)
   }
 }
 
-bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
+void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   buffers_t *bufptr = bufs.data() + partitions[idx];
   const auto j = crs.col[t];
@@ -158,9 +157,7 @@ bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
       if (store_part[{j, lbelow}] != partitions[idx]) {
       }
     }
-    return true;
   }
-  return false;
 }
 
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
