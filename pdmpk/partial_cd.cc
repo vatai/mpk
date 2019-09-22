@@ -17,11 +17,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
                        const level_t _nlevels)
     : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
 {
-  partitions.resize(crs.n);
-  levels.resize(crs.n, 0);
-  weights.resize(crs.nnz);
-  partials.resize(crs.nnz, false);
-  bufs.resize(npart);
+  init_vectors();
 
   bufs[rank].record_phase();
   std::cout << std::endl << "Phase: 0";
@@ -81,6 +77,16 @@ void partial_cd::debug_print_partitions(std::ostream &os)
     os << partitions[i] << ", ";
   }
   os << std::endl;
+}
+
+void partial_cd::init_vectors()
+{
+  partitions.resize(crs.n);
+  levels.resize(crs.n, 0);
+  weights.resize(crs.nnz);
+  partials.resize(crs.nnz, false);
+
+  bufs.resize(npart);
 }
 
 void partial_cd::update_levels()

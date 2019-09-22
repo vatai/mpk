@@ -43,6 +43,7 @@ private:
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
 
+  void init_vectors();
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
