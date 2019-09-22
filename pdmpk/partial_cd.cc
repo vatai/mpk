@@ -2,6 +2,7 @@
 //  Date: 2019-09-17
 
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -155,6 +156,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     *(bufptr->mptr.end() - 1)++; // increment last element in mptr
     const auto loc = std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
                                std::make_pair(j, lbelow));
+    assert(loc != end(bufptr->pair_mbuf));
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
     bufptr->mcol.push_back(buf_idx);
     // std::cout << "iter diff: " << buf_idx << std::endl;
