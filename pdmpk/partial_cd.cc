@@ -21,20 +21,20 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   init_vectors();
 
   bufs[rank].record_phase();
-  std::cout << std::endl << "Phase: 0";
   metis_partition();
   update_levels();
   update_weights();
+  std::cout << std::endl << "Phase: 0";
   debug_print_partitions(std::cout);
   debug_print_levels(std::cout);
   debug_print_partials(std::cout);
 
   for (int i = 0; i < 7; i++) {
-    std::cout << std::endl << "Phase: " << i + 1;
     bufs[rank].record_phase();
     metis_partition_with_levels();
     update_levels();
     update_weights();
+    std::cout << std::endl << "Phase: " << i + 1;
     debug_print_partitions(std::cout);
     debug_print_levels(std::cout);
     debug_print_partials(std::cout);
@@ -122,7 +122,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
 
-  buffers_t *bufptr = bufs.data() + partitions[idx];
+  buffers_t *const bufptr = bufs.data() + partitions[idx];
   bufptr->pair_mbuf.push_back({idx, lbelow + 1});
   bufptr->mptr.push_back(0);
 
@@ -149,7 +149,7 @@ void partial_cd::update_data(const idx_t idx, const level_t level)
 
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
-  buffers_t *bufptr = bufs.data() + partitions[idx];
+  buffers_t *const bufptr = bufs.data() + partitions[idx];
   const auto j = crs.col[t];
   if (can_add(idx, lbelow, t)) {
     partials[t] = true;          // Add neighbour `t` to `idx`
@@ -159,7 +159,6 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     assert(loc != end(bufptr->pair_mbuf));
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
     bufptr->mcol.push_back(buf_idx);
-    // std::cout << "iter diff: " << buf_idx << std::endl;
 
     if (store_part.find({j, lbelow}) != end(store_part)) {
       if (store_part[{j, lbelow}] != partitions[idx]) {
