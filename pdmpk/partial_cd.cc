@@ -152,7 +152,7 @@ bool partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
                                std::make_pair(j, lbelow));
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
     bufptr->mcol.push_back(buf_idx);
-    std::cout << "iter diff: " << buf_idx << std::endl;
+    // std::cout << "iter diff: " << buf_idx << std::endl;
 
     if (store_part.find({j, lbelow}) != end(store_part)) {
       if (store_part[{j, lbelow}] != partitions[idx]) {
