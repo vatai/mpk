@@ -120,10 +120,6 @@ void partial_cd::update_levels()
   }
 }
 
-// Process vertex v[idx] at level `lbelow + 1`.
-// - add it to (levels, partials)
-// - update store_part,
-// - add it to buffers
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
