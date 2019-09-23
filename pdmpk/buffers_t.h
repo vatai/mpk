@@ -20,13 +20,12 @@
 
 class buffers_t {
 public:
-  // // npart * (nphase + 1)
-  // int *recvcounts;
-  // int *sendcounts;
-  // int *rdispls;
-  // int *sdispls;
+  std::vector<int> recvcounts;
+  std::vector<int> sendcounts;
+  std::vector<int> rdispls;
+  std::vector<int> sdispls;
 
-  // // nphase + 1 // int *rcount; // int *mcount; // int *scount;
+  std::vector<std::pair<idx_t, level_t>> pair_mbuf;
 
   // int *rbuf_offsets;
   // int *mbuf_offsets;
@@ -34,7 +33,6 @@ public:
   // int *mptr_offsets;
   // int *mcol_offsets;
 
-  std::vector<std::pair<idx_t, level_t>> pair_mbuf;
   std::vector<idx_t> mptr;
   std::vector<idx_t> mcol;
   std::vector<double> mval;
