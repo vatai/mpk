@@ -26,10 +26,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
   metis_partition();
   update_levels();
   update_weights();
-  std::cout << std::endl << "Phase: 0";
-  debug_print_partitions(std::cout);
-  debug_print_levels(std::cout);
-  debug_print_partials(std::cout);
+  debug_print_report(std::cout, 0);
 
   for (int i = 0; i < 7; i++) {
     for (int r = 0; r < npart; r++) {
@@ -38,10 +35,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
     metis_partition_with_levels();
     update_levels();
     update_weights();
-    std::cout << std::endl << "Phase: " << i + 1;
-    debug_print_partitions(std::cout);
-    debug_print_levels(std::cout);
-    debug_print_partials(std::cout);
+    debug_print_report(std::cout, i + 1);
   }
 }
 
@@ -82,6 +76,14 @@ void partial_cd::debug_print_partitions(std::ostream &os)
     os << partitions[i] << ", ";
   }
   os << std::endl;
+}
+
+void partial_cd::debug_print_report(std::ostream &os, const int phase)
+{
+    std::cout << std::endl << "Phase: " << phase;
+    debug_print_partitions(std::cout);
+    debug_print_levels(std::cout);
+    debug_print_partials(std::cout);
 }
 
 void partial_cd::init_vectors()

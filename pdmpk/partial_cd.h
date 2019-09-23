@@ -42,6 +42,7 @@ private:
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
+  void debug_print_report(std::ostream &os, const int phase);
 
   void init_vectors();
   void update_levels();
