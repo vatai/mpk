@@ -22,6 +22,9 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
 
   for (int r = 0; r < npart; r++) {
     bufs[r].record_phase();
+    for (int idx = 0; idx < crs.n; idx++) {
+      bufs[r].pair_mbuf.push_back(std::make_pair(idx, 0));
+    }
   }
   metis_partition();
   update_levels();
