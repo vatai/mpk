@@ -171,9 +171,8 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
     bufptr->mcol.push_back(buf_idx);
 
-    if (store_part.find({j, lbelow}) != end(store_part)) {
-      if (store_part[{j, lbelow}] != partitions[idx]) {
-      }
+    const auto adj_part = store_part.find({j, lbelow});
+    if (adj_part != end(store_part) and adj_part->second != partitions[idx]) {
     }
   }
 }
