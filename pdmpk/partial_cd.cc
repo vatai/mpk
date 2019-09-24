@@ -160,7 +160,8 @@ void partial_cd::update_data(const idx_t idx, const level_t level)
 
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
-  buffers_t *const bufptr = bufs.data() + partitions[idx];
+  const auto cur_part = partitions[idx];
+  buffers_t *const bufptr = bufs.data() + cur_part;
   const auto j = crs.col[t];
   if (can_add(idx, lbelow, t)) {
     partials[t] = true;          // Add neighbour `t` to `idx`
@@ -171,8 +172,16 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
     bufptr->mcol.push_back(buf_idx);
 
-    const auto adj_part = store_part.find({j, lbelow});
-    if (adj_part != end(store_part) and adj_part->second != partitions[idx]) {
+    const auto adj_iter = store_part.find({j, lbelow});
+    if (adj_iter != end(store_part)) {
+      const auto adj_part = adj_iter->second;
+      if (adj_part != cur_part) {
+        int phase = 0;
+        // TODO(vatai): record sending idx, from adj_part to cur_part
+        bufs[cur_part].recvcounts[crs.n * phase + adj_part]++;
+        bufs[adj_part].sendcounts[crs.n * phase + cur_part]++;
+        // TODO(vatai): {r,s}displs can be calculated from these.
+      }
     }
   }
 }
