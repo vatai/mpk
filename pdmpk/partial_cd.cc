@@ -27,6 +27,7 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
 
   for (int i = 0; i < 7; i++) {
     for (auto &buffer : bufs) {
+      // buffers.fill_displs(); // scan recv, send count
       buffer.record_phase();
     }
     metis_partition_with_levels();
@@ -176,11 +177,10 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     if (adj_iter != end(store_part)) {
       const auto adj_part = adj_iter->second;
       if (adj_part != cur_part) {
-        int phase = 0;
+        int phase = 0; // TODO(vatai): this is just a placeholder!
         // TODO(vatai): record sending idx, from adj_part to cur_part
         bufs[cur_part].recvcounts[crs.n * phase + adj_part]++;
         bufs[adj_part].sendcounts[crs.n * phase + cur_part]++;
-        // TODO(vatai): {r,s}displs can be calculated from these.
       }
     }
   }
