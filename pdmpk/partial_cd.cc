@@ -162,26 +162,28 @@ void partial_cd::update_data(const idx_t idx, const level_t level)
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   const auto cur_part = partitions[idx];
-  buffers_t *const bufptr = bufs.data() + cur_part;
+  const auto bufptr = bufs.data() + cur_part;
   const auto j = crs.col[t];
   if (can_add(idx, lbelow, t)) {
-    partials[t] = true;          // Add neighbour `t` to `idx`
-    *(bufptr->mptr.end() - 1)++; // increment last element in mptr
-    const auto loc = std::find(begin(bufptr->pair_mbuf), end(bufptr->pair_mbuf),
+    const auto adj_iter = store_part.find({j, lbelow});
+    assert (adj_iter != end(store_part));
+    const auto adj_part = adj_iter->second;
+    const auto adj_buf = bufs.data() + adj_part;
+    const auto loc = std::find(begin(adj_buf->pair_mbuf), end(bufptr->pair_mbuf),
                                std::make_pair(j, lbelow));
     assert(loc != end(bufptr->pair_mbuf));
     const auto buf_idx = loc - begin(bufptr->pair_mbuf);
+
+    partials[t] = true;          // Add neighbour `t` to `idx`
+    *(bufptr->mptr.end() - 1)++; // increment last element in mptr
     bufptr->mcol.push_back(buf_idx);
 
-    const auto adj_iter = store_part.find({j, lbelow});
-    if (adj_iter != end(store_part)) {
-      const auto adj_part = adj_iter->second;
-      if (adj_part != cur_part) {
-        int phase = 0; // TODO(vatai): this is just a placeholder!
-        // TODO(vatai): record sending idx, from adj_part to cur_part
-        bufs[cur_part].recvcounts[crs.n * phase + adj_part]++;
-        bufs[adj_part].sendcounts[crs.n * phase + cur_part]++;
-      }
+    if (adj_part != cur_part) {
+      int phase = 0; // TODO(vatai): this is just a placeholder!
+      // TODO(vatai): record sending {j, lbelow}, from adj_part to cur_part
+      bufs[cur_part].recvcounts[crs.n * phase + adj_part]++;
+      bufs[adj_part].sendcounts[crs.n * phase + cur_part]++;
+      bufs[adj_part].sbuf.push_back(buf_idx);
     }
   }
 }
