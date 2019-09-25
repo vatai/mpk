@@ -33,10 +33,12 @@ public:
   // int *mptr_offsets;
   // int *mcol_offsets;
 
+  std::vector<idx_t> sbuf;
   std::vector<idx_t> mptr;
   std::vector<idx_t> mcol;
   std::vector<double> mval;
 
+  std::vector<size_t> offset_sbuf;
   std::vector<size_t> offset_mptr;
   std::vector<size_t> offset_mcol;
   std::vector<size_t> offset_mval;
