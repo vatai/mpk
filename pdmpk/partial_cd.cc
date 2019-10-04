@@ -14,36 +14,6 @@
 
 #include "metis.h"
 
-partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
-                       const level_t _nlevels)
-    : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
-{
-  init_vectors();
-
-  metis_partition();
-  // TODO(vatai): hide this loop somewhere
-  for (int idx = 0; idx < crs.n; idx++) {
-    auto p = partitions[idx];
-    auto & buffer = bufs[p];
-    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
-    store_part[{idx, 0}] = p;
-  }
-  update_levels();
-  update_weights();
-  debug_print_report(std::cout, 0);
-
-  for (int i = 0; i < 7; i++) {
-    for (auto &buffer : bufs) {
-      // buffers.fill_displs(); // scan recv, send count
-      buffer.record_phase();
-    }
-    metis_partition_with_levels();
-    update_levels();
-    update_weights();
-    debug_print_report(std::cout, i + 1);
-  }
-}
-
 void partial_cd::debug_print_levels(std::ostream &os)
 {
   const int width = 4;
@@ -89,6 +59,36 @@ void partial_cd::debug_print_report(std::ostream &os, const int phase)
     debug_print_partitions(std::cout);
     debug_print_levels(std::cout);
     debug_print_partials(std::cout);
+}
+
+partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
+                       const level_t _nlevels)
+    : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
+{
+  init_vectors();
+
+  metis_partition();
+  // TODO(vatai): hide this loop somewhere
+  for (int idx = 0; idx < crs.n; idx++) {
+    auto p = partitions[idx];
+    auto & buffer = bufs[p];
+    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
+    store_part[{idx, 0}] = p;
+  }
+  update_levels();
+  update_weights();
+  debug_print_report(std::cout, 0);
+
+  for (int i = 0; i < 7; i++) {
+    for (auto &buffer : bufs) {
+      // buffers.fill_displs(); // scan recv, send count
+      buffer.record_phase();
+    }
+    metis_partition_with_levels();
+    update_levels();
+    update_weights();
+    debug_print_report(std::cout, i + 1);
+  }
 }
 
 void partial_cd::init_vectors()
