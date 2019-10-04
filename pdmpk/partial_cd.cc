@@ -66,15 +66,8 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
     : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
 {
   init_vectors();
-
+  init_communication();
   metis_partition();
-  // TODO(vatai): hide this loop somewhere
-  for (int idx = 0; idx < crs.n; idx++) {
-    auto p = partitions[idx];
-    auto & buffer = bufs[p];
-    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
-    store_part[{idx, 0}] = p;
-  }
   update_levels();
   update_weights();
   debug_print_report(std::cout, 0);
@@ -88,6 +81,16 @@ partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
     update_levels();
     update_weights();
     debug_print_report(std::cout, i + 1);
+  }
+}
+
+void partial_cd::init_communication()
+{
+  for (int idx = 0; idx < crs.n; idx++) {
+    auto p = partitions[idx];
+    auto & buffer = bufs[p];
+    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
+    store_part[{idx, 0}] = p;
   }
 }
 

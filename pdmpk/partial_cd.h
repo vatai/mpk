@@ -45,6 +45,7 @@ private:
   void debug_print_report(std::ostream &os, const int phase);
 
   void init_vectors();
+  void init_communication();
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
