@@ -11,7 +11,9 @@
  * This program generates the communication pattern for a given matrix
  * \f$A\f$.
  *
- * @todo(vatai) finish documentation here.
+ * @todo(vatai) Finish documentation here.
+ * @todo(vatai): Remove rank if not needed.
+ * @todo(vatai): Implement MPI class if needed.
  */
 
 #include <iostream>
