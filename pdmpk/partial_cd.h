@@ -49,7 +49,10 @@ private:
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  void record_adjacent(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
+  idx_t get_adj_buf_idx(const idx_t part, const idx_t idx, const level_t level);
+  idx_t get_store_part(const idx_t idx, const level_t level);
   void update_data(const idx_t idx, const level_t level);
   void update_weights();
 

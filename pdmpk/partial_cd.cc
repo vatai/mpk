@@ -159,6 +159,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   return retval;
 }
 
+/// @todo(vatai): Rename to inc_level.
 void partial_cd::update_data(const idx_t idx, const level_t level)
 {
   store_part[{idx, level}] = partitions[idx];
@@ -171,21 +172,11 @@ void partial_cd::update_data(const idx_t idx, const level_t level)
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   const auto cur_part = partitions[idx];
-  const auto bufptr = bufs.data() + cur_part;
   const auto j = csr.col[t];
   if (can_add(idx, lbelow, t)) {
-    const auto adj_iter = store_part.find({j, lbelow});
-    assert (adj_iter != end(store_part));
-    const auto adj_part = adj_iter->second;
-    const auto adj_buf = bufs.data() + adj_part;
-    const auto loc = std::find(begin(adj_buf->pair_mbuf), end(bufptr->pair_mbuf),
-                               std::make_pair(j, lbelow));
-    assert(loc != end(bufptr->pair_mbuf));
-    const auto buf_idx = loc - begin(bufptr->pair_mbuf);
-
-    partials[t] = true;          // Add neighbour `t` to `idx`
-    *(bufptr->mptr.end() - 1)++; // increment last element in mptr
-    bufptr->mcol.push_back(buf_idx);
+    const auto adj_part = get_store_part(j, lbelow);
+    const auto buf_idx = get_adj_buf_idx(adj_part, j, lbelow);
+    record_adjacent(idx, t, buf_idx);
 
     if (adj_part != cur_part) {
       int phase = 0; /// @todo(vatai): this is just a placeholder!
@@ -198,6 +189,39 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   }
 }
 
+void partial_cd::record_adjacent(
+    const idx_t idx,
+    const idx_t adj_tidx,
+    const idx_t adj_buf_idx)
+{
+  const auto cur_part = partitions[idx];
+  auto &buf = bufs[cur_part];
+
+  auto &last_mptr_element = *(end(buf.mptr) - 1);
+  last_mptr_element++;
+  partials[adj_tidx] = true;
+  buf.mcol.push_back(adj_buf_idx);
+}
+
+idx_t partial_cd::get_store_part(const idx_t idx, const level_t level)
+{
+  const auto iter = store_part.find({idx, level});
+  assert(iter != end(store_part));
+  return iter->second;
+}
+
+idx_t partial_cd::get_adj_buf_idx(
+    const idx_t part,
+    const idx_t idx,
+    const level_t level)
+{
+    auto &buf = bufs[part];
+    const auto loc = std::find(begin(buf.pair_mbuf), end(buf.pair_mbuf),
+                               std::make_pair(idx, level));
+    assert(loc != end(buf.pair_mbuf));
+    return loc - begin(buf.pair_mbuf);
+}
+
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   const idx_t j = csr.col[t];
@@ -205,22 +229,6 @@ bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
   const bool same_part = partitions[idx] == partitions[j];
   const bool computed = levels[j] >= lbelow;
   return needed and same_part and computed;
-}
-
-bool partial_cd::partial_is_full(const idx_t idx)
-{
-  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    if (not partials[t])
-      return false;
-  }
-  return true;
-}
-
-void partial_cd::partial_reset(const idx_t idx)
-{
-  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    partials[t] = false;
-  }
 }
 
 void partial_cd::update_weights()
@@ -238,6 +246,22 @@ void partial_cd::update_weights()
       else
         weights[j] = w;
     }
+  }
+}
+
+bool partial_cd::partial_is_full(const idx_t idx)
+{
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (not partials[t])
+      return false;
+  }
+  return true;
+}
+
+void partial_cd::partial_reset(const idx_t idx)
+{
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    partials[t] = false;
   }
 }
 
