@@ -46,20 +46,23 @@ private:
 
   void init_vectors();
   void init_communication();
+
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+
   void record_adjacent(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
+  void inc_level(const idx_t idx, const level_t level);
   idx_t get_adj_buf_idx(const idx_t part, const idx_t idx, const level_t level);
+
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   idx_t get_store_part(const idx_t idx, const level_t level);
-  void inc_level(const idx_t idx, const level_t level);
-  void update_weights();
 
   bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
 
+  void update_weights();
   void metis_partition();
   void metis_partition_with_levels();
 };

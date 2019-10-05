@@ -86,16 +86,6 @@ partial_cd::partial_cd(const char *_fname, const idx_t _npart,
   }
 }
 
-void partial_cd::init_communication()
-{
-  for (int idx = 0; idx < csr.n; idx++) {
-    auto p = partitions[idx];
-    auto &buffer = bufs[p];
-    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
-    set_store_part(idx, 0, p);
-  }
-}
-
 void partial_cd::init_vectors()
 {
   partitions.resize(csr.n);
@@ -112,6 +102,16 @@ void partial_cd::init_vectors()
     buffer.sendcounts.resize(mbs, 0);
     buffer.rdispls.resize(mbs, 0);
     buffer.sdispls.resize(mbs, 0);
+  }
+}
+
+void partial_cd::init_communication()
+{
+  for (int idx = 0; idx < csr.n; idx++) {
+    auto p = partitions[idx];
+    auto &buffer = bufs[p];
+    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
+    set_store_part(idx, 0, p);
   }
 }
 
@@ -161,14 +161,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   return retval;
 }
 
-void partial_cd::inc_level(const idx_t idx, const level_t level)
-{
-  if (partial_is_full(idx)) {
-    levels[idx]++;
-    partial_reset(idx);
-  }
-}
-
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   const auto cur_part = partitions[idx];
@@ -203,16 +195,21 @@ void partial_cd::record_adjacent(
   buf.mcol.push_back(adj_buf_idx);
 }
 
-void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
+bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
 {
-  store_part[{idx, level}] = part;
+  const idx_t j = csr.col[t];
+  const bool needed = not partials[t];
+  const bool same_part = partitions[idx] == partitions[j];
+  const bool computed = levels[j] >= lbelow;
+  return needed and same_part and computed;
 }
 
-idx_t partial_cd::get_store_part(const idx_t idx, const level_t level)
+void partial_cd::inc_level(const idx_t idx, const level_t level)
 {
-  const auto iter = store_part.find({idx, level});
-  assert(iter != end(store_part));
-  return iter->second;
+  if (partial_is_full(idx)) {
+    levels[idx]++;
+    partial_reset(idx);
+  }
 }
 
 idx_t partial_cd::get_adj_buf_idx(
@@ -227,13 +224,32 @@ idx_t partial_cd::get_adj_buf_idx(
     return loc - begin(buf.pair_mbuf);
 }
 
-bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
+void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
 {
-  const idx_t j = csr.col[t];
-  const bool needed = not partials[t];
-  const bool same_part = partitions[idx] == partitions[j];
-  const bool computed = levels[j] >= lbelow;
-  return needed and same_part and computed;
+  store_part[{idx, level}] = part;
+}
+
+idx_t partial_cd::get_store_part(const idx_t idx, const level_t level)
+{
+  const auto iter = store_part.find({idx, level});
+  assert(iter != end(store_part));
+  return iter->second;
+}
+
+bool partial_cd::partial_is_full(const idx_t idx)
+{
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (not partials[t])
+      return false;
+  }
+  return true;
+}
+
+void partial_cd::partial_reset(const idx_t idx)
+{
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    partials[t] = false;
+  }
 }
 
 void partial_cd::update_weights()
@@ -251,22 +267,6 @@ void partial_cd::update_weights()
       else
         weights[j] = w;
     }
-  }
-}
-
-bool partial_cd::partial_is_full(const idx_t idx)
-{
-  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    if (not partials[t])
-      return false;
-  }
-  return true;
-}
-
-void partial_cd::partial_reset(const idx_t idx)
-{
-  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    partials[t] = false;
   }
 }
 
