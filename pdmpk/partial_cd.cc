@@ -154,9 +154,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   const auto p = partitions[idx];
 
-  auto& buf = bufs[p];
-  buf.pair_mbuf.push_back({idx, lbelow + 1});
-  buf.mptr.push_back(0);
+  rec_vert(p, idx, lbelow + 1);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (can_add(idx, lbelow, t)) {
@@ -184,6 +182,13 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
       rec_comm(cur_part, adj_part, buf_idx);
     }
   }
+}
+
+void partial_cd::rec_vert(const idx_t part, const idx_t idx, const level_t level)
+{
+  auto& buf = bufs[part];
+  buf.pair_mbuf.push_back({idx, level});
+  buf.mptr.push_back(0);
 }
 
 void partial_cd::rec_adj(
