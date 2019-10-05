@@ -63,9 +63,9 @@ void partial_cd::debug_print_report(std::ostream &os, const int phase)
     debug_print_partials(std::cout);
 }
 
-partial_cd::partial_cd(const char *_fname, const int _rank, const idx_t _npart,
+partial_cd::partial_cd(const char *_fname, const idx_t _npart,
                        const level_t _nlevels)
-    : crs{_fname}, rank{_rank}, npart{_npart}, nlevels{_nlevels}
+    : crs{_fname}, npart{_npart}, nlevels{_nlevels}
 {
   init_vectors();
   init_communication();

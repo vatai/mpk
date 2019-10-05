@@ -25,10 +25,8 @@ class partial_cd {
    * @todo(vatai): maybe: encapsulate parameters
    */
 public:
-  partial_cd(const char *_fname, const int _rank, const idx_t _npart,
-             const level_t _nlevels);
+  partial_cd(const char *_fname, const idx_t _npart, const level_t _nlevels);
 
-  const int rank;
   const idx_t npart;
   const level_t nlevels;
   const crs_t crs;
