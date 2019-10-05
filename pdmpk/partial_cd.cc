@@ -188,8 +188,9 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     bufptr->mcol.push_back(buf_idx);
 
     if (adj_part != cur_part) {
-      int phase = 0; // TODO(vatai): this is just a placeholder!
-      // TODO(vatai): record sending {j, lbelow}, from adj_part to cur_part
+      int phase = 0; /// @todo(vatai): this is just a placeholder!
+      /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
+      /// @todo(vatai): This could be combined!
       bufs[cur_part].recvcounts[csr.n * phase + adj_part]++;
       bufs[adj_part].sendcounts[csr.n * phase + cur_part]++;
       bufs[adj_part].sbuf.push_back(buf_idx);
