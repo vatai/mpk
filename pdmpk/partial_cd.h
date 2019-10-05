@@ -42,7 +42,6 @@ public:
   std::vector<buffers_t> bufs;
 
 private:
-  // void debug_print_partials(); // TODO(vatai): implement
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
