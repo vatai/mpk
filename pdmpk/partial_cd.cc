@@ -154,9 +154,9 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   const auto p = partitions[idx];
 
-  buffers_t *const bufptr = bufs.data() + p;
-  bufptr->pair_mbuf.push_back({idx, lbelow + 1});
-  bufptr->mptr.push_back(0);
+  auto& buf = bufs[p];
+  buf.pair_mbuf.push_back({idx, lbelow + 1});
+  buf.mptr.push_back(0);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (can_add(idx, lbelow, t)) {
