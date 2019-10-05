@@ -168,15 +168,15 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   if (can_add(idx, lbelow, t)) {
     const auto adj_part = get_store_part(j, lbelow);
     const auto buf_idx = get_adj_buf_idx(adj_part, j, lbelow);
-    record_adjacent(idx, t, buf_idx);
+    rec_adj(idx, t, buf_idx);
 
     if (adj_part != cur_part) {
-      record_communication(cur_part, adj_part, buf_idx);
+      rec_comm(cur_part, adj_part, buf_idx);
     }
   }
 }
 
-void partial_cd::record_adjacent(
+void partial_cd::rec_adj(
     const idx_t idx,
     const idx_t adj_tidx,
     const idx_t adj_buf_idx)
@@ -190,7 +190,7 @@ void partial_cd::record_adjacent(
   buf.mcol.push_back(adj_buf_idx);
 }
 
-void partial_cd::record_communication(
+void partial_cd::rec_comm(
     const idx_t cur_part,
     const idx_t adj_part,
     const idx_t buf_idx)
@@ -199,7 +199,7 @@ void partial_cd::record_communication(
   /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
   bufs[cur_part].recvcounts[csr.n * phase + adj_part]++;
   bufs[adj_part].sendcounts[csr.n * phase + cur_part]++;
-  bufs[adj_part].sbuf.push_back(buf_idx);
+  // bufs[adj_part].sbuf.push_back(buf_idx);
 }
 
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)

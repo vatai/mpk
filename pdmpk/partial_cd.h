@@ -51,8 +51,8 @@ private:
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
 
-  void record_adjacent(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
-  void record_communication(const idx_t cur_part, const idx_t adj_part, const idx_t  buf_idx);
+  void rec_adj(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
+  void rec_comm(const idx_t cur_part, const idx_t adj_part, const idx_t  buf_idx);
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
   void inc_level(const idx_t idx, const level_t level);
   idx_t get_adj_buf_idx(const idx_t part, const idx_t idx, const level_t level);
