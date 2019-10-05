@@ -171,12 +171,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     record_adjacent(idx, t, buf_idx);
 
     if (adj_part != cur_part) {
-      int phase = 0; /// @todo(vatai): this is just a placeholder!
-      /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-      /// @todo(vatai): This could be combined!
-      bufs[cur_part].recvcounts[csr.n * phase + adj_part]++;
-      bufs[adj_part].sendcounts[csr.n * phase + cur_part]++;
-      bufs[adj_part].sbuf.push_back(buf_idx);
+      record_communication(cur_part, adj_part, buf_idx);
     }
   }
 }
@@ -193,6 +188,18 @@ void partial_cd::record_adjacent(
   last_mptr_element++;
   partials[adj_tidx] = true;
   buf.mcol.push_back(adj_buf_idx);
+}
+
+void partial_cd::record_communication(
+    const idx_t cur_part,
+    const idx_t adj_part,
+    const idx_t buf_idx)
+{
+  int phase = 0; /// @todo(vatai): this is just a placeholder!
+  /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
+  bufs[cur_part].recvcounts[csr.n * phase + adj_part]++;
+  bufs[adj_part].sendcounts[csr.n * phase + cur_part]++;
+  bufs[adj_part].sbuf.push_back(buf_idx);
 }
 
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
