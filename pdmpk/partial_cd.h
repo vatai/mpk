@@ -1,5 +1,9 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-09-17
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-09-17
+ *
+ * @brief Communication data for with partial vertices.
+ */
 
 #ifndef _PARTIAL_CD_
 #define _PARTIAL_CD_
@@ -16,9 +20,9 @@
 
 class partial_cd {
   /**
-   * TODO(vatai): maybe: encapsulate mpi data
+   * @todo(vatai): maybe: encapsulate mpi data
    *
-   * TODO(vatai): maybe: encapsulate parameters
+   * @todo(vatai): maybe: encapsulate parameters
    */
 public:
   partial_cd(const char *_fname, const int _rank, const idx_t _npart,

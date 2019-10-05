@@ -2,6 +2,7 @@
 !/**/
 !*.*
 !Makefile
+!Doxyfile
 
 *.log*
 *.g0
