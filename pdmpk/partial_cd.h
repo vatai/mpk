@@ -19,7 +19,7 @@
 
 #include "typedefs.h"
 #include "buffers_t.h"
-#include "crs_t.h"
+#include "csr_t.h"
 
 class partial_cd {
 
@@ -28,7 +28,7 @@ public:
 
   const idx_t npart;
   const level_t nlevels;
-  const crs_t crs;
+  const csr_t csr;
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;

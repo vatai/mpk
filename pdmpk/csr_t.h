@@ -9,9 +9,9 @@
 
 #include <metis.h>
 
-class crs_t {
+class csr_t {
  public:
-  crs_t(const char* fname);
+  csr_t(const char* fname);
   idx_t n;
   idx_t nnz;
   std::vector<idx_t> ptr;

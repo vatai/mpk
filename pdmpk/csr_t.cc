@@ -3,9 +3,9 @@
 
 #include <sstream>
 
-#include "crs_t.h"
+#include "csr_t.h"
 
-crs_t::crs_t(const char *fname)
+csr_t::csr_t(const char *fname)
 {
   std::ifstream file{fname};
 
@@ -14,7 +14,7 @@ crs_t::crs_t(const char *fname)
   mtx_fill_vectors(file);
 }
 
-void crs_t::mtx_check_banner(std::ifstream &file)
+void csr_t::mtx_check_banner(std::ifstream &file)
 {
   std::string banner;
   std::getline(file, banner);
@@ -36,7 +36,7 @@ void crs_t::mtx_check_banner(std::ifstream &file)
   }
 }
 
-void crs_t::mtx_fill_size(std::ifstream &file)
+void csr_t::mtx_fill_size(std::ifstream &file)
 {
   std::string line;
   std::stringstream ss;
@@ -56,7 +56,7 @@ void crs_t::mtx_fill_size(std::ifstream &file)
   val.reserve(nnz);
 }
 
-void crs_t::mtx_fill_vectors(std::ifstream &file)
+void csr_t::mtx_fill_vectors(std::ifstream &file)
 {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);
