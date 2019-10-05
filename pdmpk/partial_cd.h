@@ -54,7 +54,7 @@ private:
   idx_t get_adj_buf_idx(const idx_t part, const idx_t idx, const level_t level);
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   idx_t get_store_part(const idx_t idx, const level_t level);
-  void update_data(const idx_t idx, const level_t level);
+  void inc_level(const idx_t idx, const level_t level);
   void update_weights();
 
   bool partial_is_full(const idx_t idx);

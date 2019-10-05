@@ -156,13 +156,12 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   }
   if (retval == true) {
     set_store_part(idx, lbelow + 1, p);
-    update_data(idx, lbelow + 1);
+    inc_level(idx, lbelow + 1);
   }
   return retval;
 }
 
-/// @todo(vatai): Rename to inc_level.
-void partial_cd::update_data(const idx_t idx, const level_t level)
+void partial_cd::inc_level(const idx_t idx, const level_t level)
 {
   if (partial_is_full(idx)) {
     levels[idx]++;
