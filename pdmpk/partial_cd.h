@@ -3,6 +3,9 @@
  * @date 2019-09-17
  *
  * @brief Communication data for with partial vertices.
+ *
+ * @todo(vatai): maybe: encapsulate mpi data
+ * @todo(vatai): maybe: encapsulate parameters
  */
 
 #ifndef _PARTIAL_CD_
@@ -19,11 +22,7 @@
 #include "crs_t.h"
 
 class partial_cd {
-  /**
-   * @todo(vatai): maybe: encapsulate mpi data
-   *
-   * @todo(vatai): maybe: encapsulate parameters
-   */
+
 public:
   partial_cd(const char *_fname, const idx_t _npart, const level_t _nlevels);
 
