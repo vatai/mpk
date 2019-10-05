@@ -38,6 +38,8 @@ public:
 
   std::vector<buffers_t> bufs;
 
+  std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
+
 private:
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
@@ -46,6 +48,7 @@ private:
 
   void init_vectors();
   void init_communication();
+  void phase_shift();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);

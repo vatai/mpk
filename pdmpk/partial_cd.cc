@@ -75,10 +75,7 @@ partial_cd::partial_cd(const char *_fname, const idx_t _npart,
   debug_print_report(std::cout, 0);
 
   for (int i = 0; i < 7; i++) {
-    for (auto &buffer : bufs) {
-      // buffers.fill_displs(); // scan recv, send count
-      buffer.record_phase();
-    }
+    phase_shift();
     metis_partition_with_levels();
     update_levels();
     update_weights();
@@ -112,6 +109,19 @@ void partial_cd::init_communication()
     auto &buffer = bufs[p];
     buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
     set_store_part(idx, 0, p);
+  }
+}
+
+void partial_cd::phase_shift()
+{
+  for (auto &buffer : bufs) {
+    // buffers.fill_displs(); // scan recv, send count
+    buffer.record_phase();
+  }
+  for (idx_t from = 0; from < npart; from++) {
+    for (idx_t to = 0; to < npart; to++) {
+      auto idx = comm_dict[{from, to}];
+    }
   }
 }
 
@@ -191,15 +201,15 @@ void partial_cd::rec_adj(
 }
 
 void partial_cd::rec_comm(
-    const idx_t cur_part,
-    const idx_t adj_part,
+    const idx_t to,
+    const idx_t from,
     const idx_t buf_idx)
 {
   int phase = 0; /// @todo(vatai): this is just a placeholder!
   /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-  bufs[cur_part].recvcounts[csr.n * phase + adj_part]++;
-  bufs[adj_part].sendcounts[csr.n * phase + cur_part]++;
-  // bufs[adj_part].sbuf.push_back(buf_idx);
+  bufs[to].recvcounts[csr.n * phase + from]++;
+  bufs[from].sendcounts[csr.n * phase + to]++;
+  comm_dict[{from, to}] = buf_idx;
 }
 
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
