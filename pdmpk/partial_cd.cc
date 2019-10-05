@@ -90,9 +90,9 @@ void partial_cd::init_communication()
 {
   for (int idx = 0; idx < csr.n; idx++) {
     auto p = partitions[idx];
-    auto & buffer = bufs[p];
+    auto &buffer = bufs[p];
     buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
-    store_part[{idx, 0}] = p;
+    set_store_part(idx, 0, p);
   }
 }
 
@@ -142,8 +142,9 @@ void partial_cd::update_levels()
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
+  const auto p = partitions[idx];
 
-  buffers_t *const bufptr = bufs.data() + partitions[idx];
+  buffers_t *const bufptr = bufs.data() + p;
   bufptr->pair_mbuf.push_back({idx, lbelow + 1});
   bufptr->mptr.push_back(0);
 
@@ -154,6 +155,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     }
   }
   if (retval == true) {
+    set_store_part(idx, lbelow + 1, p);
     update_data(idx, lbelow + 1);
   }
   return retval;
@@ -162,7 +164,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 /// @todo(vatai): Rename to inc_level.
 void partial_cd::update_data(const idx_t idx, const level_t level)
 {
-  store_part[{idx, level}] = partitions[idx];
   if (partial_is_full(idx)) {
     levels[idx]++;
     partial_reset(idx);
@@ -201,6 +202,11 @@ void partial_cd::record_adjacent(
   last_mptr_element++;
   partials[adj_tidx] = true;
   buf.mcol.push_back(adj_buf_idx);
+}
+
+void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
+{
+  store_part[{idx, level}] = part;
 }
 
 idx_t partial_cd::get_store_part(const idx_t idx, const level_t level)
