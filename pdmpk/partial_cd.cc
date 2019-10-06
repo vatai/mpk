@@ -120,6 +120,10 @@ void partial_cd::phase_shift()
     // buffers.fill_displs(); // scan recv, send count
     buffer.record_phase();
   }
+
+  /// @todo(vatai): Calculate displacements.
+  for (size_t i = 1; i < npart; i++) {
+  }
   for (idx_t from = 0; from < npart; from++) {
     for (idx_t to = 0; to < npart; to++) {
       auto idx = comm_dict[{from, to}];
