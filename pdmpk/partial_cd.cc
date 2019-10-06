@@ -189,7 +189,6 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::rec_vert(const idx_t part, const idx_t idx, const level_t level)
 {
   auto& buf = bufs[part];
-  buf.pair_mbuf.push_back({idx, level});
   buf.mptr.push_back(0);
 }
 
@@ -250,6 +249,8 @@ idx_t partial_cd::get_adj_buf_idx(
 
 void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
 {
+  auto& buf = bufs[part];
+  buf.pair_mbuf.push_back({idx, level});
   store_part[{idx, level}] = part;
 }
 
