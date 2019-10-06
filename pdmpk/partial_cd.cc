@@ -211,7 +211,7 @@ void partial_cd::rec_comm(
     const idx_t from,
     const idx_t buf_idx)
 {
-  int phase = 0; /// @todo(vatai): this is just a placeholder!
+  int phase = bufs[0].offset_mcol.size();
   /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
   bufs[to].recvcounts[csr.n * phase + from]++;
   bufs[from].sendcounts[csr.n * phase + to]++;
