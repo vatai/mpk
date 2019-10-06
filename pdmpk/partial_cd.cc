@@ -160,7 +160,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   const auto p = partitions[idx];
 
-  rec_vert(p, idx, lbelow + 1);
+  rec_vert(p);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (can_add(idx, lbelow, t)) {
@@ -190,7 +190,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   }
 }
 
-void partial_cd::rec_vert(const idx_t part, const idx_t idx, const level_t level)
+void partial_cd::rec_vert(const idx_t part)
 {
   auto& buf = bufs[part];
   buf.mptr.push_back(0);
@@ -210,10 +210,7 @@ void partial_cd::rec_adj(
   buf.mcol.push_back(adj_buf_idx);
 }
 
-void partial_cd::rec_comm(
-    const idx_t to,
-    const idx_t from,
-    const idx_t buf_idx)
+void partial_cd::rec_comm(const idx_t to, const idx_t from, const idx_t buf_idx)
 {
   int phase = bufs[0].offset_mcol.size();
   /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
