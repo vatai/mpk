@@ -180,13 +180,9 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   const auto cur_part = partitions[idx];
   const auto j = csr.col[t];
   if (can_add(idx, lbelow, t)) {
-    const auto adj_part = get_store_part(j, lbelow);
-    const auto buf_idx = get_adj_buf_idx(adj_part, j, lbelow);
-    rec_adj(idx, t, buf_idx);
-
-    if (adj_part != cur_part) {
-      rec_comm(cur_part, adj_part, buf_idx);
-    }
+    const auto pair = get_store_part(j, lbelow);
+    rec_adj(idx, t, pair.second);
+    rec_comm(cur_part, pair);
   }
 }
 
@@ -210,13 +206,17 @@ void partial_cd::rec_adj(
   buf.mcol.push_back(adj_buf_idx);
 }
 
-void partial_cd::rec_comm(const idx_t to, const idx_t from, const idx_t buf_idx)
+void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
 {
-  int phase = bufs[0].offset_mcol.size();
-  /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-  bufs[to].recvcounts[csr.n * phase + from]++;
-  bufs[from].sendcounts[csr.n * phase + to]++;
-  comm_dict[{from, to}] = buf_idx;
+  const auto& from = pair.first;
+  const auto& buf_idx = pair.second;
+  if (to != from) {
+    int phase = bufs[0].offset_mcol.size();
+    /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
+    bufs[to].recvcounts[csr.n * phase + from]++;
+    bufs[from].sendcounts[csr.n * phase + to]++;
+    comm_dict[{from, to}] = buf_idx;
+  }
 }
 
 bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
@@ -236,30 +236,20 @@ void partial_cd::inc_level(const idx_t idx, const level_t level)
   }
 }
 
-idx_t partial_cd::get_adj_buf_idx(
-    const idx_t part,
+std::pair<idx_t, idx_t> partial_cd::get_store_part(
     const idx_t idx,
     const level_t level)
-{
-    auto &buf = bufs[part];
-    const auto loc = std::find(begin(buf.pair_mbuf), end(buf.pair_mbuf),
-                               std::make_pair(idx, level));
-    assert(loc != end(buf.pair_mbuf));
-    return loc - begin(buf.pair_mbuf);
-}
-
-void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
-{
-  auto& buf = bufs[part];
-  buf.pair_mbuf.push_back({idx, level});
-  store_part[{idx, level}] = part;
-}
-
-idx_t partial_cd::get_store_part(const idx_t idx, const level_t level)
 {
   const auto iter = store_part.find({idx, level});
   assert(iter != end(store_part));
   return iter->second;
+}
+
+void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
+{
+  auto& pair_mbuf = bufs[part].pair_mbuf;
+  store_part[{idx, level}] = {part, pair_mbuf.size()};
+  pair_mbuf.push_back({idx, level});
 }
 
 bool partial_cd::partial_is_full(const idx_t idx)

@@ -32,7 +32,7 @@ public:
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
-  std::map<std::pair<idx_t, level_t>, idx_t> store_part;
+  std::map<std::pair<idx_t, level_t>, std::pair<idx_t, idx_t>> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
 
@@ -56,13 +56,12 @@ private:
 
   void rec_vert(const idx_t part);
   void rec_adj(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
-  void rec_comm(const idx_t cur_part, const idx_t adj_part, const idx_t  buf_idx);
+  void rec_comm(const idx_t cur_part, const std::pair<idx_t, idx_t> &pair);
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
   void inc_level(const idx_t idx, const level_t level);
-  idx_t get_adj_buf_idx(const idx_t part, const idx_t idx, const level_t level);
 
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
-  idx_t get_store_part(const idx_t idx, const level_t level);
+  std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
 
   bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
