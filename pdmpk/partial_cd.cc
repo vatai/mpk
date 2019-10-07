@@ -107,10 +107,8 @@ void partial_cd::init_vectors()
 void partial_cd::init_communication()
 {
   for (int idx = 0; idx < csr.n; idx++) {
-    auto p = partitions[idx];
-    auto &buffer = bufs[p];
-    buffer.pair_mbuf.push_back(std::make_pair(idx, 0));
-    set_store_part(idx, 0, p);
+    auto part = partitions[idx];
+    set_store_part(idx, 0, part);
   }
 }
 
