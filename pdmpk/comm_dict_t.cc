@@ -3,7 +3,7 @@
 #include "comm_dict_t.h"
 
 comm_dict_t::comm_dict_t(const idx_t npart)
-    : npart {npart}
+    : npart {npart}, v{npart, std::vector<int>(npart, 0)}
 {
   recvcount.resize(npart * npart, 0);
   recvdispl.resize(npart * npart, 0);
