@@ -19,10 +19,10 @@ class comm_dict_t : std::map<std::pair<idx_t, idx_t>,
  private:
   idx_t npart;
   comm_dict_t ();
-  std::vector<int> recvbuf;
+  std::vector<std::vector<int>> recvbuf;
+  std::vector<std::vector<int>> sendbuf;
   std::vector<int> recvcount;
-  std::vector<int> recvdispl;
-  std::vector<int> sendbuf;
   std::vector<int> sendcount;
+  std::vector<int> recvdispl;
   std::vector<int> senddispl;
 };
