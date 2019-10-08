@@ -4,6 +4,7 @@ CXXFLAGS=-I$(METISDIR)/include -L$(METISDIR)/libmetis -g
 LDLIBS=-lmetis
 #/libmetis.a
 
-all : pdmpk_prep
+all : pdmpk_prep tmp
 
-pdmpk_prep : partial_cd.o csr_t.o buffers_t.o buffers_t_new.o
+pdmpk_prep : partial_cd.o csr_t.o buffers_t.o buffers_t_new.o comm_dict_t.o
+tmp: comm_dict_t.o
