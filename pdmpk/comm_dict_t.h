@@ -29,10 +29,8 @@ class comm_dict_t : std::map<std::pair<idx_t, idx_t>,
   comm_dict_t();
   std::vector<std::vector<int>> recvbuf;
   std::vector<std::vector<int>> sendbuf;
-  std::vector<int> recvcount;
-  std::vector<int> sendcount;
-  std::vector<int> recvdispl;
-  std::vector<int> senddispl;
-  // std::vector
-  std::vector<std::vector<int>> v;
+  std::vector<std::vector<int>> recvcount;
+  std::vector<std::vector<int>> sendcount;
+  std::vector<std::vector<int>> recvdispl;
+  std::vector<std::vector<int>> senddispl;
 };

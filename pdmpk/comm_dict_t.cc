@@ -3,15 +3,14 @@
 #include "comm_dict_t.h"
 
 comm_dict_t::comm_dict_t(const idx_t npart)
-    : npart {npart}, v{npart, std::vector<int>(npart, 0)}
-{
-  recvcount.resize(npart * npart, 0);
-  recvdispl.resize(npart * npart, 0);
-  sendcount.resize(npart * npart, 0);
-  senddispl.resize(npart * npart, 0);
-  recvbuf.resize(npart);
-  sendbuf.resize(npart);
-}
+    : npart {npart}, //v{npart, std::vector<int>(npart, 0)}
+      recvcount(npart, std::vector<int>(npart, 0)),
+      recvdispl(npart, std::vector<int>(npart, 0)),
+      sendcount(npart, std::vector<int>(npart, 0)),
+      senddispl(npart, std::vector<int>(npart, 0)),
+      recvbuf(npart),
+      sendbuf(npart)
+{}
 
 
 void comm_dict_t::record(const idx_t from, const idx_t to, const idx_t idx)
@@ -29,16 +28,20 @@ void comm_dict_t::serialise(std::ostream &os)
 {
   os << npart << "\n";
   os << "recvcount: ";
-  for (auto e : recvcount) os << e << ", ";
+  for (auto v : recvcount)
+    for (auto e : v) os << e << ", ";
   os << "\n";
   os << "recvdispl: ";
-  for (auto e : recvdispl) os << e << ", ";
+  for (auto v : recvdispl)
+    for (auto e : v) os << e << ", ";
   os << "\n";
   os << "sendcount: ";
-  for (auto e : sendcount) os << e << ", ";
+  for (auto v : sendcount)
+    for (auto e : v) os << e << ", ";
   os << "\n";
   os << "senddispl: ";
-  for (auto e : senddispl) os << e << ", ";
+  for (auto v : senddispl)
+    for (auto e : v) os << e << ", ";
   os << "\n";
 
   for (int i = 0; i < npart; i++) {
@@ -57,8 +60,8 @@ void comm_dict_t::process()
     for (idx_t to = 0; to < npart; to++) {
       const auto iter = this->find({from, to});
       if (iter != this->end()) {
-        recvcount[to * npart + from] = iter->second.size();
-        sendcount[from * npart + to] = iter->second.size();
+        recvcount[to][from] = iter->second.size();
+        sendcount[from][to] = iter->second.size();
         auto &rbuf = recvbuf[to];
         auto &sbuf = sendbuf[from];
         const auto &buf = iter->second;
@@ -68,13 +71,11 @@ void comm_dict_t::process()
     }
   }
   for (idx_t r = 0; r < npart; r++) {
-    const auto base = r * npart;
-    recvdispl[base] = 0;
-    senddispl[base] = 0;
+    recvdispl[r][0] = 0;
+    senddispl[r][0] = 0;
     for (idx_t i = 1; i < npart; i++) {
-      const auto cur = base + i;
-      recvdispl[cur] = recvdispl[cur - 1] + recvcount[cur - 1];
-      senddispl[cur] = senddispl[cur - 1] + sendcount[cur - 1];
+      recvdispl[r][i] = recvdispl[r][i - 1] + recvcount[r][i - 1];
+      senddispl[r][i] = senddispl[r][i - 1] + sendcount[r][i - 1];
     }
   }
 }
