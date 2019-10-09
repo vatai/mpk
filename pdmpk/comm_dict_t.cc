@@ -79,3 +79,14 @@ void comm_dict_t::process()
     }
   }
 }
+
+void comm_dict_t::clear()
+{
+  std::map<std::pair<idx_t, idx_t>, std::vector<idx_t>>::clear();
+  for (auto &v : recvbuf) v.clear();
+  for (auto &v : sendbuf) v.clear();
+  for (auto &v : recvcount) for (auto &e : v) e = 0;
+  for (auto &v : recvdispl) for (auto &e : v) e = 0;
+  for (auto &v : sendcount) for (auto &e : v) e = 0;
+  for (auto &v : senddispl) for (auto &e : v) e = 0;
+}

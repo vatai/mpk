@@ -18,6 +18,8 @@ class comm_dict_t : std::map<std::pair<idx_t, idx_t>,
   // Call this before accessing the MPI vectors.
   void process();
 
+  void clear();
+
   // Getters:
   // std::vector<int>::const_iterator rcbegin(size_t r);
   // std::vector<int>::const_iterator rdbegin(size_t r);

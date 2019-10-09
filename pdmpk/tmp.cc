@@ -33,5 +33,9 @@ int main(int argc, char *argv[])
   cdict.record(0, 1, 20);
   cdict.process();
   cdict.serialise(std::cout);
+  cdict.clear();
+  cdict.process();
+
+  cdict.serialise(std::cout);
   return 0;
 }
