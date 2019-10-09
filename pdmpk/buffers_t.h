@@ -34,14 +34,13 @@ public:
   // int *mcol_offsets;
 
   std::vector<idx_t> sbuf;
+  std::vector<size_t> sbuf_offset;
   std::vector<idx_t> mptr;
+  std::vector<size_t> mptr_offset;
   std::vector<idx_t> mcol;
   std::vector<double> mval;
+  std::vector<size_t> mcol_offset;
 
-  std::vector<size_t> offset_sbuf;
-  std::vector<size_t> offset_mptr;
-  std::vector<size_t> offset_mcol;
-  std::vector<size_t> offset_mval;
 
   // long *idx_buf; // Important note in iterator() function comments
   // long *idx_sbuf;
