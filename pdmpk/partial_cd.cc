@@ -77,6 +77,7 @@ partial_cd::partial_cd(
   debug_print_report(std::cout, 0);
 
   for (int i = 0; i < 7; i++) {
+    phase = i;
     phase_shift();
     metis_partition_with_levels();
     update_levels();

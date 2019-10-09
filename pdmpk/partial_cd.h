@@ -41,6 +41,7 @@ public:
   std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
 
 private:
+  int phase;
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
