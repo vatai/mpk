@@ -201,13 +201,18 @@ void partial_cd::rec_adj(
     const idx_t adj_tidx,
     const idx_t adj_buf_idx)
 {
+  partials[adj_tidx] = true;
+
   const auto cur_part = partitions[idx];
   auto &buf = bufs[cur_part];
-
   auto &last_mptr_element = *(end(buf.mptr) - 1);
   last_mptr_element++;
-  partials[adj_tidx] = true;
   buf.mcol.push_back(adj_buf_idx);
+  if (buf.mcol_count.size() == phase) {
+    buf.mcol_count.push_back(1);
+  } else {
+    buf.mcol_count[phase]++;
+  }
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
