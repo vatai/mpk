@@ -189,6 +189,11 @@ void partial_cd::rec_vert(const idx_t part)
 {
   auto& buf = bufs[part];
   buf.mptr.push_back(0);
+  if (buf.mptr_count.size() == phase) {
+    buf.mptr_count.push_back(1);
+  } else {
+    buf.mptr_count[phase]++;
+  }
 }
 
 void partial_cd::rec_adj(
