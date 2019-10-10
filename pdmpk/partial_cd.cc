@@ -169,7 +169,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   }
   if (retval == true) {
     set_store_part(idx, lbelow + 1, p);
-    inc_level(idx, lbelow + 1);
+    inc_level(idx);
   }
   return retval;
 }
@@ -237,7 +237,7 @@ bool partial_cd::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
   return needed and same_part and computed;
 }
 
-void partial_cd::inc_level(const idx_t idx, const level_t level)
+void partial_cd::inc_level(const idx_t idx)
 {
   if (partial_is_full(idx)) {
     levels[idx]++;
