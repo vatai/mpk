@@ -20,12 +20,6 @@ class comm_dict_t : std::map<std::pair<idx_t, idx_t>,
 
   void clear();
 
-  // Getters:
-  // std::vector<int>::const_iterator rcbegin(size_t r);
-  // std::vector<int>::const_iterator rdbegin(size_t r);
-  // std::vector<int>::const_iterator scbegin(size_t r);
-  // std::vector<int>::const_iterator sdbegin(size_t r);
-
  private:
   idx_t npart;
   comm_dict_t();
