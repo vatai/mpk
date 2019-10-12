@@ -13,9 +13,12 @@ class comm_dict_t
  public:
   comm_dict_t (const idx_t npart);
 
+  /// @brief Record a complete vertex to `sdict`.
   void rec_svert(const idx_t from, const idx_t to, const idx_t idx);
+  /// @brief Record an initialisation vertex to `idict`.
   void rec_ivert(const idx_t from, const idx_t to, const idx_t idx);
-  std::vector<idx_t> &view(const idx_t from, const idx_t to);
+
+  /// @brief Output the contents of the MPI buffers.
   void serialise(std::ostream &os);
 
   /// @brief The __send__ dictionary for complete vertices.
@@ -26,6 +29,7 @@ class comm_dict_t
 
   /// @brief Call `process()` to fill the MPI vectors.
   void process();
+  /// @brief Clear all the data (call between phases).
   void clear();
 
   std::vector<std::vector<int>> recvbuf;
