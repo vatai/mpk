@@ -3,8 +3,7 @@
 #include "comm_dict_t.h"
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart)
-    : npart{npart},
-      recvcount(npart, std::vector<int>(npart, 0)),
+    : recvcount(npart, std::vector<int>(npart, 0)),
       recvdispl(npart, std::vector<int>(npart, 0)),
       sendcount(npart, std::vector<int>(npart, 0)),
       senddispl(npart, std::vector<int>(npart, 0)),
@@ -24,6 +23,7 @@ void mpi_bufs_t::clear()
 
 void mpi_bufs_t::serialise(std::ostream &os)
 {
+  const auto npart = recvbuf.size();
   os << npart << "\n";
   os << "recvcount: ";
   for (auto v : recvcount)
@@ -59,6 +59,7 @@ comm_dict_t::comm_dict_t(const idx_t npart)
 
 void mpi_bufs_t::fill_displs()
 {
+  auto const npart = recvdispl.size();
   for (idx_t r = 0; r < npart; r++) {
     recvdispl[r][0] = 0;
     senddispl[r][0] = 0;
