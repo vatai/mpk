@@ -8,8 +8,8 @@ comm_dict_t::comm_dict_t(const idx_t npart)
       recvdispl(npart, std::vector<int>(npart, 0)),
       sendcount(npart, std::vector<int>(npart, 0)),
       senddispl(npart, std::vector<int>(npart, 0)),
-      recvbuf(npart),
-      sendbuf(npart)
+      recvbuf{std::vector<int>::size_type(npart)},
+      sendbuf{std::vector<int>::size_type(npart)}
 {}
 
 
