@@ -8,7 +8,11 @@
 
 #include "typedefs.h"
 
+/**
+ * @brief Buffers for the `MPI_alltoallv` call for each partition.
+ */
 struct mpi_bufs_t {
+  /// @brief `npart` is the number of partitions.
   mpi_bufs_t (const idx_t npart);
 
   void clear();
@@ -27,6 +31,7 @@ struct mpi_bufs_t {
 class comm_dict_t
 {
  public:
+  /// @brief `npart` is the number of partitions.
   comm_dict_t (const idx_t npart);
 
   /// @brief Record a complete vertex to `sdict`.
