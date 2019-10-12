@@ -12,7 +12,8 @@
  * @brief Communication data dictionary.
  *
  * `comm_dict_t` collects communication data in the two dictionaries
- * `sdict` and `idict`.
+ * `sdict` and `idict`.  From that data it is able to create the
+ * resulting `mpi_bufs` for the phase.
  */
 class comm_dict_t
 {
@@ -38,7 +39,7 @@ class comm_dict_t
 
   /// @brief The __send__ dictionary for complete vertices.
   std::map<from_to_pair_t, std::vector<idx_t>> sdict;
-  /// @brief The dictionary for partial (initialisation) vertices.
+  /// @brief The dictionary for partial __initialisation__ vertices.
   std::map<from_to_pair_t, idx_t> idict;
 
 };
