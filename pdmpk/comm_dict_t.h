@@ -17,7 +17,9 @@ class comm_dict_t
   std::vector<idx_t> &view(const idx_t from, const idx_t to);
   void serialise(std::ostream &os);
 
-  std::map<from_to_pair_t, std::vector<idx_t>> rdict;
+  /// @brief The __send__ dictionary for complete vertices.
+  std::map<from_to_pair_t, std::vector<idx_t>> sdict;
+  /// @brief The dictionary for partial (initialisation) vertices.
   std::map<from_to_pair_t, idx_t> idict;
 
 
