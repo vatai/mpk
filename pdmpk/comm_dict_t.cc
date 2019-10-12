@@ -13,14 +13,14 @@ comm_dict_t::comm_dict_t(const idx_t npart)
 {}
 
 
-void comm_dict_t::record(const idx_t from, const idx_t to, const idx_t idx)
+void comm_dict_t::rec_svert(const idx_t from, const idx_t to, const idx_t idx)
 {
   sdict[{from, to}].push_back(idx);
 }
 
-std::vector<idx_t> &comm_dict_t::view(const idx_t from, const idx_t to)
+void comm_dict_t::rec_ivert(const idx_t from, const idx_t to, const idx_t idx)
 {
-  return sdict.at({from, to});
+  idict[{from, to}] = idx;
 }
 
 void comm_dict_t::serialise(std::ostream &os)
