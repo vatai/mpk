@@ -8,6 +8,24 @@
 
 #include "typedefs.h"
 
+struct mpi_bufs_t {
+  mpi_bufs_t (const idx_t npart);
+
+  void clear();
+  void fill_displs();
+  /// @brief Output the contents of the MPI buffers.
+  void serialise(std::ostream &os);
+
+  std::vector<std::vector<int>> recvbuf;
+  std::vector<std::vector<int>> sendbuf;
+  std::vector<std::vector<int>> recvcount;
+  std::vector<std::vector<int>> sendcount;
+  std::vector<std::vector<int>> recvdispl;
+  std::vector<std::vector<int>> senddispl;
+ private:
+  idx_t npart;
+};
+
 class comm_dict_t
 {
  public:
@@ -17,9 +35,6 @@ class comm_dict_t
   void rec_svert(const idx_t from, const idx_t to, const idx_t idx);
   /// @brief Record an initialisation vertex to `idict`.
   void rec_ivert(const idx_t from, const idx_t to, const idx_t idx);
-
-  /// @brief Output the contents of the MPI buffers.
-  void serialise(std::ostream &os);
 
   /// @brief The __send__ dictionary for complete vertices.
   std::map<from_to_pair_t, std::vector<idx_t>> sdict;
@@ -32,12 +47,7 @@ class comm_dict_t
   /// @brief Clear all the data (call between phases).
   void clear();
 
-  std::vector<std::vector<int>> recvbuf;
-  std::vector<std::vector<int>> sendbuf;
-  std::vector<std::vector<int>> recvcount;
-  std::vector<std::vector<int>> sendcount;
-  std::vector<std::vector<int>> recvdispl;
-  std::vector<std::vector<int>> senddispl;
+  mpi_bufs_t mpi_bufs;
 
  private:
   idx_t npart;
