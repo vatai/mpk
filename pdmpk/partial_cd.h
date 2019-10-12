@@ -2,7 +2,7 @@
  * @author Emil VATAI <emil.vatai@gmail.com>
  * @date 2019-09-17
  *
- * @brief Communication data for with partial vertices.
+ * Communication data for with partial vertices.
  *
  * @todo(vatai): maybe: encapsulate mpi data
  * @todo(vatai): maybe: encapsulate parameters
