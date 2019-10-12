@@ -3,7 +3,8 @@
 #include "comm_dict_t.h"
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart)
-    : recvcount(npart, std::vector<int>(npart, 0)),
+    : npart {npart},
+      recvcount(npart, std::vector<int>(npart, 0)),
       recvdispl(npart, std::vector<int>(npart, 0)),
       sendcount(npart, std::vector<int>(npart, 0)),
       senddispl(npart, std::vector<int>(npart, 0)),
@@ -23,7 +24,6 @@ void mpi_bufs_t::clear()
 
 void mpi_bufs_t::serialise(std::ostream &os)
 {
-  const auto npart = recvbuf.size();
   os << npart << "\n";
   os << "recvcount: ";
   for (auto v : recvcount)
@@ -53,13 +53,11 @@ void mpi_bufs_t::serialise(std::ostream &os)
 }
 
 comm_dict_t::comm_dict_t(const idx_t npart)
-    : npart {npart},
-      mpi_bufs {npart}
+    : mpi_bufs {npart}
 {}
 
 void mpi_bufs_t::fill_displs()
 {
-  auto const npart = recvdispl.size();
   for (idx_t r = 0; r < npart; r++) {
     recvdispl[r][0] = 0;
     senddispl[r][0] = 0;
@@ -82,6 +80,7 @@ void comm_dict_t::rec_ivert(const idx_t from, const idx_t to, const idx_t idx)
 
 void comm_dict_t::process()
 {
+  const auto npart = mpi_bufs.npart;
   for (idx_t from = 0; from < npart; from++) {
     for (idx_t to = 0; to < npart; to++) {
       const auto iter = sdict.find({from, to});

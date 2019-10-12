@@ -26,6 +26,8 @@ struct mpi_bufs_t {
   std::vector<std::vector<int>> sendcount;
   std::vector<std::vector<int>> recvdispl;
   std::vector<std::vector<int>> senddispl;
+
+  idx_t npart;
 };
 
 class comm_dict_t
@@ -53,6 +55,5 @@ class comm_dict_t
   mpi_bufs_t mpi_bufs;
 
  private:
-  idx_t npart;
   comm_dict_t();
 };
