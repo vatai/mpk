@@ -15,13 +15,12 @@ comm_dict_t::comm_dict_t(const idx_t npart)
 
 void comm_dict_t::record(const idx_t from, const idx_t to, const idx_t idx)
 {
-  auto &self = *this;
-  self[{from, to}].push_back(idx);
+  rdict[{from, to}].push_back(idx);
 }
 
 std::vector<idx_t> &comm_dict_t::view(const idx_t from, const idx_t to)
 {
-  return this->at({from, to});
+  return rdict.at({from, to});
 }
 
 void comm_dict_t::serialise(std::ostream &os)
@@ -58,8 +57,8 @@ void comm_dict_t::process()
 {
   for (idx_t from = 0; from < npart; from++) {
     for (idx_t to = 0; to < npart; to++) {
-      const auto iter = this->find({from, to});
-      if (iter != this->end()) {
+      const auto iter = rdict.find({from, to});
+      if (iter != rdict.end()) {
         recvcount[to][from] = iter->second.size();
         sendcount[from][to] = iter->second.size();
         auto &rbuf = recvbuf[to];
@@ -82,7 +81,8 @@ void comm_dict_t::process()
 
 void comm_dict_t::clear()
 {
-  std::map<std::pair<idx_t, idx_t>, std::vector<idx_t>>::clear();
+  rdict.clear();
+  idict.clear();
   for (auto &v : recvbuf) v.clear();
   for (auto &v : sendbuf) v.clear();
   for (auto &v : recvcount) for (auto &e : v) e = 0;

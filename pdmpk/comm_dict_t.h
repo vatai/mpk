@@ -6,14 +6,20 @@
 
 #include <metis.h>
 
-class comm_dict_t : std::map<std::pair<idx_t, idx_t>,
-                     std::vector<idx_t>>
+#include "typedefs.h"
+
+class comm_dict_t
 {
  public:
   comm_dict_t (const idx_t npart);
+
   void record(const idx_t from, const idx_t to, const idx_t idx);
   std::vector<idx_t> &view(const idx_t from, const idx_t to);
   void serialise(std::ostream &os);
+
+  std::map<from_to_pair_t, std::vector<idx_t>> rdict;
+  std::map<from_to_pair_t, idx_t> idict;
+
 
   // Call this before accessing the MPI vectors.
   void process();
