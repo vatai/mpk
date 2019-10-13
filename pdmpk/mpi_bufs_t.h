@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <ostream>
 #include <vector>
 
 #include <metis.h>
@@ -17,7 +18,7 @@ struct mpi_bufs_t {
   void clear();
   void fill_displs();
   /// @brief Output the contents of the MPI buffers.
-  void serialise(std::ostream &os);
+  friend std::ostream &operator<<(std::ostream &os, const mpi_bufs_t &bufs);
 
   std::vector<std::vector<int>> recvbuf;
   std::vector<std::vector<int>> sendbuf;

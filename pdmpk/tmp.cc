@@ -29,13 +29,13 @@ int main(int argc, char *argv[])
   // std::cout << "\n";
 
   comm_dict_t cdict(3);
-  cdict.record(0, 2, 10);
-  cdict.record(0, 1, 20);
+  cdict.rec_svert(0, 2, 10);
+  cdict.rec_ivert(0, 1, 20);
   cdict.process();
-  cdict.serialise(std::cout);
+  std::cout << cdict.mpi_bufs << std::endl;
   cdict.clear();
   cdict.process();
 
-  cdict.serialise(std::cout);
+  std::cout << cdict.mpi_bufs << std::endl;
   return 0;
 }

@@ -7,4 +7,4 @@ LDLIBS=-lmetis
 all : pdmpk_prep tmp
 
 pdmpk_prep : partial_cd.o csr_t.o buffers_t.o buffers_t_new.o comm_dict_t.o
-tmp: comm_dict_t.o
+tmp: comm_dict_t.o mpi_bufs_t.o
