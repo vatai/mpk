@@ -28,6 +28,10 @@ void comm_dict_t::rec_ivert(const idx_t from, const idx_t to, const idx_t idx)
   idict[{from, to}] = idx;
 }
 
+/**
+ * Details of the `process()`: go through all the `from` and `to`
+ * partitions, and collect all the information about communication.
+ */
 void comm_dict_t::process()
 {
   const auto npart = mpi_bufs.npart;
@@ -53,6 +57,8 @@ void comm_dict_t::process()
       }
     }
   }
+  /// Finally, from the "count" buffers, the "displacement" buffers
+  /// can be computed.
   mpi_bufs.fill_displs();
 }
 
