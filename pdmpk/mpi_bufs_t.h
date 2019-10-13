@@ -15,8 +15,11 @@ struct mpi_bufs_t {
   /// `npart` is the number of partitions.
   mpi_bufs_t (const idx_t npart);
 
-  void clear();
+  void add_svect(const idx_t src, const idx_t tgt);
+  void add_ivect(const idx_t src, const idx_t tgt);
   void fill_displs();
+  /// Clear all containers.
+  void clear();
   /// Output the contents of the MPI buffers.
   friend std::ostream &operator<<(std::ostream &os, const mpi_bufs_t &bufs);
 

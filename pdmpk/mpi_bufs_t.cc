@@ -1,5 +1,6 @@
 #include "mpi_bufs_t.h"
 #include <ostream>
+#include <vector>
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart)
     : npart {npart},
@@ -10,6 +11,28 @@ mpi_bufs_t::mpi_bufs_t(const idx_t npart)
       recvbuf{std::vector<int>::size_type(npart)},
       sendbuf{std::vector<int>::size_type(npart)}
 {}
+
+void mpi_bufs_t::add_svect(
+    const idx_t src,
+    const idx_t tgt,
+    const std::vector<idx_t> &src_idcs)
+{
+  recvcount[tgt][src] = src_idcs.size();
+  sendcount[src][tgt] = src_idcs.size();
+  auto &rbuf = recvbuf[tgt];
+  auto &sbuf = sendbuf[src];
+  rbuf.insert(std::end(rbuf), std::begin(src_idcs), std::end(src_idcs));
+  sbuf.insert(std::end(sbuf), std::begin(src_idcs), std::end(src_idcs));
+}
+
+void mpi_bufs_t::add_ivect(const idx_t src, const idx_t tgt, const idx_t idx)
+{
+  recvcount[tgt][src] += 1;
+  sendcount[src][tgt] += 1;
+  recvbuf[tgt].push_back(idx);
+  sendbuf[src].push_back(idx);
+  return;
+}
 
 void mpi_bufs_t::fill_displs()
 {
