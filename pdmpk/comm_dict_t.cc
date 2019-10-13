@@ -33,15 +33,23 @@ void comm_dict_t::process()
   const auto npart = mpi_bufs.npart;
   for (idx_t from = 0; from < npart; from++) {
     for (idx_t to = 0; to < npart; to++) {
-      const auto iter = sdict.find({from, to});
-      if (iter != sdict.end()) {
-        mpi_bufs.recvcount[to][from] = iter->second.size();
-        mpi_bufs.sendcount[from][to] = iter->second.size();
+      const auto siter = sdict.find({from, to});
+      if (siter != sdict.end()) {
+        mpi_bufs.recvcount[to][from] = siter->second.size();
+        mpi_bufs.sendcount[from][to] = siter->second.size();
         auto &rbuf = mpi_bufs.recvbuf[to];
         auto &sbuf = mpi_bufs.sendbuf[from];
-        const auto &buf = iter->second;
+        const auto &buf = siter->second;
         rbuf.insert(std::end(rbuf), std::begin(buf), std::end(buf));
         sbuf.insert(std::end(sbuf), std::begin(buf), std::end(buf));
+      }
+      const auto iiter = idict.find({from, to});
+      if (iiter != idict.end()) {
+        mpi_bufs.recvcount[to][from] += 1;
+        mpi_bufs.sendcount[from][to] += 1;
+        const auto idx = iiter->second;
+        mpi_bufs.recvbuf[to].push_back(idx);
+        mpi_bufs.sendbuf[from].push_back(idx);
       }
     }
   }
