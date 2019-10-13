@@ -9,15 +9,15 @@
 #include "typedefs.h"
 
 /**
- * @brief Buffers for the `MPI_alltoallv` call for each partition.
+ * Buffers for the `MPI_alltoallv` call for each partition.
  */
 struct mpi_bufs_t {
-  /// @brief `npart` is the number of partitions.
+  /// `npart` is the number of partitions.
   mpi_bufs_t (const idx_t npart);
 
   void clear();
   void fill_displs();
-  /// @brief Output the contents of the MPI buffers.
+  /// Output the contents of the MPI buffers.
   friend std::ostream &operator<<(std::ostream &os, const mpi_bufs_t &bufs);
 
   std::vector<std::vector<int>> recvbuf;
