@@ -11,6 +11,18 @@ mpi_bufs_t::mpi_bufs_t(const idx_t npart)
       sendbuf{std::vector<int>::size_type(npart)}
 {}
 
+void mpi_bufs_t::fill_displs()
+{
+  for (idx_t r = 0; r < npart; r++) {
+    recvdispl[r][0] = 0;
+    senddispl[r][0] = 0;
+    for (idx_t i = 1; i < npart; i++) {
+      recvdispl[r][i] = recvdispl[r][i - 1] + recvcount[r][i - 1];
+      senddispl[r][i] = senddispl[r][i - 1] + sendcount[r][i - 1];
+    }
+  }
+}
+
 void mpi_bufs_t::clear()
 {
   for (auto &v : recvbuf) v.clear();

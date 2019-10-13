@@ -6,18 +6,6 @@ comm_dict_t::comm_dict_t(const idx_t npart)
     : mpi_bufs {npart}
 {}
 
-void mpi_bufs_t::fill_displs()
-{
-  for (idx_t r = 0; r < npart; r++) {
-    recvdispl[r][0] = 0;
-    senddispl[r][0] = 0;
-    for (idx_t i = 1; i < npart; i++) {
-      recvdispl[r][i] = recvdispl[r][i - 1] + recvcount[r][i - 1];
-      senddispl[r][i] = senddispl[r][i - 1] + sendcount[r][i - 1];
-    }
-  }
-}
-
 void comm_dict_t::rec_svert(const idx_t from, const idx_t to, const idx_t idx)
 {
   sdict[{from, to}].push_back(idx);
