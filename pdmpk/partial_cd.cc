@@ -65,7 +65,7 @@ partial_cd::partial_cd(
     const char *_fname,
     const idx_t _npart,
     const level_t _nlevels)
-    : csr{_fname}, npart{_npart}, nlevels{_nlevels}
+    : csr{_fname}, npart{_npart}, nlevels{_nlevels}, bufs_new{_npart}
 {
   init_vectors();
   init_communication();
