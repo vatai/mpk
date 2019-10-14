@@ -6,5 +6,5 @@ LDLIBS=-lmetis
 
 all : pdmpk_prep comm_dict_demo
 
-pdmpk_prep : partial_cd.o csr_t.o buffers_t.o buffers_t_new.o comm_dict_t.o
-comm_dict_demo: comm_dict_t.o mpi_bufs_t.o
+pdmpk_prep : partial_cd.o csr_t.o buffers_t.o buffers_t_new.o comm_dict_t.o mpi_bufs_t.o
+comm_dict_demo: comm_dict_t.o mpi_bufs_t.o mpi_bufs_t.o
