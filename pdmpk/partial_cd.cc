@@ -1,7 +1,5 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-09-17
- */
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-09-17
 
 #include <algorithm>
 #include <cassert>
