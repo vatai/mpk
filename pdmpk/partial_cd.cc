@@ -62,10 +62,14 @@ void partial_cd::debug_print_report(std::ostream &os, const int phase)
 }
 
 partial_cd::partial_cd(
-    const char *_fname,
-    const idx_t _npart,
-    const level_t _nlevels)
-    : csr{_fname}, npart{_npart}, nlevels{_nlevels}, bufs_new{_npart}, comm_dict_new{_npart}
+    const char *fname,
+    const idx_t npart,
+    const level_t nlevels)
+    : csr{fname},
+      npart{npart},
+      nlevels{nlevels},
+      bufs_new{npart},
+      comm_dict_new{npart}
 {
   init_vectors();
   init_communication();
