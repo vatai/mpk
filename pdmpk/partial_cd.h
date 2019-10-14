@@ -20,6 +20,7 @@
 #include "typedefs.h"
 #include "buffers_t.h"
 #include "buffers_t_new.h"
+#include "comm_dict_t.h"
 #include "csr_t.h"
 
 class partial_cd {
@@ -38,7 +39,9 @@ public:
   std::vector<bool> partials;
 
   std::vector<buffers_t> bufs;
+
   buffers_t_new bufs_new;
+  comm_dict_t comm_dict_new;
 
   std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
 
