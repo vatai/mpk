@@ -1,3 +1,8 @@
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-10-14
+ */
+
 #pragma once
 
 #include <vector>
@@ -22,6 +27,9 @@ class buffer_t {
   std::vector<std::vector<double>> mval;
 };
 
+/**
+ * Buffers collecting computation and communication patterns.
+ */
 class buffers_t {
  public:
   buffers_t(const idx_t _npart);
