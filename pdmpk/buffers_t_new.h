@@ -30,9 +30,9 @@ class buffer_t {
 /**
  * Buffers collecting computation and communication patterns.
  */
-class buffers_t {
+class buffers_t_new {
  public:
-  buffers_t(const idx_t _npart);
+  buffers_t_new(const idx_t _npart);
   void pre_phase();
   void post_phase(comm_dict_t &cd);
   void add_to_mptr(const size_t rank, const idx_t val);
