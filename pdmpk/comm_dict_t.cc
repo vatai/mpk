@@ -1,3 +1,6 @@
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-10-14
+
 #include <cassert>
 
 #include "comm_dict_t.h"
@@ -6,14 +9,22 @@ comm_dict_t::comm_dict_t(const idx_t npart)
     : mpi_bufs {npart}
 {}
 
-void comm_dict_t::rec_svert(const idx_t from, const idx_t to, const idx_t idx)
+void comm_dict_t::rec_svert(
+    const idx_t sp,
+    const idx_t tp,
+    const idx_t si,
+    const idx_t ti)
 {
-  sdict[{from, to}].push_back(idx);
+  sdict[{sp, tp}].push_back(si);
 }
 
-void comm_dict_t::rec_ivert(const idx_t from, const idx_t to, const idx_t idx)
+void comm_dict_t::rec_ivert(
+    const idx_t sp,
+    const idx_t tp,
+    const idx_t si,
+    const idx_t ti)
 {
-  idict[{from, to}] = idx;
+  idict[{sp, tp}] = si;
 }
 
 /**
@@ -27,11 +38,11 @@ void comm_dict_t::process()
     for (idx_t to = 0; to < npart; to++) {
       const auto siter = sdict.find({from, to});
       if (siter != sdict.end()) {
-        mpi_bufs.recvcount[to][from] = siter->second.size();
-        mpi_bufs.sendcount[from][to] = siter->second.size();
-        auto &rbuf = mpi_bufs.recvbuf[to];
-        auto &sbuf = mpi_bufs.sendbuf[from];
         const auto &buf = siter->second;
+        mpi_bufs.recvcount[to][from] = buf.size();
+        mpi_bufs.sendcount[from][to] = buf.size();
+        auto &rbuf = mpi_bufs.recvbuf[to];
+        auto &sbuf = mpi_bufs.sendidcs[from];
         rbuf.insert(std::end(rbuf), std::begin(buf), std::end(buf));
         sbuf.insert(std::end(sbuf), std::begin(buf), std::end(buf));
       }
@@ -41,7 +52,7 @@ void comm_dict_t::process()
         mpi_bufs.sendcount[from][to] += 1;
         const auto idx = iiter->second;
         mpi_bufs.recvbuf[to].push_back(idx);
-        mpi_bufs.sendbuf[from].push_back(idx);
+        mpi_bufs.sendidcs[from].push_back(idx);
       }
     }
   }

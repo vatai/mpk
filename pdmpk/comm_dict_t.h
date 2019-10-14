@@ -1,3 +1,8 @@
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-10-14
+ */
+
 #pragma once
 
 #include <map>
@@ -21,10 +26,17 @@ class comm_dict_t
   /// `npart` is the number of partitions.
   comm_dict_t (const idx_t npart);
 
-  /// Record a complete vertex to `sdict`.
-  void rec_svert(const idx_t from, const idx_t to, const idx_t idx);
+  /**
+   * Record a complete vertex to `sdict`.
+   * @param sp Source Partition id.
+   * @param tp Target Partition id.
+   * @param ti Target Index in mbuf before processing.
+   *
+   *
+   */
+  void rec_svert(const idx_t sp, const idx_t tp, const idx_t si, const idx_t ti);
   /// Record an initialisation vertex to `idict`.
-  void rec_ivert(const idx_t from, const idx_t to, const idx_t idx);
+  void rec_ivert(const idx_t sp, const idx_t tp, const idx_t si, const idx_t ti);
 
 
   /// Call `process()` to fill the MPI vectors.

@@ -1,3 +1,8 @@
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-10-14
+ */
+
 #include <iostream>
 #include "comm_dict_t.h"
 
@@ -29,8 +34,8 @@ int main(int argc, char *argv[])
   // std::cout << "\n";
 
   comm_dict_t cdict(3);
-  cdict.rec_svert(0, 2, 10);
-  cdict.rec_ivert(0, 1, 20);
+  cdict.rec_svert(0, 2, 10, 0);
+  cdict.rec_ivert(0, 1, 20, 0);
   cdict.process();
   std::cout << cdict.mpi_bufs << std::endl;
   cdict.clear();
