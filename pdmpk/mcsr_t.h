@@ -20,4 +20,5 @@ public:
   std::vector<size_t> mptr_offset;
 
   std::vector<idx_t> mcol;
+  std::vector<idx_t> mval_idx;
 };
