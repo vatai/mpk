@@ -43,9 +43,13 @@
  * - `buf_offset` and `buf_count` case:
  *   `buf[buf_offset[t]..buf_offset[t] + buf_count[t]]`
  *
- * @todo(vatai) Finish documentation here.
+ * @todo(vatai): Finish documentation here.
  * @todo(vatai): Remove rank if not needed.
  * @todo(vatai): Implement MPI class if needed.
+ *
+ * Implementation plan:
+ * @todo(vatai): Write documentation in `mcsr_t.h`
+ * @todo(vatai): Find out what needs to be done in the init.
  */
 
 #include <iostream>
