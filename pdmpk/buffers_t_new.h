@@ -22,11 +22,6 @@ struct mcsr {
   std::vector<size_t> mcol_offset;
 };
 
-class buffer_t {
-  std::vector<csr_t> buffers;
-  std::vector<std::vector<double>> mval;
-};
-
 /**
  * Buffers collecting computation and communication patterns.
  */
