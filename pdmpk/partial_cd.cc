@@ -68,8 +68,8 @@ partial_cd::partial_cd(
     : csr{fname},
       npart{npart},
       nlevels{nlevels},
-      bufs_new{npart},
-      comm_dict_new{npart}
+      bufs_new{npart} // ,
+      // comm_dict_new{npart}
 {
   init_vectors();
   init_communication();
