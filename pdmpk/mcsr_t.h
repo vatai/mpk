@@ -11,7 +11,8 @@
 
 #include <metis.h>
 
-struct mcsr_t {
+class mcsr_t {
+public:
   std::vector<idx_t> mptr;
   std::vector<size_t> mptr_count;
   std::vector<size_t> mptr_offset;
