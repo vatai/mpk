@@ -12,7 +12,7 @@
 #include "comm_dict_t.h"
 #include "csr_t.h"
 
-struct mcsr {
+struct mcsr_t {
   std::vector<idx_t> mptr;
   std::vector<size_t> mptr_count;
   std::vector<size_t> mptr_offset;
@@ -38,5 +38,5 @@ class buffers_t_new {
   // @todo(vatai): record_phase() ??? sbuf_offset.push_back(sbuf.size()) etc
  private:
   const idx_t npart;
-  std::vector<mcsr> mcsr_bufs;
+  std::vector<mcsr_t> mcsr_bufs;
 };
