@@ -17,6 +17,4 @@ struct mcsr_t {
   std::vector<size_t> mptr_offset;
 
   std::vector<idx_t> mcol;
-  std::vector<size_t> mcol_count;
-  std::vector<size_t> mcol_offset;
 };

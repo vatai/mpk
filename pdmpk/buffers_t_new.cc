@@ -17,7 +17,6 @@ void buffers_t_new::add_to_mptr(const size_t rank, const idx_t val)
 
 void buffers_t_new::add_to_mcol(const size_t rank, const idx_t val)
 {
-  mcsr_bufs[rank].mcol_count[phase]++;
   mcsr_bufs[rank].mcol.push_back(val);
 }
 
@@ -27,7 +26,6 @@ void buffers_t_new::pre_phase()
   for (int r = 0; r < npart; r++) {
     auto &buf = mcsr_bufs[r];
     buf.mptr_count.push_back(0);
-    buf.mcol_count.push_back(0);
   }
 }
 
