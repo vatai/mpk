@@ -1,3 +1,11 @@
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-10-15
+ *
+ * Modified CSR (for one partition/rank).  A vector `npart` number of
+ * `mcsr_t` is stored, and written to the disk in the end.
+ */
+
 #pragma once
 #include <vector>
 
