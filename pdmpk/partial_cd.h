@@ -22,6 +22,7 @@
 #include "buffers_t_new.h"
 #include "comm_dict_t.h"
 #include "csr_t.h"
+#include "mcsr_t.h"
 
 class partial_cd {
 
@@ -42,6 +43,8 @@ public:
 
   buffers_t_new bufs_new;
   // comm_dict_t comm_dict_new;
+  std::vector<idx_t> final_bufs;
+
 
   std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
 

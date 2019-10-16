@@ -70,13 +70,17 @@ partial_cd::partial_cd(
       nlevels{nlevels},
       partitions(csr.n),
       levels(csr.n, 0),
+      partials(csr.nnz, 0),
       weights(csr.nnz),
-      bufs_new{npart} // ,
+      bufs_new(npart),
       // comm_dict_new{npart}
+      final_bufs(npart)
 {
   init_vectors();
   init_communication();
   metis_partition();
+  std::cout << "levels.size()"
+            << levels.size() << std::endl;
   update_levels();
   update_weights();
   debug_print_report(std::cout, 0);
@@ -190,12 +194,12 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::rec_vert(const idx_t part)
 {
   auto& buf = bufs[part];
-  buf.mptr.push_back(0);
-  if (buf.mptr_count.size() == phase) {
-    buf.mptr_count.push_back(1);
-  } else {
-    buf.mptr_count[phase]++;
-  }
+  // buf.mptr.push_back(0);
+  // if (buf.mptr_count.size() == phase) {
+  //   buf.mptr_count.push_back(1);
+  // } else {
+  //   buf.mptr_count[phase]++;
+  // }
 }
 
 void partial_cd::rec_adj(
@@ -207,9 +211,9 @@ void partial_cd::rec_adj(
 
   const auto cur_part = partitions[idx];
   auto &buf = bufs[cur_part];
-  auto &last_mptr_element = *(end(buf.mptr) - 1);
-  last_mptr_element++;
-  buf.mcol.push_back(adj_buf_idx);
+  // auto &last_mptr_element = *(end(buf.mptr) - 1);
+  // last_mptr_element++;
+  // buf.mcol.push_back(adj_buf_idx);
   // if (buf.mcol_count.size() == phase) {
   //   buf.mcol_count.push_back(1);
   // } else {
