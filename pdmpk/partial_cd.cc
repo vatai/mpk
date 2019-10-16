@@ -68,6 +68,9 @@ partial_cd::partial_cd(
     : csr{fname},
       npart{npart},
       nlevels{nlevels},
+      partitions(csr.n),
+      levels(csr.n, 0),
+      weights(csr.nnz),
       bufs_new{npart} // ,
       // comm_dict_new{npart}
 {
@@ -90,9 +93,6 @@ partial_cd::partial_cd(
 
 void partial_cd::init_vectors()
 {
-  partitions.resize(csr.n);
-  levels.resize(csr.n, 0);
-  weights.resize(csr.nnz);
   partials.resize(csr.nnz, false);
 
   // TODO(vatai): move this to buffers_t?

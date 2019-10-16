@@ -8,8 +8,8 @@ mpi_bufs_t::mpi_bufs_t(const idx_t npart)
       recvdispl(npart, std::vector<int>(npart, 0)),
       sendcount(npart, std::vector<int>(npart, 0)),
       senddispl(npart, std::vector<int>(npart, 0)),
-      recvbuf{std::vector<int>::size_type(npart)},
-      sendidcs{std::vector<int>::size_type(npart)}
+      recvbuf(npart),
+      sendidcs(npart)
 {}
 
 void mpi_bufs_t::add_svect(
