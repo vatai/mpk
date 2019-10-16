@@ -4,8 +4,8 @@
  *
  * Modified CSR (for one partition/rank).  A vector `npart` number of
  * `mcsr_t` is stored, and written to the disk in the end.  In phase
- * `p`, `mptr[]` is processed from `mptr_offset[p]` to `mptr_offset[p]
- * + mptr_count[p]`.
+ * `p`, `mptr_count[p]` elements of `mptr[]` are processed starting
+ * from `mptr_offset[p]`.
  */
 
 #pragma once
