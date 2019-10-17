@@ -11,7 +11,7 @@ buffers_t_new::buffers_t_new(const idx_t npart)
 
 void buffers_t_new::add_to_mptr(const size_t rank, const idx_t val)
 {
-  mcsr_bufs[rank].mptr_count[phase]++;
+  mcsr_bufs[rank].mptr_begin[phase]++;
   mcsr_bufs[rank].mptr.push_back(val);
 }
 
@@ -25,7 +25,7 @@ void buffers_t_new::pre_phase()
   std::cout << "pre_phase()" << std::endl;
   for (int r = 0; r < npart; r++) {
     auto &buf = mcsr_bufs[r];
-    buf.mptr_count.push_back(0);
+    buf.mptr_begin.push_back(buf.mptr.size());
   }
 }
 
