@@ -7,9 +7,7 @@ const std::string FNAME{"bufs"};
 
 void buffers_t::record_phase()
 {
-  sbuf_offset.push_back(sbuf.size());
-  mptr_offset.push_back(mptr.size());
-  mcol_offset.push_back(mcol.size());
+  mptr_begin.push_back(mptr.size());
 }
 
 void buffers_t::dump(const int rank)

@@ -223,7 +223,6 @@ void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
   const auto& from = pair.first;
   const auto& buf_idx = pair.second;
   if (to != from) {
-    int phase = bufs[0].mcol_offset.size();
     /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
     bufs[to].recvcounts[csr.n * phase + from]++;
     bufs[from].sendcounts[csr.n * phase + to]++;
