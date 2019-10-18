@@ -258,9 +258,9 @@ std::pair<idx_t, idx_t> partial_cd::get_store_part(
 
 void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
 {
-  auto& pair_mbuf = bufs[part].pair_mbuf;
-  store_part[{idx, level}] = {part, pair_mbuf.size()};
-  pair_mbuf.push_back({idx, level});
+  // auto& pair_mbuf = bufs[part].pair_mbuf;
+  // store_part[{idx, level}] = {part, pair_mbuf.size()};
+  // pair_mbuf.push_back({idx, level});
 }
 
 bool partial_cd::partial_is_full(const idx_t idx)

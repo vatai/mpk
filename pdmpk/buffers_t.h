@@ -45,8 +45,6 @@ public:
   std::vector<int> sdispls;  // MPI
   std::vector<idx_t> sbuf_idx;   // MPI
 
-  std::vector<std::pair<idx_t, level_t>> pair_mbuf;
-
   /// - CSR (one over all phases):
   ///   - `mptr` (`mptr_begin`)
   ///   - `mcol`
