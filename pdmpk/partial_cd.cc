@@ -71,10 +71,7 @@ partial_cd::partial_cd(
       partitions(csr.n),
       levels(csr.n, 0),
       partials(csr.nnz, 0),
-      weights(csr.nnz),
-      bufs_new(npart),
-      // comm_dict_new{npart}
-      final_bufs(npart)
+      weights(csr.nnz)
 {
   init_vectors();
   init_communication();
