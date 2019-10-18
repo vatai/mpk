@@ -1,5 +1,17 @@
-#ifndef _BUFFERS_T_H_
-#define _BUFFERS_T_H_
+/**
+ * @author Emil VATAI <emil.vatai@gmail.com>
+ * @date 2019-09-17
+ *
+ * @todo(vatai): make yas work on ulp-at59.
+ */
+
+/**
+ * The buffers collected on a single partition.
+ *
+ * `buffers_t` contains the MPI buffers, the modified CSP buffers and
+ * `mbuf`, `sbuf_idx` and `ibuF`.
+ */
+#pragma once
 
 #include <forward_list>
 #include <vector>
@@ -59,5 +71,3 @@ public:
   void dump(const int rank);
   void load(const int rank);
 };
-
-#endif
