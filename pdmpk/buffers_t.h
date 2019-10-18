@@ -2,7 +2,12 @@
  * @author Emil VATAI <emil.vatai@gmail.com>
  * @date 2019-09-17
  *
- * @todo(vatai): make yas work on ulp-at59.
+ * @todo(vatai): Make yas work on ulp-at59.
+ *
+ * @todo(vatai): Separate MPI and CSR buffers.
+ *
+ * @todo(vatai): Consider how to implement the temporary and the final
+ * versions of MPI and CSR buffers.
  */
 
 /**

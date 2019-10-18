@@ -48,8 +48,7 @@
  * @todo(vatai): Implement MPI class if needed.
  *
  * Implementation plan:
- * @todo(vatai): Write documentation in `mcsr_t.h`
- * @todo(vatai): Find out what needs to be done in the init.
+ * @todo(vatai): Do `buffers_t` todos.
  */
 
 #include <iostream>
