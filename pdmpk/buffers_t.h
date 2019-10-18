@@ -35,6 +35,10 @@
 
 class buffers_t {
 public:
+  /// - MPI (one for each phase):
+  ///   - `sendbuf` and `recvbuf`
+  ///   - `sendcount` and `recvcount`
+  ///   - `sdispls` and `rdispls`
   std::vector<int> recvcounts; // MPI
   std::vector<int> sendcounts; // MPI
   std::vector<int> rdispls;  // MPI
@@ -43,10 +47,20 @@ public:
 
   std::vector<std::pair<idx_t, level_t>> pair_mbuf;
 
-  std::vector<idx_t> mptr;  // CSR
+  /// - CSR (one over all phases):
+  ///   - `mptr` (`mptr_begin`)
+  ///   - `mcol`
+  ///   - `mval` (or `mval_idx`)
+  std::vector<idx_t> mptr;        // CSR
   std::vector<size_t> mptr_begin; // CSR
   std::vector<idx_t> mcol; // CSR
   std::vector<double> mval; // CSR
+
+  /// - BUF (one over all phases):
+  ///   - `mbuf` (`mbuf_begin`, **uses** `mptr_begin` from csr)
+  ///   - `sbuf_idcs` (**uses** `sendcount` and `sdispls`)
+  ///   - `ibuf` (`ibuf_begin`)
+  // std::vector<std::pair<idx_t, level_t>> pair_mbuf;
 
   void record_phase();
 
