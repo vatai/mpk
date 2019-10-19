@@ -6,13 +6,14 @@
  *
  * @todo(vatai): Consider how to implement the temporary and the final
  * versions of MPI and CSR buffers.
- */
-
-/**
- * The buffers collected on a single partition.
  *
- * `buffers_t` contains the MPI buffers, the modified CSP buffers and
- * `mbuf`, `sbuf_idx` and `ibuF`.
+ * @todo(vatai): Probably make the CSR and MPI buffers with phases,
+ * and then use the same, but only for one phase.
+ *//**
+ * @brief The buffers collected on a single partition.
+ *
+ * @details `buffers_t` contains the MPI buffers, the modified CSP
+ * buffers and `mbuf`, `sbuf_idx` and `ibuF`.
  */
 #pragma once
 
