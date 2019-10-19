@@ -75,9 +75,7 @@ partial_cd::partial_cd(
       bufs(npart)
 {
   phase = 0;
-  for (auto &buffer : bufs)
-    buffer.mptr_begin.push_back(buffer.mptr.size());
-  resize_mpi_bufs();
+  phase_init();
   init_communication();
   metis_partition();
   update_levels();
@@ -86,9 +84,7 @@ partial_cd::partial_cd(
 
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
-    for (auto &buffer : bufs)
-      buffer.mptr_begin.push_back(buffer.mptr.size());
-    resize_mpi_bufs();
+    phase_init();
     metis_partition_with_levels();
     update_levels();
     update_weights();
@@ -96,7 +92,7 @@ partial_cd::partial_cd(
   }
 }
 
-void partial_cd::resize_mpi_bufs()
+void partial_cd::phase_init()
 {
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
@@ -104,6 +100,7 @@ void partial_cd::resize_mpi_bufs()
     buffer.final_mpi_bufs.sendcounts.resize(size);
     buffer.final_mpi_bufs.rdispls.resize(size);
     buffer.final_mpi_bufs.sdispls.resize(size);
+    buffer.mptr_begin.push_back(buffer.mptr.size());
   }
 }
 
