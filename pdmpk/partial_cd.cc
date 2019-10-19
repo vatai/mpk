@@ -74,7 +74,8 @@ partial_cd::partial_cd(
       weights(csr.nnz),
       bufs(npart)
 {
-  init_vectors();
+  phase = 0;
+  resize_mpi_bufs();
   init_communication();
   metis_partition();
   update_levels();
@@ -83,6 +84,7 @@ partial_cd::partial_cd(
 
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
+    resize_mpi_bufs();
     phase_shift();
     metis_partition_with_levels();
     update_levels();
@@ -91,16 +93,17 @@ partial_cd::partial_cd(
   }
 }
 
-void partial_cd::init_vectors()
+void partial_cd::resize_mpi_bufs()
 {
   // TODO(vatai): move this to buffers_t?
-  const size_t mbs = csr.n * nlevels;
+  const size_t size = npart * (phase + 1);
+  std::cout << "size: " << size << std::endl;
   for (auto &buffer : bufs) {
     buffer.record_phase();
-    buffer.final_mpi_bufs.recvcounts.resize(mbs, 0);
-    buffer.final_mpi_bufs.sendcounts.resize(mbs, 0);
-    buffer.final_mpi_bufs.rdispls.resize(mbs, 0);
-    buffer.final_mpi_bufs.sdispls.resize(mbs, 0);
+    buffer.final_mpi_bufs.recvcounts.resize(size);
+    buffer.final_mpi_bufs.sendcounts.resize(size);
+    buffer.final_mpi_bufs.rdispls.resize(size);
+    buffer.final_mpi_bufs.sdispls.resize(size);
   }
 }
 
@@ -215,8 +218,8 @@ void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
   const auto& buf_idx = pair.second;
   if (to != from) {
     /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-    bufs[to].final_mpi_bufs.recvcounts[csr.n * phase + from]++;
-    bufs[from].final_mpi_bufs.sendcounts[csr.n * phase + to]++;
+    bufs[to].final_mpi_bufs.recvcounts[npart * phase + from]++;
+    bufs[from].final_mpi_bufs.sendcounts[npart * phase + to]++;
     comm_dict[{from, to}] = buf_idx;
   }
 }

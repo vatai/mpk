@@ -47,7 +47,7 @@ private:
   void debug_print_partitions(std::ostream &os);
   void debug_print_report(std::ostream &os, const int phase);
 
-  void init_vectors();
+  void resize_mpi_bufs();
   void init_communication();
   void phase_shift();
 
