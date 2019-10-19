@@ -211,11 +211,6 @@ void partial_cd::rec_adj(
   auto &last_mptr_element = *(end(buf.mptr) - 1);
   // last_mptr_element++;
   buf.mcol.push_back(adj_buf_idx);
-  // if (buf.mcol_count.size() == phase) {
-  //   buf.mcol_count.push_back(1);
-  // } else {
-  //   buf.mcol_count[phase]++;
-  // }
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
