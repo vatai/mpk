@@ -25,6 +25,7 @@
 #include <metis.h>
 
 #include "typedefs.h"
+#include "mpi_bufs_t.h"
 
 // static void mpk_exec_bufs_val(buffers_t *bufs) {
 //   do_task(bufs, 0);
@@ -36,16 +37,8 @@
 
 class buffers_t {
 public:
-  /// - MPI (one for each phase):
-  ///   - `sendbuf` and `recvbuf`
-  ///   - `sendcount` and `recvcount`
-  ///   - `sdispls` and `rdispls`
-  std::vector<int> recvcounts; // MPI
-  std::vector<int> sendcounts; // MPI
-  std::vector<int> rdispls;  // MPI
-  std::vector<int> sdispls;  // MPI
-  std::vector<idx_t> sbuf_idx;   // MPI
-
+  buffers_t();
+  mpi_bufs_t final_mpi_bufs;
   /// - CSR (one over all phases):
   ///   - `mptr` (`mptr_begin`)
   ///   - `mcol`
@@ -60,6 +53,7 @@ public:
   ///   - `sbuf_idcs` (**uses** `sendcount` and `sdispls`)
   ///   - `ibuf` (`ibuf_begin`)
   // std::vector<std::pair<idx_t, level_t>> pair_mbuf;
+  idx_t mbuf_idx;
 
   void record_phase();
 

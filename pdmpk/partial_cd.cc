@@ -101,10 +101,10 @@ void partial_cd::init_vectors()
   const size_t mbs = csr.n * nlevels;
   for (auto &buffer : bufs) {
     buffer.record_phase();
-    buffer.recvcounts.resize(mbs, 0);
-    buffer.sendcounts.resize(mbs, 0);
-    buffer.rdispls.resize(mbs, 0);
-    buffer.sdispls.resize(mbs, 0);
+    buffer.final_mpi_bufs.recvcounts.resize(mbs, 0);
+    buffer.final_mpi_bufs.sendcounts.resize(mbs, 0);
+    buffer.final_mpi_bufs.rdispls.resize(mbs, 0);
+    buffer.final_mpi_bufs.sdispls.resize(mbs, 0);
   }
 }
 
@@ -224,8 +224,8 @@ void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
   const auto& buf_idx = pair.second;
   if (to != from) {
     /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-    bufs[to].recvcounts[csr.n * phase + from]++;
-    bufs[from].sendcounts[csr.n * phase + to]++;
+    bufs[to].final_mpi_bufs.recvcounts[csr.n * phase + from]++;
+    bufs[from].final_mpi_bufs.sendcounts[csr.n * phase + to]++;
     comm_dict[{from, to}] = buf_idx;
   }
 }
@@ -259,7 +259,7 @@ std::pair<idx_t, idx_t> partial_cd::get_store_part(
 void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
 {
   // auto& pair_mbuf = bufs[part].pair_mbuf;
-  // store_part[{idx, level}] = {part, pair_mbuf.size()};
+  store_part[{idx, level}] = {part, bufs[part].mbuf_idx++};
   // pair_mbuf.push_back({idx, level});
 }
 

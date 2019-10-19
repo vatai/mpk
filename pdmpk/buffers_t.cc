@@ -5,6 +5,10 @@
 
 const std::string FNAME{"bufs"};
 
+buffers_t::buffers_t()
+    : mbuf_idx {0}
+{}
+
 void buffers_t::record_phase()
 {
   mptr_begin.push_back(mptr.size());
