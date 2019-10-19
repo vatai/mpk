@@ -95,11 +95,9 @@ partial_cd::partial_cd(
 
 void partial_cd::resize_mpi_bufs()
 {
-  // TODO(vatai): move this to buffers_t?
   const size_t size = npart * (phase + 1);
-  std::cout << "size: " << size << std::endl;
   for (auto &buffer : bufs) {
-    buffer.record_phase();
+    buffer.record_phase(); /// @todo(vatai): move this somewhere else
     buffer.final_mpi_bufs.recvcounts.resize(size);
     buffer.final_mpi_bufs.sendcounts.resize(size);
     buffer.final_mpi_bufs.rdispls.resize(size);
