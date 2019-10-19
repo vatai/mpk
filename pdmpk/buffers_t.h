@@ -55,8 +55,6 @@ public:
   // std::vector<std::pair<idx_t, level_t>> pair_mbuf;
   idx_t mbuf_idx;
 
-  void record_phase();
-
   void dump(const int rank);
   void load(const int rank);
 };

@@ -49,7 +49,6 @@ private:
 
   void resize_mpi_bufs();
   void init_communication();
-  void phase_shift();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);

@@ -75,6 +75,8 @@ partial_cd::partial_cd(
       bufs(npart)
 {
   phase = 0;
+  for (auto &buffer : bufs)
+    buffer.mptr_begin.push_back(buffer.mptr.size());
   resize_mpi_bufs();
   init_communication();
   metis_partition();
@@ -84,8 +86,9 @@ partial_cd::partial_cd(
 
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
+    for (auto &buffer : bufs)
+      buffer.mptr_begin.push_back(buffer.mptr.size());
     resize_mpi_bufs();
-    phase_shift();
     metis_partition_with_levels();
     update_levels();
     update_weights();
@@ -97,7 +100,6 @@ void partial_cd::resize_mpi_bufs()
 {
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
-    buffer.record_phase(); /// @todo(vatai): move this somewhere else
     buffer.final_mpi_bufs.recvcounts.resize(size);
     buffer.final_mpi_bufs.sendcounts.resize(size);
     buffer.final_mpi_bufs.rdispls.resize(size);
@@ -110,23 +112,6 @@ void partial_cd::init_communication()
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = partitions[idx];
     set_store_part(idx, 0, part);
-  }
-}
-
-void partial_cd::phase_shift()
-{
-  for (auto &buffer : bufs) {
-    // buffers.fill_displs(); // scan recv, send count
-    buffer.record_phase();
-  }
-
-  /// @todo(vatai): Calculate displacements.
-  for (size_t i = 1; i < npart; i++) {
-  }
-  for (idx_t from = 0; from < npart; from++) {
-    for (idx_t to = 0; to < npart; to++) {
-      auto idx = comm_dict[{from, to}];
-    }
   }
 }
 
@@ -188,12 +173,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::rec_vert(const idx_t part)
 {
   auto& buf = bufs[part];
-  // buf.mptr.push_back(0);
-  // if (buf.mptr_count.size() == phase) {
-  //   buf.mptr_count.push_back(1);
-  // } else {
-  //   buf.mptr_count[phase]++;
-  // }
+  buf.mptr.push_back(0);
 }
 
 void partial_cd::rec_adj(
@@ -206,7 +186,7 @@ void partial_cd::rec_adj(
   const auto cur_part = partitions[idx];
   auto &buf = bufs[cur_part];
   auto &last_mptr_element = *(end(buf.mptr) - 1);
-  // last_mptr_element++;
+  last_mptr_element++;
   buf.mcol.push_back(adj_buf_idx);
 }
 
