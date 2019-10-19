@@ -76,8 +76,6 @@ partial_cd::partial_cd(
   init_vectors();
   init_communication();
   metis_partition();
-  std::cout << "levels.size()"
-            << levels.size() << std::endl;
   update_levels();
   update_weights();
   debug_print_report(std::cout, 0);
