@@ -208,9 +208,9 @@ void partial_cd::rec_adj(
 
   const auto cur_part = partitions[idx];
   auto &buf = bufs[cur_part];
-  // auto &last_mptr_element = *(end(buf.mptr) - 1);
+  auto &last_mptr_element = *(end(buf.mptr) - 1);
   // last_mptr_element++;
-  // buf.mcol.push_back(adj_buf_idx);
+  buf.mcol.push_back(adj_buf_idx);
   // if (buf.mcol_count.size() == phase) {
   //   buf.mcol_count.push_back(1);
   // } else {
