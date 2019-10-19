@@ -68,10 +68,11 @@ partial_cd::partial_cd(
     : csr{fname},
       npart{npart},
       nlevels{nlevels},
+      partials(csr.nnz, false),
       partitions(csr.n),
       levels(csr.n, 0),
-      partials(csr.nnz, 0),
-      weights(csr.nnz)
+      weights(csr.nnz),
+      bufs(npart)
 {
   init_vectors();
   init_communication();
@@ -92,10 +93,7 @@ partial_cd::partial_cd(
 
 void partial_cd::init_vectors()
 {
-  partials.resize(csr.nnz, false);
-
   // TODO(vatai): move this to buffers_t?
-  bufs.resize(npart);
   const size_t mbs = csr.n * nlevels;
   for (auto &buffer : bufs) {
     buffer.record_phase();
