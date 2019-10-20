@@ -25,6 +25,14 @@ int mpi_bufs_t::rbuf_size(int phase)
   return rcount[npart - 1] + rdispl[npart - 1];
 }
 
+int mpi_bufs_t::sbuf_size(int phase)
+{
+  size_t offset = npart * phase;
+  auto scount = sendcounts.data() + offset;
+  auto sdispl = sdispls.data() + offset;
+  return scount[npart - 1] + sdispl[npart - 1];
+}
+
 void mpi_bufs_t::resize(size_t size)
 {
   recvcounts.resize(size);

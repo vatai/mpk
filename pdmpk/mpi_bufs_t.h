@@ -13,6 +13,7 @@ class mpi_bufs_t {
   mpi_bufs_t(const idx_t npart);
   void fill_dipls(int phase);
   int rbuf_size(int phase);
+  int sbuf_size(int phase);
   void resize(size_t size);
 
   /// - MPI (one for each phase):
