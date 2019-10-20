@@ -103,7 +103,7 @@ void partial_cd::phase_init()
     buffer.final_mpi_bufs.sendcounts.resize(size);
     buffer.final_mpi_bufs.rdispls.resize(size);
     buffer.final_mpi_bufs.sdispls.resize(size);
-    buffer.mcsr.mptr_begin.push_back(buffer.mcsr.mptr.size());
+    buffer.mcsr.rec_phase();
   }
 }
 
