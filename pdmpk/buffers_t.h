@@ -26,6 +26,7 @@
 
 #include "typedefs.h"
 #include "mpi_bufs_t.h"
+#include "mcsr_t.h"
 
 // static void mpk_exec_bufs_val(buffers_t *bufs) {
 //   do_task(bufs, 0);
@@ -43,14 +44,7 @@ class buffers_t {
   void load(const int rank);
 
   mpi_bufs_t final_mpi_bufs;
-  /// - CSR (one over all phases):
-  ///   - `mptr` (`mptr_begin`): DONE
-  ///   - `mcol`: DONE
-  ///   - `mval` (or `mval_idx`)
-  std::vector<idx_t> mptr;        // CSR
-  std::vector<size_t> mptr_begin; // CSR
-  std::vector<idx_t> mcol; // CSR
-  std::vector<double> mval; // CSR
+  mcsr_t mcsr;
 
   /// - BUF (one over all phases):
   ///   - `mbuf` (`mbuf_begin`, **uses** `mptr_begin` from csr)

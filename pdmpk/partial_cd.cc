@@ -103,7 +103,7 @@ void partial_cd::phase_init()
     buffer.final_mpi_bufs.sendcounts.resize(size);
     buffer.final_mpi_bufs.rdispls.resize(size);
     buffer.final_mpi_bufs.sdispls.resize(size);
-    buffer.mptr_begin.push_back(buffer.mptr.size());
+    buffer.mcsr.mptr_begin.push_back(buffer.mcsr.mptr.size());
   }
 }
 
@@ -181,7 +181,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::rec_vert(const idx_t part)
 {
   auto& buf = bufs[part];
-  buf.mptr.push_back(0);
+  buf.mcsr.mptr.push_back(0);
 }
 
 void partial_cd::rec_adj(
@@ -193,9 +193,9 @@ void partial_cd::rec_adj(
 
   const auto cur_part = partitions[idx];
   auto &buf = bufs[cur_part];
-  auto &last_mptr_element = *(end(buf.mptr) - 1);
+  auto &last_mptr_element = *(end(buf.mcsr.mptr) - 1);
   last_mptr_element++;
-  buf.mcol.push_back(adj_buf_idx);
+  buf.mcsr.mcol.push_back(adj_buf_idx);
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
