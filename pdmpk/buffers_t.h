@@ -2,13 +2,7 @@
  * @author Emil VATAI <emil.vatai@gmail.com>
  * @date 2019-09-17
  *
- * @todo(vatai): Separate MPI and CSR buffers.
- *
- * @todo(vatai): Consider how to implement the temporary and the final
- * versions of MPI and CSR buffers.
- *
- * @todo(vatai): Probably make the CSR and MPI buffers with phases,
- * and then use the same, but only for one phase.
+ * @todo(vatai): Resize sendbuf in phase_finalize.
  *//**
  * @brief The buffers collected on a single partition.
  *
@@ -50,7 +44,6 @@ class buffers_t {
   ///   - `mbuf` (`mbuf_begin`, **uses** `mptr_begin` from csr)
   ///   - `sbuf_idcs` (**uses** `sendcount` and `sdispls`)
   ///   - `ibuf` (`ibuf_begin`)
-  // std::vector<std::pair<idx_t, level_t>> pair_mbuf;
 
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
