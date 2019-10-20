@@ -47,6 +47,8 @@ class buffers_t {
 
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
+  /// `mbuf` indices, which need to be copied to the send buffer.
+  std::vector<idx_t> sbuf_idx;
 
  private:
   buffers_t();
