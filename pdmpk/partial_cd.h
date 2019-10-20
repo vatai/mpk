@@ -4,7 +4,6 @@
  *
  * Communication data for with partial vertices.
  *
- * @todo(vatai): maybe: encapsulate mpi data
  * @todo(vatai): maybe: encapsulate parameters
  */
 
