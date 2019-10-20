@@ -99,10 +99,7 @@ void partial_cd::phase_init()
 {
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
-    buffer.final_mpi_bufs.recvcounts.resize(size);
-    buffer.final_mpi_bufs.sendcounts.resize(size);
-    buffer.final_mpi_bufs.rdispls.resize(size);
-    buffer.final_mpi_bufs.sdispls.resize(size);
+    buffer.final_mpi_bufs.resize(size);
     buffer.mcsr.rec_phase();
   }
 }

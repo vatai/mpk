@@ -16,10 +16,19 @@ void mpi_bufs_t::fill_dipls(int phase)
     rdispl[i] = rdispl[i - 1] + rcount[i - 1];
   }
 }
+
 int mpi_bufs_t::rbuf_size(int phase)
 {
   size_t offset = npart * phase;
   auto rcount = recvcounts.data() + offset;
   auto rdispl = rdispls.data() + offset;
   return rcount[npart - 1] + rdispl[npart - 1];
+}
+
+void mpi_bufs_t::resize(size_t size)
+{
+  recvcounts.resize(size);
+  sendcounts.resize(size);
+  rdispls.resize(size);
+  sdispls.resize(size);
 }
