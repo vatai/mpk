@@ -40,8 +40,8 @@ public:
   buffers_t();
   mpi_bufs_t final_mpi_bufs;
   /// - CSR (one over all phases):
-  ///   - `mptr` (`mptr_begin`)
-  ///   - `mcol`
+  ///   - `mptr` (`mptr_begin`): DONE
+  ///   - `mcol`: DONE
   ///   - `mval` (or `mval_idx`)
   std::vector<idx_t> mptr;        // CSR
   std::vector<size_t> mptr_begin; // CSR
@@ -53,6 +53,8 @@ public:
   ///   - `sbuf_idcs` (**uses** `sendcount` and `sdispls`)
   ///   - `ibuf` (`ibuf_begin`)
   // std::vector<std::pair<idx_t, level_t>> pair_mbuf;
+
+  /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
 
   void dump(const int rank);
