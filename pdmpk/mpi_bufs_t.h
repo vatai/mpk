@@ -9,7 +9,7 @@
 #include <metis.h>
 
 class mpi_bufs_t {
-public:
+ public:
   mpi_bufs_t(const idx_t npart);
   void fill_dipls(int phase);
   int rbuf_size(int phase);
