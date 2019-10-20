@@ -85,6 +85,7 @@ partial_cd::partial_cd(
   phase_finalize();
 
   for (int i = 0; i < 7; i++) {
+    /// @todo(vatai): Create the comm_dict.
     phase = i + 1;
     phase_init();
     metis_partition_with_levels();
