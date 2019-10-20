@@ -8,8 +8,7 @@
  * @todo(vatai): maybe: encapsulate parameters
  */
 
-#ifndef _PARTIAL_CD_
-#define _PARTIAL_CD_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,7 +22,7 @@
 
 class partial_cd {
 
-public:
+ public:
   partial_cd(const char *_fname, const idx_t _npart, const level_t _nlevels);
 
   const idx_t npart;
@@ -41,7 +40,6 @@ public:
   std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
 
 private:
-  int phase;
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
@@ -70,6 +68,6 @@ private:
   void update_weights();
   void metis_partition();
   void metis_partition_with_levels();
-};
 
-#endif
+  int phase;
+};
