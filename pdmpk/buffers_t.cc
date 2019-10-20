@@ -7,7 +7,7 @@ const std::string FNAME{"bufs"};
 
 buffers_t::buffers_t(const idx_t npart)
     : mbuf_idx(0),
-      final_mpi_bufs(npart)
+      mpi_bufs(npart)
 {}
 
 void buffers_t::dump(const int rank)

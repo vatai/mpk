@@ -43,7 +43,7 @@ class buffers_t {
   void dump(const int rank);
   void load(const int rank);
 
-  mpi_bufs_t final_mpi_bufs;
+  mpi_bufs_t mpi_bufs;
   mcsr_t mcsr;
 
   /// - BUF (one over all phases):

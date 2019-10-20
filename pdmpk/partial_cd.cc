@@ -99,7 +99,7 @@ void partial_cd::phase_init()
 {
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
-    buffer.final_mpi_bufs.resize(size);
+    buffer.mpi_bufs.resize(size);
     buffer.mcsr.rec_phase();
   }
 }
@@ -107,8 +107,8 @@ void partial_cd::phase_init()
 void partial_cd::phase_finalize()
 {
   for (auto &buffer : bufs) {
-    buffer.final_mpi_bufs.fill_dipls(phase);
-    buffer.mbuf_idx += buffer.final_mpi_bufs.rbuf_size(phase);
+    buffer.mpi_bufs.fill_dipls(phase);
+    buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
   }
 }
 
@@ -201,8 +201,8 @@ void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
   const auto& buf_idx = pair.second;
   if (to != from) {
     /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-    bufs[to].final_mpi_bufs.recvcounts[npart * phase + from]++;
-    bufs[from].final_mpi_bufs.sendcounts[npart * phase + to]++;
+    bufs[to].mpi_bufs.recvcounts[npart * phase + from]++;
+    bufs[from].mpi_bufs.sendcounts[npart * phase + to]++;
     comm_dict[{from, to}] = buf_idx;
   }
 }
