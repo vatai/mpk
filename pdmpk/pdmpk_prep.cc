@@ -44,8 +44,6 @@
  *   `buf[buf_offset[t]..buf_offset[t] + buf_count[t]]`
  *
  * @todo(vatai): Finish documentation here.
- * @todo(vatai): Remove rank if not needed.
- * @todo(vatai): Implement MPI class if needed.
  *
  * Implementation plan:
  * @todo(vatai): Do `buffers_t` todos.

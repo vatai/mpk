@@ -3,8 +3,6 @@
  * @date 2019-09-17
  *
  * Communication data for with partial vertices.
- *
- * @todo(vatai): maybe: encapsulate parameters
  */
 
 #pragma once
