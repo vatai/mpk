@@ -48,6 +48,7 @@ private:
   void debug_print_report(std::ostream &os, const int phase);
 
   void phase_init();
+  void phase_finalize();
   void init_communication();
 
   void update_levels();

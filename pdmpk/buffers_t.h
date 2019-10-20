@@ -36,8 +36,12 @@
 // }
 
 class buffers_t {
-public:
-  buffers_t();
+ public:
+  buffers_t(const idx_t npart);
+
+  void dump(const int rank);
+  void load(const int rank);
+
   mpi_bufs_t final_mpi_bufs;
   /// - CSR (one over all phases):
   ///   - `mptr` (`mptr_begin`): DONE
@@ -57,6 +61,6 @@ public:
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
 
-  void dump(const int rank);
-  void load(const int rank);
+ private:
+  buffers_t();
 };

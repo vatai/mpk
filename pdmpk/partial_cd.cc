@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "buffers_t.h"
 #include "partial_cd.h"
 
 #include "metis.h"
@@ -72,7 +73,7 @@ partial_cd::partial_cd(
       partitions(csr.n),
       levels(csr.n, 0),
       weights(csr.nnz),
-      bufs(npart)
+      bufs(npart, buffers_t(npart))
 {
   phase = 0;
   phase_init();
@@ -81,6 +82,7 @@ partial_cd::partial_cd(
   update_levels();
   update_weights();
   debug_print_report(std::cout, 0);
+  phase_finalize();
 
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
@@ -89,6 +91,7 @@ partial_cd::partial_cd(
     update_levels();
     update_weights();
     debug_print_report(std::cout, i + 1);
+    phase_finalize();
   }
 }
 
@@ -101,6 +104,14 @@ void partial_cd::phase_init()
     buffer.final_mpi_bufs.rdispls.resize(size);
     buffer.final_mpi_bufs.sdispls.resize(size);
     buffer.mptr_begin.push_back(buffer.mptr.size());
+  }
+}
+
+void partial_cd::phase_finalize()
+{
+  for (auto &buffer : bufs) {
+    buffer.final_mpi_bufs.fill_dipls(phase);
+    buffer.mbuf_idx += buffer.final_mpi_bufs.rbuf_size(phase);
   }
 }
 
