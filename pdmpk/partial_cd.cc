@@ -81,7 +81,7 @@ void partial_cd::update_levels()
   // no progress is made, the next level is processed.
   bool was_active = true;
   // `min_level` is important, see NOTE1 below.
-  auto min_level = *std::min_element(begin(pdmpk_bufs.levels), end(pdmpk_bufs.levels));
+  auto min_level = pdmpk_bufs.min_level();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {

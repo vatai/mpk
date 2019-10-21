@@ -15,6 +15,7 @@ class pdmpk_bufs_t {
  public:
   pdmpk_bufs_t(const csr_t &_csr, const idx_t npart);
 
+  level_t min_level();
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
   void inc_level(const idx_t idx);
   void update_weights();

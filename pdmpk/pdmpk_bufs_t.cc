@@ -14,6 +14,11 @@ pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr, const idx_t npart) :
     weights(csr.nnz)
 {}
 
+level_t pdmpk_bufs_t::min_level()
+{
+  return *std::min_element(begin(levels), end(levels));
+}
+
 bool pdmpk_bufs_t::can_add(const idx_t idx, const level_t lbelow, const idx_t t)
 {
   const idx_t j = csr.col[t];
