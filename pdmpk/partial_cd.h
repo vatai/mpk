@@ -14,6 +14,7 @@
 #include <metis.h>
 
 #include "typedefs.h"
+#include "pdmpk_bufs_t.h"
 #include "buffers_t.h"
 #include "csr_t.h"
 
@@ -26,11 +27,7 @@ class partial_cd {
   const level_t nlevels;
   const csr_t csr;
 
-  std::vector<idx_t> partitions;
-  std::vector<idx_t> weights;
-  std::vector<level_t> levels;
-  std::vector<bool> partials;
-
+  pdmpk_bufs_t pdmpk_bufs;
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
   std::map<idx_lvl_t, from_to_t> store_part;
@@ -41,11 +38,6 @@ class partial_cd {
   std::vector<buffers_t> bufs;
 
  private:
-  void debug_print_levels(std::ostream &os);
-  void debug_print_partials(std::ostream &os);
-  void debug_print_partitions(std::ostream &os);
-  void debug_print_report(std::ostream &os, const int phase);
-
   void phase_init();
   void phase_finalize();
   void init_communication();
@@ -57,18 +49,9 @@ class partial_cd {
   void rec_vert(const idx_t part);
   void rec_adj(const idx_t idx, const idx_t t, const idx_t adj_buf_idx);
   void rec_comm(const idx_t cur_part, const std::pair<idx_t, idx_t> &pair);
-  bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
-  void inc_level(const idx_t idx);
 
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
-
-  bool partial_is_full(const idx_t idx);
-  void partial_reset(const idx_t idx);
-
-  void update_weights();
-  void metis_partition();
-  void metis_partition_with_levels();
 
   int phase;
 };
