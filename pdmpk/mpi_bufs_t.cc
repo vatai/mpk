@@ -1,3 +1,6 @@
+//  Author: Emil VATAI <emil.vatai@gmail.com>
+//  Date: 2019-10-19
+
 #include "mpi_bufs_t.h"
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart) : npart{npart} {}
