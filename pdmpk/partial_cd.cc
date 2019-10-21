@@ -131,13 +131,6 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   }
 }
 
-void partial_cd::rec_vert(const idx_t part)
-{
-  /// @todo(vatai): Method not used. Remove it.
-  auto& buf = bufs[part];
-  buf.mcsr.mptr.push_back(0);
-}
-
 void partial_cd::rec_adj(
     const idx_t idx,
     const idx_t adj_tidx,
