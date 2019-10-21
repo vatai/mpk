@@ -110,6 +110,9 @@ void partial_cd::phase_finalize()
   for (auto &buffer : bufs) {
     buffer.mpi_bufs.fill_dipls(phase);
     buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
+    /// @todo(vatai): Implement `comm_data` to `sbuf_idx`.
+    buffer.sbuf_idx.resize(buffer.sbuf_idx.size() +
+                           buffer.mpi_bufs.sbuf_size(phase));
   }
 }
 

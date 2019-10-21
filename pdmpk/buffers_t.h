@@ -2,7 +2,10 @@
  * @author Emil VATAI <emil.vatai@gmail.com>
  * @date 2019-09-17
  *
- * @todo(vatai): Resize sendbuf in phase_finalize.
+ * @todo(vatai): **Fill sendbuf**.  In reverse order: 1. step. figure
+ * out the size of sendbuf (done); 2. step: fill sbuf_idx from a
+ * comm_dict (which contains absolute "source" indices); 3. step: fill
+ * the comm_dict (with the "source" indices).
  *//**
  * @brief The buffers collected on a single partition.
  *
