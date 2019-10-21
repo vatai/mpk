@@ -28,7 +28,7 @@ class partial_cd {
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
-  std::map<std::pair<idx_t, level_t>, from_to_pair_t> store_part;
+  std::map<std::pair<idx_t, level_t>, from_to_t> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
 

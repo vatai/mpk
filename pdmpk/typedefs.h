@@ -6,7 +6,7 @@
 #include <metis.h>
 
 typedef unsigned short level_t;
-typedef std::pair<idx_t, idx_t> from_to_pair_t;
+typedef std::pair<idx_t, idx_t> from_to_t;
 
 #endif
 
