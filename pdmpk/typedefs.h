@@ -7,6 +7,7 @@
 
 typedef unsigned short level_t;
 typedef std::pair<idx_t, idx_t> from_to_t;
+typedef std::pair<idx_t, level_t> idx_lvl_t;
 
 #endif
 
