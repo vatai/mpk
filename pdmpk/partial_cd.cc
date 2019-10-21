@@ -124,12 +124,10 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   const auto j = csr.col[t];
   /// @todo(vatai): `can_add` should be checked once, right? (see
   /// `proc_vertex`, it has it too).
-  if (pdmpk_bufs.can_add(idx, lbelow, t)) {
-    const auto pair = get_store_part(j, lbelow);
-    pdmpk_bufs.partials[t] = true;
-    bufs[cur_part].mcsr.mcol_push_back(pair.second);
-    rec_comm(cur_part, pair);
-  }
+  const auto pair = get_store_part(j, lbelow);
+  pdmpk_bufs.partials[t] = true;
+  bufs[cur_part].mcsr.mcol_push_back(pair.second);
+  rec_comm(cur_part, pair);
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
