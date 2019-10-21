@@ -126,22 +126,10 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   /// `proc_vertex`, it has it too).
   if (pdmpk_bufs.can_add(idx, lbelow, t)) {
     const auto pair = get_store_part(j, lbelow);
-    rec_adj(idx, t, pair.second);
+    pdmpk_bufs.partials[t] = true;
+    bufs[cur_part].mcsr.mcol_push_back(pair.second);
     rec_comm(cur_part, pair);
   }
-}
-
-void partial_cd::rec_adj(
-    const idx_t idx,
-    const idx_t adj_tidx,
-    const idx_t adj_buf_idx)
-{
-  pdmpk_bufs.partials[adj_tidx] = true;
-
-  auto &mcsr = bufs[cur_part].mcsr;
-  auto &last_mptr_element = *(end(mcsr.mptr) - 1);
-  last_mptr_element++;
-  mcsr.mcol.push_back(adj_buf_idx);
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)

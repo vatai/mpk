@@ -18,6 +18,8 @@
 class mcsr_t {
  public:
   void rec_phase();
+  void mcol_push_back(const idx_t idx);
+
   std::vector<idx_t> mptr;
   std::vector<idx_t> mptr_begin;
   std::vector<idx_t> mcol;
