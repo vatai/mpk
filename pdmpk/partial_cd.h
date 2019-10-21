@@ -28,15 +28,19 @@ class partial_cd {
 
   std::vector<idx_t> partitions;
   std::vector<idx_t> weights;
-  std::map<std::pair<idx_t, level_t>, from_to_t> store_part;
   std::vector<level_t> levels;
   std::vector<bool> partials;
 
+  /// Map (vector index, level) pair to the (partition, mbuf index)
+  /// pair where it is can be found.
+  std::map<idx_lvl_t, from_to_t> store_part;
+  /// In each phase, collect the communication as a map between from
+  /// (source, target) to `mbuf` index in the source partition.
+  std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
+  /// All the buffers such as `mbuf`, `mcsr` and and MPI buffers.
   std::vector<buffers_t> bufs;
 
-  std::map<std::pair<idx_t, idx_t>, idx_t> comm_dict;
-
-private:
+ private:
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
   void debug_print_partitions(std::ostream &os);
