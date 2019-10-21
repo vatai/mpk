@@ -54,4 +54,7 @@ class partial_cd {
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
 
   int phase;
+  /// `cur_part` is set to the partition of the vertex being processed
+  /// at the beginning of `proc_vertex`.
+  idx_t cur_part;
 };

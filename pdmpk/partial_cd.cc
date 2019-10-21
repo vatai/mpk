@@ -102,9 +102,9 @@ void partial_cd::update_levels()
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
-  const auto p = pdmpk_bufs.partitions[idx];
+  cur_part = pdmpk_bufs.partitions[idx];
 
-  rec_vert(p);
+  bufs[cur_part].mcsr.mptr.push_back(0);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
@@ -113,7 +113,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     }
   }
   if (retval == true) {
-    set_store_part(idx, lbelow + 1, p);
+    set_store_part(idx, lbelow + 1, cur_part);
     pdmpk_bufs.inc_level(idx);
   }
   return retval;
@@ -121,7 +121,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
-  const auto cur_part = pdmpk_bufs.partitions[idx];
   const auto j = csr.col[t];
   /// @todo(vatai): `can_add` should be checked once, right? (see
   /// `proc_vertex`, it has it too).
@@ -134,6 +133,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 
 void partial_cd::rec_vert(const idx_t part)
 {
+  /// @todo(vatai): Method not used. Remove it.
   auto& buf = bufs[part];
   buf.mcsr.mptr.push_back(0);
 }
@@ -145,11 +145,10 @@ void partial_cd::rec_adj(
 {
   pdmpk_bufs.partials[adj_tidx] = true;
 
-  const auto cur_part = pdmpk_bufs.partitions[idx];
-  auto &buf = bufs[cur_part];
-  auto &last_mptr_element = *(end(buf.mcsr.mptr) - 1);
+  auto &mcsr = bufs[cur_part].mcsr;
+  auto &last_mptr_element = *(end(mcsr.mptr) - 1);
   last_mptr_element++;
-  buf.mcsr.mcol.push_back(adj_buf_idx);
+  mcsr.mcol.push_back(adj_buf_idx);
 }
 
 void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
