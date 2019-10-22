@@ -24,8 +24,9 @@ class mpi_bufs_t {
   std::vector<int> sendcounts;
   std::vector<int> rdispls;
   std::vector<int> sdispls;
-  /// @todo(vatai): Fill `sbuf_idx`
-  std::vector<idx_t> sbuf_idx;
+  /// @todo(vatai): Fill `sbuf_idcs`
+  /// `mbuf` indices, which need to be copied to the send buffer.
+  std::vector<idx_t> sbuf_idcs;
 
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;

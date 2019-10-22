@@ -15,6 +15,7 @@
 
 #include "metis.h"
 #include "pdmpk_bufs_t.h"
+#include "typedefs.h"
 
 partial_cd::partial_cd(
     const char *fname,
@@ -52,18 +53,8 @@ void partial_cd::phase_init()
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
     buffer.mpi_bufs.resize(size);
+    /// @todo(vatai): Rename `rec_phase()` to `rec_mptr_begin()`.
     buffer.mcsr.rec_phase();
-  }
-}
-
-void partial_cd::phase_finalize()
-{
-  for (auto &buffer : bufs) {
-    buffer.mpi_bufs.fill_dipls(phase);
-    buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
-    /// @todo(vatai): Implement `comm_data` to `sbuf_idx`.
-    buffer.sbuf_idx.resize(buffer.sbuf_idx.size() +
-                           buffer.mpi_bufs.sbuf_size(phase));
   }
 }
 
@@ -99,6 +90,41 @@ void partial_cd::update_levels()
   }
 }
 
+void partial_cd::phase_finalize()
+{
+  for (idx_t src = 0; src < npart; src++) {
+    auto &buffer = bufs[src];
+    buffer.mpi_bufs.fill_dipls(phase);
+    buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
+    // buffer.fun(src, phase, comm_dict);
+    fill_sbuf_idcs(src, buffer);
+  }
+  comm_dict.clear();
+}
+
+void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
+{
+  // Fill sbuf_idcs[]
+  const auto nsize =
+      buffer.mpi_bufs.sbuf_idcs.size() + buffer.mpi_bufs.sbuf_size(phase);
+  buffer.mpi_bufs.sbuf_idcs.resize(nsize);
+  std::vector<idx_t> scount(npart, 0);
+
+  const auto offset = npart * phase;
+  auto mpi_bufs = buffer.mpi_bufs;
+
+  for (idx_t tgt = 0; tgt < npart; tgt++) {
+    const auto iter = comm_dict.find({src, tgt});
+    if (iter != end(comm_dict)) {
+      const auto idx = mpi_bufs.sdispls[offset + tgt] + scount[tgt];
+      const auto dest = begin(mpi_bufs.sbuf_idcs) + idx;
+      const auto src_idx_vect = iter->second;
+      std::copy(begin(src_idx_vect), end(src_idx_vect), dest);
+      scount[tgt] += src_idx_vect.size();
+    }
+  }
+}
+
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
@@ -130,15 +156,20 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   rec_comm(cur_part, pair);
 }
 
-void partial_cd::rec_comm(const idx_t to, const std::pair<idx_t, idx_t> &pair)
+void partial_cd::rec_comm(const idx_t tgt, const part_sidx_t &pair)
 {
-  const auto& from = pair.first;
-  const auto& buf_idx = pair.second;
-  if (to != from) {
+  const auto& src = pair.first;
+  const auto& src_idx = pair.second;
+  const auto base = npart * phase;
+  if (tgt != src) {
     /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-    bufs[to].mpi_bufs.recvcounts[npart * phase + from]++;
-    bufs[from].mpi_bufs.sendcounts[npart * phase + to]++;
-    comm_dict[{from, to}] = buf_idx;
+    bufs[tgt].mpi_bufs.recvcounts[base + src]++;
+    bufs[src].mpi_bufs.sendcounts[base + tgt]++;
+    const src_tgt_t pair = {src, tgt};
+    // auto iter = comm_dict.find(pair);
+    // if (iter == end(comm_dict))
+    //   comm_dict[pair];
+    comm_dict[pair].push_back(src_idx);
   }
 }
 

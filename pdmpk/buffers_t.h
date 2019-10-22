@@ -10,7 +10,7 @@
  * @brief The buffers collected on a single partition.
  *
  * @details `buffers_t` contains the MPI buffers, the modified CSP
- * buffers and `mbuf`, `sbuf_idx` and `ibuF`.
+ * buffers and `mbuf` and `ibuF`.
  */
 #pragma once
 
@@ -50,8 +50,6 @@ class buffers_t {
 
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
-  /// `mbuf` indices, which need to be copied to the send buffer.
-  std::vector<idx_t> sbuf_idx;
 
  private:
   buffers_t();

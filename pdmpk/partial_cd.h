@@ -35,7 +35,7 @@ class partial_cd {
 
   /// In each phase, collect the communication as a map between from
   /// (source, target) to `mbuf` index in the source partition.
-  std::map<src_tgt_t, idx_t> comm_dict;
+  std::map<src_tgt_t, std::vector<idx_t>> comm_dict;
 
   /// All the buffers such as `mbuf`, `mcsr` and and MPI buffers.
   std::vector<buffers_t> bufs;
@@ -43,13 +43,14 @@ class partial_cd {
  private:
   void phase_init();
   void phase_finalize();
+  void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
   void init_communication();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
 
-  void rec_comm(const idx_t cur_part, const std::pair<idx_t, idx_t> &pair);
+  void rec_comm(const idx_t cur_part, const part_sidx_t &pair);
 
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
