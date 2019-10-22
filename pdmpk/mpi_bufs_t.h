@@ -24,6 +24,7 @@ class mpi_bufs_t {
   std::vector<int> sendcounts;
   std::vector<int> rdispls;
   std::vector<int> sdispls;
+  /// @todo(vatai): Fill `sbuf_idx`
   std::vector<idx_t> sbuf_idx;
 
   /// @todo(vatai): It would be nice to "remove" this.

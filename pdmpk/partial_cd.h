@@ -28,12 +28,15 @@ class partial_cd {
   const csr_t csr;
 
   pdmpk_bufs_t pdmpk_bufs;
+
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  std::map<idx_lvl_t, src_tgt_t> store_part;
+  std::map<idx_lvl_t, part_sidx_t> store_part;
+
   /// In each phase, collect the communication as a map between from
   /// (source, target) to `mbuf` index in the source partition.
-  std::map<src_tgt_t, idx_t>, idx_t> comm_dict;
+  std::map<src_tgt_t, idx_t> comm_dict;
+
   /// All the buffers such as `mbuf`, `mcsr` and and MPI buffers.
   std::vector<buffers_t> bufs;
 
