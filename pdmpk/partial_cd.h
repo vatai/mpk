@@ -21,7 +21,7 @@
 class partial_cd {
 
  public:
-  partial_cd(const char *_fname, const idx_t _npart, const level_t _nlevels);
+  partial_cd(const char *fname, const idx_t npart, const level_t nlevels);
 
   const idx_t npart;
   const level_t nlevels;
