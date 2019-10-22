@@ -33,9 +33,16 @@ class partial_cd {
   /// pair where it is can be found.
   std::map<idx_lvl_t, part_sidx_t> store_part;
 
-  /// In each phase, collect the communication as a map between from
-  /// (source, target) to `mbuf` index in the source partition.
+  /// In each phase, collect the communication of complete indices as
+  /// a map from (source, target) pairs to `mbuf` indices of the
+  /// source partition.
   std::map<src_tgt_t, std::vector<idx_t>> comm_dict;
+
+  /// In each phase, collect the communication of partial indices (for
+  /// initialization) as a map from (source, target) pairs to (mbuf
+  /// indices of source partition, mcol indices in the target
+  /// partition) pairs.
+  std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict;
 
   /// All the buffers such as `mbuf`, `mcsr` and and MPI buffers.
   std::vector<buffers_t> bufs;
