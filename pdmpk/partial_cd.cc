@@ -23,13 +23,13 @@ partial_cd::partial_cd(
     : csr{fname},
       npart{npart},
       nlevels{nlevels},
-      pdmpk_bufs(csr, npart),
+      pdmpk_bufs(csr),
       bufs(npart, buffers_t(npart))
 {
   phase = 0;
   phase_init();
   init_communication();
-  pdmpk_bufs.metis_partition();
+  pdmpk_bufs.metis_partition(npart);
   update_levels();
   pdmpk_bufs.update_weights();
   pdmpk_bufs.debug_print_report(std::cout, 0);
@@ -39,7 +39,7 @@ partial_cd::partial_cd(
     /// @todo(vatai): Create the comm_dict.
     phase = i + 1;
     phase_init();
-    pdmpk_bufs.metis_partition_with_levels();
+    pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
     pdmpk_bufs.update_weights();
     pdmpk_bufs.debug_print_report(std::cout, i + 1);

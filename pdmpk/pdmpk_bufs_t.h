@@ -13,7 +13,7 @@
 
 class pdmpk_bufs_t {
  public:
-  pdmpk_bufs_t(const csr_t &_csr, const idx_t npart);
+  pdmpk_bufs_t(const csr_t &_csr);
 
   level_t min_level();
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
@@ -23,8 +23,8 @@ class pdmpk_bufs_t {
   bool partial_is_full(const idx_t idx);
   void partial_reset(const idx_t idx);
 
-  void metis_partition();
-  void metis_partition_with_levels();
+  void metis_partition(idx_t npart);
+  void metis_partition_with_levels(idx_t npart);
 
   void debug_print_levels(std::ostream &os);
   void debug_print_partials(std::ostream &os);
@@ -38,6 +38,5 @@ class pdmpk_bufs_t {
 
  private:
   const csr_t &csr;
-  const idx_t npart;
   pdmpk_bufs_t();
 };

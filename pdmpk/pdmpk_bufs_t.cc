@@ -5,9 +5,8 @@
 #include <iomanip>
 #include "pdmpk_bufs_t.h"
 
-pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr, const idx_t npart) :
+pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr) :
     csr{csr},
-    npart{npart},
     partials(csr.nnz, false),
     partitions(csr.n),
     levels(csr.n, 0),
@@ -70,9 +69,8 @@ void pdmpk_bufs_t::partial_reset(const idx_t idx)
   }
 }
 
-void pdmpk_bufs_t::metis_partition()
+void pdmpk_bufs_t::metis_partition(idx_t npart)
 {
-  idx_t npart = this->npart;
   idx_t n = csr.n;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
@@ -82,9 +80,8 @@ void pdmpk_bufs_t::metis_partition()
                       partitions.data());
 }
 
-void pdmpk_bufs_t::metis_partition_with_levels()
+void pdmpk_bufs_t::metis_partition_with_levels(idx_t npart)
 {
-  idx_t npart = this->npart;
   idx_t n = csr.n;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
