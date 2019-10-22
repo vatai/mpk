@@ -96,33 +96,9 @@ void partial_cd::phase_finalize()
     auto &buffer = bufs[src];
     buffer.mpi_bufs.fill_dipls(phase);
     buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
-    // buffer.fun(src, phase, comm_dict);
-    fill_sbuf_idcs(src, buffer);
+    buffer.fill_sbuf_idcs(src, phase, comm_dict);
   }
   comm_dict.clear();
-}
-
-void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
-{
-  // Fill sbuf_idcs[]
-  const auto nsize =
-      buffer.mpi_bufs.sbuf_idcs.size() + buffer.mpi_bufs.sbuf_size(phase);
-  buffer.mpi_bufs.sbuf_idcs.resize(nsize);
-  std::vector<idx_t> scount(npart, 0);
-
-  const auto offset = npart * phase;
-  auto mpi_bufs = buffer.mpi_bufs;
-
-  for (idx_t tgt = 0; tgt < npart; tgt++) {
-    const auto iter = comm_dict.find({src, tgt});
-    if (iter != end(comm_dict)) {
-      const auto idx = mpi_bufs.sdispls[offset + tgt] + scount[tgt];
-      const auto dest = begin(mpi_bufs.sbuf_idcs) + idx;
-      const auto src_idx_vect = iter->second;
-      std::copy(begin(src_idx_vect), end(src_idx_vect), dest);
-      scount[tgt] += src_idx_vect.size();
-    }
-  }
 }
 
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)

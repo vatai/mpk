@@ -36,6 +36,10 @@
 class buffers_t {
  public:
   buffers_t(const idx_t npart);
+  void fill_sbuf_idcs(
+      const idx_t src,
+      const int phase,
+      const std::map<src_tgt_t, std::vector<idx_t>> &comm_dict);
 
   void dump(const int rank);
   void load(const int rank);
