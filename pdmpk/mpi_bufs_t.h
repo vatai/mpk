@@ -26,6 +26,7 @@ class mpi_bufs_t {
   std::vector<int> sdispls;
   std::vector<idx_t> sbuf_idx;
 
+  /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;
 
  private:
