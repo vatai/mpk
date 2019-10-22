@@ -57,8 +57,6 @@ class partial_cd {
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
 
-  void rec_comm(const idx_t cur_part, const part_sidx_t &pair);
-
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
 

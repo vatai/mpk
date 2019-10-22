@@ -123,29 +123,19 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 
 void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
 {
-  const auto j = csr.col[t];
-  /// @todo(vatai): `can_add` should be checked once, right? (see
-  /// `proc_vertex`, it has it too).
-  const auto pair = get_store_part(j, lbelow);
   pdmpk_bufs.partials[t] = true;
-  bufs[cur_part].mcsr.mcol_push_back(pair.second);
-  rec_comm(cur_part, pair);
-}
 
-void partial_cd::rec_comm(const idx_t tgt, const part_sidx_t &pair)
-{
-  const auto& src = pair.first;
-  const auto& src_idx = pair.second;
-  const auto base = npart * phase;
-  if (tgt != src) {
-    /// @todo(vatai): record sending {j, lbelow}, from adj_part to cur_part
-    bufs[tgt].mpi_bufs.recvcounts[base + src]++;
-    bufs[src].mpi_bufs.sendcounts[base + tgt]++;
-    const src_tgt_t pair = {src, tgt};
-    // auto iter = comm_dict.find(pair);
-    // if (iter == end(comm_dict))
-    //   comm_dict[pair];
-    comm_dict[pair].push_back(src_idx);
+  const auto j = csr.col[t]; // Matrix column index.
+  const auto src_part_idx = get_store_part(j, lbelow);
+  const auto src_part = src_part_idx.first;
+  if (cur_part == src_part_idx.first) {
+    bufs[cur_part].mcsr.mcol_push_back(src_part_idx.second);
+  } else {
+    bufs[cur_part].mcsr.mcol_push_back(-1); // Push dummy value.
+    // Record communication.
+    bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
+    bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
+    comm_dict[{src_part, cur_part}].push_back(src_part);
   }
 }
 
