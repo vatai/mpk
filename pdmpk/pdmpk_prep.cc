@@ -8,26 +8,28 @@
  * vector \f$v \in \mathbb{R}\f$ MPK generates \f[ Av, A^2v, \ldots,
  * A^m v \f]
  *
- * This program generates the "computation and communication pattern"
- * for a given matrix \f$A\f$. The computation and communication
- * pattern mentioned above is a set of "buffers", or arrays, which can
- * be contiguously stored in memory, or on disk, and processed, that
- * is used to make the above vectors of the MPK.  The processing takes
- * place in multiple phases of local computation, separated by
- * communication.  The buffers describing the communication and
- * computation pattern is described here:
+ * The `pdmpk_prep` program generates the "computation and
+ * communication pattern" for a given matrix \f$A\f$. The computation
+ * and communication pattern mentioned above is a set of "buffers", or
+ * arrays, which can be contiguously stored in memory, or on disk, and
+ * processed, that is used to make the above vectors of the MPK.  The
+ * processing takes place in multiple phases of local computation,
+ * separated by communication.  The buffers describing the
+ * communication and computation pattern (for all partitions) are
+ * collected in `partial_cd` more precisely, `buffers_t` in
+ * `partial_cd::bufs`:
  *
- * - `mptr`, `mcol`, `mval`: the calculation itself is
- *   very similar to a regular SpMV operation with CSR format and uses
- *   these arrays
- *   @see mpi_bufs_t
- *   @see partial_cd
+ * - `partitions`, `weights`, `levels` and `partials`
+ *   @see pdmpk_bufs_t
  *
- * - `ibuf`, `sbuf` and `ibuf`:
+ * - `mptr` (with `mptr_begin`), `mcol`, `mval`: the calculation
+ *   itself is very similar to a regular SpMV operation with CSR
+ *   format and uses these arrays @see mcsr_t
  *
  * - `sendcount`, `recvcount`, `sdispls` and `rdispls`: are the
  *   buffers corresponding to the `MPI_Alltoallv()` parameters.  These
  *   buffers have a fixed size of `nphase * npart * npart`.
+ *   @see mpi_bufs_t
  *
  * Since segments of most of these buffers are accessed per phase, if
  * a buffer `buf` (here `buf` is the name of any of the above buffers)
