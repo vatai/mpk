@@ -1,5 +1,4 @@
-#ifndef _TYPEDEFS_H_
-#define _TYPEDEFS_H_
+#pragma once
 
 #include <utility>
 
@@ -18,6 +17,3 @@ typedef std::pair<idx_t, idx_t> part_sidx_t;
 
 /// (index, level) pair.
 typedef std::pair<idx_t, level_t> idx_lvl_t;
-
-#endif
-
