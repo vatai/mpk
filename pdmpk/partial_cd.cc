@@ -136,7 +136,6 @@ void partial_cd::phase_finalize()
 
     /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
     proc_comm_dict(src);
-    // bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
   }
   comm_dict.clear();
   init_dict.clear();
@@ -168,6 +167,24 @@ void partial_cd::mbuf_insert_rbuf()
 
 void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
 {
+  // Fill sbuf_idcs[]
+  auto mpi_bufs = buffer.mpi_bufs;
+  const auto size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
+  mpi_bufs.sbuf_idcs.resize(size);
+  std::vector<idx_t> scount(npart, 0);
+
+  const auto offset = npart * phase;
+
+  for (idx_t tgt = 0; tgt < npart; tgt++) {
+    const auto iter = comm_dict.find({src, tgt});
+    if (iter != end(comm_dict)) {
+      const auto idx = mpi_bufs.sdispls[offset + tgt] + scount[tgt];
+      const auto dest = begin(mpi_bufs.sbuf_idcs) + idx;
+      const auto src_idx_vect = iter->second;
+      std::copy(begin(src_idx_vect), end(src_idx_vect), dest);
+      scount[tgt] += src_idx_vect.size();
+    }
+  }
 }
 
 std::pair<idx_t, idx_t> partial_cd::get_store_part(
