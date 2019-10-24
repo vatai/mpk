@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+#include <vector>
 #include <utility>
 
 #include <metis.h>
@@ -17,3 +19,7 @@ typedef std::pair<idx_t, idx_t> part_sidx_t;
 
 /// (index, level) pair.
 typedef std::pair<idx_t, level_t> idx_lvl_t;
+
+typedef std::map<src_tgt_t, std::vector<idx_t>> comm_dict_t;
+
+typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict_t;

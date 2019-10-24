@@ -43,13 +43,13 @@ class partial_cd {
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
   /// source partition.
-  std::map<src_tgt_t, std::vector<idx_t>> comm_dict;
+  comm_dict_t comm_dict;
 
   /// In each phase, collect the communication of partial indices (for
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs.
-  std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict;
+  init_dict_t init_dict;
 
   void phase_init();
   void init_communication();
