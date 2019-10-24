@@ -13,7 +13,7 @@ class mpi_bufs_t {
   mpi_bufs_t(const idx_t npart);
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
   /// count buffers (`sendcount` and `recvcount`).
-  void fill_dipls(int phase);
+  void fill_displs(int phase);
   /// Get `rbuf` size from `recvcount` and `rdispls`.
   int sbuf_size(int phase);
   /// Get `sbuf` size form `sendcount` and `sdispls`.

@@ -5,7 +5,7 @@
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart) : npart{npart} {}
 
-void mpi_bufs_t::fill_dipls(int phase)
+void mpi_bufs_t::fill_displs(int phase)
 {
   size_t offset = npart * phase;
   auto scount = sendcounts.data() + offset;

@@ -130,8 +130,9 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::phase_finalize()
 {
   for (idx_t src = 0; src < npart; src++) {
+    /// Fill displacement buffers from count buffers.
     auto &mpi_bufs = bufs[src].mpi_bufs;
-    mpi_bufs.fill_dipls(phase);
+    mpi_bufs.fill_displs(phase);
 
     const auto rbuf_size = mpi_bufs.rbuf_size(phase);
     bufs[src].mbuf_idx += rbuf_size; // Account for the inserted `recvbuf` in `mbuf`.
