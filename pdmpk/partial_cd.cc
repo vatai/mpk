@@ -93,10 +93,16 @@ void partial_cd::update_levels()
 void partial_cd::phase_finalize()
 {
   for (idx_t src = 0; src < npart; src++) {
-    auto &buffer = bufs[src];
-    buffer.mpi_bufs.fill_dipls(phase);
-    buffer.mbuf_idx += buffer.mpi_bufs.rbuf_size(phase);
-    buffer.fill_sbuf_idcs(src, phase, comm_dict);
+    auto &mpi_bufs = bufs[src].mpi_bufs;
+    mpi_bufs.fill_dipls(phase);
+
+    const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+    bufs[src].mbuf_idx += rbuf_size; // Account for the inserted `recvbuf` in `mbuf`.
+
+    const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
+    mpi_bufs.sbuf_idcs.resize(sbuf_size);
+
+    bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
   }
   comm_dict.clear();
 }

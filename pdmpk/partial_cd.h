@@ -27,8 +27,15 @@ class partial_cd {
   const level_t nlevels;
   const csr_t csr;
 
+  /// All MPK buffers such as levels, weights, partitions, and
+  /// partials.
   pdmpk_bufs_t pdmpk_bufs;
 
+  /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
+  /// buffers for partition `part`.
+  std::vector<buffers_t> bufs;
+
+ private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
   std::map<idx_lvl_t, part_sidx_t> store_part;
@@ -44,10 +51,6 @@ class partial_cd {
   /// partition) pairs.
   std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict;
 
-  /// All the buffers such as `mbuf`, `mcsr` and and MPI buffers.
-  std::vector<buffers_t> bufs;
-
- private:
   void phase_init();
   void phase_finalize();
   void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
@@ -60,6 +63,7 @@ class partial_cd {
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
 
+  /// The current phase is set at the beginning of each phase.
   int phase;
   /// `cur_part` is set to the partition of the vertex being processed
   /// at the beginning of `proc_vertex`.
