@@ -136,15 +136,15 @@ void partial_cd::phase_finalize()
     mpi_bufs.fill_displs(phase);
   }
 
-  for (auto iter = begin(comm_dict); iter != end(comm_dict); iter++) {
-    /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
-    proc_comm_dict(iter->first, iter->second);
-  }
+  /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
+  for (comm_dict_t::const_iterator iter = begin(comm_dict);
+       iter != end(comm_dict); iter++)
+    proc_comm_dict(iter);
 
-  for (auto iter = begin(init_dict); iter != end(init_dict); iter++) {
-    /// Fill `ibuf` and the remainder of `sbuf`.
-    proc_init_dict(iter->first, iter->second);
-  }
+  /// Fill `ibuf` and the remainder of `sbuf`.
+  for (init_dict_t::const_iterator iter = begin(init_dict);
+       iter != end(init_dict); iter++)
+    proc_init_dict(iter);
 
   comm_dict.clear();
   init_dict.clear();
@@ -154,10 +154,10 @@ void partial_cd::phase_finalize()
 // Resize the "simple" mpi buffers.
 // TODO: Fill sbuf_indices. ??? Do we need sbuf_begin???
 //
-void partial_cd::proc_comm_dict(const sidx_tidx_t &src_tgt, const std::vector<idx_t> &v)
+void partial_cd::proc_comm_dict(comm_dict_t::const_iterator &iter)
 {
-  const auto src = src_tgt.first;
-  const auto tgt = src_tgt.second;
+  const auto src = iter->first.first;
+  const auto tgt = iter->first.second;
   auto mpi_bufs = bufs[src].mpi_bufs;
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
   bufs[src].mbuf_idx += rbuf_size;
@@ -165,7 +165,7 @@ void partial_cd::proc_comm_dict(const sidx_tidx_t &src_tgt, const std::vector<id
   mpi_bufs.sbuf_idcs.resize(sbuf_size);
 }
 
-void partial_cd::proc_init_dict(const sidx_tidx_t &src_tgt, const std::vector<sidx_tidx_t> &v)
+void partial_cd::proc_init_dict(init_dict_t::const_iterator &iter)
 {
 
 }
