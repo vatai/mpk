@@ -136,6 +136,9 @@ void partial_cd::phase_finalize()
 
     /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
     proc_comm_dict(src);
+
+    /// Fill `ibuf` and the remainder of `sbuf`.
+    proc_init_dict(src);
   }
   comm_dict.clear();
   init_dict.clear();
@@ -152,6 +155,11 @@ void partial_cd::proc_comm_dict(const idx_t src)
   bufs[src].mbuf_idx += rbuf_size;
   const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
   mpi_bufs.sbuf_idcs.resize(sbuf_size);
+}
+
+void partial_cd::proc_init_dict(const idx_t src)
+{
+
 }
 
 void partial_cd::mbuf_insert_rbuf()
