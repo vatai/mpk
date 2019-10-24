@@ -52,13 +52,15 @@ class partial_cd {
   std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict;
 
   void phase_init();
-  void phase_finalize();
-  void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
   void init_communication();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+
+  void phase_finalize();
+  void mbuf_insert_rbuf();
+  void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
 
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);

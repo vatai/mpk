@@ -90,23 +90,6 @@ void partial_cd::update_levels()
   }
 }
 
-void partial_cd::phase_finalize()
-{
-  for (idx_t src = 0; src < npart; src++) {
-    auto &mpi_bufs = bufs[src].mpi_bufs;
-    mpi_bufs.fill_dipls(phase);
-
-    const auto rbuf_size = mpi_bufs.rbuf_size(phase);
-    bufs[src].mbuf_idx += rbuf_size; // Account for the inserted `recvbuf` in `mbuf`.
-
-    const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
-    mpi_bufs.sbuf_idcs.resize(sbuf_size);
-
-    bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
-  }
-  comm_dict.clear();
-}
-
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
 {
   bool retval = false;
@@ -143,6 +126,31 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
     comm_dict[{src_part, cur_part}].push_back(src_part);
   }
+}
+
+void partial_cd::phase_finalize()
+{
+  for (idx_t src = 0; src < npart; src++) {
+    auto &mpi_bufs = bufs[src].mpi_bufs;
+    mpi_bufs.fill_dipls(phase);
+
+    const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+    bufs[src].mbuf_idx += rbuf_size; // Account for the inserted `recvbuf` in `mbuf`.
+
+    const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
+    mpi_bufs.sbuf_idcs.resize(sbuf_size);
+
+    bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
+  }
+  comm_dict.clear();
+}
+
+void partial_cd::mbuf_insert_rbuf()
+{
+}
+
+void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
+{
 }
 
 std::pair<idx_t, idx_t> partial_cd::get_store_part(
