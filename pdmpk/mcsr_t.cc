@@ -3,7 +3,7 @@
 
 #include "mcsr_t.h"
 
-void mcsr_t::rec_phase()
+void mcsr_t::rec_mptr_begin()
 {
   mptr_begin.push_back(mptr.size());
 }

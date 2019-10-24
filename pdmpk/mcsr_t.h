@@ -17,7 +17,7 @@
 ///   - `mval` (or `mval_idx`)
 class mcsr_t {
  public:
-  void rec_phase();
+  void rec_mptr_begin();
   void mcol_push_back(const idx_t idx);
 
   std::vector<idx_t> mptr;

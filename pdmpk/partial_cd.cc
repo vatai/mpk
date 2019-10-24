@@ -53,8 +53,7 @@ void partial_cd::phase_init()
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
     buffer.mpi_bufs.resize(size);
-    /// @todo(vatai): Rename `rec_phase()` to `rec_mptr_begin()`.
-    buffer.mcsr.rec_phase();
+    buffer.mcsr.rec_mptr_begin();
   }
 }
 
