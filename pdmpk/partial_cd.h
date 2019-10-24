@@ -65,6 +65,14 @@ class partial_cd {
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
   std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
 
+  /// `src_send_base(src, tgt)` gives the base (0th index) of the send
+  /// buffer in the source buffer.
+  idx_t src_send_base(const sidx_tidx_t src_tgt) const;
+
+  /// `tgt_recv_base(src, tgt)` gives the base (0th index) of the
+  /// receive buffer in the target buffer.
+  idx_t tgt_recv_base(const sidx_tidx_t src_tgt) const;
+
   /// The current phase is set at the beginning of each phase.
   int phase;
   /// `cur_part` is set to the partition of the vertex being processed
