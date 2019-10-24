@@ -59,6 +59,7 @@ class partial_cd {
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
 
   void phase_finalize();
+  void proc_comm_dict(const idx_t src);
   void mbuf_insert_rbuf();
   void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
 

@@ -134,19 +134,36 @@ void partial_cd::phase_finalize()
     auto &mpi_bufs = bufs[src].mpi_bufs;
     mpi_bufs.fill_displs(phase);
 
-    const auto rbuf_size = mpi_bufs.rbuf_size(phase);
-    bufs[src].mbuf_idx += rbuf_size; // Account for the inserted `recvbuf` in `mbuf`.
-
-    const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
-    mpi_bufs.sbuf_idcs.resize(sbuf_size);
-
-    bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
+    /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
+    proc_comm_dict(src);
+    // bufs[src].fill_sbuf_idcs(src, phase, comm_dict);
   }
   comm_dict.clear();
+  init_dict.clear();
+}
+
+// Update bufs[src].mbuf_idx.
+// Resize the "simple" mpi buffers.
+// TODO: Fill sbuf_indices. ??? Do we need sbuf_begin???
+//
+void partial_cd::proc_comm_dict(const idx_t src)
+{
+  auto mpi_bufs = bufs[src].mpi_bufs;
+  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+  bufs[src].mbuf_idx += rbuf_size;
+  const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
+  mpi_bufs.sbuf_idcs.resize(sbuf_size);
 }
 
 void partial_cd::mbuf_insert_rbuf()
 {
+  auto buffer = bufs[0];
+  auto mcsr = buffer.mcsr;
+  auto begin = mcsr.mptr_begin[phase];
+  const auto rbuf_size = buffer.mpi_bufs.rbuf_size(phase);
+  for (idx_t t = mcsr.mptr[begin]; t != mcsr.mcol.size(); t++) {
+    mcsr.mcol[t] += rbuf_size;
+  }
 }
 
 void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
