@@ -30,8 +30,8 @@ partial_cd::partial_cd(
 {
   phase = 0;
   phase_init();
-  init_communication();
   pdmpk_bufs.metis_partition(npart);
+  init_communication();
   update_levels();
   pdmpk_bufs.update_weights();
   pdmpk_bufs.debug_print_report(std::cout, 0);
