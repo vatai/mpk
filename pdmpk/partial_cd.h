@@ -67,7 +67,6 @@ class partial_cd {
   void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
 
   void rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part);
-  part_sidx_t get_store_part(const idx_t idx, const level_t level) const;
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.

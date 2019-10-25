@@ -117,7 +117,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   pdmpk_bufs.partials[t] = true;
 
   const auto j = csr.col[t]; // Matrix column index.
-  const auto src_part_idx = get_store_part(j, lbelow);
+  const auto src_part_idx = store_part.at({j, lbelow});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
   if (cur_part == src_part_idx.first) {
@@ -223,14 +223,6 @@ void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
       scount[tgt] += src_idx_vect.size();
     }
   }
-}
-
-part_sidx_t partial_cd::get_store_part(const idx_t idx,
-                                       const level_t level) const
-{
-  const auto iter = store_part.find({idx, level});
-  assert(iter != end(store_part));
-  return iter->second;
 }
 
 void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part)
