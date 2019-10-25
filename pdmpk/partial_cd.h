@@ -64,7 +64,6 @@ class partial_cd {
   void proc_init_dict(const init_dict_t::const_iterator &iter,
                       const std::vector<idx_t> &count);
   void mbuf_insert_rbuf(const idx_t src);
-  void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
 
   void rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part);
 
