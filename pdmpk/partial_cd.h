@@ -61,7 +61,7 @@ class partial_cd {
   void phase_finalize();
   void proc_comm_dict(const comm_dict_t::const_iterator &iter);
   void proc_init_dict(const init_dict_t::const_iterator &iter);
-  void mbuf_insert_rbuf(const idx_t src);
+  void phase_finalize_buf(const idx_t src);
 
   void rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part);
 

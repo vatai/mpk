@@ -135,23 +135,16 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 
 void partial_cd::phase_finalize()
 {
-  for (idx_t src = 0; src < npart; src++) {
-    auto &mpi_bufs = bufs[src].mpi_bufs;
-    /// Fill displacement buffers from count buffers.
-    mpi_bufs.fill_displs(phase);
-    // Update `mbuf_idx`.
-    bufs[src].mbuf_idx += mpi_bufs.rbuf_size(phase);
-    // Allocate `sbuf_idcs` for this phase.
-    mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
-                              mpi_bufs.sbuf_size(phase));
-  }
+  // Update each buffer (separately).
+  for (idx_t src = 0; src < npart; src++)
+    phase_finalize_buf(src);
 
-  /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
+  // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
   for (comm_dict_t::const_iterator iter = begin(comm_dict);
        iter != end(comm_dict); iter++)
     proc_comm_dict(iter);
 
-  /// Fill `ibuf` and the remainder of `sbuf`.
+  // Fill `ibuf` and the remainder of `sbuf`.
   for (init_dict_t::const_iterator iter = begin(init_dict);
        iter != end(init_dict); iter++)
     proc_init_dict(iter);
@@ -160,10 +153,6 @@ void partial_cd::phase_finalize()
   init_dict.clear();
 }
 
-// Update bufs[src].mbuf_idx.
-// Resize the "simple" mpi buffers.
-// TODO: Fill sbuf_indices. ??? Do we need sbuf_begin???
-//
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
 {
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
@@ -179,7 +168,8 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
     const auto mbuf_idx = tgt_buf.mbuf_begin[phase] +
                           tgt_recv_base(iter->first) +
                           idx;
-    // `val[idx].second` holds the `mcol` index in the target partition.
+    // `val[idx].second` holds the `mcol` index in the target
+    // partition.
     tgt_buf.mcsr.mcol[val[idx].second] = mbuf_idx;
   }
 }
@@ -189,14 +179,25 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
 
 }
 
-/// @todo(vatai): Use or delete `mbuf_insert_rbuf()`.
-void partial_cd::mbuf_insert_rbuf(const idx_t src)
+void partial_cd::phase_finalize_buf(const idx_t src)
 {
-  auto mcsr = bufs[src].mcsr;
-  const auto begin = mcsr.mptr_begin[phase];
-  const auto rbuf_size = bufs[src].mpi_bufs.rbuf_size(phase);
-  for (idx_t t = mcsr.mptr[begin]; t != mcsr.mcol.size(); t++) {
-    if (mcsr.mcol[t] < begin)
+  auto &mcsr = bufs[src].mcsr;
+  auto &mpi_bufs = bufs[src].mpi_bufs;
+  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+  /// Fill displacement buffers from count buffers.
+  mpi_bufs.fill_displs(phase);
+  // Allocate `sbuf_idcs` for this phase.
+  mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
+                            mpi_bufs.sbuf_size(phase));
+  // Update `mbuf_idx`.
+  bufs[src].mbuf_idx += rbuf_size;
+  // Update `mcol`.
+  const auto mptr_begin = mcsr.mptr_begin[phase];
+  const auto mcol_begin = mcsr.mcol[mptr_begin];
+  const auto mcol_end = mcsr.mcol.size();
+  const auto mbuf_begin = bufs[src].mbuf_begin[phase];
+  for (idx_t t = mcol_begin; t != mcol_end; t++) {
+    if (mcsr.mcol[t] < mbuf_begin and mcsr.mcol[t] != -1)
       mcsr.mcol[t] += rbuf_size;
   }
 }
