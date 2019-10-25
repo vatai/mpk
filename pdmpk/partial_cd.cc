@@ -203,9 +203,8 @@ void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
   }
 }
 
-std::pair<idx_t, idx_t> partial_cd::get_store_part(
-    const idx_t idx,
-    const level_t level)
+part_sidx_t partial_cd::get_store_part(const idx_t idx,
+                                       const level_t level) const
 {
   const auto iter = store_part.find({idx, level});
   assert(iter != end(store_part));

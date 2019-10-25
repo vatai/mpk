@@ -65,7 +65,7 @@ class partial_cd {
   void fill_sbuf_idcs(const idx_t src, buffers_t& buffer);
 
   void set_store_part(const idx_t idx, const level_t level, const idx_t part);
-  std::pair<idx_t, idx_t> get_store_part(const idx_t idx, const level_t level);
+  part_sidx_t get_store_part(const idx_t idx, const level_t level) const;
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.
