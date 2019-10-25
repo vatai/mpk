@@ -31,6 +31,7 @@
 class buffers_t {
  public:
   buffers_t(const idx_t npart);
+  void phase_finalize(const int phase);
   void dump(const int rank);
   void load(const int rank);
 

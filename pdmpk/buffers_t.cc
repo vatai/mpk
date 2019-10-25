@@ -13,6 +13,28 @@ buffers_t::buffers_t(const idx_t npart)
       mpi_bufs(npart)
 {}
 
+void buffers_t::phase_finalize(const int phase) {
+  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+  /// Fill displacement buffers from count buffers.
+  mpi_bufs.fill_displs(phase);
+
+  // Allocate `sbuf_idcs` for this phase.
+  mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
+                            mpi_bufs.sbuf_size(phase));
+  // Update `mbuf_idx`.
+  mbuf_idx += rbuf_size;
+
+  // Update `mcol`.
+  const auto mptr_begin = mcsr.mptr_begin[phase];
+  const auto mcol_begin = mcsr.mptr[mptr_begin];
+  const auto mcol_end = mcsr.mcol.size();
+  const auto mbuf_begin_idx = this->mbuf_begin[phase];
+  for (idx_t t = mcol_begin; t < mcol_end; t++) {
+    if (mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1)
+      mcsr.mcol[t] += rbuf_size;
+  }
+}
+
 void buffers_t::dump(const int rank)
 {
   std::stringstream fname;

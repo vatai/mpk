@@ -138,7 +138,7 @@ void partial_cd::phase_finalize()
 {
   // Update each buffer (separately).
   for (idx_t src = 0; src < npart; src++)
-    phase_finalize_buf(src);
+    bufs[src].phase_finalize(phase);
 
   // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
   for (comm_dict_t::const_iterator iter = begin(comm_dict);
@@ -152,29 +152,6 @@ void partial_cd::phase_finalize()
 
   comm_dict.clear();
   init_dict.clear();
-}
-
-void partial_cd::phase_finalize_buf(const idx_t src)
-{
-  auto &mpi_bufs = bufs[src].mpi_bufs;
-  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
-  /// Fill displacement buffers from count buffers.
-  mpi_bufs.fill_displs(phase);
-  // Allocate `sbuf_idcs` for this phase.
-  mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
-                            mpi_bufs.sbuf_size(phase));
-  // Update `mbuf_idx`.
-  bufs[src].mbuf_idx += rbuf_size;
-  // Update `mcol`.
-  auto &mcsr = bufs[src].mcsr;
-  const auto mptr_begin = mcsr.mptr_begin[phase];
-  const auto mcol_begin = mcsr.mptr[mptr_begin];
-  const auto mcol_end = mcsr.mcol.size();
-  const auto mbuf_begin = bufs[src].mbuf_begin[phase];
-  for (idx_t t = mcol_begin; t < mcol_end; t++) {
-    if (mcsr.mcol[t] < mbuf_begin and mcsr.mcol[t] != -1)
-      mcsr.mcol[t] += rbuf_size;
-  }
 }
 
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
