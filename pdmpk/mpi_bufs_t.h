@@ -18,8 +18,6 @@ class mpi_bufs_t {
   int sbuf_size(int phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
   int rbuf_size(int phase) const;
-  /// Resize `sendcount`, `recvcount`, `sdispls` and `rdispls`.
-  void resize(size_t size);
   /// Record phase beginnings to the "begin" buffers.
   void phase_init();
 
