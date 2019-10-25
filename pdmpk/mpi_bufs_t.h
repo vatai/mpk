@@ -29,7 +29,6 @@ class mpi_bufs_t {
   std::vector<int> recvcounts;
   std::vector<int> sdispls;
   std::vector<int> rdispls;
-  /// @todo(vatai): Fill `sbuf_idcs`
   /// `mbuf` indices, which need to be copied to the send buffer.
   std::vector<idx_t> sbuf_idcs;
   std::vector<idx_t> sbuf_idcs_begin;

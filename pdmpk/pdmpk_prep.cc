@@ -48,7 +48,7 @@
  * @todo(vatai): Finish documentation here.
  *
  * Implementation plan:
- * @todo(vatai): Do `buffers_t` todos.
+ * @todo(vatai): Do `partial_cd_t` todos.
  */
 
 #include <iostream>

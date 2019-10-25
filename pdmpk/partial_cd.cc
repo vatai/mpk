@@ -38,7 +38,6 @@ partial_cd::partial_cd(
   phase_finalize();
 
   for (int i = 0; i < 7; i++) {
-    /// @todo(vatai): Create the comm_dict.
     phase = i + 1;
     phase_init();
     pdmpk_bufs.metis_partition_with_levels(npart);
@@ -126,7 +125,6 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
     // Record communication.
     bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
-    /// @todo(vatai): What to push here?
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
     comm_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
     bufs[cur_part].mcsr.mcol_push_back(-1); // Push dummy value.
