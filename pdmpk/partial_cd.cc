@@ -131,20 +131,26 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
 void partial_cd::phase_finalize()
 {
   for (idx_t src = 0; src < npart; src++) {
-    /// Fill displacement buffers from count buffers.
     auto &mpi_bufs = bufs[src].mpi_bufs;
+    /// Fill displacement buffers from count buffers.
     mpi_bufs.fill_displs(phase);
+    // Update `mbuf_idx`.
+    bufs[src].mbuf_idx += mpi_bufs.rbuf_size(phase);
+    // Allocate `sbuf_idcs` for this phase.
+    mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
+                              mpi_bufs.sbuf_size(phase));
   }
 
+  std::vector<idx_t> count(npart * npart, 0);
   /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
   for (comm_dict_t::const_iterator iter = begin(comm_dict);
        iter != end(comm_dict); iter++)
-    proc_comm_dict(iter);
+    proc_comm_dict(iter, count);
 
   /// Fill `ibuf` and the remainder of `sbuf`.
   for (init_dict_t::const_iterator iter = begin(init_dict);
        iter != end(init_dict); iter++)
-    proc_init_dict(iter);
+    proc_init_dict(iter, count);
 
   comm_dict.clear();
   init_dict.clear();
@@ -154,30 +160,28 @@ void partial_cd::phase_finalize()
 // Resize the "simple" mpi buffers.
 // TODO: Fill sbuf_indices. ??? Do we need sbuf_begin???
 //
-void partial_cd::proc_comm_dict(comm_dict_t::const_iterator &iter)
+void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter,
+                                const std::vector<idx_t> &count)
 {
   const auto src = iter->first.first;
   const auto tgt = iter->first.second;
-  auto mpi_bufs = bufs[src].mpi_bufs;
-  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
-  bufs[src].mbuf_idx += rbuf_size;
-  const auto sbuf_size = mpi_bufs.sbuf_idcs.size() + mpi_bufs.sbuf_size(phase);
-  mpi_bufs.sbuf_idcs.resize(sbuf_size);
+  const auto val = iter->second;
 }
 
-void partial_cd::proc_init_dict(init_dict_t::const_iterator &iter)
+void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter,
+                                const std::vector<idx_t> &count)
 {
 
 }
 
-void partial_cd::mbuf_insert_rbuf()
+void partial_cd::mbuf_insert_rbuf(const idx_t src)
 {
-  auto buffer = bufs[0];
-  auto mcsr = buffer.mcsr;
-  auto begin = mcsr.mptr_begin[phase];
-  const auto rbuf_size = buffer.mpi_bufs.rbuf_size(phase);
+  auto mcsr = bufs[src].mcsr;
+  const auto begin = mcsr.mptr_begin[phase];
+  const auto rbuf_size = bufs[src].mpi_bufs.rbuf_size(phase);
   for (idx_t t = mcsr.mptr[begin]; t != mcsr.mcol.size(); t++) {
-    mcsr.mcol[t] += rbuf_size;
+    if (mcsr.mcol[t] < begin)
+      mcsr.mcol[t] += rbuf_size;
   }
 }
 
