@@ -177,10 +177,7 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter,
       src_mpi_buf.sbuf_idcs_begin[phase] + src_send_base(iter->first);
   auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
-    /// @todo(vatai): The line below throws an `out_of_range`
-    /// exception.
-    //
-    // src_mpi_buf.sbuf_idcs.at(offset + idx) = val[idx].first;
+    src_mpi_buf.sbuf_idcs.at(offset + idx) = val[idx].first;
     const auto mbuf_idx = tgt_buf.mbuf_begin[phase] +
                           tgt_recv_base(iter->first) +
                           idx;
