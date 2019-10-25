@@ -245,10 +245,10 @@ void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_
 
 idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const
 {
-  return bufs[src_tgt.first].mpi_bufs.sdispls[src_tgt.second];
+  return bufs[src_tgt.first].mpi_bufs.sdispls[phase * npart + src_tgt.second];
 }
 
 idx_t partial_cd::tgt_recv_base(const sidx_tidx_t src_tgt) const
 {
-  return bufs[src_tgt.second].mpi_bufs.rdispls[src_tgt.first];
+  return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
 }
