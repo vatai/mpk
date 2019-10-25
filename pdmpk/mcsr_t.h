@@ -18,6 +18,7 @@
 class mcsr_t {
  public:
   void rec_mptr_begin();
+  void mptr_push_back();
   void mcol_push_back(const idx_t idx);
 
   std::vector<idx_t> mptr;

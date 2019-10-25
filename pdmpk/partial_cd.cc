@@ -96,7 +96,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   cur_part = pdmpk_bufs.partitions[idx];
 
-  bufs[cur_part].mcsr.mptr.push_back(0);
+  bufs[cur_part].mcsr.mptr_push_back();
   // Quick notes: if same partition then add to init_idcs
   // (init_idcs_begin will be needed) else (if partitions are
   // different) add to init_dict.
