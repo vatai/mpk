@@ -55,6 +55,7 @@ void partial_cd::phase_init()
   for (auto &buffer : bufs) {
     buffer.mpi_bufs.resize(size);
     buffer.mcsr.rec_mptr_begin();
+    buffer.mbuf_begin.push_back(buffer.mbuf_idx);
   }
 }
 
