@@ -156,7 +156,6 @@ void partial_cd::phase_finalize()
 
 void partial_cd::phase_finalize_buf(const idx_t src)
 {
-  auto &mcsr = bufs[src].mcsr;
   auto &mpi_bufs = bufs[src].mpi_bufs;
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
   /// Fill displacement buffers from count buffers.
@@ -167,11 +166,12 @@ void partial_cd::phase_finalize_buf(const idx_t src)
   // Update `mbuf_idx`.
   bufs[src].mbuf_idx += rbuf_size;
   // Update `mcol`.
+  auto &mcsr = bufs[src].mcsr;
   const auto mptr_begin = mcsr.mptr_begin[phase];
-  const auto mcol_begin = mcsr.mcol[mptr_begin];
+  const auto mcol_begin = mcsr.mptr[mptr_begin];
   const auto mcol_end = mcsr.mcol.size();
   const auto mbuf_begin = bufs[src].mbuf_begin[phase];
-  for (idx_t t = mcol_begin; t != mcol_end; t++) {
+  for (idx_t t = mcol_begin; t < mcol_end; t++) {
     if (mcsr.mcol[t] < mbuf_begin and mcsr.mcol[t] != -1)
       mcsr.mcol[t] += rbuf_size;
   }
