@@ -154,6 +154,29 @@ void partial_cd::phase_finalize()
   init_dict.clear();
 }
 
+void partial_cd::phase_finalize_buf(const idx_t src)
+{
+  auto &mcsr = bufs[src].mcsr;
+  auto &mpi_bufs = bufs[src].mpi_bufs;
+  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
+  /// Fill displacement buffers from count buffers.
+  mpi_bufs.fill_displs(phase);
+  // Allocate `sbuf_idcs` for this phase.
+  mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
+                            mpi_bufs.sbuf_size(phase));
+  // Update `mbuf_idx`.
+  bufs[src].mbuf_idx += rbuf_size;
+  // Update `mcol`.
+  const auto mptr_begin = mcsr.mptr_begin[phase];
+  const auto mcol_begin = mcsr.mcol[mptr_begin];
+  const auto mcol_end = mcsr.mcol.size();
+  const auto mbuf_begin = bufs[src].mbuf_begin[phase];
+  for (idx_t t = mcol_begin; t != mcol_end; t++) {
+    if (mcsr.mcol[t] < mbuf_begin and mcsr.mcol[t] != -1)
+      mcsr.mcol[t] += rbuf_size;
+  }
+}
+
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
 {
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
@@ -178,29 +201,6 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
 void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
 {
 
-}
-
-void partial_cd::phase_finalize_buf(const idx_t src)
-{
-  auto &mcsr = bufs[src].mcsr;
-  auto &mpi_bufs = bufs[src].mpi_bufs;
-  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
-  /// Fill displacement buffers from count buffers.
-  mpi_bufs.fill_displs(phase);
-  // Allocate `sbuf_idcs` for this phase.
-  mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
-                            mpi_bufs.sbuf_size(phase));
-  // Update `mbuf_idx`.
-  bufs[src].mbuf_idx += rbuf_size;
-  // Update `mcol`.
-  const auto mptr_begin = mcsr.mptr_begin[phase];
-  const auto mcol_begin = mcsr.mcol[mptr_begin];
-  const auto mcol_end = mcsr.mcol.size();
-  const auto mbuf_begin = bufs[src].mbuf_begin[phase];
-  for (idx_t t = mcol_begin; t != mcol_end; t++) {
-    if (mcsr.mcol[t] < mbuf_begin and mcsr.mcol[t] != -1)
-      mcsr.mcol[t] += rbuf_size;
-  }
 }
 
 void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part)
