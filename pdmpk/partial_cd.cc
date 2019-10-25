@@ -64,7 +64,7 @@ void partial_cd::init_communication()
 {
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
-    set_store_part(idx, 0, part);
+    rec_mbuf_idx({idx, 0}, part);
   }
 }
 
@@ -106,7 +106,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     }
   }
   if (retval == true) {
-    set_store_part(idx, lbelow + 1, cur_part);
+    rec_mbuf_idx({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
   }
   return retval;
@@ -233,11 +233,10 @@ part_sidx_t partial_cd::get_store_part(const idx_t idx,
   return iter->second;
 }
 
-void partial_cd::set_store_part(const idx_t idx, const level_t level, const idx_t part)
+void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part)
 {
-  // auto& pair_mbuf = bufs[part].pair_mbuf;
-  store_part[{idx, level}] = {part, bufs[part].mbuf_idx++};
-  // pair_mbuf.push_back({idx, level});
+  store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
+  bufs[part].mbuf_idx++;
 }
 
 idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const
