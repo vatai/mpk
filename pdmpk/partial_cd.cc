@@ -146,16 +146,15 @@ void partial_cd::phase_finalize()
                               mpi_bufs.sbuf_size(phase));
   }
 
-  std::vector<idx_t> count(npart * npart, 0);
   /// Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
   for (comm_dict_t::const_iterator iter = begin(comm_dict);
        iter != end(comm_dict); iter++)
-    proc_comm_dict(iter, count);
+    proc_comm_dict(iter);
 
   /// Fill `ibuf` and the remainder of `sbuf`.
   for (init_dict_t::const_iterator iter = begin(init_dict);
        iter != end(init_dict); iter++)
-    proc_init_dict(iter, count);
+    proc_init_dict(iter);
 
   comm_dict.clear();
   init_dict.clear();
@@ -165,8 +164,7 @@ void partial_cd::phase_finalize()
 // Resize the "simple" mpi buffers.
 // TODO: Fill sbuf_indices. ??? Do we need sbuf_begin???
 //
-void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter,
-                                const std::vector<idx_t> &count)
+void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
 {
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto tgt_buf = bufs[iter->first.second];
@@ -186,12 +184,12 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter,
   }
 }
 
-void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter,
-                                const std::vector<idx_t> &count)
+void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
 {
 
 }
 
+/// @todo(vatai): Use or delete `mbuf_insert_rbuf()`.
 void partial_cd::mbuf_insert_rbuf(const idx_t src)
 {
   auto mcsr = bufs[src].mcsr;
