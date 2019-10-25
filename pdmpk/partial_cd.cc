@@ -54,6 +54,7 @@ void partial_cd::phase_init()
   const size_t size = npart * (phase + 1);
   for (auto &buffer : bufs) {
     buffer.mpi_bufs.resize(size);
+    buffer.mpi_bufs.sbuf_idcs_begin.push_back(buffer.mpi_bufs.sbuf_idcs.size());
     buffer.mcsr.rec_mptr_begin();
     buffer.mbuf_begin.push_back(buffer.mbuf_idx);
   }
@@ -118,14 +119,17 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   const auto j = csr.col[t]; // Matrix column index.
   const auto src_part_idx = get_store_part(j, lbelow);
   const auto src_part = src_part_idx.first;
+  const auto src_idx = src_part_idx.second;
   if (cur_part == src_part_idx.first) {
-    bufs[cur_part].mcsr.mcol_push_back(src_part_idx.second);
+    bufs[cur_part].mcsr.mcol_push_back(src_idx);
   } else {
-    bufs[cur_part].mcsr.mcol_push_back(-1); // Push dummy value.
     // Record communication.
     bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
-    comm_dict[{src_part, cur_part}].push_back(src_part);
+    /// @todo(vatai): What to push here?
+    const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
+    comm_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
+    bufs[cur_part].mcsr.mcol_push_back(-1); // Push dummy value.
   }
 }
 
@@ -164,9 +168,25 @@ void partial_cd::phase_finalize()
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter,
                                 const std::vector<idx_t> &count)
 {
-  const auto src = iter->first.first;
-  const auto tgt = iter->first.second;
+  auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
+  auto tgt_buf = bufs[iter->first.second];
   const auto val = iter->second;
+
+  // `sbuf_idcs` of the current phase.
+  const auto offset =
+      src_mpi_buf.sbuf_idcs_begin[phase] + src_send_base(iter->first);
+  auto size = val.size();
+  for (auto idx = 0; idx < size; idx++) {
+    /// @todo(vatai): The line below throws an `out_of_range`
+    /// exception.
+    //
+    // src_mpi_buf.sbuf_idcs.at(offset + idx) = val[idx].first;
+    const auto mbuf_idx = tgt_buf.mbuf_begin[phase] +
+                          tgt_recv_base(iter->first) +
+                          idx;
+    // `val[idx].second` holds the `mcol` index in the target partition.
+    tgt_buf.mcsr.mcol[val[idx].second] = mbuf_idx;
+  }
 }
 
 void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter,
@@ -202,7 +222,7 @@ void partial_cd::fill_sbuf_idcs(const idx_t src, buffers_t& buffer)
       const auto idx = mpi_bufs.sdispls[offset + tgt] + scount[tgt];
       const auto dest = begin(mpi_bufs.sbuf_idcs) + idx;
       const auto src_idx_vect = iter->second;
-      std::copy(begin(src_idx_vect), end(src_idx_vect), dest);
+      // std::copy(begin(src_idx_vect), end(src_idx_vect), dest);
       scount[tgt] += src_idx_vect.size();
     }
   }

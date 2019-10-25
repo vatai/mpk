@@ -15,9 +15,9 @@ class mpi_bufs_t {
   /// count buffers (`sendcount` and `recvcount`).
   void fill_displs(int phase);
   /// Get `rbuf` size from `recvcount` and `rdispls`.
-  int sbuf_size(int phase);
+  int sbuf_size(int phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
-  int rbuf_size(int phase);
+  int rbuf_size(int phase) const;
   /// Resize `sendcount`, `recvcount`, `sdispls` and `rdispls`.
   void resize(size_t size);
 
@@ -32,6 +32,7 @@ class mpi_bufs_t {
   /// @todo(vatai): Fill `sbuf_idcs`
   /// `mbuf` indices, which need to be copied to the send buffer.
   std::vector<idx_t> sbuf_idcs;
+  std::vector<idx_t> sbuf_idcs_begin;
 
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;
