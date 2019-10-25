@@ -29,6 +29,8 @@ partial_cd::partial_cd(
       bufs(npart, buffers_t(npart))
 {
   phase = 0;
+  for (auto &buffer : bufs)
+    buffer.mcsr.mptr.push_back(0);
   phase_init();
   pdmpk_bufs.metis_partition(npart);
   init_communication();
@@ -94,7 +96,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   cur_part = pdmpk_bufs.partitions[idx];
 
-  bufs[cur_part].mcsr.mptr_push_back();
   // Quick notes: if same partition then add to init_idcs
   // (init_idcs_begin will be needed) else (if partitions are
   // different) add to init_dict.
@@ -109,6 +110,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
     rec_mbuf_idx({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
   }
+  bufs[cur_part].mcsr.rec_mptr();
   return retval;
 }
 
@@ -121,14 +123,14 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
   if (cur_part == src_part_idx.first) {
-    bufs[cur_part].mcsr.mcol_push_back(src_idx);
+    bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
     bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
     comm_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
-    bufs[cur_part].mcsr.mcol_push_back(-1); // Push dummy value.
+    bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
 
