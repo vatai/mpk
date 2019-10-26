@@ -53,10 +53,19 @@ void pdmpk_bufs_t::update_weights()
   }
 }
 
-bool pdmpk_bufs_t::partial_is_full(const idx_t idx)
+bool pdmpk_bufs_t::partial_is_full(const idx_t idx) const
 {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (not partials[t])
+      return false;
+  }
+  return true;
+}
+
+bool pdmpk_bufs_t::partial_is_empty(const idx_t idx) const
+{
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (partials[t])
       return false;
   }
   return true;

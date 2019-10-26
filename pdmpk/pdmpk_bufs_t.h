@@ -20,7 +20,8 @@ class pdmpk_bufs_t {
   void inc_level(const idx_t idx);
   void update_weights();
 
-  bool partial_is_full(const idx_t idx);
+  bool partial_is_full(const idx_t idx) const;
+  bool partial_is_empty(const idx_t idx) const;
   void partial_reset(const idx_t idx);
 
   void metis_partition(idx_t npart);
