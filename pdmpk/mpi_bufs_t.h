@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "typedefs.h"
 #include <vector>
 #include <metis.h>
 
@@ -33,7 +34,7 @@ class mpi_bufs_t {
   std::vector<idx_t> sbuf_idcs;
   std::vector<idx_t> sbuf_idcs_begin;
 
-  std::vector<idx_t> init_idcs;
+  std::vector<sidx_tidx_t> init_idcs;
   std::vector<idx_t> init_idcs_begin;
 
   /// @todo(vatai): It would be nice to "remove" this.
