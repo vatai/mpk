@@ -30,6 +30,8 @@ partial_cd::partial_cd(
 {
   phase = 0;
   for (auto &buffer : bufs)
+    /// @todo(vatai): This is basically a call to `rec_mptr`, some
+    /// refactoring might be needed.
     buffer.mcsr.mptr.push_back(0);
   phase_init();
   pdmpk_bufs.metis_partition(npart);
@@ -53,6 +55,9 @@ partial_cd::partial_cd(
 void partial_cd::phase_init()
 {
   for (auto &buffer : bufs) {
+    // @todo(vatai): (Maybe) refactor this into
+    // `buffer_t::phase_init()` splitting and moving some stuff (like
+    // the init and sbuf vectors) out to `buffers_t`.
     buffer.mpi_bufs.phase_init();
     buffer.mcsr.rec_mptr_begin();
     buffer.mbuf_begin.push_back(buffer.mbuf_idx);
@@ -96,9 +101,8 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   cur_part = pdmpk_bufs.partitions[idx];
 
-  // Quick notes: if same partition then add to init_idcs
-  // (init_idcs_begin will be needed) else (if partitions are
-  // different) add to init_dict.
+  /// @todo(vatai): This init_idcs is a bit tricky, currently it
+  /// should probably converted into a `std::map`.
   if (not pdmpk_bufs.partial_is_empty(idx)) {
     const auto src_part_idx = store_part.at({idx, lbelow + 1});
     const auto src_part = src_part_idx.first;
