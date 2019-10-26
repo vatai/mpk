@@ -99,6 +99,17 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   // Quick notes: if same partition then add to init_idcs
   // (init_idcs_begin will be needed) else (if partitions are
   // different) add to init_dict.
+  if (not pdmpk_bufs.partial_is_empty(idx)) {
+    const auto src_part_idx = store_part.at({idx, lbelow + 1});
+    const auto src_part = src_part_idx.first;
+    const auto src_idx = src_part_idx.second;
+    if (src_part != cur_part) {
+      // Add to init_dict.
+    } else {
+      // Add to init_idcs.
+      bufs[cur_part].mpi_bufs.init_idcs.push_back({src_idx, bufs[cur_part].mbuf_idx});
+    }
+  }
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
