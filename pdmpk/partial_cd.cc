@@ -181,17 +181,16 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
   const auto val = iter->second;
 
   // `sbuf_idcs` of the current phase.
-  const auto offset =
-      src_mpi_buf.sbuf_idcs_begin[phase] + src_send_base(iter->first);
-  auto size = val.size();
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
+                                src_send_base(iter->first);
+  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
+                                tgt_recv_base(iter->first);
+  const auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
-    src_mpi_buf.sbuf_idcs.at(offset + idx) = val[idx].first;
-    const auto mbuf_idx = tgt_buf.mbuf_begin[phase] +
-                          tgt_recv_base(iter->first) +
-                          idx;
+    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = val[idx].first;
     // `val[idx].second` holds the `mcol` index in the target
     // partition.
-    tgt_buf.mcsr.mcol[val[idx].second] = mbuf_idx;
+    tgt_buf.mcsr.mcol[val[idx].second] = tgt_recv_baseidx + idx;
   }
 }
 
