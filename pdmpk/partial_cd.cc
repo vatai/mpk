@@ -121,13 +121,16 @@ void partial_cd::add_to_init(const idx_t idx, const idx_t level)
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
+  const auto tgt_idx = bufs[cur_part].mbuf_idx;
   if (src_part != cur_part) {
     // Add to `init_dict`, process it with `proc_init_dict()`.
-    init_dict[{src_part, cur_part}].push_back({src_idx, idx});
+    bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
+    bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
+    init_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
   } else {
     // Add to `init_idcs`.
     bufs[cur_part].mpi_bufs.init_idcs.push_back(
-        {src_idx, bufs[cur_part].mbuf_idx});
+        {src_idx, tgt_idx});
   }
 }
 
@@ -194,7 +197,23 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
 
 void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
 {
-
+  /// @todo(vatai): Potential refactoring needed (non-DRY code).
+  auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
+  auto tgt_buf = bufs[iter->first.second];
+  const auto val = iter->second;
+  const auto comm_dict_size = comm_dict[iter->first].size();
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
+                                src_send_base(iter->first) +
+                                comm_dict_size;
+  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
+                                tgt_recv_base(iter->first) +
+                                comm_dict_size;
+  const auto size = val.size();
+  for (auto idx = 0; idx < size; idx++) {
+    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = val[idx].first;
+    tgt_buf.mpi_bufs.init_idcs.push_back({tgt_recv_baseidx + idx,
+                                          val[idx].second});
+  }
 }
 
 void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part)
