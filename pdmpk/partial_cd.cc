@@ -122,9 +122,10 @@ void partial_cd::add_to_init(const idx_t idx, const idx_t level)
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
   if (src_part != cur_part) {
-    // Add to init_dict.
+    // Add to `init_dict`, process it with `proc_init_dict()`.
+    init_dict[{src_part, cur_part}].push_back({src_idx, idx});
   } else {
-    // Add to init_idcs.
+    // Add to `init_idcs`.
     bufs[cur_part].mpi_bufs.init_idcs.push_back(
         {src_idx, bufs[cur_part].mbuf_idx});
   }
