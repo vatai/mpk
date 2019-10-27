@@ -2,8 +2,6 @@
  * @author Emil VATAI <emil.vatai@gmail.com>
  * @date 2019-09-17
  *
- * @todo(vatai): Do `proc_init_dict`.
- *
  * @brief Communication data for with partial vertices.
  */
 

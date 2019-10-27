@@ -49,9 +49,9 @@ partial_cd::partial_cd(
 void partial_cd::phase_init()
 {
   for (auto &buffer : bufs) {
-    // @todo(vatai): (Maybe) refactor this into
-    // `buffer_t::phase_init()` splitting and moving some stuff (like
-    // the init and sbuf vectors) out to `buffers_t`.
+    /// @todo(vatai): (Maybe) refactor this into
+    /// `buffer_t::phase_init()` splitting and moving some stuff (like
+    /// the init and sbuf vectors) out to `buffers_t`.
     buffer.mpi_bufs.phase_init();
     buffer.mcsr.rec_mptr_begin();
     buffer.mbuf_begin.push_back(buffer.mbuf_idx);
@@ -98,7 +98,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   bool retval = false;
   cur_part = pdmpk_bufs.partitions[idx];
   /// @todo(vatai): This init_idcs is a bit tricky, currently it
-  /// should probably converted into a `std::map`.
+  /// should probably converted into a `std::map` or just sort it?
   if (not pdmpk_bufs.partial_is_empty(idx))
     add_to_init(idx, lbelow + 1);
 
@@ -181,17 +181,16 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
   auto tgt_buf = bufs[iter->first.second];
   const auto val = iter->second;
 
-  // `sbuf_idcs` of the current phase.
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
                                 src_send_base(iter->first);
   const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
                                 tgt_recv_base(iter->first);
   const auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
-    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = val[idx].first;
-    // `val[idx].second` holds the `mcol` index in the target
-    // partition.
-    tgt_buf.mcsr.mcol[val[idx].second] = tgt_recv_baseidx + idx;
+    const auto src_idx = val[idx].first;
+    const auto tgt_idx = val[idx].second;
+    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = src_idx;
+    tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
   }
 }
 
@@ -201,6 +200,7 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto tgt_buf = bufs[iter->first.second];
   const auto val = iter->second;
+
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
                                 src_send_base(iter->first) +
@@ -210,9 +210,10 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
                                 comm_dict_size;
   const auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
+    const auto src_idx = tgt_recv_baseidx + idx;
+    const auto tgt_idx = val[idx].second;
     src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = val[idx].first;
-    tgt_buf.mpi_bufs.init_idcs.push_back({tgt_recv_baseidx + idx,
-                                          val[idx].second});
+    tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
 
