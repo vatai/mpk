@@ -37,18 +37,12 @@ partial_cd::partial_cd(
   pdmpk_bufs.metis_partition(npart);
   init_communication();
   update_levels();
-  pdmpk_bufs.update_weights();
-  pdmpk_bufs.debug_print_report(std::cout, 0);
-  phase_finalize();
 
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
     phase_init();
     pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
-    pdmpk_bufs.update_weights();
-    pdmpk_bufs.debug_print_report(std::cout, i + 1);
-    phase_finalize();
   }
 }
 
@@ -94,6 +88,9 @@ void partial_cd::update_levels()
       }
     }
   }
+  pdmpk_bufs.update_weights();
+  pdmpk_bufs.debug_print_report(std::cout, phase);
+  phase_finalize();
 }
 
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
