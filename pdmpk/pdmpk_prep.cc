@@ -72,5 +72,8 @@ int main(int argc, char *argv[])
   partial_cd pcd(argv[1], npart, nlevels);
 
   /// @todo(vatai): Implement computation.
+  for (auto buffer : pcd.bufs) {
+    buffer.exec();
+  }
   return 0;
 }

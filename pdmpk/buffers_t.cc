@@ -2,6 +2,7 @@
 //  Date: 2019-10-17
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "buffers_t.h"
@@ -33,6 +34,10 @@ void buffers_t::phase_finalize(const int phase) {
     if (mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1)
       mcsr.mcol[t] += rbuf_size;
   }
+}
+
+void buffers_t::exec() {
+  std::cout << "Exec" << std::endl;
 }
 
 void buffers_t::dump(const int rank)
