@@ -46,6 +46,8 @@ partial_cd::partial_cd(const char *fname,     //
     pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
   }
+  for (auto &buffer : bufs)
+    buffer.mcsr.rec_mptr_begin();
   for (auto level : pdmpk_bufs.levels)
     assert(level == nlevels);
 }
