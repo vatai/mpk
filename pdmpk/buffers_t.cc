@@ -33,11 +33,23 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
+void buffers_t::do_comp(int phase) {}
+
+void buffers_t::do_comm(int phase) {}
+
 void buffers_t::exec() {
   std::vector<double> mbuf(mbuf_idx, 0);
   for (auto i = 0; i < mbuf_begin[0]; i++)
     mbuf[i] = 1.0;
-  std::cout << "What is the number of phases?" << std::endl;
+  // DoComputation();
+  do_comm(0);
+  const auto nphases = mbuf_begin.size();
+  // for (auto phase = 1; i <= nphases; i++) {
+  //   // DoCommunication();
+  //   do_comm(phase);
+  //   // DoComputation();
+  //   do_comp(phase);
+  // }
 }
 
 void buffers_t::dump(const int rank) {
