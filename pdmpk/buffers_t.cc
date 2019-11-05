@@ -1,6 +1,7 @@
 //  Author: Emil VATAI <emil.vatai@gmail.com>
 //  Date: 2019-10-17
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -33,23 +34,31 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
-void buffers_t::do_comp(int phase) {}
+void buffers_t::do_comp(int phase) {
+  // assert(phase < mcsr.mptr_begin.size());
+  for (int i = mcsr.mptr_begin[phase]; i < mcsr.mptr_begin[phase + 1]; i++) {
+    for (int t = mcsr.mptr[i]; t < mcsr.mptr[i + 1]; i++) {
+      // std::cout << "*";
+    }
+  }
+}
 
 void buffers_t::do_comm(int phase) {}
 
 void buffers_t::exec() {
+  const auto nphases = mbuf_begin.size();
   std::vector<double> mbuf(mbuf_idx, 0);
+
   for (auto i = 0; i < mbuf_begin[0]; i++)
     mbuf[i] = 1.0;
-  // DoComputation();
-  do_comm(0);
-  const auto nphases = mbuf_begin.size();
-  // for (auto phase = 1; i <= nphases; i++) {
-  //   // DoCommunication();
-  //   do_comm(phase);
-  //   // DoComputation();
-  //   do_comp(phase);
-  // }
+
+  do_comp(0);
+
+  for (auto phase = 1; phase <= nphases; phase++) {
+    // do_comm(phase);
+    do_comp(phase);
+  }
+  // assert(mcsr.mptr_begin.size() == nphases + 1);
 }
 
 void buffers_t::dump(const int rank) {
