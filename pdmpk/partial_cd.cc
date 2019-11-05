@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -18,16 +18,14 @@
 #include "pdmpk_bufs_t.h"
 #include "typedefs.h"
 
-partial_cd::partial_cd(
-    const char *fname,
-    const idx_t npart,
-    const level_t nlevels)
-    : csr{fname},
-      npart{npart},
-      nlevels{nlevels},
-      pdmpk_bufs(csr),
-      bufs(npart, buffers_t(npart))
-{
+partial_cd::partial_cd(const char *fname,     //
+                       const idx_t npart,     //
+                       const level_t nlevels) //
+    : csr{fname},                             //
+      npart{npart},                           //
+      nlevels{nlevels},                       //
+      pdmpk_bufs(csr),                        //
+      bufs(npart, buffers_t(npart)) {
   phase = 0;
   for (auto &buffer : bufs)
     /// @todo(vatai): This is basically a call to `rec_mptr`, some
@@ -47,8 +45,7 @@ partial_cd::partial_cd(
   }
 }
 
-void partial_cd::phase_init()
-{
+void partial_cd::phase_init() {
   for (auto &buffer : bufs) {
     /// @todo(vatai): (Maybe) refactor this into
     /// `buffer_t::phase_init()` splitting and moving some stuff (like
@@ -59,16 +56,14 @@ void partial_cd::phase_init()
   }
 }
 
-void partial_cd::init_communication()
-{
+void partial_cd::init_communication() {
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
     rec_mbuf_idx({idx, 0}, part);
   }
 }
 
-void partial_cd::update_levels()
-{
+void partial_cd::update_levels() {
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active = true;
@@ -94,8 +89,7 @@ void partial_cd::update_levels()
   phase_finalize();
 }
 
-bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
-{
+bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   bool retval = false;
   cur_part = pdmpk_bufs.partitions[idx];
   /// @todo(vatai): This init_idcs is a bit tricky, currently it
@@ -117,8 +111,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow)
   return retval;
 }
 
-void partial_cd::add_to_init(const idx_t idx, const idx_t level)
-{
+void partial_cd::add_to_init(const idx_t idx, const idx_t level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
@@ -130,13 +123,13 @@ void partial_cd::add_to_init(const idx_t idx, const idx_t level)
     init_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
   } else {
     // Add to `init_idcs`.
-    bufs[cur_part].mpi_bufs.init_idcs.push_back(
-        {src_idx, tgt_idx});
+    bufs[cur_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
 
-void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t)
-{
+void partial_cd::proc_adjacent(const idx_t idx,      //
+                               const level_t lbelow, //
+                               const idx_t t) {
   pdmpk_bufs.partials[t] = true;
 
   const auto j = csr.col[t]; // Matrix column index.
@@ -156,8 +149,7 @@ void partial_cd::proc_adjacent(const idx_t idx, const level_t lbelow, const idx_
   }
 }
 
-void partial_cd::phase_finalize()
-{
+void partial_cd::phase_finalize() {
   // Update each buffer (separately).
   for (idx_t src = 0; src < npart; src++)
     bufs[src].phase_finalize(phase);
@@ -176,16 +168,15 @@ void partial_cd::phase_finalize()
   init_dict.clear();
 }
 
-void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
-{
+void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto tgt_buf = bufs[iter->first.second];
   const auto val = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
-                                src_send_base(iter->first);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
-                                tgt_recv_base(iter->first);
+  const auto src_send_baseidx =
+      src_mpi_buf.sbuf_idcs_begin[phase] + src_send_base(iter->first);
+  const auto tgt_recv_baseidx =
+      tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first);
   const auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
     const auto src_idx = val[idx].first;
@@ -195,8 +186,7 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter)
   }
 }
 
-void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
-{
+void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   /// @todo(vatai): Potential refactoring needed (non-DRY code).
   auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto tgt_buf = bufs[iter->first.second];
@@ -204,11 +194,9 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
 
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
-                                src_send_base(iter->first) +
-                                comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
-                                tgt_recv_base(iter->first) +
-                                comm_dict_size;
+                                src_send_base(iter->first) + comm_dict_size;
+  const auto tgt_recv_baseidx =
+      tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = val.size();
   for (auto idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;
@@ -218,18 +206,15 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter)
   }
 }
 
-void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part)
-{
+void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part) {
   store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
   bufs[part].mbuf_idx++;
 }
 
-idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const
-{
+idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const {
   return bufs[src_tgt.first].mpi_bufs.sdispls[phase * npart + src_tgt.second];
 }
 
-idx_t partial_cd::tgt_recv_base(const sidx_tidx_t src_tgt) const
-{
+idx_t partial_cd::tgt_recv_base(const sidx_tidx_t src_tgt) const {
   return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
 }
