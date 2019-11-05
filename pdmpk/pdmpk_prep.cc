@@ -60,11 +60,12 @@
 
 int main(int argc, char *argv[])
 {
-  MPI_Init(&argc, &argv);
-
   int npart;
   int rank;
   level_t nlevels;
+
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   // std::stringstream npart_ss(argv[2]);
   // npart_ss >> npart;
