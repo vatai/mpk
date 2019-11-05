@@ -1,3 +1,6 @@
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-31
+
 #ifndef _BUFFERS_H_
 #define _BUFFERS_H_
 
@@ -7,6 +10,10 @@
 extern "C" {
 #endif
 
+/// @brief Buffers for processing.
+/// @details Contains the buffers
+/// created by the by the `mpi2_mpkprep.c` program and processed by
+/// the
 typedef struct buffers_t {
   int n;
   int npart;

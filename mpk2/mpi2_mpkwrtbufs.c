@@ -1,3 +1,6 @@
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-31
+
 #include <assert.h>
 #include <mpi.h>
 #include <stdlib.h>
@@ -24,6 +27,10 @@ static void alloc_fill_mval(buffers_t *bufs, double *val, crs0_t *g) {
   }
 }
 
+/// @mainpage The main page from mpi2_mpkwrtbufs.
+///
+/// @brief This is the second stage of pre\-processing.
+/// @details This program writes the buffers.
 int main(int argc, char* argv[]) {
   check_args(argc, argv[0]);
   MPI_Init(&argc, &argv);
