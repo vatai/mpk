@@ -43,7 +43,11 @@ void buffers_t::do_comp(int phase) {
   }
 }
 
-void buffers_t::do_comm(int phase) {}
+void buffers_t::do_comm(int phase) {
+  // fill_sbuf()
+  // call_mpi()
+  // do_init()
+}
 
 void buffers_t::exec() {
   const auto nphases = mbuf_begin.size();
