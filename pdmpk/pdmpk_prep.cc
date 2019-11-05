@@ -60,20 +60,24 @@
 
 int main(int argc, char *argv[])
 {
-  idx_t npart;
+  MPI_Init(&argc, &argv);
+
+  int npart;
+  int rank;
   level_t nlevels;
 
-  // Get npart
-  std::stringstream npart_ss(argv[2]);
-  npart_ss >> npart;
-  std::stringstream nlevels_ss(argv[3]);
+  // std::stringstream npart_ss(argv[2]);
+  // npart_ss >> npart;
+  MPI_Comm_size(MPI_COMM_WORLD, &npart);
+
+  std::stringstream nlevels_ss(argv[2]);
   nlevels_ss >> nlevels;
 
-  partial_cd pcd(argv[1], npart, nlevels);
+  partial_cd pcd(argv[1], (idx_t)npart, nlevels);
 
   /// @todo(vatai): Implement computation.
-  for (auto buffer : pcd.bufs) {
-    buffer.exec();
-  }
+  pcd.bufs[rank].exec();
+
+  MPI_Finalize();
   return 0;
 }

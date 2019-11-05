@@ -89,7 +89,7 @@ void partial_cd::update_levels()
     }
   }
   pdmpk_bufs.update_weights();
-  pdmpk_bufs.debug_print_report(std::cout, phase);
+  // pdmpk_bufs.debug_print_report(std::cout, phase);
   phase_finalize();
 }
 
