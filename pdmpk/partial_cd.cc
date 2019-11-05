@@ -143,6 +143,8 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
   const auto src_part_idx = store_part.at({j, lbelow});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
+  const double val = 1.0 / (csr.ptr[idx + 1] - csr.ptr[idx]);
+  bufs[cur_part].mcsr.mval.push_back(val);
   if (cur_part == src_part_idx.first) {
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
