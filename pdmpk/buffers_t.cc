@@ -33,7 +33,12 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
-void buffers_t::exec() { std::cout << "Exec" << std::endl; }
+void buffers_t::exec() {
+  std::vector<double> mbuf(mbuf_idx, 0);
+  for (auto i = 0; i < mbuf_begin[0]; i++)
+    mbuf[i] = 1.0;
+  std::cout << "What is the number of phases?" << std::endl;
+}
 
 void buffers_t::dump(const int rank) {
   std::stringstream fname;
