@@ -38,6 +38,7 @@ partial_cd::partial_cd(
   init_communication();
   update_levels();
 
+  /// @todo(vatai): Remove phase limit here.
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
     phase_init();
