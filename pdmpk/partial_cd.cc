@@ -27,13 +27,13 @@ partial_cd::partial_cd(const char *fname,     //
       pdmpk_bufs(csr),                        //
       bufs(npart, buffers_t(npart)) {
   phase = 0;
+  pdmpk_bufs.metis_partition(npart);
+  init_communication();
   for (auto &buffer : bufs)
     /// @todo(vatai): This is basically a call to `rec_mptr`, some
     /// refactoring might be needed.
     buffer.mcsr.mptr.push_back(0);
   phase_init();
-  pdmpk_bufs.metis_partition(npart);
-  init_communication();
   update_levels();
 
   /// @todo(vatai): Remove phase limit here.
