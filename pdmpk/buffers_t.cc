@@ -9,10 +9,7 @@
 
 const std::string FNAME{"bufs"};
 
-buffers_t::buffers_t(const idx_t npart)
-    : mbuf_idx(0),
-      mpi_bufs(npart)
-{}
+buffers_t::buffers_t(const idx_t npart) : mbuf_idx(0), mpi_bufs(npart) {}
 
 void buffers_t::phase_finalize(const int phase) {
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
@@ -36,12 +33,9 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
-void buffers_t::exec() {
-  std::cout << "Exec" << std::endl;
-}
+void buffers_t::exec() { std::cout << "Exec" << std::endl; }
 
-void buffers_t::dump(const int rank)
-{
+void buffers_t::dump(const int rank) {
   std::stringstream fname;
   fname << FNAME << rank;
   std::ofstream file(fname.str(), std::ios::binary);
@@ -49,8 +43,7 @@ void buffers_t::dump(const int rank)
   file << xvar;
 }
 
-void buffers_t::load(const int rank)
-{
+void buffers_t::load(const int rank) {
   std::stringstream fname;
   fname << FNAME << rank;
   std::ifstream file(fname.str(), std::ios::binary);
