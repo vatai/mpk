@@ -40,8 +40,8 @@ partial_cd::partial_cd(const char *fname,     //
   /// be refactored: see `proc_vertex()` for the `retval` thing.
   /// There should be a `retval` returned from `update_levels()` as
   /// well.
-  for (int i = 0; i < 7; i++) {
-    phase = i + 1;
+  for (int i = 1; i < 8; i++) {
+    phase = i;
     phase_init();
     pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
