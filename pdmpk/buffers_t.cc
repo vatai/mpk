@@ -34,11 +34,30 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
-void buffers_t::do_comp(int phase) {
+void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase < mcsr.mptr_begin.size());
   for (int i = mcsr.mptr_begin[phase]; i < mcsr.mptr_begin[phase + 1]; i++) {
     for (int t = mcsr.mptr[i]; t < mcsr.mptr[i + 1]; i++) {
-      // std::cout << "*";
+      auto j = mcsr.mcol[t];
+      // if (j >= mcsr.mval.size()) {
+      //   std::cout << "mval.size(): " << mcsr.mval.size() << ", "
+      //             << "j: " << j
+      //             << std::endl;
+      //   return;
+      // }
+      if (i >= mbuf.size()) {
+        std::cout << "mbuf.size(): " << mbuf.size() << ", "
+                  << "i: " << i
+                  << std::endl;
+        return;
+      }
+      assert(0 <= i);
+      assert(i < mbuf.size());
+      assert(0 <= t);
+      assert(t < mbuf.size());
+      assert(0 <= j);
+      assert(j < mcsr.mval.size());
+      mbuf[i] = mbuf[t] * mcsr.mval[j];
     }
   }
 }
@@ -56,11 +75,11 @@ void buffers_t::exec() {
   for (auto i = 0; i < mbuf_begin[0]; i++)
     mbuf[i] = 1.0;
 
-  do_comp(0);
+  do_comp(0, mbuf);
 
   for (auto phase = 1; phase <= nphases; phase++) {
     // do_comm(phase);
-    do_comp(phase);
+    // do_comp(phase, mbuf);
   }
   // assert(mcsr.mptr_begin.size() == nphases + 1);
 }
