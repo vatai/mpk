@@ -36,13 +36,18 @@ partial_cd::partial_cd(const char *fname,     //
   phase_init();
   update_levels();
 
-  /// @todo(vatai): Remove phase limit here.
+  /// @todo(vatai): Remove phase limit here.  This should definitely
+  /// be refactored: see `proc_vertex()` for the `retval` thing.
+  /// There should be a `retval` returned from `update_levels()` as
+  /// well.
   for (int i = 0; i < 7; i++) {
     phase = i + 1;
     phase_init();
     pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
   }
+  for (auto level : pdmpk_bufs.levels)
+    assert(level == nlevels);
 }
 
 void partial_cd::phase_init() {
