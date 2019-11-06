@@ -47,7 +47,8 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
       // }
       if (i >= mbuf.size()) {
         std::cout << "mbuf.size(): " << mbuf.size() << ", "
-                  << "i: " << i
+                  << "i: " << i << ", "
+                  << "phase: " << phase << ", "
                   << std::endl;
         return;
       }
