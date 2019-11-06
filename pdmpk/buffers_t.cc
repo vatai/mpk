@@ -36,8 +36,8 @@ void buffers_t::phase_finalize(const int phase) {
 
 void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase < mcsr.mptr_begin.size());
-  for (int i = mcsr.mptr_begin[phase]; i < mcsr.mptr_begin[phase + 1]; i++) {
-    for (int t = mcsr.mptr[i]; t < mcsr.mptr[i + 1]; i++) {
+  for (auto i = mcsr.mptr_begin[phase]; i < mcsr.mptr_begin[phase + 1]; i++) {
+    for (auto t = mcsr.mptr[i]; t < mcsr.mptr[i + 1]; i++) {
       auto j = mcsr.mcol[t];
       // if (j >= mcsr.mval.size()) {
       //   std::cout << "mval.size(): " << mcsr.mval.size() << ", "
