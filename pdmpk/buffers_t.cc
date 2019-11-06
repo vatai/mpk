@@ -36,9 +36,11 @@ void buffers_t::phase_finalize(const int phase) {
 
 void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase < mcsr.mptr_begin.size());
+  // assert(phase + 1 < mcsr.mptr_begin.size());
+
   auto mcount = mcsr.mptr_begin[phase + 1] - mcsr.mptr_begin[phase];
-  std::cout << "mcount(" << phase << "): " << mcount << std::endl;
   auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
+  //?? Following two lines are from the older `mpk2` code
   //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
   //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
   auto cur_mbuf = mbuf.data() + mbuf_begin[phase];
@@ -66,7 +68,7 @@ void buffers_t::exec() {
 
   do_comp(0, mbuf);
 
-  for (auto phase = 1; phase <= nphases; phase++) {
+  for (auto phase = 1; phase < nphases; phase++) {
     // do_comm(phase);
     do_comp(phase, mbuf);
   }
