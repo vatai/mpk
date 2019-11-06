@@ -10,6 +10,7 @@ addons:
       - doxygen
 
 script:
+  - cd pdmpk
   - doxygen Doxyfile
 
 deploy:
