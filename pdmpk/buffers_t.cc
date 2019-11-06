@@ -37,6 +37,7 @@ void buffers_t::phase_finalize(const int phase) {
 void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase < mcsr.mptr_begin.size());
   auto mcount = mcsr.mptr_begin[phase + 1] - mcsr.mptr_begin[phase];
+  std::cout << "mcount(" << phase << "): " << mcount << std::endl;
   auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
   //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
   //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
@@ -67,7 +68,7 @@ void buffers_t::exec() {
 
   for (auto phase = 1; phase <= nphases; phase++) {
     // do_comm(phase);
-    // do_comp(phase, mbuf);
+    do_comp(phase, mbuf);
   }
   // assert(mcsr.mptr_begin.size() == nphases + 1);
 }
