@@ -36,30 +36,17 @@ void buffers_t::phase_finalize(const int phase) {
 
 void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase < mcsr.mptr_begin.size());
-  for (auto i = mcsr.mptr_begin[phase]; i < mcsr.mptr_begin[phase + 1]; i++) {
-    for (auto t = mcsr.mptr[i]; t < mcsr.mptr[i + 1]; i++) {
-      auto j = mcsr.mcol[t];
-      // if (j >= mcsr.mval.size()) {
-      //   std::cout << "mval.size(): " << mcsr.mval.size() << ", "
-      //             << "j: " << j
-      //             << std::endl;
-      //   return;
-      // }
-      if (i >= mbuf.size()) {
-        std::cout << "mbuf.size(): " << mbuf.size() << ", "
-                  << "i: " << i << ", "
-                  << "phase: " << phase << ", "
-                  << std::endl;
-        return;
-      }
-      assert(0 <= i);
-      assert(i < mbuf.size());
-      assert(0 <= t);
-      assert(t < mbuf.size());
-      assert(0 <= j);
-      assert(j < mcsr.mval.size());
-      mbuf[i] = mbuf[t] * mcsr.mval[j];
+  auto mcount = mcsr.mptr_begin[phase + 1] - mcsr.mptr_begin[phase];
+  auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
+  //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
+  //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
+  auto cur_mbuf = mbuf.data() + mbuf_begin[phase];
+  for (auto mi = 0; mi < mcount; mi++) {
+    double tmp = 0.0;
+    for (auto mj = mcsr.mptr[mi]; mj < mcsr.mptr[mi + 1]; mj++) {
+      tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
+    cur_mbuf[mi] += tmp;
   }
 }
 
