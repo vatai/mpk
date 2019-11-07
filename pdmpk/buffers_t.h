@@ -35,7 +35,7 @@ class buffers_t {
 
   void exec();
   void do_comp(int phase, std::vector<double> &mbuf);
-  void do_comm(int phase);
+  void do_comm(int phase, std::vector<double> &mbuf);
   void dump(const int rank);
   void load(const int rank);
 

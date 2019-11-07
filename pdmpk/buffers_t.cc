@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <mpi.h>
 
 #include "buffers_t.h"
 
@@ -53,9 +54,29 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   }
 }
 
-void buffers_t::do_comm(int phase) {
+void buffers_t::do_comm(int phase, std::vector<double> &mbuf) {
   // fill_sbuf()
   // call_mpi()
+  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.data() + mpi_bufs.sbuf_idcs_begin[phase];
+  const auto scount = mpi_bufs.sbuf_size(phase);
+  const auto sbuf = std::vector<double>(scount).data();
+
+  /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
+  /// reuse it every time!
+
+  // Copy data to send buffers.
+  for (auto i = 0; i < scount; i++)
+    sbuf[i] = mbuf[sbuf_idcs[i]];
+
+  const auto offset = mpi_bufs.npart * phase;
+  const auto sendcounts = mpi_bufs.sendcounts.data() + offset;
+  const auto recvcounts = mpi_bufs.recvcounts.data() + offset;
+  const auto sdispls = mpi_bufs.sdispls.data() + offset;
+  const auto rdispls = mpi_bufs.rdispls.data() + offset;
+  const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
+  MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
+                rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
+
   // do_init()
 }
 
@@ -69,7 +90,7 @@ void buffers_t::exec() {
   do_comp(0, mbuf);
 
   for (auto phase = 1; phase < nphases; phase++) {
-    // do_comm(phase);
+    do_comm(phase, mbuf);
     do_comp(phase, mbuf);
   }
   // assert(mcsr.mptr_begin.size() == nphases + 1);
