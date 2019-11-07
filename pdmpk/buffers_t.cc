@@ -57,9 +57,10 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
 void buffers_t::do_comm(int phase, std::vector<double> &mbuf) {
   // fill_sbuf()
   // call_mpi()
-  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.data() + mpi_bufs.sbuf_idcs_begin[phase];
   const auto scount = mpi_bufs.sbuf_size(phase);
+  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.data() + mpi_bufs.sbuf_idcs_begin[phase];
   const auto sbuf = std::vector<double>(scount).data();
+  const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
 
   /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
   /// reuse it every time!
@@ -73,7 +74,6 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf) {
   const auto recvcounts = mpi_bufs.recvcounts.data() + offset;
   const auto sdispls = mpi_bufs.sdispls.data() + offset;
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
-  const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
   MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
