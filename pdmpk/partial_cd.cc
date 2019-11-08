@@ -178,8 +178,8 @@ void partial_cd::phase_finalize() {
 }
 
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
-  auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
-  auto tgt_buf = bufs[iter->first.second];
+  auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
+  auto &tgt_buf = bufs[iter->first.second];
   const auto val = iter->second;
 
   const auto src_send_baseidx =
@@ -197,20 +197,20 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
 
 void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   /// @todo(vatai): Potential refactoring needed (non-DRY code).
-  auto src_mpi_buf = bufs[iter->first.first].mpi_bufs;
-  auto tgt_buf = bufs[iter->first.second];
-  const auto val = iter->second;
+  auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
+  auto &tgt_buf = bufs[iter->first.second];
+  const auto &vec = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
                                 src_send_base(iter->first) + comm_dict_size;
   const auto tgt_recv_baseidx =
       tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
-  const auto size = val.size();
+  const auto size = vec.size();
   for (auto idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;
-    const auto tgt_idx = val[idx].second;
-    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = val[idx].first;
+    const auto tgt_idx = vec[idx].second;
+    src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = vec[idx].first;
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
