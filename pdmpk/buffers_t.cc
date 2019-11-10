@@ -65,30 +65,8 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
   /// reuse it every time!
   double *sbuf = new double[scount];
   const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
-  // Copy data to send buffers.
-  // std::cout << "sbuf.size(): " << sbuf.size() << ", "
-  //           << "scount: " << scount << std::endl;
-  os << "phase : " << phase << ", ";
+
   for (auto i = 0; i < scount; i++) {
-    //   if (i >= scount) {
-    //     std::cout << "i: " << i << " >= "
-    //               << "scount: " << scount
-    //               << std::endl;
-    //     return;
-    //   }
-    //   if (i + mpi_bufs.sbuf_idcs_begin[phase] >= mpi_bufs.sbuf_idcs.size()) {
-    //     std::cout << "i + sbuf_idcs_begin: " << i << " + "
-    //               << mpi_bufs.sbuf_idcs_begin[phase] << " >= "
-    //               << "sbuf_idcs.size(): " << mpi_bufs.sbuf_idcs.size()
-    //               << std::endl;
-    //     return;
-    //   }
-    //   if ( sbuf_idcs[i] >= mbuf.size()) {
-    //     std::cout << "sbuf_idcs[" << i << "]: " << sbuf_idcs[i]
-    //               << " >= " << "mbuf.size(): " << mbuf.size()
-    //               << std::endl;
-    //     return;
-    //   }
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -98,16 +76,38 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
   const auto recvcounts = mpi_bufs.recvcounts.data() + offset;
   const auto sdispls = mpi_bufs.sdispls.data() + offset;
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
-  for (int i = 0; i < scount; i++) {
-    os << sbuf_idcs[i] << ", ";
-  }
+
+
+  //!!!!!!!!!!!!
+  os << "phase : " << phase << std::endl;
+  os << "sbuf_idcs: ";
+  for (int i = 0; i < scount; i++) os << "(" << i << ")" << sbuf_idcs[i] << ", ";
   os << std::endl;
-  // for (auto sb : sbuf) os << sb << ", ";
-  // os << std::endl;
+  os << "sbuf:      ";
+  for (int i = 0; i < scount; i++) os << "(" << i << ")" << sbuf[i] << ", ";
+  os << std::endl;
+  os << "sendcount: ";
+  for (int i = 0; i < mpi_bufs.npart; i++) os << "(" << i << ")" << sendcounts[i] << ", ";
+  os << std::endl;
+  os << "sdispls:   ";
+  for (int i = 0; i < mpi_bufs.npart; i++) os << "(" << i << ")" << sdispls[i] << ", ";
+  os << std::endl;
+  os << "recvcount: ";
+  for (int i = 0; i < mpi_bufs.npart; i++) os << "(" << i << ")" << recvcounts[i] << ", ";
+  os << std::endl;
+  os << "rdispls:   ";
+  for (int i = 0; i < mpi_bufs.npart; i++) os << "(" << i << ")" << rdispls[i] << ", ";
+  os << std::endl;
   // MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
   //               rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
   // do_init()
+  const auto begin = mpi_bufs.init_idcs_begin[phase];
+  const auto end = mpi_bufs.init_idcs_begin[phase + 1];
+  for (auto i = begin; i < end; i++) {
+    const auto pair = mpi_bufs.init_idcs[i];
+    mbuf[pair.second] = mbuf[pair.first];
+  }
 
   delete []sbuf;
 }
