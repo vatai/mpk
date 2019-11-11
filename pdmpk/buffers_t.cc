@@ -11,6 +11,7 @@
 #include "buffers_t.h"
 
 const std::string FNAME{"bufs"};
+const std::string DBG_FNAME{"dbg_buff_"};
 
 buffers_t::buffers_t(const idx_t npart)
     : mbuf_idx(0), mpi_bufs(npart) {}
@@ -116,8 +117,7 @@ void buffers_t::exec() {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  std::string fname("buff");
-  fname += std::to_string(rank);
+  auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
   std::ofstream file(fname);
 
   const auto nphases = mbuf_begin.size();
