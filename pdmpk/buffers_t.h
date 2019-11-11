@@ -37,8 +37,12 @@ class buffers_t {
   void exec();
   void do_comp(int phase, std::vector<double> &mbuf);
   void do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os);
+  void dump_to_os(std::ofstream &os);
+  void load_from_is(std::ifstream &is);
   void dump(const int rank);
   void load(const int rank);
+  void dump_txt(const int rank);
+  void load_txt(const int rank);
 
   mpi_bufs_t mpi_bufs;
   mcsr_t mcsr;
