@@ -37,8 +37,6 @@ class buffers_t {
   void exec();
   void do_comp(int phase, std::vector<double> &mbuf);
   void do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os);
-  void dump_to_os(std::ofstream &os);
-  void load_from_is(std::ifstream &is);
   void dump(const int rank);
   void load(const int rank);
   void dump_txt(const int rank);
@@ -57,5 +55,14 @@ class buffers_t {
   std::vector<idx_t> mbuf_begin;
 
  private:
+  template <typename T>
+  friend std::ostream & operator<<(std::ostream &os, const std::vector<T>& vec);
   buffers_t();
 };
+
+template <typename T>
+std::ostream & operator<<(std::ostream &os, const std::vector<T>& vec)
+{
+  std::cout << "flags: " << os.flags() << std::endl;
+  return os;
+}

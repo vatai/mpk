@@ -137,34 +137,22 @@ void buffers_t::exec() {
   // assert(mcsr.mptr_begin.size() == nphases + 1);
 }
 
-void buffers_t::dump_to_os(std::ofstream &os) {
-  os << mbuf_idx;
-}
-
-void buffers_t::load_from_is(std::ifstream &is) {
-  is >> mbuf_idx;
-}
-
 void buffers_t::dump(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".bin";
   std::ofstream file(fname, std::ios::binary);
-  dump_to_os(file);
 }
 
 void buffers_t::load(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".bin";
   std::ifstream file(fname, std::ios::binary);
-  load_from_is(file);
 }
 
 void buffers_t::dump_txt(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".txt";
   std::ofstream file(fname, std::ios::binary);
-  dump_to_os(file);
 }
 
 void buffers_t::load_txt(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".txt";
   std::ifstream file(fname, std::ios::binary);
-  load_from_is(file);
 }

@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
 
   partial_cd pcd(argv[1], (idx_t)npart, nlevels);
 
-  /// @todo(vatai): Implement computation.
-  pcd.bufs[rank].exec();
+  pcd.bufs[rank].dump(rank);
+  pcd.bufs[rank].dump_txt(rank);
 
   MPI_Finalize();
   return 0;
