@@ -16,7 +16,7 @@
 const std::string FNAME{"bufs"};
 const std::string DBG_FNAME{"dbg_buff_"};
 
-buffers_t::buffers_t(const idx_t npart) : mbuf_idx(0), mpi_bufs(npart) {}
+buffers_t::buffers_t(const idx_t npart) : mpi_bufs(npart), mbuf_idx(0) {}
 
 void buffers_t::phase_finalize(const int phase) {
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
@@ -34,7 +34,7 @@ void buffers_t::phase_finalize(const int phase) {
   const auto mcol_begin = mcsr.mptr[mptr_begin];
   const auto mcol_end = mcsr.mcol.size();
   const auto mbuf_begin_idx = this->mbuf_begin[phase];
-  for (idx_t t = mcol_begin; t < mcol_end; t++) {
+  for (size_t t = mcol_begin; t < mcol_end; t++) {
     if (mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1)
       mcsr.mcol[t] += rbuf_size;
   }
@@ -45,7 +45,7 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   // assert(phase + 1 < mcsr.mptr_begin.size());
 
   auto mcount = mcsr.mptr_begin[phase + 1] - mcsr.mptr_begin[phase];
-  auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
+  //?? auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
   //?? Following two lines are from the older `mpk2` code
   //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
   //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
@@ -67,7 +67,7 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
   /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
   /// reuse it every time!
   double *sbuf = new double[scount];
-  const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
+  //?? const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
 
   for (auto i = 0; i < scount; i++) {
     sbuf[i] = mbuf[sbuf_idcs[i]];
@@ -132,7 +132,7 @@ void buffers_t::exec() {
 
   do_comp(0, mbuf);
 
-  for (auto phase = 1; phase < nphases; phase++) {
+  for (size_t phase = 1; phase < nphases; phase++) {
     do_comm(phase, mbuf, file);
     do_comp(phase, mbuf);
   }
@@ -150,7 +150,6 @@ void buffers_t::dump(const int rank) {
 }
 
 void buffers_t::load(const int rank) {
-  size_t size;
   const auto fname = FNAME + std::to_string(rank) + ".bin";
   std::ifstream file(fname, std::ios::binary);
 

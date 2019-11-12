@@ -1,6 +1,6 @@
 CXX=mpicxx
 METISDIR=metis/build/Linux-x86_64
-CXXFLAGS=-std=c++14 -I$(METISDIR)/include -L$(METISDIR)/libmetis -g
+CXXFLAGS=-std=c++14 -Wall -pedantic -I$(METISDIR)/include -L$(METISDIR)/libmetis -g
 LDLIBS=-lmetis
 
 all : pdmpk_prep pdmpk_exec

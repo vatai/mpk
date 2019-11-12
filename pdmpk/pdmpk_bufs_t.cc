@@ -6,11 +6,11 @@
 #include "pdmpk_bufs_t.h"
 
 pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr) :
-    csr{csr},
     partials(csr.nnz, false),
     partitions(csr.n),
     levels(csr.n, 0),
-    weights(csr.nnz)
+    weights(csr.nnz),
+    csr{csr}
 {}
 
 level_t pdmpk_bufs_t::min_level()

@@ -23,9 +23,9 @@ class partial_cd {
  public:
   partial_cd(const char *fname, const idx_t npart, const level_t nlevels);
 
+  const csr_t csr;
   const idx_t npart;
   const level_t nlevels;
-  const csr_t csr;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.

@@ -45,7 +45,7 @@ void csr_t::mtx_fill_size(std::ifstream &file)
     std::getline(file, line);
 
   ss << line;
-  size_t m;
+  idx_t m;
   ss >> m >> n >> nnz;
   if (m != n) {
     throw std::logic_error("Matrix not square");

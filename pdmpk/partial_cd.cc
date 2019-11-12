@@ -185,7 +185,7 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   const auto tgt_recv_baseidx =
       tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first);
   const auto size = val.size();
-  for (auto idx = 0; idx < size; idx++) {
+  for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = val[idx].first;
     const auto tgt_idx = val[idx].second;
     src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = src_idx;
@@ -205,7 +205,7 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto tgt_recv_baseidx =
       tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
-  for (auto idx = 0; idx < size; idx++) {
+  for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;
     const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = vec[idx].first;
