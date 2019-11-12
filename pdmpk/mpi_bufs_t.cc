@@ -47,23 +47,34 @@ void mpi_bufs_t::phase_init()
 }
 
 void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {
-  dump_vec(sendcounts, ofs);
-  dump_vec(recvcounts, ofs);
-  dump_vec(sdispls, ofs);
-  dump_vec(rdispls, ofs);
-  dump_vec(sbuf_idcs, ofs);
-  dump_vec(sbuf_idcs_begin, ofs);
-  dump_vec(init_idcs, ofs);
-  dump_vec(init_idcs_begin, ofs);
+  Utils::dump_vec(sendcounts, ofs);
+  Utils::dump_vec(recvcounts, ofs);
+  Utils::dump_vec(sdispls, ofs);
+  Utils::dump_vec(rdispls, ofs);
+  Utils::dump_vec(sbuf_idcs, ofs);
+  Utils::dump_vec(sbuf_idcs_begin, ofs);
+  Utils::dump_vec(init_idcs, ofs);
+  Utils::dump_vec(init_idcs_begin, ofs);
 }
 
 void mpi_bufs_t::load_from_ifs(std::ifstream &ifs) {
-  load_vec(sendcounts, ifs);
-  load_vec(recvcounts, ifs);
-  load_vec(sdispls, ifs);
-  load_vec(rdispls, ifs);
-  load_vec(sbuf_idcs, ifs);
-  load_vec(sbuf_idcs_begin, ifs);
-  load_vec(init_idcs, ifs);
-  load_vec(init_idcs_begin, ifs);
+  Utils::load_vec(sendcounts, ifs);
+  Utils::load_vec(recvcounts, ifs);
+  Utils::load_vec(sdispls, ifs);
+  Utils::load_vec(rdispls, ifs);
+  Utils::load_vec(sbuf_idcs, ifs);
+  Utils::load_vec(sbuf_idcs_begin, ifs);
+  Utils::load_vec(init_idcs, ifs);
+  Utils::load_vec(init_idcs_begin, ifs);
+}
+
+void mpi_bufs_t::dump_to_txt(std::ofstream &ofs) {
+  Utils::dump_txt("sendcounts", sendcounts, ofs);
+  Utils::dump_txt("recvcounts", recvcounts, ofs);
+  Utils::dump_txt("sdispls", sdispls, ofs);
+  Utils::dump_txt("rdispls", rdispls, ofs);
+  Utils::dump_txt("sbuf_idcs", sbuf_idcs, ofs);
+  Utils::dump_txt("sbuf_idcs_begin", sbuf_idcs_begin, ofs);
+  Utils::dump_txt("init_idcs", init_idcs, ofs);
+  Utils::dump_txt("init_idcs_begin", init_idcs_begin, ofs);
 }

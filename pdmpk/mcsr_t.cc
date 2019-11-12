@@ -16,15 +16,22 @@ void mcsr_t::rec_mptr()
 }
 
 void mcsr_t::dump_to_ofs(std::ofstream &ofs) {
-  dump_vec(mptr, ofs);
-  dump_vec(mptr_begin, ofs);
-  dump_vec(mcol, ofs);
-  dump_vec(mval, ofs);
+  Utils::dump_vec(mptr, ofs);
+  Utils::dump_vec(mptr_begin, ofs);
+  Utils::dump_vec(mcol, ofs);
+  Utils::dump_vec(mval, ofs);
 }
 
 void mcsr_t::load_from_ifs(std::ifstream &ifs) {
-  load_vec(mptr, ifs);
-  load_vec(mptr_begin, ifs);
-  load_vec(mcol, ifs);
-  load_vec(mval, ifs);
+  Utils::load_vec(mptr, ifs);
+  Utils::load_vec(mptr_begin, ifs);
+  Utils::load_vec(mcol, ifs);
+  Utils::load_vec(mval, ifs);
+}
+
+void mcsr_t::dump_to_txt(std::ofstream &ofs) {
+  Utils::dump_txt("mptr", mptr, ofs);
+  Utils::dump_txt("mptr_begin", mptr_begin, ofs);
+  Utils::dump_txt("mcol", mcol, ofs);
+  Utils::dump_txt("mval", mval, ofs);
 }

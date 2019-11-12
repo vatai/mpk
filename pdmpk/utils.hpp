@@ -4,7 +4,15 @@
 #pragma once
 
 #include <fstream>
+#include <utility>
 #include <vector>
+
+namespace Utils {
+template <typename T1, typename T2>
+std::ostream &operator<<(std::ostream &os, const std::pair<T1, T2> &pair) {
+  os << "(" << pair.first << "," << pair.second << ")";
+  return os;
+}
 
 template <typename T>
 void dump_vec(const std::vector<T> &vec, std::ofstream &ofs) {
@@ -20,3 +28,13 @@ void load_vec(std::vector<T> &vec, std::istream &is) {
   vec.resize(size);
   is.read((char *)vec.data(), sizeof(T) * size);
 }
+
+template <typename T> //
+void dump_txt(const char *name, std::vector<T> &vec, std::ofstream &ofs) {
+  ofs << name << ": ";
+  for (const auto v : vec) {
+    ofs << v << ", ";
+  }
+  ofs << std::endl;
+}
+} // namespace Utils

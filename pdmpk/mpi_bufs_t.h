@@ -27,6 +27,8 @@ class mpi_bufs_t {
   void dump_to_ofs(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.
   void load_from_ifs(std::ifstream &ifs);
+  /// Dump to a txt file.
+  void dump_to_txt(std::ofstream &ofs);
 
   /// - MPI (one for each phase):
   ///   - `sendcount` and `recvcount`

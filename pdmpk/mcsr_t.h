@@ -24,6 +24,8 @@ class mcsr_t {
   void dump_to_ofs(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.
   void load_from_ifs(std::ifstream &ifs);
+  /// Dump to a txt file.
+  void dump_to_txt(std::ofstream &ofs);
 
   std::vector<idx_t> mptr;
   std::vector<idx_t> mptr_begin;

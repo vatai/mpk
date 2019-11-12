@@ -144,7 +144,7 @@ void buffers_t::dump(const int rank) {
   std::ofstream file(fname, std::ios::binary);
 
   file.write((char*)&mbuf_idx, sizeof(mbuf_idx));
-  dump_vec(mbuf_begin, file);
+  Utils::dump_vec(mbuf_begin, file);
   mpi_bufs.dump_to_ofs(file);
   mcsr.dump_to_ofs(file);
 }
@@ -154,7 +154,7 @@ void buffers_t::load(const int rank) {
   std::ifstream file(fname, std::ios::binary);
 
   file.read((char*)&mbuf_idx , sizeof(mbuf_idx));
-  load_vec(mbuf_begin, file);
+  Utils::load_vec(mbuf_begin, file);
   mpi_bufs.load_from_ifs(file);
   mcsr.load_from_ifs(file);
 }
@@ -164,9 +164,7 @@ void buffers_t::dump_txt(const int rank) {
   std::ofstream file(fname);
   // mbuf_idx
   file << "mbuf_idx: " << mbuf_idx << std::endl;
-  // mbuf_begin
-  file << "mbuf_begin.size(): " << mbuf_begin.size() << std::endl;
-  for (const auto b : mbuf_begin) file << b << ", ";
-  file << std::endl;
-
+  Utils::dump_txt("mbuf_begin", mbuf_begin, file);
+  mpi_bufs.dump_to_txt(file);
+  mcsr.dump_to_txt(file);
 }
