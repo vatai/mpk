@@ -51,7 +51,7 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
   auto cur_mbuf = mbuf.data() + mbuf_begin[phase];
   for (auto mi = 0; mi < mcount; mi++) {
-    double tmp = 0.0;
+    double tmp = cur_mbuf[mi];
     for (auto mj = mcsr.mptr[mi]; mj < mcsr.mptr[mi + 1]; mj++) {
       tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
@@ -67,7 +67,6 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
   /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
   /// reuse it every time!
   double *sbuf = new double[scount];
-  //?? const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
 
   for (auto i = 0; i < scount; i++) {
     sbuf[i] = mbuf[sbuf_idcs[i]];
@@ -101,6 +100,9 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
   os << "rdispls:   ";
   for (int i = 0; i < mpi_bufs.npart; i++) os << "(" << i << ")" << rdispls[i] << ", ";
   os << std::endl;
+
+  // rbuf used by MPI - don't delete
+  const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
   // MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
   //               rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 

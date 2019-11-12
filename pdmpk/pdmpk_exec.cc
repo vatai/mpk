@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
             << " @ " << rank << std::endl;
 
   /// @todo(vatai): Implement computation.
-  // buf.exec();
+  buf.exec();
   MPI_Finalize();
   return 0;
 }
