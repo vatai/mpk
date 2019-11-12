@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <fstream>
 #include <vector>
 #include <metis.h>
 
