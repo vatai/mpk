@@ -30,9 +30,7 @@ partial_cd::partial_cd(const char *fname,     //
   pdmpk_bufs.metis_partition(npart);
   init_communication();
   for (auto &buffer : bufs)
-    /// @todo(vatai): This is basically a call to `rec_mptr`, some
-    /// refactoring might be needed.
-    buffer.mcsr.mptr.push_back(0);
+    buffer.mcsr.rec_mptr();
   phase_init();
   update_levels();
 

@@ -4,17 +4,19 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <sstream>
 #include <mpi.h>
 #include <string>
+#include <vector>
 
+#include "utils.hpp"
 #include "buffers_t.h"
 
 const std::string FNAME{"bufs"};
 const std::string DBG_FNAME{"dbg_buff_"};
 
-buffers_t::buffers_t(const idx_t npart)
-    : mbuf_idx(0), mpi_bufs(npart) {}
+buffers_t::buffers_t(const idx_t npart) : mbuf_idx(0), mpi_bufs(npart) {}
 
 void buffers_t::phase_finalize(const int phase) {
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
@@ -110,7 +112,7 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
     mbuf[pair.second] = mbuf[pair.first];
   }
 
-  delete []sbuf;
+  delete[] sbuf;
 }
 
 void buffers_t::exec() {
@@ -140,19 +142,32 @@ void buffers_t::exec() {
 void buffers_t::dump(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".bin";
   std::ofstream file(fname, std::ios::binary);
+
+  file.write((char*)&mbuf_idx, sizeof(mbuf_idx));
+  dump_vec(mbuf_begin, file);
+  mpi_bufs.dump_to_ofs(file);
+  mcsr.dump_to_ofs(file);
 }
 
 void buffers_t::load(const int rank) {
+  size_t size;
   const auto fname = FNAME + std::to_string(rank) + ".bin";
   std::ifstream file(fname, std::ios::binary);
+
+  file.read((char*)&mbuf_idx , sizeof(mbuf_idx));
+  load_vec(mbuf_begin, file);
+  mpi_bufs.load_from_ifs(file);
+  mcsr.load_from_ifs(file);
 }
 
 void buffers_t::dump_txt(const int rank) {
   const auto fname = FNAME + std::to_string(rank) + ".txt";
-  std::ofstream file(fname, std::ios::binary);
-}
+  std::ofstream file(fname);
+  // mbuf_idx
+  file << "mbuf_idx: " << mbuf_idx << std::endl;
+  // mbuf_begin
+  file << "mbuf_begin.size(): " << mbuf_begin.size() << std::endl;
+  for (const auto b : mbuf_begin) file << b << ", ";
+  file << std::endl;
 
-void buffers_t::load_txt(const int rank) {
-  const auto fname = FNAME + std::to_string(rank) + ".txt";
-  std::ifstream file(fname, std::ios::binary);
 }

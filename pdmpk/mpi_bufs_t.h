@@ -5,9 +5,11 @@
 
 #pragma once
 
-#include "typedefs.h"
+#include <fstream>
 #include <vector>
 #include <metis.h>
+
+#include "typedefs.h"
 
 class mpi_bufs_t {
  public:
@@ -21,9 +23,12 @@ class mpi_bufs_t {
   int rbuf_size(int phase) const;
   /// Record phase beginnings to the "begin" buffers.
   void phase_init();
+  /// Dump the contents to a binary `fstream`.
+  void dump_to_ofs(std::ofstream &ofs);
+  /// Load the contents from a binary `fstream`.
+  void load_from_ifs(std::ifstream &ifs);
 
   /// - MPI (one for each phase):
-  ///   - `sendbuf` and `recvbuf`
   ///   - `sendcount` and `recvcount`
   ///   - `sdispls` and `rdispls`
   std::vector<int> sendcounts;
@@ -33,7 +38,7 @@ class mpi_bufs_t {
   /// `mbuf` indices, which need to be copied to the send buffer.
   std::vector<idx_t> sbuf_idcs;
   std::vector<idx_t> sbuf_idcs_begin;
-
+  /// `mbuf` source-target pairs, to initialise mbuf elements.
   std::vector<sidx_tidx_t> init_idcs;
   std::vector<idx_t> init_idcs_begin;
 

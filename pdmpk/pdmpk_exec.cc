@@ -15,11 +15,11 @@ int main(int argc, char *argv[])
 
   buffers_t buf(npart);
   buf.load(rank);
-  std::cout << "mbuf_idx" << buf.mbuf_idx
+  std::cout << "mbuf_idx: " << buf.mbuf_idx
             << " @ " << rank << std::endl;
 
   /// @todo(vatai): Implement computation.
-  buf.exec();
+  // buf.exec();
   MPI_Finalize();
   return 0;
 }
