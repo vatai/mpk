@@ -39,7 +39,7 @@ class buffers_t {
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
   std::vector<double> mbuf;
-  std::vector<idx_t> mbuf_begin;
+  std::vector<size_t> mbuf_begin;
 
  private:
   buffers_t();

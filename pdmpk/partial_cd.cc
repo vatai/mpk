@@ -159,8 +159,8 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
 
 void partial_cd::phase_finalize() {
   // Update each buffer (separately).
-  for (idx_t src = 0; src < npart; src++)
-    bufs[src].phase_finalize(phase);
+  for (auto &buffer : bufs)
+    buffer.phase_finalize(phase);
 
   // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
   for (comm_dict_t::const_iterator iter = begin(comm_dict);
