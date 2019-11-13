@@ -27,8 +27,8 @@ class buffers_t {
   void phase_finalize(const int phase);
 
   void exec();
-  void do_comp(int phase, std::vector<double> &mbuf);
-  void do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os);
+  void do_comp(int phase);
+  void do_comm(int phase, std::ofstream &os);
   void dump(const int rank);
   void load(const int rank);
   void dump_txt(const int rank);
@@ -38,6 +38,7 @@ class buffers_t {
 
   /// The index in `mbuf` where a vertex will be stored.
   idx_t mbuf_idx;
+  std::vector<double> mbuf;
   std::vector<idx_t> mbuf_begin;
 
  private:

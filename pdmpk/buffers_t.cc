@@ -40,7 +40,7 @@ void buffers_t::phase_finalize(const int phase) {
   }
 }
 
-void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
+void buffers_t::do_comp(int phase) {
   // assert(phase < mcsr.mptr_begin.size());
   // assert(phase + 1 < mcsr.mptr_begin.size());
 
@@ -59,7 +59,7 @@ void buffers_t::do_comp(int phase, std::vector<double> &mbuf) {
   }
 }
 
-void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os) {
+void buffers_t::do_comm(int phase, std::ofstream &os) {
   // fill_sbuf()
   const auto scount = mpi_bufs.sbuf_size(phase);
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.data() + mpi_bufs.sbuf_idcs_begin[phase];
@@ -103,8 +103,8 @@ void buffers_t::do_comm(int phase, std::vector<double> &mbuf, std::ofstream &os)
 
   // rbuf used by MPI - don't delete
   const auto rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
-  // MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
-  //               rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
+  MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
+                rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
   // do_init()
   const auto begin = mpi_bufs.init_idcs_begin[phase];
@@ -125,18 +125,18 @@ void buffers_t::exec() {
   std::ofstream file(fname);
 
   const auto nphases = mbuf_begin.size();
-  std::vector<double> mbuf(mbuf_idx, 0);
+  mbuf.resize(mbuf_idx, 0);
 
   std::cout << "exec()" << std::endl;
 
   for (auto i = 0; i < mbuf_begin[0]; i++)
     mbuf[i] = 1.0;
 
-  do_comp(0, mbuf);
+  do_comp(0);
 
   for (size_t phase = 1; phase < nphases; phase++) {
-    do_comm(phase, mbuf, file);
-    do_comp(phase, mbuf);
+    do_comm(phase, file);
+    do_comp(phase);
   }
   // assert(mcsr.mptr_begin.size() == nphases + 1);
 }

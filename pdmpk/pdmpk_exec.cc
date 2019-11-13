@@ -1,10 +1,12 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-11-11
 
+#include <fstream>
 #include <iostream>
 #include <mpi.h>
 
 #include "buffers_t.h"
+#include "utils.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -15,11 +17,12 @@ int main(int argc, char *argv[])
 
   buffers_t buf(npart);
   buf.load(rank);
-  std::cout << "mbuf_idx: " << buf.mbuf_idx
-            << " @ " << rank << std::endl;
-
-  /// @todo(vatai): Implement computation.
   buf.exec();
+
+  std::string fname = "result" + std::to_string(rank) + ".txt";
+  std::ofstream file(fname);
+  Utils::dump_txt("mbuf", buf.mbuf, file);
+  file.close(); /// @todo(vatai): delete this.
   MPI_Finalize();
   return 0;
 }
