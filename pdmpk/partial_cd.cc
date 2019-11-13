@@ -143,11 +143,12 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
   const auto src_idx = src_part_idx.second;
   const double val = 1.0 / (csr.ptr[idx + 1] - csr.ptr[idx]);
   bufs[cur_part].mcsr.mval.push_back(val);
-  if (cur_part == src_part_idx.first) {
+  if (cur_part == src_part) {
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
     /// @todo(vatai): Refactor recv/sendcount update?
+    /// It's the size of comm_dict[{...}]
     bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
@@ -176,18 +177,20 @@ void partial_cd::phase_finalize() {
 }
 
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
-  auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
-  auto &tgt_buf = bufs[iter->first.second];
-  const auto val = iter->second;
+  auto &src_tgt = iter->first;
+  auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
+  auto &tgt_buf = bufs[src_tgt.second];
+  const auto vec = iter->second;
 
-  const auto src_send_baseidx =
-      src_mpi_buf.sbuf_idcs_begin[phase] + src_send_base(iter->first);
-  const auto tgt_recv_baseidx =
-      tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first);
-  const auto size = val.size();
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] + //
+                                src_send_base(src_tgt);
+  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
+                                tgt_recv_base(src_tgt) -
+                                tgt_buf.mpi_bufs.rbuf_size(phase);
+  const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
-    const auto src_idx = val[idx].first;
-    const auto tgt_idx = val[idx].second;
+    const auto src_idx = vec[idx].first;
+    const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = src_idx;
     tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
   }
