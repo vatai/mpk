@@ -45,6 +45,12 @@ void buffers_t::do_comp(int phase) {
   // assert(phase + 1 < mcsr.mptr_begin.size());
 
   auto mcount = mcsr.mptr_begin[phase + 1] - mcsr.mptr_begin[phase];
+
+  // auto mcount1 = phase < mbuf_begin.size() ? mbuf_begin[phase + 1] : mbuf.size();
+  // mcount1 = mcount1 - mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
+  // if (mcount != mcount1) std::cout << "(" << phase << ")"<< mcount << ", " << mcount1 << std::endl;
+  // assert(mcount == mcount1);
+
   //?? auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
   //?? Following two lines are from the older `mpk2` code
   //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
