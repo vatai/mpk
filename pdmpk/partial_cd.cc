@@ -32,10 +32,6 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
-  for (auto &buffer : bufs) {
-    // assert(buffer.mcsr.mcol.size() == 0);
-    buffer.mcsr.next_mcol_idx_to_mptr();
-  }
   update_levels();
 
   /// @todo(vatai): Remove phase limit here.  This should definitely
@@ -48,13 +44,9 @@ partial_cd::partial_cd(const char *fname,     //
     update_levels();
   }
 
-  // This is added for convenience: now `exec()` can loop with
-  //
-  // for (i = mptr.begin[phase]; i < mptr.begin[phase + 1]; i++) {
-  // ...
-  // }
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
+    buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
   }
 
   for (auto level : pdmpk_bufs.levels) {
@@ -105,6 +97,9 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
+      if (retval == false) {
+        bufs[cur_part].mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
+      }
       proc_adjacent(idx, lbelow, t);
       retval = true;
     }
@@ -112,7 +107,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   if (retval == true) {
     finalize_vertex({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
-    bufs[cur_part].mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
   }
   return retval;
 }
