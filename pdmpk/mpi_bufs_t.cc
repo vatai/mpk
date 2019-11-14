@@ -7,8 +7,7 @@
 
 mpi_bufs_t::mpi_bufs_t(const idx_t npart) : npart{npart} {}
 
-void mpi_bufs_t::fill_displs(int phase)
-{
+void mpi_bufs_t::fill_displs(int phase) {
   size_t offset = npart * phase;
   auto scount = sendcounts.data() + offset;
   auto rcount = recvcounts.data() + offset;
@@ -22,20 +21,17 @@ void mpi_bufs_t::fill_displs(int phase)
   }
 }
 
-int mpi_bufs_t::sbuf_size(int phase) const
-{
+int mpi_bufs_t::sbuf_size(int phase) const {
   size_t idx = npart * phase + npart - 1;
   return sendcounts[idx] + sdispls[idx];
 }
 
-int mpi_bufs_t::rbuf_size(int phase) const
-{
+int mpi_bufs_t::rbuf_size(int phase) const {
   size_t idx = npart * phase + npart - 1;
   return recvcounts[idx] + rdispls[idx];
 }
 
-void mpi_bufs_t::phase_init()
-{
+void mpi_bufs_t::phase_init() {
   const auto size = recvcounts.size() + npart;
   recvcounts.resize(size);
   sendcounts.resize(size);
