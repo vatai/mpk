@@ -34,7 +34,7 @@ partial_cd::partial_cd(const char *fname,     //
   }
   for (auto &buffer : bufs) {
     // assert(buffer.mcsr.mcol.size() == 0);
-    buffer.mcsr.rec_mptr();
+    buffer.mcsr.next_mcol_idx_to_mptr();
   }
   update_levels();
 
@@ -112,8 +112,8 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   if (retval == true) {
     rec_mbuf_idx({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
+    bufs[cur_part].mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
   }
-  bufs[cur_part].mcsr.rec_mptr(); /// @todo(vatai): inside if?
   return retval;
 }
 

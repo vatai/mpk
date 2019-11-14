@@ -13,7 +13,7 @@
 /// @todo(vatai): Document `mcsr_t`
 class mcsr_t {
  public:
-  void rec_mptr();
+  void next_mcol_idx_to_mptr();
   /// Dump the contents to a binary `fstream`.
   void dump_to_ofs(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.
