@@ -5,10 +5,7 @@
 #include "utils.hpp"
 #include "mcsr_t.h"
 
-void mcsr_t::rec_mptr()
-{
-  mptr.push_back(mcol.size());
-}
+void mcsr_t::rec_mptr() { mptr.push_back(mcol.size()); }
 
 void mcsr_t::dump_to_ofs(std::ofstream &ofs) {
   Utils::dump_vec(mptr, ofs);
