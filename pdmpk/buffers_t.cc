@@ -23,9 +23,7 @@ void buffers_t::phase_init() {
   mpi_bufs.sbuf_idcs.rec_begin();
   mpi_bufs.init_idcs.rec_begin();
 
-  // mptr.push_back(mcol.size());
   mcsr.mptr.rec_begin();
-  // Record, mbuf_idx
   mbuf.begin.push_back(mbuf_idx);
 }
 
@@ -98,7 +96,16 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
   // rbuf used by MPI - don't delete
-  double *rbuf = mbuf.data() + mbuf.begin[phase];// - mpi_bufs.rbuf_size(phase);
+  if (mbuf.begin[phase] < mpi_bufs.rbuf_size(phase)) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    std::cout << phase << "@"
+              << rank << ": "
+              << mbuf.begin[phase] << ", "
+              << mpi_bufs.rbuf_size(phase) << std::endl;
+  }
+  // assert(mbuf.begin[phase] >= mpi_bufs.rbuf_size(phase));
+  double *rbuf = mbuf.data() + mbuf.begin[phase] - mpi_bufs.rbuf_size(phase);
 
   if (mpi_bufs.rbuf_size(phase) > 0 and mbuf.begin[phase] >= mbuf.size()) {
     int rank;
