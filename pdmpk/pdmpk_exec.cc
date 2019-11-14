@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
   buf.load(rank);
   buf.exec();
 
-  std::string fname = "result" + std::to_string(rank) + ".txt";
+  std::string fname = "dresult" + std::to_string(rank) + ".txt";
   std::ofstream file(fname);
   Utils::dump_txt("mbuf", buf.mbuf, file);
-  file.close(); /// @todo(vatai): delete this.
+  file.close(); /// @todo(vatai): Write proper results test.
   MPI_Finalize();
   return 0;
 }
