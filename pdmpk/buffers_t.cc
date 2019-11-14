@@ -122,24 +122,23 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
 void buffers_t::exec() {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
   auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
   std::ofstream file(fname);
 
   const auto nphases = mbuf_begin.size();
   mbuf.resize(mbuf_idx, 0);
 
-  std::cout << "exec(" << rank << ")" << std::endl;
-
+  // Load vector.
   for (size_t i = 0; i < mbuf_begin[0]; i++)
     mbuf[i] = 1.0;
 
   do_comp(0);
-
   for (size_t phase = 1; phase < nphases; phase++) {
     do_comm(phase, file);
     do_comp(phase);
   }
+
+  std::cout << "exec(" << rank << ")" << std::endl;
   // assert(mcsr.mptr_begin.size() == nphases + 1);
 }
 
