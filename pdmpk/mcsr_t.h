@@ -8,17 +8,11 @@
 #include <vector>
 #include <metis.h>
 
-/**
- * Modified CSR for with `mptr_begin`.
- */
+#include "phased_vector.hpp"
 
-/// - CSR (one over all phases):
-///   - `mptr` (`mptr_begin`): DONE
-///   - `mcol`: DONE
-///   - `mval` (or `mval_idx`)
+/// @todo(vatai): Document `mcsr_t`
 class mcsr_t {
  public:
-  void rec_mptr_begin();
   void rec_mptr();
   /// Dump the contents to a binary `fstream`.
   void dump_to_ofs(std::ofstream &ofs);
@@ -27,8 +21,7 @@ class mcsr_t {
   /// Dump to a txt file.
   void dump_to_txt(std::ofstream &ofs);
 
-  std::vector<idx_t> mptr;
-  std::vector<idx_t> mptr_begin;
+  phased_vector<idx_t> mptr;
   std::vector<idx_t> mcol;
   std::vector<double> mval;
 };

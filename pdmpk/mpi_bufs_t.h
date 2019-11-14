@@ -10,6 +10,7 @@
 #include <metis.h>
 
 #include "typedefs.h"
+#include "phased_vector.hpp"
 
 class mpi_bufs_t {
  public:
@@ -38,11 +39,9 @@ class mpi_bufs_t {
   std::vector<int> sdispls;
   std::vector<int> rdispls;
   /// `mbuf` indices, which need to be copied to the send buffer.
-  std::vector<idx_t> sbuf_idcs;
-  std::vector<idx_t> sbuf_idcs_begin;
+  phased_vector<idx_t> sbuf_idcs;
   /// `mbuf` source-target pairs, to initialise mbuf elements.
-  std::vector<sidx_tidx_t> init_idcs;
-  std::vector<idx_t> init_idcs_begin;
+  phased_vector<sidx_tidx_t> init_idcs;
 
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;

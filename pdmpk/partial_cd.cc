@@ -48,7 +48,7 @@ partial_cd::partial_cd(const char *fname,     //
     update_levels();
   }
   for (auto &buffer : bufs)
-    buffer.mcsr.rec_mptr_begin();
+    buffer.mcsr.mptr.rec_begin();
   for (auto level : pdmpk_bufs.levels)
     assert(level == nlevels);
 }
@@ -59,8 +59,8 @@ void partial_cd::phase_init() {
     /// `buffer_t::phase_init()` splitting and moving some stuff (like
     /// the init and sbuf vectors) out to `buffers_t`.
     buffer.mpi_bufs.phase_init();
-    buffer.mcsr.rec_mptr_begin();
-    buffer.mbuf_begin.push_back(buffer.mbuf_idx);
+    buffer.mcsr.mptr.rec_begin();
+    buffer.mbuf.begin.push_back(buffer.mbuf_idx);
   }
 }
 
@@ -178,9 +178,9 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto vec = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] + //
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] + //
                                 src_send_base(src_tgt);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf_begin[phase] +
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] +
                                 tgt_recv_base(src_tgt) -
                                 tgt_buf.mpi_bufs.rbuf_size(phase);
   const auto size = vec.size();
@@ -199,10 +199,10 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto &vec = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs_begin[phase] +
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] +
                                 src_send_base(iter->first) + comm_dict_size;
   const auto tgt_recv_baseidx =
-      tgt_buf.mbuf_begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
+      tgt_buf.mbuf.begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;

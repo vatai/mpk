@@ -20,7 +20,9 @@
 #include "typedefs.h"
 #include "mpi_bufs_t.h"
 #include "mcsr_t.h"
+#include "phased_vector.hpp"
 
+/// @todo(vatai): Document `buffers_t`.
 class buffers_t {
  public:
   buffers_t(const idx_t npart);
@@ -33,8 +35,8 @@ class buffers_t {
   void load(const int rank);
   void dump_txt(const int rank);
 
-  /// MPI related buffers: {send,recv}counts, {s,r}displs,
-  /// sbuf_idcs[_begin], init_idcs[_begin].
+  /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
+  /// init_idcs.
   mpi_bufs_t mpi_bufs;
   /// (Modified) CSR, which will be used for the
   /// execution/computation.
@@ -49,13 +51,11 @@ class buffers_t {
   /// (including the part of the input assigned to this partition, the
   /// intermediate results, the `rbuf`s and the final results).  It is
   /// only used in the `pdmpk_exec` program.
-  std::vector<double> mbuf;
-
-  /// For each `phase`, `mbuf_begin[phase]` is the index (of `mbuf`)
+  /// For each `phase`, `mbuf.begin[phase]` is the index (of `mbuf`)
   /// of the first element which will be calculated in the given
   /// phase.  The `rbuf` of the corresponding phase, starts at
-  /// `mbuf_begin[phase] - mpi_bufs.rbuf_size(phase)`.
-  std::vector<size_t> mbuf_begin;
+  /// `mbuf.begin[phase] - mpi_bufs.rbuf_size(phase)`.
+  phased_vector<double> mbuf;
 
  private:
   buffers_t();

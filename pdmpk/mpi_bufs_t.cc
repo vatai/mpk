@@ -42,8 +42,8 @@ void mpi_bufs_t::phase_init()
   rdispls.resize(size);
   sdispls.resize(size);
 
-  sbuf_idcs_begin.push_back(sbuf_idcs.size());
-  init_idcs_begin.push_back(init_idcs.size());
+  sbuf_idcs.rec_begin();
+  init_idcs.rec_begin();
 }
 
 void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {
@@ -52,9 +52,9 @@ void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {
   Utils::dump_vec(sdispls, ofs);
   Utils::dump_vec(rdispls, ofs);
   Utils::dump_vec(sbuf_idcs, ofs);
-  Utils::dump_vec(sbuf_idcs_begin, ofs);
+  Utils::dump_vec(sbuf_idcs.begin, ofs);
   Utils::dump_vec(init_idcs, ofs);
-  Utils::dump_vec(init_idcs_begin, ofs);
+  Utils::dump_vec(init_idcs.begin, ofs);
 }
 
 void mpi_bufs_t::load_from_ifs(std::ifstream &ifs) {
@@ -63,9 +63,9 @@ void mpi_bufs_t::load_from_ifs(std::ifstream &ifs) {
   Utils::load_vec(sdispls, ifs);
   Utils::load_vec(rdispls, ifs);
   Utils::load_vec(sbuf_idcs, ifs);
-  Utils::load_vec(sbuf_idcs_begin, ifs);
+  Utils::load_vec(sbuf_idcs.begin, ifs);
   Utils::load_vec(init_idcs, ifs);
-  Utils::load_vec(init_idcs_begin, ifs);
+  Utils::load_vec(init_idcs.begin, ifs);
 }
 
 void mpi_bufs_t::dump_to_txt(std::ofstream &ofs) {
@@ -74,7 +74,7 @@ void mpi_bufs_t::dump_to_txt(std::ofstream &ofs) {
   Utils::dump_txt("sdispls", sdispls, ofs);
   Utils::dump_txt("rdispls", rdispls, ofs);
   Utils::dump_txt("sbuf_idcs", sbuf_idcs, ofs);
-  Utils::dump_txt("sbuf_idcs_begin", sbuf_idcs_begin, ofs);
+  Utils::dump_txt("sbuf_idcs.begin", sbuf_idcs.begin, ofs);
   Utils::dump_txt("init_idcs", init_idcs, ofs);
-  Utils::dump_txt("init_idcs_begin", init_idcs_begin, ofs);
+  Utils::dump_txt("init_idcs.begin", init_idcs.begin, ofs);
 }
