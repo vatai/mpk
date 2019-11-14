@@ -33,12 +33,28 @@ class buffers_t {
   void load(const int rank);
   void dump_txt(const int rank);
 
+  /// MPI related buffers: {send,recv}counts, {s,r}displs,
+  /// sbuf_idcs[_begin], init_idcs[_begin].
   mpi_bufs_t mpi_bufs;
+  /// (Modified) CSR, which will be used for the
+  /// execution/computation.
   mcsr_t mcsr;
 
-  /// The index in `mbuf` where a vertex will be stored.
+  /// The index (in `mbuf`) where "the next" vertex will be stored.
+  /// `mbuf_idx` is updated in the `pdmpk_prep` program, and used to
+  /// allocate `mbuf` in the `pdmpk_exec` program.
   idx_t mbuf_idx;
+
+  /// The buffer where the to store the results of the computation
+  /// (including the part of the input assigned to this partition, the
+  /// intermediate results, the `rbuf`s and the final results).  It is
+  /// only used in the `pdmpk_exec` program.
   std::vector<double> mbuf;
+
+  /// For each `phase`, `mbuf_begin[phase]` is the index (of `mbuf`)
+  /// of the first element which will be calculated in the given
+  /// phase.  The `rbuf` of the corresponding phase, starts at
+  /// `mbuf_begin[phase] - mpi_bufs.rbuf_size(phase)`.
   std::vector<size_t> mbuf_begin;
 
  private:
