@@ -41,8 +41,8 @@ void mpi_bufs_t::alloc_mpi_bufs() {
 
 void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {
   Utils::dump_vec(sendcounts, ofs);
-  Utils::dump_vec(recvcounts, ofs);
   Utils::dump_vec(sdispls, ofs);
+  Utils::dump_vec(recvcounts, ofs);
   Utils::dump_vec(rdispls, ofs);
   Utils::dump_vec(sbuf_idcs, ofs);
   Utils::dump_vec(sbuf_idcs.begin, ofs);
@@ -52,8 +52,8 @@ void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {
 
 void mpi_bufs_t::load_from_ifs(std::ifstream &ifs) {
   Utils::load_vec(sendcounts, ifs);
-  Utils::load_vec(recvcounts, ifs);
   Utils::load_vec(sdispls, ifs);
+  Utils::load_vec(recvcounts, ifs);
   Utils::load_vec(rdispls, ifs);
   Utils::load_vec(sbuf_idcs, ifs);
   Utils::load_vec(sbuf_idcs.begin, ifs);
@@ -63,9 +63,9 @@ void mpi_bufs_t::load_from_ifs(std::ifstream &ifs) {
 
 void mpi_bufs_t::dump_to_txt(std::ofstream &ofs) {
   Utils::dump_txt("sendcounts", sendcounts, ofs);
+  Utils::dump_txt("sdispls   ", sdispls, ofs);
   Utils::dump_txt("recvcounts", recvcounts, ofs);
-  Utils::dump_txt("sdispls", sdispls, ofs);
-  Utils::dump_txt("rdispls", rdispls, ofs);
+  Utils::dump_txt("rdispls   ", rdispls, ofs);
   Utils::dump_txt("sbuf_idcs", sbuf_idcs, ofs);
   Utils::dump_txt("sbuf_idcs.begin", sbuf_idcs.begin, ofs);
   Utils::dump_txt("init_idcs", init_idcs, ofs);
