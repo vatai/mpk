@@ -28,7 +28,10 @@ partial_cd::partial_cd(const char *fname,     //
       bufs(npart, buffers_t(npart)) {
   phase = 0;
   pdmpk_bufs.metis_partition(npart);
-  init_communication();
+  for (int idx = 0; idx < csr.n; idx++) {
+    auto part = pdmpk_bufs.partitions[idx];
+    rec_mbuf_idx({idx, 0}, part);
+  }
   for (auto &buffer : bufs)
     buffer.mcsr.rec_mptr();
   phase_init();
@@ -58,13 +61,6 @@ void partial_cd::phase_init() {
     buffer.mpi_bufs.phase_init();
     buffer.mcsr.rec_mptr_begin();
     buffer.mbuf_begin.push_back(buffer.mbuf_idx);
-  }
-}
-
-void partial_cd::init_communication() {
-  for (int idx = 0; idx < csr.n; idx++) {
-    auto part = pdmpk_bufs.partitions[idx];
-    rec_mbuf_idx({idx, 0}, part);
   }
 }
 

@@ -52,7 +52,6 @@ class partial_cd {
   init_dict_t init_dict;
 
   void phase_init();
-  void init_communication();
 
   void update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
