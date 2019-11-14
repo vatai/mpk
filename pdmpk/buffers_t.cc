@@ -80,7 +80,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
   // rbuf used by MPI - don't delete
-  double *rbuf = mbuf.data() + mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
+  double *rbuf = mbuf.data() + mbuf_begin[phase];// - mpi_bufs.rbuf_size(phase);
 
   if (mpi_bufs.rbuf_size(phase) > 0 and mbuf_begin[phase] >= mbuf.size()) {
     int rank;
@@ -95,6 +95,11 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   //             << mbuf_begin[phase] << ", "
   //             << mbuf.size() << std::endl;
   // }
+  os << "rbuf(before)(" << phase << "): ";
+  for (int i = 0; i < mpi_bufs.rbuf_size(phase); i++)
+    os << rbuf[i] << ", ";
+  os << std::endl;
+
   assert(mpi_bufs.rbuf_size(phase) == 0 or mbuf_begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
