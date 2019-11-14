@@ -84,7 +84,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   /// reuse it every time!
   double *sbuf = new double[scount];
 
-  for (auto i = 0; i < scount; i++) {
+  for (size_t i = 0; i < scount; i++) {
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -121,7 +121,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   //             << mbuf.size() << std::endl;
   // }
   os << "rbuf(before)(" << phase << "): ";
-  for (int i = 0; i < mpi_bufs.rbuf_size(phase); i++)
+  for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
 
@@ -129,7 +129,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
   os << "rbuf (" << phase << "): ";
-  for (int i = 0; i < mpi_bufs.rbuf_size(phase); i++)
+  for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
 

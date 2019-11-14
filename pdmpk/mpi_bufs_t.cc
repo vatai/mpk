@@ -21,12 +21,12 @@ void mpi_bufs_t::fill_displs(int phase) {
   }
 }
 
-int mpi_bufs_t::sbuf_size(int phase) const {
+size_t mpi_bufs_t::sbuf_size(int phase) const {
   size_t idx = npart * phase + npart - 1;
   return sendcounts[idx] + sdispls[idx];
 }
 
-int mpi_bufs_t::rbuf_size(int phase) const {
+size_t mpi_bufs_t::rbuf_size(int phase) const {
   size_t idx = npart * phase + npart - 1;
   return recvcounts[idx] + rdispls[idx];
 }

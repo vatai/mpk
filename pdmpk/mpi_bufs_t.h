@@ -19,9 +19,9 @@ class mpi_bufs_t {
   /// count buffers (`sendcount` and `recvcount`).
   void fill_displs(int phase);
   /// Get `rbuf` size from `recvcount` and `rdispls`.
-  int sbuf_size(int phase) const;
+  size_t sbuf_size(int phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
-  int rbuf_size(int phase) const;
+  size_t rbuf_size(int phase) const;
   /// Allocate {send,recv}counts and {s,r}displs.
   void alloc_mpi_bufs();
   /// Dump the contents to a binary `fstream`.
