@@ -19,13 +19,14 @@ const std::string DBG_FNAME{"dbg_buff_"};
 buffers_t::buffers_t(const idx_t npart) : mpi_bufs(npart), mbuf_idx(0) {}
 
 void buffers_t::phase_finalize(const int phase) {
-  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
   /// Fill displacement buffers from count buffers.
   mpi_bufs.fill_displs(phase);
 
   // Allocate `sbuf_idcs` for this phase.
   mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() +
                             mpi_bufs.sbuf_size(phase));
+
+  const auto rbuf_size = mpi_bufs.rbuf_size(phase);
   // Update `mbuf_idx`.
   mbuf_idx += rbuf_size;
 
