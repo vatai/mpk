@@ -57,12 +57,12 @@ class partial_cd {
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void add_to_init(const idx_t idx, const idx_t level);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  void finalize_vertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void phase_finalize();
   void proc_comm_dict(const comm_dict_t::const_iterator &iter);
   void proc_init_dict(const init_dict_t::const_iterator &iter);
 
-  void rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part);
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.

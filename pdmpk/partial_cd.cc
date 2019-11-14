@@ -30,7 +30,7 @@ partial_cd::partial_cd(const char *fname,     //
   pdmpk_bufs.metis_partition(npart);
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
-    rec_mbuf_idx({idx, 0}, part);
+    finalize_vertex({idx, 0}, part);
   }
   for (auto &buffer : bufs) {
     // assert(buffer.mcsr.mcol.size() == 0);
@@ -110,7 +110,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
     }
   }
   if (retval == true) {
-    rec_mbuf_idx({idx, lbelow + 1}, cur_part);
+    finalize_vertex({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
     bufs[cur_part].mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
   }
@@ -156,6 +156,11 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
     comm_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
+}
+
+void partial_cd::finalize_vertex(const idx_lvl_t idx_lvl, const idx_t part) {
+  store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
+  bufs[part].mbuf_idx++;
 }
 
 void partial_cd::phase_finalize() {
@@ -218,11 +223,6 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
     src_mpi_buf.sbuf_idcs.at(src_send_baseidx + idx) = vec[idx].first;
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
-}
-
-void partial_cd::rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part) {
-  store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
-  bufs[part].mbuf_idx++;
 }
 
 idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const {
