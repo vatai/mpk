@@ -22,8 +22,8 @@ class mpi_bufs_t {
   int sbuf_size(int phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
   int rbuf_size(int phase) const;
-  /// Record phase beginnings to the "begin" buffers.
-  void phase_init();
+  /// Allocate {send,recv}counts and {s,r}displs.
+  void alloc_mpi_bufs();
   /// Dump the contents to a binary `fstream`.
   void dump_to_ofs(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.

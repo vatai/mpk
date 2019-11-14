@@ -32,9 +32,10 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     rec_mbuf_idx({idx, 0}, part);
   }
-  for (auto &buffer : bufs)
+  for (auto &buffer : bufs) {
+    // assert(buffer.mcsr.mcol.size() == 0);
     buffer.mcsr.rec_mptr();
-  phase_init();
+  }
   update_levels();
 
   /// @todo(vatai): Remove phase limit here.  This should definitely
@@ -43,28 +44,26 @@ partial_cd::partial_cd(const char *fname,     //
   /// well.
   for (int i = 1; i < 8; i++) {
     phase = i;
-    phase_init();
     pdmpk_bufs.metis_partition_with_levels(npart);
     update_levels();
   }
-  for (auto &buffer : bufs)
-    buffer.mcsr.mptr.rec_begin();
-  for (auto level : pdmpk_bufs.levels)
-    assert(level == nlevels);
-}
 
-void partial_cd::phase_init() {
+  // This is added for convenience: now `exec()` can loop with
+  //
+  // for (i = mptr.begin[phase]; i < mptr.begin[phase + 1]; i++) {
+  // ...
+  // }
   for (auto &buffer : bufs) {
-    /// @todo(vatai): (Maybe) refactor this into
-    /// `buffer_t::phase_init()` splitting and moving some stuff (like
-    /// the init and sbuf vectors) out to `buffers_t`.
-    buffer.mpi_bufs.phase_init();
     buffer.mcsr.mptr.rec_begin();
-    buffer.mbuf.begin.push_back(buffer.mbuf_idx);
+  }
+
+  for (auto level : pdmpk_bufs.levels) {
+    assert(level == nlevels);
   }
 }
 
 void partial_cd::update_levels() {
+  phase_init();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active = true;
@@ -80,14 +79,20 @@ void partial_cd::update_levels() {
     // have level >0, because then, the first round would leave
     // `was_active` as false, and would terminate prematurely.
     for (int idx = 0; idx < csr.n; idx++) {
-      if (pdmpk_bufs.levels[idx] == lbelow and proc_vertex(idx, lbelow)) {
-        was_active = true;
+      if (pdmpk_bufs.levels[idx] == lbelow) {
+        if (proc_vertex(idx, lbelow)) {
+          was_active = true;
+        }
       }
     }
   }
-  pdmpk_bufs.update_weights();
-  // pdmpk_bufs.debug_print_report(std::cout, phase);
   phase_finalize();
+}
+
+void partial_cd::phase_init() {
+  for (auto &buffer : bufs) {
+    buffer.phase_init();
+  }
 }
 
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
@@ -108,7 +113,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
     rec_mbuf_idx({idx, lbelow + 1}, cur_part);
     pdmpk_bufs.inc_level(idx);
   }
-  bufs[cur_part].mcsr.rec_mptr();
+  bufs[cur_part].mcsr.rec_mptr(); /// @todo(vatai): inside if?
   return retval;
 }
 
@@ -170,6 +175,9 @@ void partial_cd::phase_finalize() {
 
   comm_dict.clear();
   init_dict.clear();
+
+  pdmpk_bufs.update_weights();
+  pdmpk_bufs.debug_print_report(std::cout, phase);
 }
 
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
@@ -201,8 +209,8 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] +
                                 src_send_base(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx =
-      tgt_buf.mbuf.begin[phase] + tgt_recv_base(iter->first) + comm_dict_size;
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] + //
+                                tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;

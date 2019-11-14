@@ -31,15 +31,12 @@ int mpi_bufs_t::rbuf_size(int phase) const {
   return recvcounts[idx] + rdispls[idx];
 }
 
-void mpi_bufs_t::phase_init() {
+void mpi_bufs_t::alloc_mpi_bufs() {
   const auto size = recvcounts.size() + npart;
   recvcounts.resize(size);
   sendcounts.resize(size);
   rdispls.resize(size);
   sdispls.resize(size);
-
-  sbuf_idcs.rec_begin();
-  init_idcs.rec_begin();
 }
 
 void mpi_bufs_t::dump_to_ofs(std::ofstream &ofs) {

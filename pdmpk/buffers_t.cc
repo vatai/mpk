@@ -18,6 +18,17 @@ const std::string DBG_FNAME{"dbg_buff_"};
 
 buffers_t::buffers_t(const idx_t npart) : mpi_bufs(npart), mbuf_idx(0) {}
 
+void buffers_t::phase_init() {
+  mpi_bufs.alloc_mpi_bufs();
+  mpi_bufs.sbuf_idcs.rec_begin();
+  mpi_bufs.init_idcs.rec_begin();
+
+  // mptr.push_back(mcol.size());
+  mcsr.mptr.rec_begin();
+  // Record, mbuf_idx
+  mbuf.begin.push_back(mbuf_idx);
+}
+
 void buffers_t::phase_finalize(const int phase) {
   /// Fill displacement buffers from count buffers.
   mpi_bufs.fill_displs(phase);

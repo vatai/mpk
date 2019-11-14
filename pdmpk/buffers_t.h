@@ -26,6 +26,7 @@
 class buffers_t {
  public:
   buffers_t(const idx_t npart);
+  void phase_init();
   void phase_finalize(const int phase);
 
   void exec();
