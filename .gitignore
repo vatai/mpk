@@ -2,7 +2,14 @@
 !/**/
 !*.*
 !Makefile
+
 !Doxyfile
+latex/
+html/
+
+*.txt
+!CMakeLists.txt
+*.bin
 
 *.log*
 *.g0
