@@ -24,5 +24,6 @@ int main(int argc, char *argv[])
   Utils::dump_txt("mbuf", buf.mbuf, file);
   file.close(); /// @todo(vatai): Write proper results test.
   MPI_Finalize();
+  std::cout << "MPI_Finalize()" << std::endl;
   return 0;
 }
