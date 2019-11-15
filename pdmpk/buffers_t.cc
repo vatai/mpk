@@ -41,12 +41,14 @@ void buffers_t::phase_finalize(const int phase) {
 
   // Update `mcol`.
   const auto mptr_begin = mcsr.mptr.begin[phase];
-  const auto mcol_begin = mcsr.mptr[mptr_begin]; // out-of-range
-  const auto mcol_end = mcsr.mcol.size();
-  const auto mbuf_begin_idx = mbuf.begin[phase];
-  for (size_t t = mcol_begin; t < mcol_end; t++) {
-    if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1) {
-      mcsr.mcol[t] += rbuf_size;
+  if (mptr_begin < mcsr.mptr.size()) {
+    const auto mcol_begin = mcsr.mptr[mptr_begin]; // out-of-range
+    const auto mcol_end = mcsr.mcol.size();
+    const auto mbuf_begin_idx = mbuf.begin[phase];
+    for (size_t t = mcol_begin; t < mcol_end; t++) {
+      if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1) {
+        mcsr.mcol[t] += rbuf_size;
+      }
     }
   }
 }
