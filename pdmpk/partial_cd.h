@@ -74,7 +74,4 @@ class partial_cd {
 
   /// The current phase is set at the beginning of each phase.
   int phase;
-  /// `cur_part` is set to the partition of the vertex being processed
-  /// at the beginning of `proc_vertex`.
-  idx_t cur_part;
 };

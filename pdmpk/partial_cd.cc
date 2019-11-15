@@ -89,7 +89,7 @@ void partial_cd::phase_init() {
 
 bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   bool retval = false;
-  cur_part = pdmpk_bufs.partitions[idx];
+  const auto cur_part = pdmpk_bufs.partitions[idx];
   /// @todo(vatai): This init_idcs is a bit tricky, currently it
   /// should probably converted into a `std::map` or just sort it?
   if (not pdmpk_bufs.partial_is_empty(idx))
@@ -115,15 +115,16 @@ void partial_cd::add_to_init(const idx_t idx, const idx_t level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
-  const auto tgt_idx = bufs[cur_part].mbuf_idx;
-  if (src_part != cur_part) {
+  const auto tgt_part = pdmpk_bufs.partitions[idx];
+  const auto tgt_idx = bufs[tgt_part].mbuf_idx;
+  if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `proc_init_dict()`.
-    bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
-    bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
-    init_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
+    bufs[tgt_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
+    bufs[src_part].mpi_bufs.sendcounts[npart * phase + tgt_part]++;
+    init_dict[{src_part, tgt_part}].push_back({src_idx, tgt_idx});
   } else {
     // Add to `init_idcs`.
-    bufs[cur_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
 
@@ -133,6 +134,7 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
   pdmpk_bufs.partials[t] = true;
 
   const auto j = csr.col[t]; // Matrix column index.
+  const auto cur_part = pdmpk_bufs.partitions[idx];
   const auto src_part_idx = store_part.at({j, lbelow});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
