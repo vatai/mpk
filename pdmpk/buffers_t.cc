@@ -41,7 +41,7 @@ void buffers_t::phase_finalize(const int phase) {
 
   // Update `mcol`.
   const auto mptr_begin = mcsr.mptr.begin[phase];
-  const auto mcol_begin = mcsr.mptr[mptr_begin];
+  const auto mcol_begin = mcsr.mptr[mptr_begin]; // out-of-range
   const auto mcol_end = mcsr.mcol.size();
   const auto mbuf_begin_idx = mbuf.begin[phase];
   for (size_t t = mcol_begin; t < mcol_end; t++) {
@@ -66,7 +66,6 @@ void buffers_t::do_comp(int phase) {
 }
 
 void buffers_t::do_comm(int phase, std::ofstream &os) {
-
   /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
   /// reuse it every time!
   const auto scount = mpi_bufs.sbuf_size(phase);
@@ -88,7 +87,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   double *rbuf = mbuf.get_ptr(phase);
 
   os << "rbuf(before)(" << phase << "): ";
-  for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
+  for (int i = -1; i < (int)mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
 
@@ -97,7 +96,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
   os << "rbuf        (" << phase << "): ";
-  for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
+  for (int i = -1; i < (int)mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
 
@@ -106,7 +105,9 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto end = mpi_bufs.init_idcs.begin[phase + 1];
   for (auto i = begin; i < end; i++) {
     const auto pair = mpi_bufs.init_idcs[i];
-    mbuf[pair.second] = mbuf[pair.first];
+    /// @todo(vatai): Don't forget about adjusting init_idcv[i].second
+    /// += rbuf_size; somewhere...
+    mbuf[pair.second + mpi_bufs.rbuf_size(phase)] = mbuf[pair.first];
   }
 
   delete[] sbuf;
@@ -119,9 +120,10 @@ void buffers_t::exec() {
   std::ofstream file(fname);
 
   const auto nphases = mbuf.begin.size();
+  assert(mcsr.mptr.begin.size() == nphases + 1);
   mbuf.resize(mbuf_idx, 0);
 
-  // Load vector.
+  // Load vector!
   for (size_t i = 0; i < mbuf.begin[0]; i++)
     mbuf[i] = 1.0;
 
@@ -132,7 +134,6 @@ void buffers_t::exec() {
   }
 
   std::cout << "exec(" << rank << ")" << std::endl;
-  assert(mcsr.mptr.begin.size() == nphases + 1);
 }
 
 void buffers_t::dump(const int rank) {
