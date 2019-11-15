@@ -28,7 +28,7 @@ void buffers_t::phase_init() {
 }
 
 void buffers_t::phase_finalize(const int phase) {
-  /// Fill displacement buffers from count buffers.
+  // Fill displacement buffers from count buffers.
   mpi_bufs.fill_displs(phase);
 
   // Allocate `sbuf_idcs` for this phase.
@@ -45,8 +45,9 @@ void buffers_t::phase_finalize(const int phase) {
   const auto mcol_end = mcsr.mcol.size();
   const auto mbuf_begin_idx = mbuf.begin[phase];
   for (size_t t = mcol_begin; t < mcol_end; t++) {
-    if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1)
+    if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1) {
       mcsr.mcol[t] += rbuf_size;
+    }
   }
 }
 
