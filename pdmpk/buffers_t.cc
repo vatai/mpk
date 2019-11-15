@@ -52,24 +52,13 @@ void buffers_t::phase_finalize(const int phase) {
 }
 
 void buffers_t::do_comp(int phase) {
-  // assert(phase < mcsr.mptr_begin.size());
-  // assert(phase + 1 < mcsr.mptr_begin.size());
-
-  auto mcount = mcsr.mptr.begin[phase + 1] - mcsr.mptr.begin[phase];
-
-  // auto mcount1 = phase < mbuf_begin.size() ? mbuf_begin[phase + 1] : mbuf.size();
-  // mcount1 = mcount1 - mbuf_begin[phase] - mpi_bufs.rbuf_size(phase);
-  // if (mcount != mcount1) std::cout << "(" << phase << ")"<< mcount << ", " << mcount1 << std::endl;
-  // assert(mcount == mcount1);
-
-  //?? auto mptr = mcsr.mptr.data() + mcsr.mptr_begin[phase];
-  //?? Following two lines are from the older `mpk2` code
-  //??   long *mcol = bufs->mcol_buf + bufs->mcol_offsets[phase];
-  //??   double *mval = bufs->mval_buf + bufs->mcol_offsets[phase];
-  auto cur_mbuf = mbuf.data() + mbuf.begin[phase];
+  auto mcount = mcsr.mptr.begin[phase + 1] - //
+                mcsr.mptr.begin[phase];
+  auto cur_mbuf = mbuf.get_ptr(phase) + mpi_bufs.rbuf_size(phase);
+  auto cur_mptr = mcsr.mptr.get_ptr(phase);
   for (size_t mi = 0; mi < mcount; mi++) {
     double tmp = cur_mbuf[mi];
-    for (auto mj = mcsr.mptr[mi]; mj < mcsr.mptr[mi + 1]; mj++) {
+    for (auto mj = cur_mptr[mi]; mj < cur_mptr[mi + 1]; mj++) {
       tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
     cur_mbuf[mi] += tmp;
@@ -77,14 +66,14 @@ void buffers_t::do_comp(int phase) {
 }
 
 void buffers_t::do_comm(int phase, std::ofstream &os) {
-  // fill_sbuf()
-  const auto scount = mpi_bufs.sbuf_size(phase);
-  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.data() + mpi_bufs.sbuf_idcs.begin[phase];
 
   /// @todo(vatai): Have a single sbuf of size max(scount[phase]) and
   /// reuse it every time!
+  const auto scount = mpi_bufs.sbuf_size(phase);
   double *sbuf = new double[scount];
 
+  // fill_sbuf()
+  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
@@ -96,40 +85,18 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto sdispls = mpi_bufs.sdispls.data() + offset;
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
-  // rbuf used by MPI - don't delete
-  if (mbuf.begin[phase] < mpi_bufs.rbuf_size(phase)) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    std::cout << phase << "@"
-              << rank << ": "
-              << mbuf.begin[phase] << ", "
-              << mpi_bufs.rbuf_size(phase) << std::endl;
-  }
-  // assert(mbuf.begin[phase] >= mpi_bufs.rbuf_size(phase));
-  double *rbuf = mbuf.data() + mbuf.begin[phase] - mpi_bufs.rbuf_size(phase);
+  double *rbuf = mbuf.get_ptr(phase);
 
-  if (mpi_bufs.rbuf_size(phase) > 0 and mbuf.begin[phase] >= mbuf.size()) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    std::cout << "(@" << rank << ")"
-              << "mbuf_begin[phase]: " << mbuf.begin[phase] << ", "
-              << "mbuf.size(): " << mbuf.size() << std::endl;
-  }
-
-  // if (not (mpi_bufs.rbuf_size(phase) > 0 and mbuf_begin[phase] < mbuf.size())) {
-  //   std::cout << mpi_bufs.rbuf_size(phase) << ", "
-  //             << mbuf_begin[phase] << ", "
-  //             << mbuf.size() << std::endl;
-  // }
   os << "rbuf(before)(" << phase << "): ";
   for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
 
-  assert(mpi_bufs.rbuf_size(phase) == 0 or mbuf.begin[phase] < mbuf.size());
+  // assert(mpi_bufs.rbuf_size(phase) == 0 or mbuf.begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf, sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
-  os << "rbuf (" << phase << "): ";
+
+  os << "rbuf        (" << phase << "): ";
   for (size_t i = 0; i < mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
@@ -165,7 +132,7 @@ void buffers_t::exec() {
   }
 
   std::cout << "exec(" << rank << ")" << std::endl;
-  // assert(mcsr.mptr_begin.size() == nphases + 1);
+  assert(mcsr.mptr.begin.size() == nphases + 1);
 }
 
 void buffers_t::dump(const int rank) {

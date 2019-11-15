@@ -9,4 +9,5 @@ template <typename T> class phased_vector : public std::vector<T> {
  public:
   std::vector<size_t> begin;
   void rec_begin() { begin.push_back(this->size()); };
+  T *get_ptr(const int phase) { return this->data() + begin[phase]; }
 };

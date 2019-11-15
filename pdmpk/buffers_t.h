@@ -53,12 +53,17 @@ class buffers_t {
   /// intermediate results, the `rbuf`s and the final results).  It is
   /// only used in the `pdmpk_exec` program.
   ///
-  /// For each `phase`, `mbuf.begin[phase]` is the index (of `mbuf`)
-  /// of the first element which will be calculated in the given
-  /// phase.  The `rbuf[phase]`, starts at `mbuf.begin[phase] -
-  /// mpi_bufs.rbuf_size(phase)`.  As a special case, `rbuf[0]`
-  /// contains the elements of the input vector assigned to the given
-  /// partition.
+  /// The first `mpi_bufs.rbuf_size(phase)` number of elements of
+  /// `mbuf[phase]` represent `rbuf[phase]`.  The elements which need
+  /// to be calculated start at `mbuf.begin[phase] +
+  /// mpi_bufs.rbuf_size(phase)`.
+  ///
+  /// As a special case, `rbuf[0]` contains the elements of the input
+  /// vector assigned to the given partition.  Also (unlike for `phase
+  /// > 0`) mbuf.begin[0] points to the element after the last element
+  /// of `rbuf[phsae]` while `mpi_bufs.rbuf_size(0) == 0`, so the rule
+  /// that the first element which should be calculated is at
+  /// `mbuf.begin[phase] + mpi_bufs.rbuf_size(phase)` is not violated.
   phased_vector<double> mbuf;
 
  private:
