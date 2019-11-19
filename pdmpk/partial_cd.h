@@ -38,7 +38,7 @@ class partial_cd {
  private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  std::map<idx_lvl_t, part_sidx_t> store_part;
+  store_part_t store_part;
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
