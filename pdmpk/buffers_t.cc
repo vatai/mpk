@@ -109,7 +109,19 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
     const auto pair = mpi_bufs.init_idcs[i];
     /// @todo(vatai): Don't forget about adjusting init_idcv[i].second
     /// += rbuf_size; somewhere...
-    mbuf[pair.second + mpi_bufs.rbuf_size(phase)] = mbuf[pair.first];
+    assert(mbuf[pair.first] != 0.0);
+    const auto tgt_idx = pair.second + mpi_bufs.rbuf_size(phase) - 1;
+    if (tgt_idx >= mbuf.size()) {
+      int rank;
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      std::cout << phase << "@"
+                << rank << ": "
+                << tgt_idx << ", "
+                << mbuf.size() << std::endl;
+    }
+    // assert(tgt_idx < mbuf.size()); // crash!
+    // assert(mbuf[tgt_idx] == 0.0); // crash!
+    mbuf[tgt_idx] = mbuf[pair.first];
   }
 
   delete[] sbuf;

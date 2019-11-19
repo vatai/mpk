@@ -47,6 +47,7 @@ partial_cd::partial_cd(const char *fname,     //
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
+    buffer.mpi_bufs.init_idcs.rec_begin();
   }
 
   for (auto level : pdmpk_bufs.levels) {
