@@ -41,11 +41,15 @@ void buffers_t::phase_finalize(const int phase) {
 
   // Update `mcol`.
   const auto mptr_begin = mcsr.mptr.begin[phase];
+  /// @todo(vatai): Investigate why can `mcsr.mptr.begin[phase]` be
+  /// (greater or) equal to `mcsr.mptr.size()` which caused the
+  /// `out-of-range` exception below.
   if (mptr_begin < mcsr.mptr.size()) {
     const auto mcol_begin = mcsr.mptr[mptr_begin]; // out-of-range
     const auto mcol_end = mcsr.mcol.size();
     const auto mbuf_begin_idx = mbuf.begin[phase];
     for (size_t t = mcol_begin; t < mcol_end; t++) {
+      /// @todo(vatai): Make clear how this is supposed to work.
       if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1) {
         mcsr.mcol[t] += rbuf_size;
       }
@@ -76,6 +80,9 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   // fill_sbuf()
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
+    assert(0 <= sbuf_idcs[i]);
+    assert(sbuf_idcs[i] < mbuf.begin[phase]);
+    assert(mbuf[sbuf_idcs[i]] != 0);
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
