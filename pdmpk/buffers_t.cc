@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "typedefs.h"
 #include "utils.hpp"
 #include "buffers_t.h"
 
@@ -163,6 +164,7 @@ void buffers_t::dump(const int rank) {
 
   file.write((char*)&mbuf_idx, sizeof(mbuf_idx));
   Utils::dump_vec(mbuf.begin, file);
+  Utils::dump_vec(result_idx, file);
   mpi_bufs.dump_to_ofs(file);
   mcsr.dump_to_ofs(file);
 }
@@ -173,6 +175,7 @@ void buffers_t::load(const int rank) {
 
   file.read((char*)&mbuf_idx , sizeof(mbuf_idx));
   Utils::load_vec(mbuf.begin, file);
+  Utils::load_vec(result_idx, file);
   mpi_bufs.load_from_ifs(file);
   mcsr.load_from_ifs(file);
 }
@@ -183,6 +186,7 @@ void buffers_t::dump_txt(const int rank) {
   // mbuf_idx
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::dump_txt("mbuf_begin", mbuf.begin, file);
+  Utils::dump_txt("result_idx", result_idx, file);
   mpi_bufs.dump_to_txt(file);
   mcsr.dump_to_txt(file);
 }

@@ -48,6 +48,11 @@ partial_cd::partial_cd(const char *fname,     //
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
     buffer.mpi_bufs.init_idcs.rec_begin();
+
+    for (int i = 0; i < csr.n; i++) {
+      const auto &pair = store_part.at({i, nlevels});
+      bufs[pair.first].result_idx.push_back(pair.second);
+    }
   }
 
   for (auto level : pdmpk_bufs.levels) {

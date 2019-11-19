@@ -66,6 +66,9 @@ class buffers_t {
   /// `mbuf.begin[phase] + mpi_bufs.rbuf_size(phase)` is not violated.
   phased_vector<double> mbuf;
 
+  /// Holds the `mbuf` indices where the vertices at level `nlevel`
+  /// can be found in the given partition.
+  std::vector<size_t> result_idx;
  private:
   buffers_t();
 };
