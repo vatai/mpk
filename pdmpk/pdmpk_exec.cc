@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <unistd.h>
 #include <mpi.h>
 
 #include "buffers_t.h"
@@ -14,6 +15,20 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  // MPI debuging:
+  // - start with: $ gdb pdmpk_exec PID
+  // - up # go up in the stack
+  // - up # two times
+  // - set var i = 1
+  // - continue
+  if (rank == 0) {
+    int i = 0;
+    printf("PID %d ready for attach\n", getpid());
+    fflush(stdout);
+    while (0 == i)
+      sleep(5);
+  }
 
   buffers_t buf(npart);
   buf.load(rank);
