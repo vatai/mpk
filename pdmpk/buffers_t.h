@@ -39,6 +39,13 @@ class buffers_t {
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
   mpi_bufs_t mpi_bufs;
+
+  /// The largest send buffer size needed in all phases.
+  size_t max_sbuf_size;
+
+  /// Send buffer used by MPI.
+  std::vector<double> sbuf;
+
   /// (Modified) CSR, which will be used for the
   /// execution/computation.
   mcsr_t mcsr;
@@ -69,6 +76,7 @@ class buffers_t {
   /// Holds the `mbuf` indices where the vertices at level `nlevel`
   /// can be found in the given partition.
   std::vector<size_t> result_idx;
+
  private:
   buffers_t();
 };
