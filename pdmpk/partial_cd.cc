@@ -150,8 +150,6 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
-    /// @todo(vatai): Refactor recv/sendcount update?
-    /// It's the size of comm_dict[{...}]
     bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
     bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
