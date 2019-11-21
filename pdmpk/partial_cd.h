@@ -53,7 +53,7 @@ class partial_cd {
 
   void phase_init();
 
-  void update_levels();
+  bool update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void add_to_init(const idx_t idx, const idx_t level);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);

@@ -17,46 +17,39 @@ partial_cd::partial_cd(const char *fname,     //
       npart{npart},                           //
       nlevels{nlevels},                       //
       pdmpk_bufs(csr),                        //
-      bufs(npart, buffers_t(npart)) {
-  phase = 0;
+      bufs(npart, buffers_t(npart)),
+      phase(0) {
   pdmpk_bufs.metis_partition(npart);
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
-  update_levels();
-
-  /// @todo(vatai): Remove phase limit here.  This should definitely
-  /// be refactored: see `proc_vertex()` for the `retval` thing.
-  /// There should be a `retval` returned from `update_levels()` as
-  /// well.
-  for (int i = 1; i < 8; i++) {
-    phase = i;
+  bool was_active = update_levels();
+  while (was_active) {
+    phase++;
     pdmpk_bufs.metis_partition_with_levels(npart);
-    update_levels();
+    was_active = update_levels();
   }
-
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
     buffer.mpi_bufs.init_idcs.rec_begin();
-
     for (int i = 0; i < csr.n; i++) {
       const auto &pair = store_part.at({i, nlevels});
       bufs[pair.first].result_idx.push_back(pair.second);
     }
   }
-
   for (auto level : pdmpk_bufs.levels) {
     assert(level == nlevels);
   }
 }
 
-void partial_cd::update_levels() {
+bool partial_cd::update_levels() {
   phase_init();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active = true;
+  bool retval = false;
   // `min_level` is important, see NOTE1 below.
   auto min_level = pdmpk_bufs.min_level();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
@@ -72,11 +65,13 @@ void partial_cd::update_levels() {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (proc_vertex(idx, lbelow)) {
           was_active = true;
+          retval = true;
         }
       }
     }
   }
   phase_finalize();
+  return retval;
 }
 
 void partial_cd::phase_init() {
