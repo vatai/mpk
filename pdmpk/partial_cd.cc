@@ -1,15 +1,7 @@
 //  Author: Emil VATAI <emil.vatai@gmail.com>
 //  Date: 2019-09-17
 
-#include <algorithm>
 #include <cassert>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
 
 #include "buffers_t.h"
 #include "partial_cd.h"
