@@ -2,6 +2,7 @@
 //  Date: 2019-09-17
 
 #include <cassert>
+#include <iostream>
 
 #include "buffers_t.h"
 #include "partial_cd.h"
@@ -24,6 +25,9 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
+  for (auto &buffer : bufs) {
+    buffer.mcsr.next_mcol_idx_to_mptr();
+  }
   bool was_active = update_levels();
   while (was_active) {
     phase++;
@@ -33,7 +37,6 @@ partial_cd::partial_cd(const char *fname,     //
   // nphase + 1
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
-    buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
     buffer.mpi_bufs.init_idcs.rec_begin();
   }
   // fill `result_idx`
@@ -43,6 +46,22 @@ partial_cd::partial_cd(const char *fname,     //
   }
   for (auto level : pdmpk_bufs.levels) {
     assert(level == nlevels);
+  }
+
+  // ASSERTS
+  for (auto b : bufs) {
+    for (auto phase = 1; phase < this->phase; phase++) {
+      auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];
+      auto mpd = b.mcsr.mptr.begin[phase] - b.mcsr.mptr.begin[phase - 1];
+      auto rbs = b.mpi_bufs.rbuf_size(phase - 1);
+      if (mbd != mpd + rbs) {
+        std::cout << "phase: " << phase << ", "
+                  << "mbd: " << mbd << ", "
+                  << "mpd: " << mpd << ", "
+                  << "rbs: " << rbs << std::endl;
+      }
+      // assert(mbd == mpd + rbs);
+    }
   }
 }
 
@@ -92,16 +111,14 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
-      if (retval == false) {
-        bufs[cur_part].mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
-      }
       proc_adjacent(idx, lbelow, t);
       retval = true;
     }
   }
   if (retval == true) {
-    finalize_vertex({idx, lbelow + 1}, cur_part);
+    bufs[cur_part].mcsr.next_mcol_idx_to_mptr();
     pdmpk_bufs.inc_level(idx);
+    finalize_vertex({idx, lbelow + 1}, cur_part);
   }
   return retval;
 }
