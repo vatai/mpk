@@ -45,7 +45,13 @@
  * - `buf_offset` and `buf_count` case:
  *   `buf[buf_offset[t]..buf_offset[t] + buf_count[t]]`
  *
+ * @see @ref pdmpk_prep_page
+ * @see @ref pdmpk_exec_page
+ *
  * @todo(vatai): Finish documentation here.
+ *
+ * @page pdmpk_prep_page `pdmpk_prep` page
+ * The body of `pdmpk_prep` page.
  *
  */
 

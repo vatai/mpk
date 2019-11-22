@@ -10,6 +10,10 @@
 #include "buffers_t.h"
 #include "utils.hpp"
 
+/**
+ * @page pdmpk_exec_page `pdmpk_exec` page
+ * The body of pdmpk_exec_page.
+ */
 int main(int argc, char *argv[])
 {
   int rank, npart;
