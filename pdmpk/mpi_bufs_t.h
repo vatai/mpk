@@ -12,6 +12,8 @@
 #include "typedefs.h"
 #include "phased_vector.hpp"
 
+/// MPI buffers, containing information/patterns how to perform the
+/// communication for each partition.
 class mpi_bufs_t {
  public:
   mpi_bufs_t(const idx_t npart);

@@ -10,9 +10,11 @@
 
 #include "phased_vector.hpp"
 
-/// @todo(vatai): Document `mcsr_t`
+/// Modified CSR, containing information/patterns how to perform the
+/// computations for each partition.
 class mcsr_t {
  public:
+  /// Inserts the size of `mcol` at the end `mptr` vector.
   void next_mcol_idx_to_mptr();
   /// Dump the contents to a binary `fstream`.
   void dump_to_ofs(std::ofstream &ofs);

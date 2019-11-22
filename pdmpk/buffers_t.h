@@ -22,7 +22,8 @@
 #include "mcsr_t.h"
 #include "phased_vector.hpp"
 
-/// @todo(vatai): Document `buffers_t`.
+/// The main buffers containing information/patterns how to perform
+/// the computation and communication for each partition.
 class buffers_t {
  public:
   buffers_t(const idx_t npart);
