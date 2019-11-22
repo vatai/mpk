@@ -30,14 +30,16 @@ partial_cd::partial_cd(const char *fname,     //
     pdmpk_bufs.metis_partition_with_levels(npart);
     was_active = update_levels();
   }
+  // nphase + 1
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.next_mcol_idx_to_mptr(); /// @todo(vatai): inside if?
     buffer.mpi_bufs.init_idcs.rec_begin();
-    for (int i = 0; i < csr.n; i++) {
-      const auto &pair = store_part.at({i, nlevels});
-      bufs[pair.first].result_idx.push_back(pair.second);
-    }
+  }
+  // fill `result_idx`
+  for (int i = 0; i < csr.n; i++) {
+    const auto &pair = store_part.at({i, nlevels});
+    bufs[pair.first].result_idx.push_back(pair.second);
   }
   for (auto level : pdmpk_bufs.levels) {
     assert(level == nlevels);
