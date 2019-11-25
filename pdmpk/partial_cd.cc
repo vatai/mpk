@@ -44,11 +44,11 @@ partial_cd::partial_cd(const char *fname,     //
     const auto &pair = store_part.at({i, nlevels});
     bufs[pair.first].result_idx.push_back(pair.second);
   }
+
+  // ////// ASSERTS //////
   for (auto level : pdmpk_bufs.levels) {
     assert(level == nlevels);
   }
-
-  // ASSERTS
   for (auto b : bufs) {
     for (auto phase = 1; phase < this->phase; phase++) {
       auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];

@@ -79,6 +79,7 @@ void buffers_t::do_comp(int phase) {
 }
 
 void buffers_t::do_comm(int phase, std::ofstream &os) {
+  /// @todo(vatai): Remove asserts and clean up.
   const auto scount = mpi_bufs.sbuf_size(phase);
 
   // fill_sbuf()
@@ -99,6 +100,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
 
   double *rbuf = mbuf.get_ptr(phase);
 
+  // ////// Debug //////
   os << "rbuf(before)(" << phase << "): ";
   for (int i = -1; i < (int)mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
@@ -108,6 +110,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
+  // ////// Debug //////
   os << "rbuf        (" << phase << "): ";
   for (int i = -1; i < (int)mpi_bufs.rbuf_size(phase); i++)
     os << rbuf[i] << ", ";
@@ -118,11 +121,9 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto length = mpi_bufs.init_idcs.begin[phase + 1] - begin;
   const auto init = gsl::make_span(mpi_bufs.init_idcs).subspan(begin, length);
   for (const auto pair : init) {
-    /// @todo(vatai): Don't forget about adjusting init_idcv[i].second
-    /// += rbuf_size; somewhere...
     // assert(mbuf[pair.first] != 0.0); // mcol2mptr-debug
-    const auto tgt_idx = pair.second + mpi_bufs.rbuf_size(phase) - 1;
-    if (tgt_idx >= mbuf.size()) {
+    const auto tgt_idx = pair.second;
+    if (tgt_idx >= (int)mbuf.size()) {
       int rank;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       std::cout << phase << "@"
