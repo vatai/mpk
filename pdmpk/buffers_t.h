@@ -78,6 +78,7 @@ class buffers_t {
   /// can be found in the given partition.
   std::vector<size_t> result_idx;
 
+  std::vector<size_t> dbg_idx;
  private:
   buffers_t();
 };

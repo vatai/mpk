@@ -192,6 +192,7 @@ void buffers_t::dump_txt(const int rank) {
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::dump_txt("mbuf_begin", mbuf.begin, file);
   Utils::dump_txt("result_idx", result_idx, file);
+  Utils::dump_txt("dbg_idx", dbg_idx, file);
   mpi_bufs.dump_to_txt(file);
   mcsr.dump_to_txt(file);
 }
