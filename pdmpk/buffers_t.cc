@@ -50,7 +50,7 @@ void buffers_t::phase_finalize(const int phase) {
 void buffers_t::do_comp(int phase) {
   auto mcount = mcsr.mptr.begin[phase + 1] - //
                 mcsr.mptr.begin[phase];
-  auto cur_mbuf = mbuf.get_ptr(phase) + mpi_bufs.rbuf_size(phase);
+  auto cur_mbuf = mbuf.get_ptr(phase);
   auto cur_mptr = mcsr.mptr.get_ptr(phase);
   for (size_t mi = 0; mi < mcount; mi++) {
     double tmp = cur_mbuf[mi];
@@ -81,7 +81,8 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto sdispls = mpi_bufs.sdispls.data() + offset;
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
-  double *rbuf = mbuf.get_ptr(phase);
+  /// @todo(vatai): Convert `rbuf` to span.
+  auto rbuf = mbuf.get_ptr(phase) + mcsr.mptr_size(phase);
 
   // ////// Debug //////
   os << "rbuf(before)(" << phase << "): ";
@@ -100,6 +101,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   os << std::endl;
 
   // do_init()
+  /// @todo(vatai): Implement get_init_span.
   const auto begin = mpi_bufs.init_idcs.begin[phase];
   const auto length = mpi_bufs.init_idcs.begin[phase + 1] - begin;
   const auto init = gsl::make_span(mpi_bufs.init_idcs).subspan(begin, length);

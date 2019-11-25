@@ -5,6 +5,10 @@
 #include "utils.hpp"
 #include "mcsr_t.h"
 
+size_t mcsr_t::mptr_size(const int phase) const {
+  return mptr.begin[phase + 1] - mptr.begin[phase];
+}
+
 void mcsr_t::next_mcol_idx_to_mptr() { mptr.push_back(mcol.size()); }
 
 void mcsr_t::dump_to_ofs(std::ofstream &ofs) {

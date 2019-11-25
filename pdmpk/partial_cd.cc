@@ -202,6 +202,8 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] + //
                                 src_send_base(src_tgt);
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] + //
+                                tgt_buf.mcsr.mptr.size() -       //
+                                tgt_buf.mcsr.mptr.begin[phase] +   //
                                 tgt_recv_base(src_tgt);
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
@@ -221,6 +223,8 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] + //
                                 src_send_base(iter->first) + comm_dict_size;
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] + //
+                                tgt_buf.mcsr.mptr.size() -       //
+                                tgt_buf.mcsr.mptr.begin[phase] +   //
                                 tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {

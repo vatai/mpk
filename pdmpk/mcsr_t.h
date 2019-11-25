@@ -14,6 +14,8 @@
 /// computations for each partition.
 class mcsr_t {
  public:
+  /// Return the size of an mptr buffer.
+  size_t mptr_size(const int phase) const;
   /// Inserts the size of `mcol` at the end `mptr` vector.
   void next_mcol_idx_to_mptr();
   /// Dump the contents to a binary `fstream`.
