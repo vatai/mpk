@@ -50,6 +50,9 @@
  *
  * @todo(vatai): Finish documentation here.
  *
+ * @todo(vatai): Change comm_dict to store sets instead of vectors to
+ * avoid duplicates in sbuf.
+ *
  * @page pdmpk_prep_page `pdmpk_prep` page
  * The body of `pdmpk_prep` page.
  *
