@@ -58,6 +58,9 @@ void buffers_t::do_comp(int phase) {
       tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
     cur_mbuf[mi] += tmp;
+    // int rank;
+    // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    // cur_mbuf[mi] = -phase * 100 - rank * 10;
   }
 }
 
