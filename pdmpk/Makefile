@@ -1,8 +1,9 @@
 CXX=mpic++
 METISDIR=metis/build/Linux-x86_64
-CXXFLAGS = -std=c++14 -Wall -pedantic
+CXXFLAGS = -std=c++17 -Wall -pedantic
 CXXFLAGS += -g -O0
 CXXFLAGS += -I$(METISDIR)/include -L$(METISDIR)/libmetis
+CXXFLAGS += -I${HOME}/code/GSL/include
 CXXFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 LDLIBS=-lmetis
 

@@ -9,6 +9,7 @@
 #include <mpi.h>
 #include <string>
 #include <vector>
+#include <gsl/span>
 
 #include "typedefs.h"
 #include "utils.hpp"
@@ -114,9 +115,9 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
 
   // do_init()
   const auto begin = mpi_bufs.init_idcs.begin[phase];
-  const auto end = mpi_bufs.init_idcs.begin[phase + 1];
-  for (auto i = begin; i < end; i++) {
-    const auto pair = mpi_bufs.init_idcs[i];
+  const auto length = mpi_bufs.init_idcs.begin[phase + 1] - begin;
+  const auto init = gsl::make_span(mpi_bufs.init_idcs).subspan(begin, length);
+  for (const auto pair : init) {
     /// @todo(vatai): Don't forget about adjusting init_idcv[i].second
     /// += rbuf_size; somewhere...
     // assert(mbuf[pair.first] != 0.0); // mcol2mptr-debug
