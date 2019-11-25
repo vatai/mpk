@@ -45,23 +45,6 @@ void buffers_t::phase_finalize(const int phase) {
 
   // Update `mbuf_idx`.
   mbuf_idx += rbuf_size;
-
-  // Update `mcol`.
-  const auto mptr_begin = mcsr.mptr.begin[phase];
-  /// @todo(vatai): Investigate why can `mcsr.mptr.begin[phase]` be
-  /// (greater or) equal to `mcsr.mptr.size()` which caused the
-  /// `out-of-range` exception below.
-  if (mptr_begin < mcsr.mptr.size()) {
-    const auto mcol_begin = mcsr.mptr[mptr_begin]; // out-of-range
-    const auto mcol_end = mcsr.mcol.size();
-    const auto mbuf_begin_idx = mbuf.begin[phase];
-    for (size_t t = mcol_begin; t < mcol_end; t++) {
-      /// @todo(vatai): Make clear how this is supposed to work.
-      if ((size_t)mcsr.mcol[t] < mbuf_begin_idx and mcsr.mcol[t] != -1) {
-        mcsr.mcol[t] += rbuf_size;
-      }
-    }
-  }
 }
 
 void buffers_t::do_comp(int phase) {
