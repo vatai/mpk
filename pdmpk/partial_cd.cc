@@ -25,6 +25,7 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
+  phase_init();
   for (auto &buffer : bufs) {
     buffer.mcsr.next_mcol_idx_to_mptr();
   }
@@ -32,6 +33,7 @@ partial_cd::partial_cd(const char *fname,     //
   while (was_active) {
     phase++;
     pdmpk_bufs.metis_partition_with_levels(npart);
+    phase_init();
     was_active = update_levels();
   }
   // nphase + 1
@@ -66,7 +68,6 @@ partial_cd::partial_cd(const char *fname,     //
 }
 
 bool partial_cd::update_levels() {
-  phase_init();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active = true;
