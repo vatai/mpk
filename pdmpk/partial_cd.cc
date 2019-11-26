@@ -25,7 +25,6 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
-  phase_init();
   for (auto &buffer : bufs) {
     buffer.mcsr.next_mcol_idx_to_mptr();
   }
@@ -33,7 +32,6 @@ partial_cd::partial_cd(const char *fname,     //
   while (was_active) {
     phase++;
     pdmpk_bufs.metis_partition_with_levels(npart);
-    phase_init();
     was_active = update_levels();
   }
   // nphase + 1
@@ -68,6 +66,7 @@ partial_cd::partial_cd(const char *fname,     //
 }
 
 bool partial_cd::update_levels() {
+  phase_init();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active = true;
@@ -107,8 +106,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   const auto cur_part = pdmpk_bufs.partitions[idx];
   /// @todo(vatai): This init_idcs is a bit tricky, currently it
   /// should probably converted into a `std::map` or just sort it?
-  if (not pdmpk_bufs.partial_is_empty(idx))
-    add_to_init(idx, lbelow + 1);
+  bool was_dirty = not pdmpk_bufs.partial_is_empty(idx);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
@@ -117,6 +115,9 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
     }
   }
   if (retval == true) {
+    if (was_dirty) {
+      add_to_init(idx, lbelow + 1);
+    }
     bufs[cur_part].mcsr.next_mcol_idx_to_mptr();
     pdmpk_bufs.inc_level(idx);
     finalize_vertex({idx, lbelow + 1}, cur_part);
