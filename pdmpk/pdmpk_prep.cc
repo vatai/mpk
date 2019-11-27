@@ -53,8 +53,6 @@
  * @todo(vatai): Change comm_dict to store sets instead of vectors to
  * avoid duplicates in sbuf.
  *
- * @todo(vatai): Implement true mval (with optional #ifdef).
- *
  * @todo(vatai): Implement true mval test.
  *
  * @todo(vatai): Implement custom input vector loading.
