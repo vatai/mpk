@@ -4,5 +4,4 @@
 
 make && \
     ./pdmpk_prep m5p4.loop.mtx 4 4 && \
-    # gdb -x cmds.gdb pdmpk_prep \
     orterun -n 4 ./pdmpk_exec
