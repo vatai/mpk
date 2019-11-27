@@ -3,6 +3,6 @@
 # step 2: ../mpk2/gen2mtx m5p4.loop.g0
 
 make && \
-    # ./pdmpk_prep m5p4.loop.mtx 4 4 && \
-    gdb -x cmds.gdb pdmpk_prep \
+    ./pdmpk_prep m5p4.loop.mtx 4 4 && \
+    # gdb -x cmds.gdb pdmpk_prep \
     orterun -n 4 ./pdmpk_exec
