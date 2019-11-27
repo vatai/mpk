@@ -57,7 +57,7 @@ void buffers_t::do_comp(int phase) {
     for (auto mj = cur_mptr[mi]; mj < cur_mptr[mi + 1]; mj++) {
       tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
-    cur_mbuf[mi] += tmp;
+    cur_mbuf[mi] = tmp;
     // ////// DEBUG //////
     // int rank;
     // MPI_Comm_rank(MPI_COMM_WORLD, &rank);

@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   // - set var i = 1
   // - continue
   if (rank == 3) {
-    int i = 0;
+    int i = 1;
     printf("PID %d ready for attach\n", getpid());
     fflush(stdout);
     while (0 == i)
