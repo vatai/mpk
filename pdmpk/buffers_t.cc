@@ -27,7 +27,6 @@ void buffers_t::phase_init() {
   mpi_bufs.init_idcs.rec_begin();
 
   mcsr.mptr.rec_begin();
-  mcsr.mptr.begin.back()--;
   mbuf.begin.push_back(mbuf_idx);
 }
 

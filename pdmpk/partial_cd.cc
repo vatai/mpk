@@ -26,9 +26,6 @@ partial_cd::partial_cd(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
   }
-  for (auto &buffer : bufs) {
-    buffer.mcsr.next_mcol_idx_to_mptr();
-  }
   bool was_active = update_levels();
   while (was_active) {
     phase++;
@@ -37,7 +34,8 @@ partial_cd::partial_cd(const char *fname,     //
   }
   // nphase + 1
   for (auto &buffer : bufs) {
-    buffer.mcsr.mptr.rec_begin();
+    buffer.mcsr.mptr.rec_begin();        // BA
+    buffer.mcsr.next_mcol_idx_to_mptr(); // AB
     buffer.mpi_bufs.init_idcs.rec_begin();
   }
   // fill `result_idx`
@@ -93,6 +91,8 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
+      if (retval == false)
+        bufs[cur_part].mcsr.next_mcol_idx_to_mptr();
       proc_adjacent(idx, lbelow, t);
       retval = true;
     }
@@ -101,7 +101,6 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
     if (was_dirty) {
       add_to_init(idx, lbelow + 1);
     }
-    bufs[cur_part].mcsr.next_mcol_idx_to_mptr();
     pdmpk_bufs.inc_level(idx);
     finalize_vertex({idx, lbelow + 1}, cur_part);
   }
@@ -190,7 +189,6 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
                                 + src_send_base(src_tgt);
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
                                 + tgt_buf.mcsr.mptr.size() //
-                                - 1 // @todo(vatai): is this correct?
                                 - tgt_buf.mcsr.mptr.begin[phase] //
                                 + tgt_recv_base(src_tgt);
   const auto size = vec.size();
@@ -213,7 +211,6 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
                                 + src_send_base(iter->first) + comm_dict_size;
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
                                 + tgt_buf.mcsr.mptr.size() //
-                                - 1 // @todo(vatai): is this correction right?
                                 - tgt_buf.mcsr.mptr.begin[phase] //
                                 + tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
@@ -221,15 +218,7 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
     const auto src_idx = tgt_recv_baseidx + idx;
     const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = vec[idx].first;
-    // DBG //
-    if (src_idx + 1 >= tgt_buf.mbuf_idx) {
-      std::cout << ">>>> src_idx >= mbuf_idx: "                   //
-                << "src_idx: " << src_idx + 1 << ", "        //
-                << "cur_part: " << iter->first.first << ", " //
-                << "mbuf_idx: " << tgt_buf.mbuf_idx << ", "  //
-                << "phase: " << phase << ", "                //
-                << std::endl;
-    }
+    // DEBuG //
     assert(src_idx < tgt_buf.mbuf_idx);
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
@@ -262,7 +251,7 @@ void partial_cd::dbg_asserts() const {
                   << "mpd: " << mpd << ", "
                   << "rbs: " << rbs << std::endl;
       }
-      // assert(mbd == mpd + rbs);
+      assert(mbd == mpd + rbs);
     }
   }
 }
@@ -275,7 +264,6 @@ void partial_cd::dbg_mbuf_checks() {
     for (auto i = buffer.mpi_bufs.init_idcs.begin[phase];
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
-      // ////// This fails //////
       if (pair.first >= mbuf_idx) {
         std::cout << pair.first << ", "
                   << mbuf_idx << std::endl;
@@ -283,17 +271,15 @@ void partial_cd::dbg_mbuf_checks() {
       assert(pair.first < mbuf_idx);
       assert(pair.second < mbuf_idx);
     }
+    // Check sbuf_idcs.
     for (auto i = buffer.mpi_bufs.sbuf_idcs.begin[phase];
          i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
       auto value = buffer.mpi_bufs.sbuf_idcs[i];
       assert(value < mbuf_idx);
     }
+    // Check mcol.
     for (auto value : buffer.mcsr.mcol) {
-      // ////// This fails //////
-      // 142, 199
-      // my axe!
-      //q  my axe! 
-      // assert(value < mbuf_idx);
+      assert(value < mbuf_idx);
     }
   }
 }
