@@ -74,7 +74,6 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   for (size_t i = 0; i < scount; i++) {
     assert(0 <= sbuf_idcs[i]);
     assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
-    assert(mbuf[sbuf_idcs[i]] != 0); // mcol2mptr-debug
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -110,7 +109,6 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto length = mpi_bufs.init_idcs.begin[phase + 1] - begin;
   const auto init = gsl::make_span(mpi_bufs.init_idcs).subspan(begin, length);
   for (const auto pair : init) {
-    assert(mbuf[pair.first] != 0.0); // mcol2mptr-debug
     const auto tgt_idx = pair.second;
     if (tgt_idx >= (int)mbuf.size()) {
       int rank;
