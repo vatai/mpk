@@ -76,5 +76,6 @@ class partial_cd {
   int phase;
 
   // ////// DEBUG //////
-  void dbg_asserts();
+  void dbg_asserts() const;
+  void dbg_mbuf_checks();
 };

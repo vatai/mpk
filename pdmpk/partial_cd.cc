@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <iterator>
 
 #include "buffers_t.h"
 #include "partial_cd.h"
@@ -174,6 +175,8 @@ void partial_cd::phase_finalize() {
 
   pdmpk_bufs.update_weights();
   pdmpk_bufs.debug_print_report(std::cout, phase);
+
+  dbg_mbuf_checks();
 }
 
 void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
@@ -228,7 +231,7 @@ idx_t partial_cd::tgt_recv_base(const sidx_tidx_t src_tgt) const {
 
 // ////// DEBUG //////
 
-void partial_cd::dbg_asserts() {
+void partial_cd::dbg_asserts() const {
   /// Check all vertices reach `nlevels`.
   for (auto level : pdmpk_bufs.levels) {
     assert(level == nlevels);
@@ -246,6 +249,28 @@ void partial_cd::dbg_asserts() {
                   << "rbs: " << rbs << std::endl;
       }
       // assert(mbd == mpd + rbs);
+    }
+  }
+}
+
+void partial_cd::dbg_mbuf_checks() {
+  // Check nothing goes over mbuf_idx.
+  for (auto buffer : bufs) {
+    auto mbuf_idx = buffer.mbuf_idx;
+    // Check init_idcs.
+    for (auto i = buffer.mpi_bufs.init_idcs.begin[phase];
+         i < buffer.mpi_bufs.init_idcs.size(); i++) {
+      auto pair = buffer.mpi_bufs.init_idcs[i];
+      assert(pair.first < mbuf_idx);
+      assert(pair.second < mbuf_idx);
+    }
+    for (auto i = buffer.mpi_bufs.sbuf_idcs.begin[phase];
+         i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
+      auto value = buffer.mpi_bufs.sbuf_idcs[i];
+      assert(value < mbuf_idx);
+    }
+    for (auto value : buffer.mcsr.mcol) {
+      assert(value < mbuf_idx);
     }
   }
 }
