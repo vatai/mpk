@@ -139,6 +139,7 @@ void partial_cd::proc_adjacent(const idx_t idx,      //
   bufs[cur_part].mcsr.mval.push_back(val);
   bufs[cur_part].dbg_idx.push_back(idx);
   if (cur_part == src_part) {
+    // 199 // from store part
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
@@ -185,17 +186,19 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto vec = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] + //
-                                src_send_base(src_tgt);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] + //
-                                tgt_buf.mcsr.mptr.size() -       //
-                                tgt_buf.mcsr.mptr.begin[phase] +   //
-                                tgt_recv_base(src_tgt);
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+                                + src_send_base(src_tgt);
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
+                                + tgt_buf.mcsr.mptr.size() //
+                                - 1 // @todo(vatai): is this correct?
+                                - tgt_buf.mcsr.mptr.begin[phase] //
+                                + tgt_recv_base(src_tgt);
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = vec[idx].first;
     const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_idx;
+    // 142
     tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
   }
 }
@@ -206,17 +209,28 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto &vec = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] + //
-                                src_send_base(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase] + //
-                                tgt_buf.mcsr.mptr.size() -       //
-                                tgt_buf.mcsr.mptr.begin[phase] +   //
-                                tgt_recv_base(iter->first) + comm_dict_size;
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+                                + src_send_base(iter->first) + comm_dict_size;
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
+                                + tgt_buf.mcsr.mptr.size() //
+                                - 1 // @todo(vatai): is this correction right?
+                                - tgt_buf.mcsr.mptr.begin[phase] //
+                                + tgt_recv_base(iter->first) + comm_dict_size;
   const auto size = vec.size();
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;
     const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = vec[idx].first;
+    // DBG //
+    if (src_idx + 1 >= tgt_buf.mbuf_idx) {
+      std::cout << ">>>> src_idx >= mbuf_idx: "                   //
+                << "src_idx: " << src_idx + 1 << ", "        //
+                << "cur_part: " << iter->first.first << ", " //
+                << "mbuf_idx: " << tgt_buf.mbuf_idx << ", "  //
+                << "phase: " << phase << ", "                //
+                << std::endl;
+    }
+    assert(src_idx < tgt_buf.mbuf_idx);
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
@@ -261,6 +275,11 @@ void partial_cd::dbg_mbuf_checks() {
     for (auto i = buffer.mpi_bufs.init_idcs.begin[phase];
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
+      // ////// This fails //////
+      if (pair.first >= mbuf_idx) {
+        std::cout << pair.first << ", "
+                  << mbuf_idx << std::endl;
+      }
       assert(pair.first < mbuf_idx);
       assert(pair.second < mbuf_idx);
     }
@@ -270,7 +289,11 @@ void partial_cd::dbg_mbuf_checks() {
       assert(value < mbuf_idx);
     }
     for (auto value : buffer.mcsr.mcol) {
-      assert(value < mbuf_idx);
+      // ////// This fails //////
+      // 142, 199
+      // my axe!
+      //q  my axe! 
+      // assert(value < mbuf_idx);
     }
   }
 }

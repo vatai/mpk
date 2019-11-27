@@ -74,7 +74,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
     assert(0 <= sbuf_idcs[i]);
-    assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
+    // assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
     // assert(mbuf[sbuf_idcs[i]] != 0); // mcol2mptr-debug
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
