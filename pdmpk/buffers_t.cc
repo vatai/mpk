@@ -73,8 +73,8 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
     assert(0 <= sbuf_idcs[i]);
-    // assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
-    // assert(mbuf[sbuf_idcs[i]] != 0); // mcol2mptr-debug
+    assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
+    assert(mbuf[sbuf_idcs[i]] != 0); // mcol2mptr-debug
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -94,7 +94,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
     os << rbuf[i] << ", ";
   os << std::endl;
 
-  // assert(mpi_bufs.rbuf_size(phase) == 0 or mbuf.begin[phase] < mbuf.size());
+  assert(mpi_bufs.rbuf_size(phase) == 0 or mbuf.begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
@@ -110,7 +110,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   const auto length = mpi_bufs.init_idcs.begin[phase + 1] - begin;
   const auto init = gsl::make_span(mpi_bufs.init_idcs).subspan(begin, length);
   for (const auto pair : init) {
-    // assert(mbuf[pair.first] != 0.0); // mcol2mptr-debug
+    assert(mbuf[pair.first] != 0.0); // mcol2mptr-debug
     const auto tgt_idx = pair.second;
     if (tgt_idx >= (int)mbuf.size()) {
       int rank;
@@ -120,8 +120,8 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
                 << tgt_idx << ", "
                 << mbuf.size() << std::endl;
     }
-    // assert(tgt_idx < mbuf.size()); // crash!
-    // assert(mbuf[tgt_idx] == 0.0); // crash!
+    assert(tgt_idx < mbuf.size()); // crash!
+    assert(mbuf[tgt_idx] == 0.0); // crash!
     mbuf[tgt_idx] = mbuf[pair.first];
   }
 }
