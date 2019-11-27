@@ -44,25 +44,7 @@ partial_cd::partial_cd(const char *fname,     //
     const auto &pair = store_part.at({i, nlevels});
     bufs[pair.first].result_idx.push_back(pair.second);
   }
-
-  // ////// ASSERTS //////
-  for (auto level : pdmpk_bufs.levels) {
-    assert(level == nlevels);
-  }
-  for (auto b : bufs) {
-    for (auto phase = 1; phase < this->phase; phase++) {
-      auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];
-      auto mpd = b.mcsr.mptr.begin[phase] - b.mcsr.mptr.begin[phase - 1];
-      auto rbs = b.mpi_bufs.rbuf_size(phase - 1);
-      if (mbd != mpd + rbs) {
-        std::cout << "phase: " << phase << ", "
-                  << "mbd: " << mbd << ", "
-                  << "mpd: " << mpd << ", "
-                  << "rbs: " << rbs << std::endl;
-      }
-      // assert(mbd == mpd + rbs);
-    }
-  }
+  dbg_asserts();
 }
 
 bool partial_cd::update_levels() {
@@ -242,4 +224,28 @@ idx_t partial_cd::src_send_base(const sidx_tidx_t src_tgt) const {
 
 idx_t partial_cd::tgt_recv_base(const sidx_tidx_t src_tgt) const {
   return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
+}
+
+// ////// DEBUG //////
+
+void partial_cd::dbg_asserts() {
+  /// Check all vertices reach `nlevels`.
+  for (auto level : pdmpk_bufs.levels) {
+    assert(level == nlevels);
+  }
+  /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
+  for (auto b : bufs) {
+    for (auto phase = 1; phase < this->phase; phase++) {
+      auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];
+      auto mpd = b.mcsr.mptr.begin[phase] - b.mcsr.mptr.begin[phase - 1];
+      auto rbs = b.mpi_bufs.rbuf_size(phase - 1);
+      if (mbd != mpd + rbs) {
+        std::cout << "phase: " << phase << ", "
+                  << "mbd: " << mbd << ", "
+                  << "mpd: " << mpd << ", "
+                  << "rbs: " << rbs << std::endl;
+      }
+      // assert(mbd == mpd + rbs);
+    }
+  }
 }

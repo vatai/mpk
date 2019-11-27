@@ -74,4 +74,7 @@ class partial_cd {
 
   /// The current phase is set at the beginning of each phase.
   int phase;
+
+  // ////// DEBUG //////
+  void dbg_asserts();
 };
