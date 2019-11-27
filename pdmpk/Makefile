@@ -5,6 +5,7 @@ CXXFLAGS += -g -O0
 CXXFLAGS += -I$(METISDIR)/include -L$(METISDIR)/libmetis
 CXXFLAGS += -I${HOME}/code/GSL/include
 CXXFLAGS += -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
+CXXFLAGS += -D_DEBUG_CSR_VALS
 LDLIBS=-lmetis
 
 all : pdmpk_prep pdmpk_exec
