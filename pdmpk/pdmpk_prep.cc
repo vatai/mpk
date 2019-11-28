@@ -70,21 +70,14 @@
  */
 
 #include <iostream>
-#include <sstream>
 
 #include "typedefs.h"
 #include "partial_cd.h"
 
 int main(int argc, char *argv[])
 {
-  int npart;
-  level_t nlevels;
-
-  std::stringstream npart_ss(argv[2]);
-  npart_ss >> npart;
-
-  std::stringstream nlevels_ss(argv[3]);
-  nlevels_ss >> nlevels;
+  int npart = std::stoi(argv[2]);
+  level_t nlevels = std::stoi(argv[3]);
 
   partial_cd pcd(argv[1], (idx_t)npart, nlevels);
 
