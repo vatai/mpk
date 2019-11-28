@@ -217,8 +217,8 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
     const auto src_idx = tgt_recv_baseidx + idx;
     const auto tgt_idx = vec[idx].second;
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = vec[idx].first;
-    // DEBuG //
-    assert(src_idx < tgt_buf.mbuf_idx);
+    // DEBUG //
+    assert((int)src_idx < tgt_buf.mbuf_idx);
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }

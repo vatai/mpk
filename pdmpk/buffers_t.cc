@@ -118,7 +118,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
                 << tgt_idx << ", "
                 << mbuf.size() << std::endl;
     }
-    assert(tgt_idx < mbuf.size()); // crash!
+    assert(tgt_idx < (int)mbuf.size()); // crash!
     assert(mbuf[tgt_idx] == 0.0); // crash!
     mbuf[tgt_idx] = mbuf[pair.first];
   }
