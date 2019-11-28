@@ -45,14 +45,23 @@ int main(int argc, char *argv[])
   file.close(); /// @todo(vatai): Write proper results test.
 
   /// @todo(vatai): Write proper result collection.
-  fname = "fresult" + std::to_string(rank) + ".txt";
-  file.open(fname);
   const auto size = buf.result_idx.size();
   std::vector<double> fresults(size);
+  std::vector<std::pair<int, double>> fpairs(size);
   for (size_t i = 0; i < size; i++) {
-    fresults[i] = buf.mbuf[buf.result_idx[i].second];
+    const auto val = buf.mbuf[buf.result_idx[i].second];
+    fresults[i] = val;
+    fpairs[i] = {buf.result_idx[i].first, val};
   }
+
+  fname = "fresult" + std::to_string(rank) + ".txt";
+  file.open(fname);
   Utils::dump_txt("final:", fresults, file);
+  file.close();
+
+  fname = "fresult" + std::to_string(rank) + ".bin";
+  file.open(fname);
+  Utils::dump_vec(fpairs, file);
   file.close();
 
   MPI_Finalize();
