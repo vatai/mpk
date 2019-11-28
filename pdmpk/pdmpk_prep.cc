@@ -59,6 +59,8 @@
  *
  * @todo(vatai): Implement custom input vector test.
  *
+ * @todo(vatai): Implement measurements.
+ *
  */
 
 /**
