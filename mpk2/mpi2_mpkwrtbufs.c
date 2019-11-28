@@ -27,10 +27,16 @@ static void alloc_fill_mval(buffers_t *bufs, double *val, crs0_t *g) {
   }
 }
 
-/// @mainpage The main page from mpi2_mpkwrtbufs.
+/// @brief This is the second stage of pre\-processing, after the
+/// computation of the levels using the `driver` program.
 ///
-/// @brief This is the second stage of pre\-processing.
-/// @details This program writes the buffers.
+/// @details The program is called with one parameter: DIRNAME, which
+/// contains the output of the driver program.  This information is
+/// stored as a `comm_data_t` `struct`.  This information is used to
+/// create buffers (of type `buffer_t`) which hold the computation and
+/// communication patterns.  The `mval` array of the buffer is filled
+/// separately (see the function above).
+
 int main(int argc, char* argv[]) {
   check_args(argc, argv[0]);
   MPI_Init(&argc, &argv);
