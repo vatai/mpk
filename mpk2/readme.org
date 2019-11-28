@@ -1,3 +1,6 @@
 #+TITLE: Diamond matrix powers kernel
 
 * Instructions
+  The summary files provide the data presented in the paper.  Grep
+  shell and C files to see how to obtain them.  More descriptions
+  coming soon.
