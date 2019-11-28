@@ -1,6 +1,15 @@
 #!/bin/bash
 # Add "-x" after #!/bin/bash to see what's happening.
 
+##! @brief The script generates the level files from a g0 graph/CSR
+##! file into a directory.
+
+##! @details Emulating the original `driver.c` program, the script
+##! takes the similar parameters as the `gen.c` program which
+##! generates the graphs, creates a directory from these parameter
+##! names, and generates the files containing the levels, skirt (and
+##! weights as a byproduct).
+
 # This is an alternative implementation to driver.c since it
 # (driver.c) is just a "hub/controller" program, calling other
 # programs with different parameters, and a shell script seems to be
@@ -24,7 +33,7 @@ UFACTOR=100
 
 test $NPART  -gt 1 || usage "npart must be more than one."
 test $NLEVEL -gt 1 || usage "nlevel must be more than one."
-test $NPHASE -ge 0 || usage "nphase cannot be nagative."
+test $NPHASE -ge 0 || usage "nphase cannot be negative."
 
 DIRNAME=${GHEAD}_${NPART}_${NLEVEL}_${NPHASE}
 mkdir $DIRNAME
