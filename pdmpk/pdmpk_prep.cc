@@ -53,6 +53,8 @@
  * @todo(vatai): Change comm_dict to store sets instead of vectors to
  * avoid duplicates in sbuf.
  *
+ * @todo(vatai): Implement communication optimisation.
+ *
  * @todo(vatai): Implement custom input vector loading.
  *
  * @todo(vatai): Collect results.
