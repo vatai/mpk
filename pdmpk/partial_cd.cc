@@ -41,7 +41,7 @@ partial_cd::partial_cd(const char *fname,     //
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
     const auto &pair = store_part.at({i, nlevels});
-    bufs[pair.first].result_idx.push_back(pair.second);
+    bufs[pair.first].result_idx.push_back({i, pair.second});
   }
   dbg_asserts();
 }

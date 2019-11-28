@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   const auto size = buf.result_idx.size();
   std::vector<double> fresults(size);
   for (size_t i = 0; i < size; i++) {
-    fresults[i] = buf.mbuf[buf.result_idx[i]];
+    fresults[i] = buf.mbuf[buf.result_idx[i].second];
   }
   Utils::dump_txt("final:", fresults, file);
   file.close();
