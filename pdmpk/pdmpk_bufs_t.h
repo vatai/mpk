@@ -32,12 +32,12 @@ class pdmpk_bufs_t {
   void debug_print_partitions(std::ostream &os);
   void debug_print_report(std::ostream &os, const int phase);
 
-  std::vector<idx_t> partitions;
-  std::vector<idx_t> weights;
-  std::vector<level_t> levels;
   std::vector<bool> partials;
+  std::vector<idx_t> partitions;
+  std::vector<level_t> levels;
 
  private:
+  std::vector<idx_t> weights;
   const csr_t &csr;
   pdmpk_bufs_t();
 };

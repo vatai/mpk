@@ -45,7 +45,7 @@ void csr_t::mtx_fill_size(std::ifstream &file)
     std::getline(file, line);
 
   ss << line;
-  size_t m;
+  idx_t m;
   ss >> m >> n >> nnz;
   if (m != n) {
     throw std::logic_error("Matrix not square");
@@ -78,4 +78,12 @@ void csr_t::mtx_fill_vectors(std::ifstream &file)
     col.insert(std::end(col), std::begin(Js[i]), std::end(Js[i]));
     val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
+#ifdef _DEBUG_CSR_VALS
+  for (int i = 0; i < n; i++) {
+    double v = 1. / (ptr[i + 1] - ptr[i]);
+    for (int t = ptr[i]; t < ptr[i + 1]; t++) {
+      val[t] = v;
+    }
+  }
+#endif
 }

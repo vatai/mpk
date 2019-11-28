@@ -45,39 +45,53 @@
  * - `buf_offset` and `buf_count` case:
  *   `buf[buf_offset[t]..buf_offset[t] + buf_count[t]]`
  *
+ * @see @ref pdmpk_prep_page
+ * @see @ref pdmpk_exec_page
+ *
  * @todo(vatai): Finish documentation here.
  *
- * Implementation plan:
- * @todo(vatai): Do `partial_cd_t` todos.
+ * @todo(vatai): Change comm_dict to store sets instead of vectors to
+ * avoid duplicates in sbuf.
+ *
+ * @todo(vatai): Implement true mval test.
+ *
+ * @todo(vatai): Implement custom input vector loading.
+ *
+ * @todo(vatai): Implement custom input vector test.
+ *
+ * @todo(vatai): Implement measurements.
+ *
+ */
+
+/**
+ * @page pdmpk_prep_page `pdmpk_prep` page
+ * The body of `pdmpk_prep` page.
+ *
  */
 
 #include <iostream>
 #include <sstream>
-#include <mpi.h>
 
 #include "typedefs.h"
 #include "partial_cd.h"
 
 int main(int argc, char *argv[])
 {
-  MPI_Init(&argc, &argv);
-
   int npart;
-  int rank;
   level_t nlevels;
 
-  // std::stringstream npart_ss(argv[2]);
-  // npart_ss >> npart;
-  MPI_Comm_size(MPI_COMM_WORLD, &npart);
+  std::stringstream npart_ss(argv[2]);
+  npart_ss >> npart;
 
-  std::stringstream nlevels_ss(argv[2]);
+  std::stringstream nlevels_ss(argv[3]);
   nlevels_ss >> nlevels;
 
   partial_cd pcd(argv[1], (idx_t)npart, nlevels);
 
-  /// @todo(vatai): Implement computation.
-  pcd.bufs[rank].exec();
+  for (int i = 0; i < npart; i++) {
+    pcd.bufs[i].dump(i);
+    pcd.bufs[i].dump_txt(i);
+  }
 
-  MPI_Finalize();
   return 0;
 }

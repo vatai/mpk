@@ -5,12 +5,14 @@
 #include <iomanip>
 #include "pdmpk_bufs_t.h"
 
+#define SMALL_N 4
+
 pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr) :
-    csr{csr},
     partials(csr.nnz, false),
     partitions(csr.n),
     levels(csr.n, 0),
-    weights(csr.nnz)
+    weights(csr.nnz),
+    csr{csr}
 {}
 
 level_t pdmpk_bufs_t::min_level()
@@ -107,7 +109,7 @@ void pdmpk_bufs_t::debug_print_levels(std::ostream &os)
 {
   const int width = 4;
   for (int i = 0; i < csr.n; i++) {
-    if (i % 10 == 0) os << std::endl;
+    if (i % SMALL_N == 0) os << std::endl;
     os << std::setw(width) << levels[i] << ", ";
   }
   os << std::endl;
@@ -122,7 +124,7 @@ void pdmpk_bufs_t::debug_print_partials(std::ostream &os)
       max = d;
   }
   for (int i = 0; i < csr.n; i++) {
-    if (i % 10 == 0) os << std::endl;
+    if (i % SMALL_N == 0) os << std::endl;
     const idx_t d = csr.ptr[i + 1] - csr.ptr[i];
     for (int j = 0; j < max - d; j++)
       os << "_";
@@ -136,7 +138,7 @@ void pdmpk_bufs_t::debug_print_partials(std::ostream &os)
 void pdmpk_bufs_t::debug_print_partitions(std::ostream &os)
 {
   for (int i = 0; i < csr.n; i++) {
-    if (i % 10 == 0) os << std::endl;
+    if (i % SMALL_N == 0) os << std::endl;
     os << partitions[i] << ", ";
   }
   os << std::endl;

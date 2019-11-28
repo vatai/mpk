@@ -23,9 +23,9 @@ class partial_cd {
  public:
   partial_cd(const char *fname, const idx_t npart, const level_t nlevels);
 
+  const csr_t csr;
   const idx_t npart;
   const level_t nlevels;
-  const csr_t csr;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
@@ -38,7 +38,7 @@ class partial_cd {
  private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  std::map<idx_lvl_t, part_sidx_t> store_part;
+  store_part_t store_part;
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
@@ -52,18 +52,17 @@ class partial_cd {
   init_dict_t init_dict;
 
   void phase_init();
-  void init_communication();
 
-  void update_levels();
+  bool update_levels();
   bool proc_vertex(const idx_t idx, const level_t lbelow);
   void add_to_init(const idx_t idx, const idx_t level);
   void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  void finalize_vertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void phase_finalize();
   void proc_comm_dict(const comm_dict_t::const_iterator &iter);
   void proc_init_dict(const init_dict_t::const_iterator &iter);
 
-  void rec_mbuf_idx(const idx_lvl_t idx_lvl, const idx_t part);
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.
@@ -75,7 +74,8 @@ class partial_cd {
 
   /// The current phase is set at the beginning of each phase.
   int phase;
-  /// `cur_part` is set to the partition of the vertex being processed
-  /// at the beginning of `proc_vertex`.
-  idx_t cur_part;
+
+  // ////// DEBUG //////
+  void dbg_asserts() const;
+  void dbg_mbuf_checks();
 };

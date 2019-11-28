@@ -20,6 +20,8 @@ typedef std::pair<idx_t, idx_t> part_sidx_t;
 /// (index, level) pair.
 typedef std::pair<idx_t, level_t> idx_lvl_t;
 
+typedef std::map<idx_lvl_t, part_sidx_t> store_part_t;
+
 typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> comm_dict_t;
 
 typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict_t;
