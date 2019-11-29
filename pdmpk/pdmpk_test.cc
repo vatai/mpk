@@ -11,6 +11,10 @@
 #include "buffers_t.h"
 #include "utils.hpp"
 
+/// @page pdmpk_test `pdmpk_test`
+///
+/// Body of `pdmpk_test` page.
+
 int main(int argc, char *argv[])
 {
   int rank, npart;
