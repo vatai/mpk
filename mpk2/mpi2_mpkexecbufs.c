@@ -1,3 +1,7 @@
+/// @file
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-11-29
+
 #include <assert.h>
 #include <mpi.h>
 #include <stdlib.h>

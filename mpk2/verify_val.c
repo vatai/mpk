@@ -1,11 +1,9 @@
-/*
- * Author: Emil Vatai <emil.vatai@gmail.com>
- * Date: 2019-08-14
- *
- * This little program performs a sequential MPK and writes the output
- * in binary for other implementations to compare.
- *
- */
+/// @file
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-08-14
+
+/// Perform a sequential MPK and write the results (in binary) for
+/// other implementations to compare.
 
 #include <assert.h>
 #include <stdlib.h>
