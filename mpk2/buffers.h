@@ -10,44 +10,92 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/// @brief Buffers for processing.
+/// @brief Buffers describing computation and communication patterns
+/// of one partition/process in DMPK.
 ///
-/// @details Contains the buffers created by the by the
-/// `mpi2_mpkprep.c` program and processed by the
+/// @details Not finished.
+/// @todo(vatai): Finish `buffers_t` main documentation.
 typedef struct buffers_t {
+  /// Number of vertices/length of the (input/output) vector.
   int n;
+  /// Number of partitions.
   int npart;
+  /// Target level/number of levels computed.
   int nlevel;
+  /// Number of phases (or PA1 if 0).
   int nphase;
+  /// Rank/process id to which the buffers belong.
   int rank;
+  /// Size of the `idx_buf` array.
   int buf_count;
+  /// Size of the `idx_sbuf` array.
   int buf_scount;
+  /// Size of the `mptr_buf` array.
   int mptr_count;
+  /// Size of the `mcol_buf` array.
   int mcol_count;
 
   // npart * (nphase + 1)
+
+  /// MPI receive buffer (for each phase).
   int *recvcounts;
+  /// MPI send buffer (for each phase).
   int *sendcounts;
+  /// MPI receive displacement buffer (for each phase).
   int *rdispls;
+  /// MPI send displacement buffer (for each phase).
   int *sdispls;
 
   // nphase + 1
+
+  /// @brief Number of elements of `idx_buf` and `vv_buf` which is
+  /// used as the MPI buffer (for each phase).
   int *rcount;
+  /// @brief Number of elements of `idx_buf` and `vv_buf` for
+  /// the intermediate computation results (for each
+  /// phase).
   int *mcount;
+  /// @brief The number of elements of `idx_sbuf` and `vv_sbuf` which
+  /// is used as an MPI send buffer (for each phase).
   int *scount;
+
+  /// @brief The start of subarray of `idx_buf` and `vv_buf` which is
+  /// used as the MPI buffer (for each phase).
   int *rbuf_offsets;
+  /// @brief The start of subarray of `idx_buf` and `vv_buf` for the
+  /// intermediate computation results (for each phase).
   int *mbuf_offsets;
+  /// @brief The start of subarray of `idx_sbuf` and `vv_sbuf` which
+  /// is used as an MPI send buffer (for each phase).
   int *sbuf_offsets;
+  /// @brief The start of subarray of `mptr_buf` which describes the
+  /// `ptr` of the computation patterns (for each phase).
   int *mptr_offsets;
+  /// @brief The start of subarray of `mptr_buf` which describes the
+  /// `col` of the computation patterns (for each phase).
   int *mcol_offsets;
 
+  /// @brief The index-level pairs (encoded as `i+n*k` where `i` is
+  /// the index and `k` is the level) which are computed in this
+  /// buffer/partition (see `rank`).  As a special case, when
+  /// `idx_buf` is `NULL`, then modifies what the `iterator()`
+  /// function does.
   long *idx_buf; // Important note in iterator() function comments
+  /// @brief The indices of `vv_buf` which are copied to `vv_sbuf` and
+  /// used as the MPI send buffer.
   long *idx_sbuf;
+  /// @brief The indices of `mcol_buf` used similarly as in SpMV.
   long *mptr_buf;
+  /// @brief The indices of `vv_buf` used similarly as in SpMV.
   long *mcol_buf;
 
+  /// @brief The input, (intermediate and) output values computed in
+  /// this buffer/partition (see `rank`).
   double *vv_buf;
+  /// @brief The buffer allocated to be used as MPI send buffers for
+  /// each phase.
   double *vv_sbuf;
+  /// @brief The matrix values/edge weights used similarly as in SpMV.
   double *mval_buf;
 } buffers_t;
 
