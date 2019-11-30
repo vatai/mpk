@@ -11,7 +11,7 @@
 #include "buffers_t.h"
 #include "utils.hpp"
 
-/// @page pdmpk_test `pdmpk_test`
+/// @page pdmpk_test pdmpk_test
 ///
 /// Body of `pdmpk_test` page.
 

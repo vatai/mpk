@@ -10,7 +10,7 @@
 #include "buffers_t.h"
 #include "utils.hpp"
 
-/// @page pdmpk_exec `pdmpk_exec`
+/// @page pdmpk_exec pdmpk_exec
 ///
 /// The body of `pdmpk_exec` page.
 

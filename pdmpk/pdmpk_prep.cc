@@ -1,7 +1,7 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-09-17
 
-/// @page pdmpk_prep `pdmpk_prep`
+/// @page pdmpk_prep pdmpk_prep
 ///
 /// The body of `pdmpk_prep` page.
 
