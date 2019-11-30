@@ -32,6 +32,3 @@
 /// @todo(vatai): Implement custom input vector test.
 ///
 /// @todo(vatai): Implement measurements.
-///
-/// @todo(vatai): Separate documentation into a separate directory
-/// (and update travis).
