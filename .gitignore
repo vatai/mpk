@@ -4,12 +4,8 @@
 !Makefile
 
 !Doxyfile
-latex/
-html/
 
-*.txt
 !CMakeLists.txt
-*.bin
 
 *.log*
 *.g0
@@ -27,16 +23,6 @@ input/*/
 *flymake.c
 *flymake.h
 
-
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-
 check.m
 bin
 mpk-paper*
@@ -45,5 +31,3 @@ mpk-paper*
 ltximg
 *.pdf
 *.tex
-
-
