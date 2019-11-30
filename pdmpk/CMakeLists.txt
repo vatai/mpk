@@ -20,7 +20,7 @@ if (DOXYGEN_FOUND AND BUILD_DOC)
     set(CMAKE_DOXYGEN_WARN_IF_UNDOCUMENTED "NO")
   endif()
   # set input and output files
-  set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+  set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/../docs/Doxyfile.in)
   set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
   # request to configure the file
@@ -106,22 +106,22 @@ find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
 add_executable (pdmpk_prep
-  "pdmpk/pdmpk_prep.cc"
-  "pdmpk/partial_cd.cc"
-  "pdmpk/csr_t.cc"
-  "pdmpk/buffers_t.cc"
-  "pdmpk/mpi_bufs_t.cc"
-  "pdmpk/mcsr_t.cc"
-  "pdmpk/pdmpk_bufs_t.cc"
+  "pdmpk_prep.cc"
+  "partial_cd.cc"
+  "csr_t.cc"
+  "buffers_t.cc"
+  "mpi_bufs_t.cc"
+  "mcsr_t.cc"
+  "pdmpk_bufs_t.cc"
   )
 
 target_link_libraries(pdmpk_prep "${METIS}" MPI::MPI_CXX)
 
 add_executable (pdmpk_exec
-  "pdmpk/pdmpk_exec.cc"
-  "pdmpk/buffers_t.cc"
-  "pdmpk/mpi_bufs_t.cc"
-  "pdmpk/mcsr_t.cc"
+  "pdmpk_exec.cc"
+  "buffers_t.cc"
+  "mpi_bufs_t.cc"
+  "mcsr_t.cc"
   )
 
 target_link_libraries(pdmpk_exec "${METIS}" MPI::MPI_CXX)

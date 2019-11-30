@@ -8,12 +8,12 @@
 ///
 /// # Building using CMake
 ///
-/// In the root directory (which contains CMakeLists.txt).
+/// In the root directory (`./pdmpk/` contains `CMakeLists.txt`).
 ///
 /// @code
-/// mkdir Debug
-/// cmake . -DCMAKE_BUILD_TYPE=Debug Debug
-/// cmake --build Debug
+/// mkdir _Debug
+/// cmake pdmpk/ -DCMAKE_BUILD_TYPE=Debug -B _Debug
+/// cmake --build _Debug
 /// @endcode
 ///
 /// # Usage
