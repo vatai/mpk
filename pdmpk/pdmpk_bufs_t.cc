@@ -146,7 +146,7 @@ void pdmpk_bufs_t::debug_print_partitions(std::ostream &os)
 
 void pdmpk_bufs_t::debug_print_report(std::ostream &os, const int phase)
 {
-    std::cout << std::endl << "Phase: " << phase;
+    os << std::endl << "Phase: " << phase;
     debug_print_partitions(std::cout);
     debug_print_levels(std::cout);
     debug_print_partials(std::cout);
