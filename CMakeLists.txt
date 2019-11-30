@@ -1,3 +1,7 @@
+# Flags not ported from old Makefile: -Wall -pedantic -g -O0
+#
+# -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_DEBUG_CSR_VALS
+
 # CMakeLists.txt
 cmake_minimum_required (VERSION 3.15)
 
@@ -49,11 +53,7 @@ find_library(METIS metis)
 set(MPI_C_COMPILER "/usr/bin/mpicc")
 set(MPI_CXX_COMPILER "/usr/bin/mpic++")
 find_package(MPI REQUIRED)
-message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
-
-include_directories("./pdmpk/metis/build/Linux-x86_64/include")
-
-link_directories("./pdmpk/metis/build/Linux-x86_64/libmetis")
+# message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
 add_executable (pdmpk_prep
   "pdmpk/pdmpk_prep.cc"
