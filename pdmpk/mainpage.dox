@@ -6,6 +6,14 @@
 /// vector \f$v \in \mathbb{R}\f$ MPK generates \f[ Av, A^2v, \ldots,
 /// A^m v \f]
 ///
+/// # Building using CMake
+///
+/// # Usage
+///
+/// ## Generating `mtx` files
+///
+/// ## Running the programs
+///
 /// @see @ref pdmpk_prep @see @ref pdmpk_exec @see @ref pdmpk_test
 ///
 /// @todo(vatai): Finish documentation here.
@@ -24,3 +32,6 @@
 /// @todo(vatai): Implement custom input vector test.
 ///
 /// @todo(vatai): Implement measurements.
+///
+/// @todo(vatai): Separate documentation into a separate directory
+/// (and update travis).
