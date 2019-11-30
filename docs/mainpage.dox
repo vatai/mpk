@@ -8,11 +8,35 @@
 ///
 /// # Building using CMake
 ///
+/// In the root directory (which contains CMakeLists.txt).
+///
+/// @code
+/// mkdir Debug
+/// cmake . -DCMAKE_BUILD_TYPE=Debug Debug
+/// cmake --build Debug
+/// @endcode
+///
 /// # Usage
 ///
-/// ## Generating `mtx` files
+/// ## Generating mtx files
+///
+/// Assuming `gen2` and `gen2mtx` are compiled in `../mpk2/` (these
+/// should probably rewritten in C++).
+///
+/// @code
+/// ../mpk2/gen2 m5p4 4 m5p4
+/// ../mpk2/gen2mtx m5p4.loop.g0
+/// @endcode
 ///
 /// ## Running the programs
+///
+/// @code
+/// ./pdmpk_prep m5p4.loop.mtx 4 4 # second 4 is nlevels
+/// mpirun -n 4 ./pdmpk_exec
+/// @endcode
+///
+/// `orterun` is OpenMPI version of `mpirun` if it is in conflict with
+/// Intel's `mpirun`.
 ///
 /// @see @ref pdmpk_prep @see @ref pdmpk_exec @see @ref pdmpk_test
 ///
