@@ -51,14 +51,9 @@ set(MPI_CXX_COMPILER "/usr/bin/mpic++")
 find_package(MPI REQUIRED)
 message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
-include_directories(
-  ./pdmpk/GSL/include
-  ./pdmpk/metis/build/Linux-x86_64/include
-  )
+include_directories("./pdmpk/metis/build/Linux-x86_64/include")
 
-link_directories(
-  ./pdmpk/metis/build/Linux-x86_64/libmetis
-  )
+link_directories("./pdmpk/metis/build/Linux-x86_64/libmetis")
 
 add_executable (pdmpk_prep
   "pdmpk/pdmpk_prep.cc"
