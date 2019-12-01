@@ -7,7 +7,7 @@
 
 #define SMALL_N 4
 
-pdmpk_bufs_t::pdmpk_bufs_t(const csr_t &csr) :
+pdmpk_bufs_t::pdmpk_bufs_t(const CSR &csr) :
     partials(csr.nnz, false),
     partitions(csr.n),
     levels(csr.n, 0),

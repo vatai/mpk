@@ -1,19 +1,17 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-10-21
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-21
 
 #pragma once
 #include <iostream>
-#include <vector>
 #include <metis.h>
+#include <vector>
 
+#include "CSR.h"
 #include "typedefs.h"
-#include "csr_t.h"
 
 class pdmpk_bufs_t {
- public:
-  pdmpk_bufs_t(const csr_t &_csr);
+public:
+  pdmpk_bufs_t(const CSR &_csr);
 
   level_t min_level();
   bool can_add(const idx_t idx, const level_t lbelow, const idx_t t);
@@ -36,8 +34,8 @@ class pdmpk_bufs_t {
   std::vector<idx_t> partitions;
   std::vector<level_t> levels;
 
- private:
+private:
   std::vector<idx_t> weights;
-  const csr_t &csr;
+  const CSR &csr;
   pdmpk_bufs_t();
 };

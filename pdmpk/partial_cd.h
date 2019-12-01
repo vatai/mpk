@@ -16,14 +16,14 @@
 #include "typedefs.h"
 #include "pdmpk_bufs_t.h"
 #include "Buffers.h"
-#include "csr_t.h"
+#include "CSR.h"
 
 class partial_cd {
 
  public:
   partial_cd(const char *fname, const idx_t npart, const level_t nlevels);
 
-  const csr_t csr;
+  const CSR csr;
   const idx_t npart;
   const level_t nlevels;
 

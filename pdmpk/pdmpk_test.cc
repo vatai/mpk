@@ -11,7 +11,7 @@
 
 #include "Results.h"
 #include "Buffers.h"
-#include "csr_t.h"
+#include "CSR.h"
 #include "utils.hpp"
 
 /// @page pdmpk_test pdmpk_test
@@ -21,7 +21,7 @@
 int main(int argc, char *argv[])
 {
   assert(argc == 4);
-  csr_t csr(argv[1]);
+  CSR csr(argv[1]);
   const int npart = std::stoi(argv[2]);
   const int nlevels = std::stoi(argv[3]);
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   std::vector<double> goldResult(csr.n);
   for (auto &v : goldResult)
     v = 1.0;
-  csr.mpk(nlevels, goldResult);
+  csr.MPK(nlevels, goldResult);
 
   // Get finalResult.
   std::vector<double> loadResult(csr.n);
