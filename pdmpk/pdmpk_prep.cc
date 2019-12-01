@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "typedefs.h"
-#include "partial_cd.h"
+#include "CommCompPatterns.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   int npart = std::stoi(argv[2]);
   level_t nlevels = std::stoi(argv[3]);
 
-  partial_cd pcd(argv[1], (idx_t)npart, nlevels);
+  CommCompPatterns pcd(argv[1], (idx_t)npart, nlevels);
 
   for (int i = 0; i < npart; i++) {
     pcd.bufs[i].Dump(i);

@@ -107,18 +107,18 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   const auto end = mpiBufs.initIdcs.begin[phase + 1];
   for (auto i = begin; i < end; i++) {
     const auto &pair = mpiBufs.initIdcs[i];
-    const auto tgt_idx = pair.second;
-    if (tgt_idx >= (int)mbuf.size()) {
+    const auto tgtIdx = pair.second;
+    if (tgtIdx >= (int)mbuf.size()) {
       int rank;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       std::cout << phase << "@"
                 << rank << ": "
-                << tgt_idx << ", "
+                << tgtIdx << ", "
                 << mbuf.size() << std::endl;
     }
-    assert(tgt_idx < (int)mbuf.size()); // crash!
-    assert(mbuf[tgt_idx] == 0.0); // crash!
-    mbuf[tgt_idx] = mbuf[pair.first];
+    assert(tgtIdx < (int)mbuf.size()); // crash!
+    assert(mbuf[tgtIdx] == 0.0); // crash!
+    mbuf[tgtIdx] = mbuf[pair.first];
   }
 }
 
@@ -143,7 +143,7 @@ void Buffers::Exec() {
     DoComp(phase);
   }
 
-  results.FillVal(results_mbuf_idx, mbuf);
+  results.FillVal(resultsMbufIdx, mbuf);
   std::cout << "exec(" << rank << ")" << std::endl;
 }
 
@@ -152,7 +152,7 @@ void Buffers::Dump(const int rank) {
   file.write((char *)&maxSbufSize, sizeof(maxSbufSize));
   file.write((char *)&mbufIdx, sizeof(mbufIdx));
   Utils::dump_vec(mbuf.begin, file);
-  Utils::dump_vec(results_mbuf_idx, file);
+  Utils::dump_vec(resultsMbufIdx, file);
   Utils::dump_vec(results.vectIdx, file);
   mpiBufs.DumpToOFS(file);
   mcsr.DumpToOFS(file);
@@ -163,7 +163,7 @@ void Buffers::Load(const int rank) {
   file.read((char *)&maxSbufSize, sizeof(maxSbufSize));
   file.read((char *)&mbufIdx, sizeof(mbufIdx));
   Utils::load_vec(mbuf.begin, file);
-  Utils::load_vec(results_mbuf_idx, file);
+  Utils::load_vec(resultsMbufIdx, file);
   Utils::load_vec(results.vectIdx, file);
   mpiBufs.LoadFromIFS(file);
   mcsr.LoadFromIFS(file);
@@ -174,10 +174,10 @@ void Buffers::DumpTxt(const int rank) {
   // mbuf_idx
   file << "max_sbuf_size: " << maxSbufSize << std::endl;
   file << "mbuf_idx: " << mbufIdx << std::endl;
-  Utils::dump_txt("mbuf_begin", mbuf.begin, file);
-  Utils::dump_txt("result_mbuf_idx", results_mbuf_idx, file);
-  Utils::dump_txt("result_vect_idx", results.vectIdx, file);
-  Utils::dump_txt("dbg_idx", dbg_idx, file);
+  Utils::dump_txt("mbufBegin", mbuf.begin, file);
+  Utils::dump_txt("resultMbufIdx", resultsMbufIdx, file);
+  Utils::dump_txt("resultVectIdx", results.vectIdx, file);
+  Utils::dump_txt("dbgIdx", dbgIdx, file);
   mpiBufs.DumpToTxt(file);
   mcsr.DumpToTxt(file);
 }

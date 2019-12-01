@@ -1,27 +1,25 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-09-17
- *
- * @brief Communication data for with partial vertices.
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-09-17
+///
+/// @brief Communication data for with partial vertices.
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <metis.h>
 
-#include "typedefs.h"
-#include "PDMPKBuffers.h"
 #include "Buffers.h"
 #include "CSR.h"
+#include "PDMPKBuffers.h"
+#include "typedefs.h"
 
-class partial_cd {
+class CommCompPatterns {
 
- public:
-  partial_cd(const char *fname, const idx_t npart, const level_t nlevels);
+public:
+  CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
 
   const CSR csr;
   const idx_t npart;
@@ -29,53 +27,52 @@ class partial_cd {
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
-  PDMPKBuffers pdmpk_bufs;
+  PDMPKBuffers pdmpkBufs;
 
   /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.
   std::vector<Buffers> bufs;
 
- private:
+private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  store_part_t store_part;
+  store_part_t storePart;
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
   /// source partition.
-  comm_dict_t comm_dict;
+  comm_dict_t commDict;
 
   /// In each phase, collect the communication of partial indices (for
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs.
-  init_dict_t init_dict;
+  init_dict_t initDict;
 
-  void phase_init();
+  void PhaseInit();
 
-  bool update_levels();
-  bool proc_vertex(const idx_t idx, const level_t lbelow);
-  void add_to_init(const idx_t idx, const idx_t level);
-  void proc_adjacent(const idx_t idx, const level_t lbelow, const idx_t t);
-  void finalize_vertex(const idx_lvl_t idx_lvl, const idx_t part);
+  bool UpdateLevels();
+  bool ProcVertex(const idx_t idx, const level_t lbelow);
+  void AddToInit(const idx_t idx, const idx_t level);
+  void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
-  void phase_finalize();
-  void proc_comm_dict(const comm_dict_t::const_iterator &iter);
-  void proc_init_dict(const init_dict_t::const_iterator &iter);
-
+  void PhaseFinalize();
+  void ProcCommDict(const comm_dict_t::const_iterator &iter);
+  void ProcInitDict(const init_dict_t::const_iterator &iter);
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.
-  idx_t src_send_base(const sidx_tidx_t src_tgt) const;
+  idx_t SrcSendBase(const sidx_tidx_t src_tgt) const;
 
   /// `tgt_recv_base(src, tgt)` gives the base (0th index) of the
   /// receive buffer in the target buffer.
-  idx_t tgt_recv_base(const sidx_tidx_t src_tgt) const;
+  idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
 
   /// The current phase is set at the beginning of each phase.
   int phase;
 
   // ////// DEBUG //////
-  void dbg_asserts() const;
-  void dbg_mbuf_checks();
+  void DbgAsserts() const;
+  void DbgMbufChecks();
 };

@@ -109,7 +109,7 @@ find_package(MPI REQUIRED)
 
 add_executable (pdmpk_prep
   "pdmpk_prep.cc"
-  "partial_cd.cc"
+  "CommCompPatterns.cc"
   "CSR.cc"
   "Buffers.cc"
   "MPIBuffers.cc"

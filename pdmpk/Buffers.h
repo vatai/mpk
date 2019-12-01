@@ -78,10 +78,10 @@ class Buffers {
 
   /// Holds the (vector index, `mbuf` index) pairs where the vertices
   /// at level `nlevel` can be found in the given partition.
-  std::vector<idx_t> results_mbuf_idx;
+  std::vector<idx_t> resultsMbufIdx;
   Results results;
 
-  std::vector<size_t> dbg_idx;
+  std::vector<size_t> dbgIdx;
  private:
   Buffers();
 };
