@@ -36,18 +36,18 @@ public:
 private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  store_part_t store_part;
+  StorePart store_part;
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
   /// source partition.
-  comm_dict_t comm_dict;
+  CommDict comm_dict;
 
   /// In each phase, collect the communication of partial indices (for
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs.
-  init_dict_t init_dict;
+  InitDict init_dict;
 
   void PhaseInit();
 
@@ -58,8 +58,8 @@ private:
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void PhaseFinalize();
-  void ProcCommDict(const comm_dict_t::const_iterator &iter);
-  void ProcInitDict(const init_dict_t::const_iterator &iter);
+  void ProcCommDict(const CommDict::const_iterator &iter);
+  void ProcInitDict(const InitDict::const_iterator &iter);
 
   /// `src_send_base(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.

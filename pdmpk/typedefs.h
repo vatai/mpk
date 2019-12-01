@@ -1,6 +1,9 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-12-01
 
+/// @todo(vatai): Make these types more verbose using `struct`s. Also
+/// it might be a good idea to stick to bla_bla_map naming
+/// conventions.
 #pragma once
 
 #include <map>
@@ -23,8 +26,8 @@ typedef std::pair<idx_t, idx_t> part_sidx_t;
 /// (index, level) pair.
 typedef std::pair<idx_t, level_t> idx_lvl_t;
 
-typedef std::map<idx_lvl_t, part_sidx_t> store_part_t;
+typedef std::map<idx_lvl_t, part_sidx_t> StorePart;
 
-typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> comm_dict_t;
+typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> CommDict;
 
-typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> init_dict_t;
+typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> InitDict;

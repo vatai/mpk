@@ -161,12 +161,12 @@ void CommCompPatterns::PhaseFinalize() {
     buffer.PhaseFinalize(phase);
 
   // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
-  for (comm_dict_t::const_iterator iter = begin(comm_dict);
+  for (CommDict::const_iterator iter = begin(comm_dict);
        iter != end(comm_dict); iter++)
     ProcCommDict(iter);
 
   // Fill `ibuf` and the remainder of `sbuf`.
-  for (init_dict_t::const_iterator iter = begin(init_dict);
+  for (InitDict::const_iterator iter = begin(init_dict);
        iter != end(init_dict); iter++)
     ProcInitDict(iter);
 
@@ -179,7 +179,7 @@ void CommCompPatterns::PhaseFinalize() {
   DbgMbufChecks();
 }
 
-void CommCompPatterns::ProcCommDict(const comm_dict_t::const_iterator &iter) {
+void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &src_tgt = iter->first;
   auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
   auto &tgt_buf = bufs[src_tgt.second];
@@ -200,7 +200,7 @@ void CommCompPatterns::ProcCommDict(const comm_dict_t::const_iterator &iter) {
   }
 }
 
-void CommCompPatterns::ProcInitDict(const init_dict_t::const_iterator &iter) {
+void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
   auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto &tgt_buf = bufs[iter->first.second];
   const auto &vec = iter->second;
