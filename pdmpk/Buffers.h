@@ -20,7 +20,7 @@
 #include "Results.h"
 #include "typedefs.h"
 #include "mpi_bufs_t.h"
-#include "mcsr_t.h"
+#include "MCSR.h"
 #include "phased_vector.hpp"
 
 /// The main buffers containing information/patterns how to perform
@@ -51,7 +51,7 @@ class Buffers {
 
   /// (Modified) CSR, which will be used for the
   /// execution/computation.
-  mcsr_t mcsr;
+  MCSR mcsr;
 
   /// The index (in `mbuf`) where "the next" vertex will be stored.
   /// `mbuf_idx` is updated in the `pdmpk_prep` program, and used to

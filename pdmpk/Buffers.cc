@@ -83,7 +83,7 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   const auto rdispls = mpiBufs.rdispls.data() + offset;
 
   /// @todo(vatai): Convert `rbuf` to span.
-  auto rbuf = mbuf.get_ptr(phase) + mcsr.mptr_size(phase);
+  auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
 
   // ////// Debug //////
   os << "rbuf(before)(" << phase << "): ";
@@ -155,7 +155,7 @@ void Buffers::Dump(const int rank) {
   Utils::dump_vec(results_mbuf_idx, file);
   Utils::dump_vec(results.vectIdx, file);
   mpiBufs.dump_to_ofs(file);
-  mcsr.dump_to_ofs(file);
+  mcsr.DumpToOFS(file);
 }
 
 void Buffers::Load(const int rank) {
@@ -166,7 +166,7 @@ void Buffers::Load(const int rank) {
   Utils::load_vec(results_mbuf_idx, file);
   Utils::load_vec(results.vectIdx, file);
   mpiBufs.load_from_ifs(file);
-  mcsr.load_from_ifs(file);
+  mcsr.LoadFromIFS(file);
 }
 
 void Buffers::DumpTxt(const int rank) {
@@ -179,7 +179,7 @@ void Buffers::DumpTxt(const int rank) {
   Utils::dump_txt("result_vect_idx", results.vectIdx, file);
   Utils::dump_txt("dbg_idx", dbg_idx, file);
   mpiBufs.dump_to_txt(file);
-  mcsr.dump_to_txt(file);
+  mcsr.DumpToTxt(file);
 }
 
 void Buffers::DumpMbufTxt(const int rank) {

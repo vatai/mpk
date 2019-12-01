@@ -12,18 +12,18 @@
 
 /// Modified CSR, containing information/patterns how to perform the
 /// computations for each partition.
-class mcsr_t {
+class MCSR {
  public:
   /// Return the size of an mptr buffer.
-  size_t mptr_size(const int phase) const;
+  size_t MptrSize(const int phase) const;
   /// Inserts the size of `mcol` at the end `mptr` vector.
-  void next_mcol_idx_to_mptr();
+  void NextMcolIdxToMptr();
   /// Dump the contents to a binary `fstream`.
-  void dump_to_ofs(std::ofstream &ofs);
+  void DumpToOFS(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.
-  void load_from_ifs(std::ifstream &ifs);
+  void LoadFromIFS(std::ifstream &ifs);
   /// Dump to a txt file.
-  void dump_to_txt(std::ofstream &ofs);
+  void DumpToTxt(std::ofstream &ofs);
 
   phased_vector<idx_t> mptr;
   std::vector<idx_t> mcol;

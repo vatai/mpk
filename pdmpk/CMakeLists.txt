@@ -113,7 +113,7 @@ add_executable (pdmpk_prep
   "CSR.cc"
   "Buffers.cc"
   "mpi_bufs_t.cc"
-  "mcsr_t.cc"
+  "MCSR.cc"
   "pdmpk_bufs_t.cc"
   "Results.cc"
   )
@@ -124,7 +124,7 @@ add_executable (pdmpk_exec
   "pdmpk_exec.cc"
   "Buffers.cc"
   "mpi_bufs_t.cc"
-  "mcsr_t.cc"
+  "MCSR.cc"
   "Results.cc"
   )
 

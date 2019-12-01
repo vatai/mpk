@@ -34,8 +34,8 @@ partial_cd::partial_cd(const char *fname,     //
   }
   // nphase + 1
   for (auto &buffer : bufs) {
-    buffer.mcsr.mptr.rec_begin();        // BA
-    buffer.mcsr.next_mcol_idx_to_mptr(); // AB
+    buffer.mcsr.mptr.rec_begin();
+    buffer.mcsr.NextMcolIdxToMptr();
     buffer.mpiBufs.init_idcs.rec_begin();
   }
   // fill `result_idx`
@@ -93,7 +93,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.can_add(idx, lbelow, t)) {
       if (retval == false)
-        bufs[cur_part].mcsr.next_mcol_idx_to_mptr();
+        bufs[cur_part].mcsr.NextMcolIdxToMptr();
       proc_adjacent(idx, lbelow, t);
       retval = true;
     }
