@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <vector>
 
-#include "Results.h"
-#include "Buffers.h"
-#include "CSR.h"
+#include "results.h"
+#include "buffers.h"
+#include "csr.h"
 #include "utils.hpp"
 
 /// @page pdmpk_test pdmpk_test

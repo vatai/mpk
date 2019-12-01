@@ -3,7 +3,7 @@
 
 #include <fstream>
 #include "utils.hpp"
-#include "MPIBuffers.h"
+#include "mpi_buffers.h"
 
 MPIBuffers::MPIBuffers(const idx_t npart) : npart{npart} {}
 

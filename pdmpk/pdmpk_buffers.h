@@ -6,7 +6,7 @@
 #include <metis.h>
 #include <vector>
 
-#include "CSR.h"
+#include "csr.h"
 #include "typedefs.h"
 
 class PDMPKBuffers {

@@ -17,10 +17,10 @@
 
 #include <metis.h>
 
-#include "Results.h"
+#include "results.h"
 #include "typedefs.h"
-#include "MPIBuffers.h"
-#include "MCSR.h"
+#include "mpi_buffers.h"
+#include "mcsr.h"
 #include "phased_vector.hpp"
 
 /// The main buffers containing information/patterns how to perform

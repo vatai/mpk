@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <iomanip>
-#include "PDMPKBuffers.h"
+#include "pdmpk_buffers.h"
 
 #define SMALL_N 4
 

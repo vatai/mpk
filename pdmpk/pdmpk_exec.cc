@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <mpi.h>
 
-#include "Buffers.h"
+#include "buffers.h"
 #include "utils.hpp"
 
 /// @page pdmpk_exec pdmpk_exec

@@ -11,9 +11,9 @@
 
 #include <metis.h>
 
-#include "Buffers.h"
-#include "CSR.h"
-#include "PDMPKBuffers.h"
+#include "buffers.h"
+#include "csr.h"
+#include "pdmpk_buffers.h"
 #include "typedefs.h"
 
 class CommCompPatterns {

@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-#include "CSR.h"
+#include "csr.h"
 
 CSR::CSR(const char *fname)
 {

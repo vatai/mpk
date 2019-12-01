@@ -5,10 +5,10 @@
 #include <iostream>
 #include <iterator>
 
-#include "Buffers.h"
-#include "CommCompPatterns.h"
+#include "buffers.h"
+#include "comm_comp_patterns.h"
 
-#include "PDMPKBuffers.h"
+#include "pdmpk_buffers.h"
 #include "metis.h"
 #include "typedefs.h"
 

@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "typedefs.h"
-#include "CommCompPatterns.h"
+#include "comm_comp_patterns.h"
 
 int main(int argc, char *argv[])
 {
