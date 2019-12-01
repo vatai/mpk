@@ -42,11 +42,7 @@ int main(int argc, char *argv[])
       loadResult[idx] = results.val[i];
     }
   }
-  for (auto i = 0; i < csr.n; i++) {
-    std::cout << loadResult[i] << " == "
-              << goldResult[i] << std::endl;
-    assert(loadResult[i] == goldResult[i]);
-  }
+  assert(loadResult == goldResult);
 
   std::cout << "Test over" << std::endl;
   return 0;
