@@ -156,7 +156,7 @@ void buffers_t::dump(const int rank) {
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::dump_vec(mbuf.begin, file);
   Utils::dump_vec(results_mbuf_idx, file);
-  Utils::dump_vec(results.vect_idx, file);
+  Utils::dump_vec(results.vectIdx, file);
   mpi_bufs.dump_to_ofs(file);
   mcsr.dump_to_ofs(file);
 }
@@ -167,7 +167,7 @@ void buffers_t::load(const int rank) {
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::load_vec(mbuf.begin, file);
   Utils::load_vec(results_mbuf_idx, file);
-  Utils::load_vec(results.vect_idx, file);
+  Utils::load_vec(results.vectIdx, file);
   mpi_bufs.load_from_ifs(file);
   mcsr.load_from_ifs(file);
 }
@@ -179,7 +179,7 @@ void buffers_t::dump_txt(const int rank) {
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::dump_txt("mbuf_begin", mbuf.begin, file);
   Utils::dump_txt("result_mbuf_idx", results_mbuf_idx, file);
-  Utils::dump_txt("result_vect_idx", results.vect_idx, file);
+  Utils::dump_txt("result_vect_idx", results.vectIdx, file);
   Utils::dump_txt("dbg_idx", dbg_idx, file);
   mpi_bufs.dump_to_txt(file);
   mcsr.dump_to_txt(file);

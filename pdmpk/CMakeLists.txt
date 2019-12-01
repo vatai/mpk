@@ -105,7 +105,7 @@ set(MPI_CXX_COMPILER "/usr/bin/mpic++")
 find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
-add_definitions(-D_DEBUG_CSR_VALS)
+# add_definitions(-D_DEBUG_CSR_VALS)
 
 add_executable (pdmpk_prep
   "pdmpk_prep.cc"
@@ -129,3 +129,11 @@ add_executable (pdmpk_exec
   )
 
 target_link_libraries(pdmpk_exec "${METIS}" MPI::MPI_CXX)
+
+add_executable (pdmpk_test
+  "pdmpk_test.cc"
+  "csr_t.cc"
+  "Results.cc"
+  )
+
+# target_link_libraries(pdmpk_test "${METIS}" MPI::MPI_CXX)

@@ -4,7 +4,7 @@
 #include <vector>
 class Results {
  public:
-  std::vector<idx_t> vect_idx;
+  std::vector<idx_t> vectIdx;
   std::vector<double> val;
   void FillVal(const std::vector<idx_t> &idx, const std::vector<double> &mbuf);
   void Dump(const int rank);

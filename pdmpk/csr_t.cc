@@ -14,6 +14,23 @@ csr_t::csr_t(const char *fname)
   mtx_fill_vectors(file);
 }
 
+std::vector<double> csr_t::spmv(const std::vector<double> &vec) const {
+  std::vector<double> result(vec.size());
+  for (size_t i = 0; i < ptr.size(); i++) {
+    double tmp = 0.0;
+    for (int t = ptr[i]; t < ptr[i + 1]; t++) {
+      tmp += val[t] * vec[col[t]];
+    }
+    result[i] = tmp;
+  }
+  return result;
+}
+
+void csr_t::mpk(const int nlevels, std::vector<double> &vec) const {
+  for (int i = 0; i < nlevels; i++)
+    vec = spmv(vec);
+}
+
 void csr_t::mtx_check_banner(std::ifstream &file)
 {
   std::string banner;
