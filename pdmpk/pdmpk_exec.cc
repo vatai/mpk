@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
   }
 
   Buffers buf(npart);
-  buf.load(rank);
-  buf.exec();
+  buf.Load(rank);
+  buf.Exec();
 
-  buf.dump_mbuf_txt(rank);
+  buf.DumpMbufTxt(rank);
 
   buf.results.Dump(rank);
   buf.results.DumpTxt(rank);

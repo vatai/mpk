@@ -28,23 +28,23 @@
 class Buffers {
  public:
   Buffers(const idx_t npart);
-  void phase_init();
-  void phase_finalize(const int phase);
+  void PhaseInit();
+  void PhaseFinalize(const int phase);
 
-  void exec();
-  void do_comp(int phase);
-  void do_comm(int phase, std::ofstream &os);
-  void dump(const int rank);
-  void load(const int rank);
-  void dump_txt(const int rank);
-  void dump_mbuf_txt(const int rank);
+  void Exec();
+  void DoComp(int phase);
+  void DoComm(int phase, std::ofstream &os);
+  void Dump(const int rank);
+  void Load(const int rank);
+  void DumpTxt(const int rank);
+  void DumpMbufTxt(const int rank);
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
-  mpi_bufs_t mpi_bufs;
+  mpi_bufs_t mpiBufs;
 
   /// The largest send buffer size needed in all phases.
-  size_t max_sbuf_size;
+  size_t maxSbufSize;
 
   /// Send buffer used by MPI.
   std::vector<double> sbuf;
@@ -56,7 +56,7 @@ class Buffers {
   /// The index (in `mbuf`) where "the next" vertex will be stored.
   /// `mbuf_idx` is updated in the `pdmpk_prep` program, and used to
   /// allocate `mbuf` in the `pdmpk_exec` program.
-  idx_t mbuf_idx;
+  idx_t mbufIdx;
 
   /// The buffer where the to store the results of the computation
   /// (including the part of the input assigned to this partition, the

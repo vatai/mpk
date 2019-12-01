@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
   partial_cd pcd(argv[1], (idx_t)npart, nlevels);
 
   for (int i = 0; i < npart; i++) {
-    pcd.bufs[i].dump(i);
-    pcd.bufs[i].dump_txt(i);
+    pcd.bufs[i].Dump(i);
+    pcd.bufs[i].DumpTxt(i);
   }
 
   return 0;
