@@ -114,7 +114,7 @@ add_executable (pdmpk_prep
   "Buffers.cc"
   "MPIBuffers.cc"
   "MCSR.cc"
-  "pdmpk_bufs_t.cc"
+  "PDMPKBuffers.cc"
   "Results.cc"
   )
 

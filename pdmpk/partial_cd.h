@@ -14,7 +14,7 @@
 #include <metis.h>
 
 #include "typedefs.h"
-#include "pdmpk_bufs_t.h"
+#include "PDMPKBuffers.h"
 #include "Buffers.h"
 #include "CSR.h"
 
@@ -29,7 +29,7 @@ class partial_cd {
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
-  pdmpk_bufs_t pdmpk_bufs;
+  PDMPKBuffers pdmpk_bufs;
 
   /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.

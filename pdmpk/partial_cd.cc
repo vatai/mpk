@@ -9,7 +9,7 @@
 #include "partial_cd.h"
 
 #include "metis.h"
-#include "pdmpk_bufs_t.h"
+#include "PDMPKBuffers.h"
 #include "typedefs.h"
 
 partial_cd::partial_cd(const char *fname,     //
@@ -21,7 +21,7 @@ partial_cd::partial_cd(const char *fname,     //
       pdmpk_bufs(csr),                        //
       bufs(npart, Buffers(npart)),
       phase(0) {
-  pdmpk_bufs.metis_partition(npart);
+  pdmpk_bufs.MetisPartition(npart);
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
     finalize_vertex({idx, 0}, part);
@@ -29,7 +29,7 @@ partial_cd::partial_cd(const char *fname,     //
   bool was_active = update_levels();
   while (was_active) {
     phase++;
-    pdmpk_bufs.metis_partition_with_levels(npart);
+    pdmpk_bufs.MetisPartitionWithLevels(npart);
     was_active = update_levels();
   }
   // nphase + 1
@@ -54,7 +54,7 @@ bool partial_cd::update_levels() {
   bool was_active = true;
   bool retval = false;
   // `min_level` is important, see NOTE1 below.
-  auto min_level = pdmpk_bufs.min_level();
+  auto min_level = pdmpk_bufs.MinLevel();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {
@@ -88,10 +88,10 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
   const auto cur_part = pdmpk_bufs.partitions[idx];
   /// @todo(vatai): This init_idcs is a bit tricky, currently it
   /// should probably converted into a `std::map` or just sort it?
-  bool was_dirty = not pdmpk_bufs.partial_is_empty(idx);
+  bool was_dirty = not pdmpk_bufs.PartialIsEmpty(idx);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    if (pdmpk_bufs.can_add(idx, lbelow, t)) {
+    if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
       if (retval == false)
         bufs[cur_part].mcsr.NextMcolIdxToMptr();
       proc_adjacent(idx, lbelow, t);
@@ -102,7 +102,7 @@ bool partial_cd::proc_vertex(const idx_t idx, const level_t lbelow) {
     if (was_dirty) {
       add_to_init(idx, lbelow + 1);
     }
-    pdmpk_bufs.inc_level(idx);
+    pdmpk_bufs.IncLevel(idx);
     finalize_vertex({idx, lbelow + 1}, cur_part);
   }
   return retval;
@@ -173,8 +173,8 @@ void partial_cd::phase_finalize() {
   comm_dict.clear();
   init_dict.clear();
 
-  pdmpk_bufs.update_weights();
-  pdmpk_bufs.debug_print_report(std::cout, phase);
+  pdmpk_bufs.UpdateWeights();
+  pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
   dbg_mbuf_checks();
 }
