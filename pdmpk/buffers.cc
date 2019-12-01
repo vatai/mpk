@@ -1,17 +1,17 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-10-17
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-10-17
 
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <vector>
 #include <metis.h>
 #include <mpi.h>
+#include <string>
+#include <vector>
 
+#include "buffers.h"
 #include "typedefs.h"
 #include "utils.hpp"
-#include "buffers.h"
 
 const std::string FNAME{"bufs"};
 const std::string DBG_FNAME{"dbg_buff_"};
@@ -111,13 +111,11 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
     if (tgtIdx >= (int)mbuf.size()) {
       int rank;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      std::cout << phase << "@"
-                << rank << ": "
-                << tgtIdx << ", "
-                << mbuf.size() << std::endl;
+      std::cout << phase << "@" << rank << ": " << tgtIdx << ", " << mbuf.size()
+                << std::endl;
     }
     assert(tgtIdx < (int)mbuf.size()); // crash!
-    assert(mbuf[tgtIdx] == 0.0); // crash!
+    assert(mbuf[tgtIdx] == 0.0);       // crash!
     mbuf[tgtIdx] = mbuf[pair.first];
   }
 }

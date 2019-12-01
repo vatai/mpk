@@ -1,19 +1,18 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-10-20
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-20
+
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <metis.h>
+#include <vector>
 
 #include "phased_vector.hpp"
 
 /// Modified CSR, containing information/patterns how to perform the
 /// computations for each partition.
 class MCSR {
- public:
+public:
   /// Return the size of an mptr buffer.
   size_t MptrSize(const int phase) const;
   /// Inserts the size of `mcol` at the end `mptr` vector.

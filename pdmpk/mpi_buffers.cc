@@ -2,8 +2,9 @@
 //  Date: 2019-10-19
 
 #include <fstream>
-#include "utils.hpp"
+
 #include "mpi_buffers.h"
+#include "utils.hpp"
 
 MPIBuffers::MPIBuffers(const idx_t npart) : npart{npart} {}
 

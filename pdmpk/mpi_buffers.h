@@ -1,21 +1,19 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-10-19
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-19
 
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <metis.h>
+#include <vector>
 
-#include "typedefs.h"
 #include "phased_vector.hpp"
+#include "typedefs.h"
 
 /// MPI buffers, containing information/patterns how to perform the
 /// communication for each partition.
 class MPIBuffers {
- public:
+public:
   MPIBuffers(const idx_t npart);
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
   /// count buffers (`sendcount` and `recvcount`).
@@ -48,6 +46,6 @@ class MPIBuffers {
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;
 
- private:
+private:
   MPIBuffers();
 };

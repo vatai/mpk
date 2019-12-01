@@ -1,12 +1,11 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-09-17
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-09-17
 
 #include <sstream>
 
 #include "csr.h"
 
-CSR::CSR(const char *fname)
-{
+CSR::CSR(const char *fname) {
   std::ifstream file{fname};
 
   MtxCheckBanner(file);
@@ -31,20 +30,14 @@ void CSR::MPK(const int nlevels, std::vector<double> &vec) const {
     vec = SpMV(vec);
 }
 
-void CSR::MtxCheckBanner(std::ifstream &file)
-{
+void CSR::MtxCheckBanner(std::ifstream &file) {
   std::string banner;
   std::getline(file, banner);
   std::stringstream tmp;
   std::string word;
   tmp << banner;
-  const std::string words[] = {
-    "%%MatrixMarket",
-    "matrix",
-    "coordinate",
-    "real",
-    "general"
-  };
+  const std::string words[] = {"%%MatrixMarket", "matrix", "coordinate", "real",
+                               "general"};
   for (auto w : words) {
     tmp >> word;
     if (w != word) {
@@ -53,8 +46,7 @@ void CSR::MtxCheckBanner(std::ifstream &file)
   }
 }
 
-void CSR::MtxFillSize(std::ifstream &file)
-{
+void CSR::MtxFillSize(std::ifstream &file) {
   std::string line;
   std::stringstream ss;
   std::getline(file, line);
@@ -73,8 +65,7 @@ void CSR::MtxFillSize(std::ifstream &file)
   val.reserve(nnz);
 }
 
-void CSR::MtxFillVectors(std::ifstream &file)
-{
+void CSR::MtxFillVectors(std::ifstream &file) {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);
   std::vector<std::vector<double>> vs(this->n);
@@ -84,7 +75,8 @@ void CSR::MtxFillVectors(std::ifstream &file)
       double val;
       int i, j;
       ss >> i >> j >> val;
-      i--; j--;
+      i--;
+      j--;
       ptr[i + 1]++;
       Js[i].push_back(j);
       vs[i].push_back(val);

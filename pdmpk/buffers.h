@@ -1,32 +1,30 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-09-17
- *
- * @brief The buffers collected on a single partition.
- *
- * @details `Buffers` contains the MPI buffers, the modified CSP
- * buffers and `mbuf` and `ibuF`.
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-09-17
+
+/// @brief The buffers collected on a single partition.
+///
+/// @details `Buffers` contains the MPI buffers, the modified CSP
+/// buffers and `mbuf` and `ibuF`.
+
 #pragma once
 
-#include <forward_list>
 #include <fstream>
-#include <vector>
-#include <utility>
 #include <map>
+#include <utility>
+#include <vector>
 
 #include <metis.h>
 
+#include "mcsr.h"
+#include "mpi_buffers.h"
+#include "phased_vector.hpp"
 #include "results.h"
 #include "typedefs.h"
-#include "mpi_buffers.h"
-#include "mcsr.h"
-#include "phased_vector.hpp"
 
 /// The main buffers containing information/patterns how to perform
 /// the computation and communication for each partition.
 class Buffers {
- public:
+public:
   Buffers(const idx_t npart);
   void PhaseInit();
   void PhaseFinalize(const int phase);
@@ -85,6 +83,7 @@ class Buffers {
   Results results;
 
   std::vector<size_t> dbg_idx;
- private:
+
+private:
   Buffers();
 };

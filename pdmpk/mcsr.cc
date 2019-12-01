@@ -1,9 +1,9 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-10-20
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-10-20
 
-#include <fstream>
-#include "utils.hpp"
 #include "mcsr.h"
+#include "utils.hpp"
+#include <fstream>
 
 size_t MCSR::MptrSize(const int phase) const {
   return mptr.begin[phase + 1] - mptr.begin[phase];

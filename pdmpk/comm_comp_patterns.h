@@ -1,6 +1,6 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-09-17
-///
+
 /// @brief Communication data for with partial vertices.
 
 #pragma once

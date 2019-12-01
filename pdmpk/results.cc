@@ -1,3 +1,6 @@
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-12-01
+
 #include "results.h"
 #include "utils.hpp"
 #include <fstream>

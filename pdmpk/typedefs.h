@@ -1,3 +1,6 @@
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-12-01
+
 #pragma once
 
 #include <map>

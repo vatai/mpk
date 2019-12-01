@@ -1,15 +1,14 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-09-17
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-09-17
 
+#include "metis.h"
 #include <cassert>
 #include <iostream>
 #include <iterator>
 
 #include "buffers.h"
 #include "comm_comp_patterns.h"
-
 #include "pdmpk_buffers.h"
-#include "metis.h"
 #include "typedefs.h"
 
 CommCompPatterns::CommCompPatterns(const char *fname,     //
@@ -18,7 +17,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     : csr{fname},                                         //
       npart{npart},                                       //
       nlevels{nlevels},                                   //
-      pdmpk_bufs(csr),                                     //
+      pdmpk_bufs(csr),                                    //
       bufs(npart, Buffers(npart)),                        //
       phase(0) {
   pdmpk_bufs.MetisPartition(npart);
@@ -150,7 +149,8 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   }
 }
 
-void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part) {
+void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
+                                      const idx_t part) {
   store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
   bufs[part].mbuf_idx++;
 }
@@ -208,8 +208,8 @@ void CommCompPatterns::ProcInitDict(const init_dict_t::const_iterator &iter) {
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
                                 + SrcSendBase(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
-                                + tgt_buf.mcsr.mptr.size() //
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]        //
+                                + tgt_buf.mcsr.mptr.size()       //
                                 - tgt_buf.mcsr.mptr.begin[phase] //
                                 + TgtRecvBase(iter->first) + comm_dict_size;
   const auto size = vec.size();
@@ -263,8 +263,7 @@ void CommCompPatterns::DbgMbufChecks() {
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
       if (pair.first >= mbuf_idx) {
-        std::cout << pair.first << ", "
-                  << mbuf_idx << std::endl;
+        std::cout << pair.first << ", " << mbuf_idx << std::endl;
       }
       assert(pair.first < mbuf_idx);
       assert(pair.second < mbuf_idx);
