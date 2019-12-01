@@ -41,9 +41,9 @@ class MPIBuffers {
   std::vector<int> sdispls;
   std::vector<int> rdispls;
   /// `mbuf` indices, which need to be copied to the send buffer.
-  phased_vector<idx_t> sbufIdcs;
+  phased_vector<idx_t> sbuf_idcs;
   /// `mbuf` source-target pairs, to initialise mbuf elements.
-  phased_vector<sidx_tidx_t> initIdcs;
+  phased_vector<sidx_tidx_t> init_idcs;
 
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;

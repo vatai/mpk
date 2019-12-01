@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     results.Load(i);
     const size_t size = results.val.size();
     for (size_t i = 0; i < size; i++) {
-      auto idx = results.vectIdx[i];
+      auto idx = results.vect_idx[i];
       loadResult[idx] = results.val[i];
     }
   }

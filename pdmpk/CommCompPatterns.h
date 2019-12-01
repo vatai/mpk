@@ -27,7 +27,7 @@ public:
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
-  PDMPKBuffers pdmpkBufs;
+  PDMPKBuffers pdmpk_bufs;
 
   /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.
@@ -36,18 +36,18 @@ public:
 private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
-  store_part_t storePart;
+  store_part_t store_part;
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
   /// source partition.
-  comm_dict_t commDict;
+  comm_dict_t comm_dict;
 
   /// In each phase, collect the communication of partial indices (for
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs.
-  init_dict_t initDict;
+  init_dict_t init_dict;
 
   void PhaseInit();
 

@@ -41,10 +41,10 @@ class Buffers {
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
-  MPIBuffers mpiBufs;
+  MPIBuffers mpi_bufs;
 
   /// The largest send buffer size needed in all phases.
-  size_t maxSbufSize;
+  size_t max_sbuf_size;
 
   /// Send buffer used by MPI.
   std::vector<double> sbuf;
@@ -56,7 +56,7 @@ class Buffers {
   /// The index (in `mbuf`) where "the next" vertex will be stored.
   /// `mbuf_idx` is updated in the `pdmpk_prep` program, and used to
   /// allocate `mbuf` in the `pdmpk_exec` program.
-  idx_t mbufIdx;
+  idx_t mbuf_idx;
 
   /// The buffer where the to store the results of the computation
   /// (including the part of the input assigned to this partition, the
@@ -78,10 +78,13 @@ class Buffers {
 
   /// Holds the (vector index, `mbuf` index) pairs where the vertices
   /// at level `nlevel` can be found in the given partition.
-  std::vector<idx_t> resultsMbufIdx;
+  std::vector<idx_t> results_mbuf_idx;
+
+  /// Information needed to reconstruct the result from the output of
+  /// the partitions (store ind Buffers).
   Results results;
 
-  std::vector<size_t> dbgIdx;
+  std::vector<size_t> dbg_idx;
  private:
   Buffers();
 };

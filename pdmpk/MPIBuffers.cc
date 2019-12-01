@@ -44,10 +44,10 @@ void MPIBuffers::DumpToOFS(std::ofstream &ofs) {
   Utils::dump_vec(sdispls, ofs);
   Utils::dump_vec(recvcounts, ofs);
   Utils::dump_vec(rdispls, ofs);
-  Utils::dump_vec(sbufIdcs, ofs);
-  Utils::dump_vec(sbufIdcs.begin, ofs);
-  Utils::dump_vec(initIdcs, ofs);
-  Utils::dump_vec(initIdcs.begin, ofs);
+  Utils::dump_vec(sbuf_idcs, ofs);
+  Utils::dump_vec(sbuf_idcs.begin, ofs);
+  Utils::dump_vec(init_idcs, ofs);
+  Utils::dump_vec(init_idcs.begin, ofs);
 }
 
 void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
@@ -55,10 +55,10 @@ void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
   Utils::load_vec(sdispls, ifs);
   Utils::load_vec(recvcounts, ifs);
   Utils::load_vec(rdispls, ifs);
-  Utils::load_vec(sbufIdcs, ifs);
-  Utils::load_vec(sbufIdcs.begin, ifs);
-  Utils::load_vec(initIdcs, ifs);
-  Utils::load_vec(initIdcs.begin, ifs);
+  Utils::load_vec(sbuf_idcs, ifs);
+  Utils::load_vec(sbuf_idcs.begin, ifs);
+  Utils::load_vec(init_idcs, ifs);
+  Utils::load_vec(init_idcs.begin, ifs);
 }
 
 void MPIBuffers::DumpToTxt(std::ofstream &ofs) {
@@ -66,8 +66,8 @@ void MPIBuffers::DumpToTxt(std::ofstream &ofs) {
   Utils::dump_txt("sdispls   ", sdispls, ofs);
   Utils::dump_txt("recvcounts", recvcounts, ofs);
   Utils::dump_txt("rdispls   ", rdispls, ofs);
-  Utils::dump_txt("sbufIdcs", sbufIdcs, ofs);
-  Utils::dump_txt("sbufIdcs.begin", sbufIdcs.begin, ofs);
-  Utils::dump_txt("initIdcs", initIdcs, ofs);
-  Utils::dump_txt("initIdcs.begin", initIdcs.begin, ofs);
+  Utils::dump_txt("sbuf_idcs", sbuf_idcs, ofs);
+  Utils::dump_txt("sbuf_idcs.begin", sbuf_idcs.begin, ofs);
+  Utils::dump_txt("init_idcs", init_idcs, ofs);
+  Utils::dump_txt("init_idcs.begin", init_idcs.begin, ofs);
 }

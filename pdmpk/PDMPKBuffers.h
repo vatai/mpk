@@ -11,7 +11,7 @@
 
 class PDMPKBuffers {
 public:
-  PDMPKBuffers(const CSR &_csr);
+  PDMPKBuffers(const CSR &csr);
 
   level_t MinLevel();
   bool CanAdd(const idx_t idx, const level_t lbelow, const idx_t t);
