@@ -149,9 +149,9 @@ void Buffers::Dump(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
-  Utils::dump_vec(mbuf.begin, file);
-  Utils::dump_vec(results_mbuf_idx, file);
-  Utils::dump_vec(results.vect_idx, file);
+  Utils::DumpVec(mbuf.begin, file);
+  Utils::DumpVec(results_mbuf_idx, file);
+  Utils::DumpVec(results.vect_idx, file);
   mpi_bufs.DumpToOFS(file);
   mcsr.DumpToOFS(file);
 }
@@ -160,9 +160,9 @@ void Buffers::Load(const int rank) {
   std::ifstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
-  Utils::load_vec(mbuf.begin, file);
-  Utils::load_vec(results_mbuf_idx, file);
-  Utils::load_vec(results.vect_idx, file);
+  Utils::LoadVec(mbuf.begin, file);
+  Utils::LoadVec(results_mbuf_idx, file);
+  Utils::LoadVec(results.vect_idx, file);
   mpi_bufs.LoadFromIFS(file);
   mcsr.LoadFromIFS(file);
 }
@@ -172,15 +172,15 @@ void Buffers::DumpTxt(const int rank) {
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
-  Utils::dump_txt("mbuf_begin", mbuf.begin, file);
-  Utils::dump_txt("result_mbuf_idx", results_mbuf_idx, file);
-  Utils::dump_txt("result_vect_idx", results.vect_idx, file);
-  Utils::dump_txt("dbg_idx", dbg_idx, file);
+  Utils::DumpTxt("mbuf_begin", mbuf.begin, file);
+  Utils::DumpTxt("result_mbuf_idx", results_mbuf_idx, file);
+  Utils::DumpTxt("result_vect_idx", results.vect_idx, file);
+  Utils::DumpTxt("dbg_idx", dbg_idx, file);
   mpi_bufs.DumpToTxt(file);
   mcsr.DumpToTxt(file);
 }
 
 void Buffers::DumpMbufTxt(const int rank) {
   std::ofstream file("dresult" + std::to_string(rank) + ".txt");
-  Utils::dump_txt("mbuf", mbuf, file);
+  Utils::DumpTxt("mbuf", mbuf, file);
 }

@@ -41,34 +41,34 @@ void MPIBuffers::AllocMpiBufs() {
 }
 
 void MPIBuffers::DumpToOFS(std::ofstream &ofs) {
-  Utils::dump_vec(sendcounts, ofs);
-  Utils::dump_vec(sdispls, ofs);
-  Utils::dump_vec(recvcounts, ofs);
-  Utils::dump_vec(rdispls, ofs);
-  Utils::dump_vec(sbuf_idcs, ofs);
-  Utils::dump_vec(sbuf_idcs.begin, ofs);
-  Utils::dump_vec(init_idcs, ofs);
-  Utils::dump_vec(init_idcs.begin, ofs);
+  Utils::DumpVec(sendcounts, ofs);
+  Utils::DumpVec(sdispls, ofs);
+  Utils::DumpVec(recvcounts, ofs);
+  Utils::DumpVec(rdispls, ofs);
+  Utils::DumpVec(sbuf_idcs, ofs);
+  Utils::DumpVec(sbuf_idcs.begin, ofs);
+  Utils::DumpVec(init_idcs, ofs);
+  Utils::DumpVec(init_idcs.begin, ofs);
 }
 
 void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
-  Utils::load_vec(sendcounts, ifs);
-  Utils::load_vec(sdispls, ifs);
-  Utils::load_vec(recvcounts, ifs);
-  Utils::load_vec(rdispls, ifs);
-  Utils::load_vec(sbuf_idcs, ifs);
-  Utils::load_vec(sbuf_idcs.begin, ifs);
-  Utils::load_vec(init_idcs, ifs);
-  Utils::load_vec(init_idcs.begin, ifs);
+  Utils::LoadVec(sendcounts, ifs);
+  Utils::LoadVec(sdispls, ifs);
+  Utils::LoadVec(recvcounts, ifs);
+  Utils::LoadVec(rdispls, ifs);
+  Utils::LoadVec(sbuf_idcs, ifs);
+  Utils::LoadVec(sbuf_idcs.begin, ifs);
+  Utils::LoadVec(init_idcs, ifs);
+  Utils::LoadVec(init_idcs.begin, ifs);
 }
 
 void MPIBuffers::DumpToTxt(std::ofstream &ofs) {
-  Utils::dump_txt("sendcounts", sendcounts, ofs);
-  Utils::dump_txt("sdispls   ", sdispls, ofs);
-  Utils::dump_txt("recvcounts", recvcounts, ofs);
-  Utils::dump_txt("rdispls   ", rdispls, ofs);
-  Utils::dump_txt("sbuf_idcs", sbuf_idcs, ofs);
-  Utils::dump_txt("sbuf_idcs.begin", sbuf_idcs.begin, ofs);
-  Utils::dump_txt("init_idcs", init_idcs, ofs);
-  Utils::dump_txt("init_idcs.begin", init_idcs.begin, ofs);
+  Utils::DumpTxt("sendcounts", sendcounts, ofs);
+  Utils::DumpTxt("sdispls   ", sdispls, ofs);
+  Utils::DumpTxt("recvcounts", recvcounts, ofs);
+  Utils::DumpTxt("rdispls   ", rdispls, ofs);
+  Utils::DumpTxt("sbuf_idcs", sbuf_idcs, ofs);
+  Utils::DumpTxt("sbuf_idcs.begin", sbuf_idcs.begin, ofs);
+  Utils::DumpTxt("init_idcs", init_idcs, ofs);
+  Utils::DumpTxt("init_idcs.begin", init_idcs.begin, ofs);
 }

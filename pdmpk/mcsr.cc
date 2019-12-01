@@ -12,22 +12,22 @@ size_t MCSR::MptrSize(const int phase) const {
 void MCSR::NextMcolIdxToMptr() { mptr.push_back(mcol.size()); }
 
 void MCSR::DumpToOFS(std::ofstream &ofs) {
-  Utils::dump_vec(mptr, ofs);
-  Utils::dump_vec(mptr.begin, ofs);
-  Utils::dump_vec(mcol, ofs);
-  Utils::dump_vec(mval, ofs);
+  Utils::DumpVec(mptr, ofs);
+  Utils::DumpVec(mptr.begin, ofs);
+  Utils::DumpVec(mcol, ofs);
+  Utils::DumpVec(mval, ofs);
 }
 
 void MCSR::LoadFromIFS(std::ifstream &ifs) {
-  Utils::load_vec(mptr, ifs);
-  Utils::load_vec(mptr.begin, ifs);
-  Utils::load_vec(mcol, ifs);
-  Utils::load_vec(mval, ifs);
+  Utils::LoadVec(mptr, ifs);
+  Utils::LoadVec(mptr.begin, ifs);
+  Utils::LoadVec(mcol, ifs);
+  Utils::LoadVec(mval, ifs);
 }
 
 void MCSR::DumpToTxt(std::ofstream &ofs) {
-  Utils::dump_txt("mptr", mptr, ofs);
-  Utils::dump_txt("mptr.begin", mptr.begin, ofs);
-  Utils::dump_txt("mcol", mcol, ofs);
-  Utils::dump_txt("mval", mval, ofs);
+  Utils::DumpTxt("mptr", mptr, ofs);
+  Utils::DumpTxt("mptr.begin", mptr.begin, ofs);
+  Utils::DumpTxt("mcol", mcol, ofs);
+  Utils::DumpTxt("mval", mval, ofs);
 }
