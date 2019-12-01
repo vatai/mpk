@@ -1,3 +1,4 @@
+/// @file
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-09-17
 
@@ -9,7 +10,7 @@
 #include <iostream>
 
 #include "typedefs.h"
-#include "partial_cd.h"
+#include "comm_comp_patterns.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,11 +18,11 @@ int main(int argc, char *argv[])
   int npart = std::stoi(argv[2]);
   level_t nlevels = std::stoi(argv[3]);
 
-  partial_cd pcd(argv[1], (idx_t)npart, nlevels);
+  CommCompPatterns pcd(argv[1], (idx_t)npart, nlevels);
 
   for (int i = 0; i < npart; i++) {
-    pcd.bufs[i].dump(i);
-    pcd.bufs[i].dump_txt(i);
+    pcd.bufs[i].Dump(i);
+    pcd.bufs[i].DumpTxt(i);
   }
 
   return 0;

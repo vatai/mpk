@@ -1,37 +1,35 @@
-/**
- * @author Emil VATAI <emil.vatai@gmail.com>
- * @date 2019-10-19
- */
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2019-10-19
 
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <metis.h>
+#include <vector>
 
-#include "typedefs.h"
 #include "phased_vector.hpp"
+#include "typedefs.h"
 
 /// MPI buffers, containing information/patterns how to perform the
 /// communication for each partition.
-class mpi_bufs_t {
- public:
-  mpi_bufs_t(const idx_t npart);
+class MPIBuffers {
+public:
+  MPIBuffers(const idx_t npart);
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
   /// count buffers (`sendcount` and `recvcount`).
-  void fill_displs(int phase);
+  void FillDispls(int phase);
   /// Get `rbuf` size from `recvcount` and `rdispls`.
-  size_t sbuf_size(int phase) const;
+  size_t SbufSize(int phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
-  size_t rbuf_size(int phase) const;
+  size_t RbufSize(int phase) const;
   /// Allocate {send,recv}counts and {s,r}displs.
-  void alloc_mpi_bufs();
+  void AllocMpiBufs();
   /// Dump the contents to a binary `fstream`.
-  void dump_to_ofs(std::ofstream &ofs);
+  void DumpToOFS(std::ofstream &ofs);
   /// Load the contents from a binary `fstream`.
-  void load_from_ifs(std::ifstream &ifs);
+  void LoadFromIFS(std::ifstream &ifs);
   /// Dump to a txt file.
-  void dump_to_txt(std::ofstream &ofs);
+  void DumpToTxt(std::ofstream &ofs);
 
   /// - MPI (one for each phase):
   ///   - `sendcount` and `recvcount`
@@ -48,6 +46,6 @@ class mpi_bufs_t {
   /// @todo(vatai): It would be nice to "remove" this.
   const idx_t npart;
 
- private:
-  mpi_bufs_t();
+private:
+  MPIBuffers();
 };

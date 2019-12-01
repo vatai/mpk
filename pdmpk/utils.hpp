@@ -15,14 +15,14 @@ std::ostream &operator<<(std::ostream &os, const std::pair<T1, T2> &pair) {
 }
 
 template <typename T>
-void dump_vec(const std::vector<T> &vec, std::ofstream &ofs) {
+void DumpVec(const std::vector<T> &vec, std::ofstream &ofs) {
   const auto size = vec.size();
   ofs.write((char *)&size, sizeof(size));
   ofs.write((char *)vec.data(), sizeof(T) * size);
 }
 
 template <typename T> //
-void load_vec(std::vector<T> &vec, std::istream &is) {
+void LoadVec(std::vector<T> &vec, std::istream &is) {
   auto size = vec.size();
   is.read((char *)&size, sizeof(size));
   vec.resize(size);
@@ -30,7 +30,7 @@ void load_vec(std::vector<T> &vec, std::istream &is) {
 }
 
 template <typename T> //
-void dump_txt(const char *name, std::vector<T> &vec, std::ofstream &ofs) {
+void DumpTxt(const char *name, std::vector<T> &vec, std::ofstream &ofs) {
   ofs << name << ": ";
   for (const auto v : vec) {
     ofs << v << ", ";

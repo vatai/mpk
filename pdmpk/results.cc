@@ -1,4 +1,7 @@
-#include "Results.h"
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-12-01
+
+#include "results.h"
 #include "utils.hpp"
 #include <fstream>
 #include <ios>
@@ -15,18 +18,18 @@ void Results::FillVal(const std::vector<idx_t> &idx,
 void Results::Dump(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
-  Utils::dump_vec(vectIdx, file);
-  Utils::dump_vec(val, file);
+  Utils::DumpVec(vect_idx, file);
+  Utils::DumpVec(val, file);
 }
 
 void Results::Load(const int rank) {
   std::ifstream file(FNAME + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
-  Utils::load_vec(vectIdx, file);
-  Utils::load_vec(val, file);
+  Utils::LoadVec(vect_idx, file);
+  Utils::LoadVec(val, file);
 }
 
 void Results::DumpTxt(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".txt");
-  Utils::dump_txt("result_val", val, file);
+  Utils::DumpTxt("result_val", val, file);
 }

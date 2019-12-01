@@ -1,3 +1,4 @@
+/// @file
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-11-28
 
@@ -9,9 +10,9 @@
 #include <unistd.h>
 #include <vector>
 
-#include "Results.h"
-#include "buffers_t.h"
-#include "csr_t.h"
+#include "results.h"
+#include "buffers.h"
+#include "csr.h"
 #include "utils.hpp"
 
 /// @page pdmpk_test pdmpk_test
@@ -21,7 +22,7 @@
 int main(int argc, char *argv[])
 {
   assert(argc == 4);
-  csr_t csr(argv[1]);
+  CSR csr(argv[1]);
   const int npart = std::stoi(argv[2]);
   const int nlevels = std::stoi(argv[3]);
 
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
   std::vector<double> goldResult(csr.n);
   for (auto &v : goldResult)
     v = 1.0;
-  csr.mpk(nlevels, goldResult);
+  csr.MPK(nlevels, goldResult);
 
   // Get finalResult.
   std::vector<double> loadResult(csr.n);
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
     results.Load(i);
     const size_t size = results.val.size();
     for (size_t i = 0; i < size; i++) {
-      auto idx = results.vectIdx[i];
+      auto idx = results.vect_idx[i];
       loadResult[idx] = results.val[i];
     }
   }

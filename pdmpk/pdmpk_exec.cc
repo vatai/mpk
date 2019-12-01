@@ -1,3 +1,4 @@
+/// @file
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-11-11
 
@@ -7,7 +8,7 @@
 #include <unistd.h>
 #include <mpi.h>
 
-#include "buffers_t.h"
+#include "buffers.h"
 #include "utils.hpp"
 
 /// @page pdmpk_exec pdmpk_exec
@@ -35,11 +36,11 @@ int main(int argc, char *argv[])
       sleep(5);
   }
 
-  buffers_t buf(npart);
-  buf.load(rank);
-  buf.exec();
+  Buffers buf(npart);
+  buf.Load(rank);
+  buf.Exec();
 
-  buf.dump_mbuf_txt(rank);
+  buf.DumpMbufTxt(rank);
 
   buf.results.Dump(rank);
   buf.results.DumpTxt(rank);

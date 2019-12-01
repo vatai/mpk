@@ -109,31 +109,31 @@ find_package(MPI REQUIRED)
 
 add_executable (pdmpk_prep
   "pdmpk_prep.cc"
-  "partial_cd.cc"
-  "csr_t.cc"
-  "buffers_t.cc"
-  "mpi_bufs_t.cc"
-  "mcsr_t.cc"
-  "pdmpk_bufs_t.cc"
-  "Results.cc"
+  "comm_comp_patterns.cc"
+  "csr.cc"
+  "buffers.cc"
+  "mpi_buffers.cc"
+  "mcsr.cc"
+  "pdmpk_buffers.cc"
+  "results.cc"
   )
 
 target_link_libraries(pdmpk_prep "${METIS}" MPI::MPI_CXX)
 
 add_executable (pdmpk_exec
   "pdmpk_exec.cc"
-  "buffers_t.cc"
-  "mpi_bufs_t.cc"
-  "mcsr_t.cc"
-  "Results.cc"
+  "buffers.cc"
+  "mpi_buffers.cc"
+  "mcsr.cc"
+  "results.cc"
   )
 
 target_link_libraries(pdmpk_exec "${METIS}" MPI::MPI_CXX)
 
 add_executable (pdmpk_test
   "pdmpk_test.cc"
-  "csr_t.cc"
-  "Results.cc"
+  "csr.cc"
+  "results.cc"
   )
 
 # target_link_libraries(pdmpk_test "${METIS}" MPI::MPI_CXX)

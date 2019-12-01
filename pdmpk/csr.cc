@@ -1,20 +1,19 @@
-//  Author: Emil VATAI <emil.vatai@gmail.com>
-//  Date: 2019-09-17
+// Author: Emil VATAI <emil.vatai@gmail.com>
+// Date: 2019-09-17
 
 #include <sstream>
 
-#include "csr_t.h"
+#include "csr.h"
 
-csr_t::csr_t(const char *fname)
-{
+CSR::CSR(const char *fname) {
   std::ifstream file{fname};
 
-  mtx_check_banner(file);
-  mtx_fill_size(file);
-  mtx_fill_vectors(file);
+  MtxCheckBanner(file);
+  MtxFillSize(file);
+  MtxFillVectors(file);
 }
 
-std::vector<double> csr_t::spmv(const std::vector<double> &vec) const {
+std::vector<double> CSR::SpMV(const std::vector<double> &vec) const {
   std::vector<double> result(vec.size());
   for (size_t i = 0; i < ptr.size(); i++) {
     double tmp = 0.0;
@@ -26,25 +25,19 @@ std::vector<double> csr_t::spmv(const std::vector<double> &vec) const {
   return result;
 }
 
-void csr_t::mpk(const int nlevels, std::vector<double> &vec) const {
+void CSR::MPK(const int nlevels, std::vector<double> &vec) const {
   for (int i = 0; i < nlevels; i++)
-    vec = spmv(vec);
+    vec = SpMV(vec);
 }
 
-void csr_t::mtx_check_banner(std::ifstream &file)
-{
+void CSR::MtxCheckBanner(std::ifstream &file) {
   std::string banner;
   std::getline(file, banner);
   std::stringstream tmp;
   std::string word;
   tmp << banner;
-  const std::string words[] = {
-    "%%MatrixMarket",
-    "matrix",
-    "coordinate",
-    "real",
-    "general"
-  };
+  const std::string words[] = {"%%MatrixMarket", "matrix", "coordinate", "real",
+                               "general"};
   for (auto w : words) {
     tmp >> word;
     if (w != word) {
@@ -53,8 +46,7 @@ void csr_t::mtx_check_banner(std::ifstream &file)
   }
 }
 
-void csr_t::mtx_fill_size(std::ifstream &file)
-{
+void CSR::MtxFillSize(std::ifstream &file) {
   std::string line;
   std::stringstream ss;
   std::getline(file, line);
@@ -73,8 +65,7 @@ void csr_t::mtx_fill_size(std::ifstream &file)
   val.reserve(nnz);
 }
 
-void csr_t::mtx_fill_vectors(std::ifstream &file)
-{
+void CSR::MtxFillVectors(std::ifstream &file) {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);
   std::vector<std::vector<double>> vs(this->n);
@@ -84,7 +75,8 @@ void csr_t::mtx_fill_vectors(std::ifstream &file)
       double val;
       int i, j;
       ss >> i >> j >> val;
-      i--; j--;
+      i--;
+      j--;
       ptr[i + 1]++;
       Js[i].push_back(j);
       vs[i].push_back(val);
