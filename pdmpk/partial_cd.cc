@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iterator>
 
-#include "buffers_t.h"
+#include "Buffers.h"
 #include "partial_cd.h"
 
 #include "metis.h"
@@ -19,7 +19,7 @@ partial_cd::partial_cd(const char *fname,     //
       npart{npart},                           //
       nlevels{nlevels},                       //
       pdmpk_bufs(csr),                        //
-      bufs(npart, buffers_t(npart)),
+      bufs(npart, Buffers(npart)),
       phase(0) {
   pdmpk_bufs.metis_partition(npart);
   for (int idx = 0; idx < csr.n; idx++) {

@@ -14,15 +14,15 @@
 
 #include "typedefs.h"
 #include "utils.hpp"
-#include "buffers_t.h"
+#include "Buffers.h"
 
 const std::string FNAME{"bufs"};
 const std::string DBG_FNAME{"dbg_buff_"};
 
-buffers_t::buffers_t(const idx_t npart)
+Buffers::Buffers(const idx_t npart)
     : mpi_bufs(npart), max_sbuf_size(0), mbuf_idx(0) {}
 
-void buffers_t::phase_init() {
+void Buffers::phase_init() {
   mpi_bufs.alloc_mpi_bufs();
   mpi_bufs.sbuf_idcs.rec_begin();
   mpi_bufs.init_idcs.rec_begin();
@@ -31,7 +31,7 @@ void buffers_t::phase_init() {
   mbuf.begin.push_back(mbuf_idx);
 }
 
-void buffers_t::phase_finalize(const int phase) {
+void Buffers::phase_finalize(const int phase) {
   // Fill displacement buffers from count buffers.
   mpi_bufs.fill_displs(phase);
   const auto rbuf_size = mpi_bufs.rbuf_size(phase);
@@ -48,7 +48,7 @@ void buffers_t::phase_finalize(const int phase) {
   mbuf_idx += rbuf_size;
 }
 
-void buffers_t::do_comp(int phase) {
+void Buffers::do_comp(int phase) {
   auto mcount = mcsr.mptr.begin[phase + 1] - //
                 mcsr.mptr.begin[phase];
   auto cur_mbuf = mbuf.get_ptr(phase);
@@ -66,7 +66,7 @@ void buffers_t::do_comp(int phase) {
   }
 }
 
-void buffers_t::do_comm(int phase, std::ofstream &os) {
+void Buffers::do_comm(int phase, std::ofstream &os) {
   /// @todo(vatai): Remove asserts and clean up.
   const auto scount = mpi_bufs.sbuf_size(phase);
 
@@ -125,7 +125,7 @@ void buffers_t::do_comm(int phase, std::ofstream &os) {
   }
 }
 
-void buffers_t::exec() {
+void Buffers::exec() {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
@@ -150,7 +150,7 @@ void buffers_t::exec() {
   std::cout << "exec(" << rank << ")" << std::endl;
 }
 
-void buffers_t::dump(const int rank) {
+void Buffers::dump(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
@@ -161,7 +161,7 @@ void buffers_t::dump(const int rank) {
   mcsr.dump_to_ofs(file);
 }
 
-void buffers_t::load(const int rank) {
+void Buffers::load(const int rank) {
   std::ifstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
@@ -172,7 +172,7 @@ void buffers_t::load(const int rank) {
   mcsr.load_from_ifs(file);
 }
 
-void buffers_t::dump_txt(const int rank) {
+void Buffers::dump_txt(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".txt");
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
@@ -185,7 +185,7 @@ void buffers_t::dump_txt(const int rank) {
   mcsr.dump_to_txt(file);
 }
 
-void buffers_t::dump_mbuf_txt(const int rank) {
+void Buffers::dump_mbuf_txt(const int rank) {
   std::ofstream file("dresult" + std::to_string(rank) + ".txt");
   Utils::dump_txt("mbuf", mbuf, file);
 }

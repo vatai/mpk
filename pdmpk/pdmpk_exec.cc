@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <mpi.h>
 
-#include "buffers_t.h"
+#include "Buffers.h"
 #include "utils.hpp"
 
 /// @page pdmpk_exec pdmpk_exec
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
       sleep(5);
   }
 
-  buffers_t buf(npart);
+  Buffers buf(npart);
   buf.load(rank);
   buf.exec();
 

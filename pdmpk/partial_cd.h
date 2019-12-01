@@ -15,7 +15,7 @@
 
 #include "typedefs.h"
 #include "pdmpk_bufs_t.h"
-#include "buffers_t.h"
+#include "Buffers.h"
 #include "csr_t.h"
 
 class partial_cd {
@@ -33,7 +33,7 @@ class partial_cd {
 
   /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.
-  std::vector<buffers_t> bufs;
+  std::vector<Buffers> bufs;
 
  private:
   /// Map (vector index, level) pair to the (partition, mbuf index)

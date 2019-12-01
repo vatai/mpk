@@ -4,7 +4,7 @@
  *
  * @brief The buffers collected on a single partition.
  *
- * @details `buffers_t` contains the MPI buffers, the modified CSP
+ * @details `Buffers` contains the MPI buffers, the modified CSP
  * buffers and `mbuf` and `ibuF`.
  */
 #pragma once
@@ -25,9 +25,9 @@
 
 /// The main buffers containing information/patterns how to perform
 /// the computation and communication for each partition.
-class buffers_t {
+class Buffers {
  public:
-  buffers_t(const idx_t npart);
+  Buffers(const idx_t npart);
   void phase_init();
   void phase_finalize(const int phase);
 
@@ -83,5 +83,5 @@ class buffers_t {
 
   std::vector<size_t> dbg_idx;
  private:
-  buffers_t();
+  Buffers();
 };
