@@ -39,30 +39,10 @@ int main(int argc, char *argv[])
   buf.load(rank);
   buf.exec();
 
-  std::string fname = "dresult" + std::to_string(rank) + ".txt";
-  std::ofstream file(fname);
-  Utils::dump_txt("mbuf", buf.mbuf, file);
-  file.close(); /// @todo(vatai): Write proper results test.
+  buf.dump_mbuf_txt(rank);
 
-  /// @todo(vatai): Write proper result collection.
-  const auto size = buf.result_idx.size();
-  std::vector<double> fresults(size);
-  std::vector<std::pair<int, double>> fpairs(size);
-  for (size_t i = 0; i < size; i++) {
-    const auto val = buf.mbuf[buf.result_idx[i].second];
-    fresults[i] = val;
-    fpairs[i] = {buf.result_idx[i].first, val};
-  }
-
-  fname = "fresult" + std::to_string(rank) + ".txt";
-  file.open(fname);
-  Utils::dump_txt("final:", fresults, file);
-  file.close();
-
-  fname = "fresult" + std::to_string(rank) + ".bin";
-  file.open(fname);
-  Utils::dump_vec(fpairs, file);
-  file.close();
+  buf.results.Dump(rank);
+  buf.results.DumpTxt(rank);
 
   MPI_Finalize();
   std::cout << "MPI_Finalize()" << std::endl;

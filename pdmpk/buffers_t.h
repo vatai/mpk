@@ -17,6 +17,7 @@
 
 #include <metis.h>
 
+#include "Results.h"
 #include "typedefs.h"
 #include "mpi_bufs_t.h"
 #include "mcsr_t.h"
@@ -36,6 +37,7 @@ class buffers_t {
   void dump(const int rank);
   void load(const int rank);
   void dump_txt(const int rank);
+  void dump_mbuf_txt(const int rank);
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
@@ -76,7 +78,8 @@ class buffers_t {
 
   /// Holds the (vector index, `mbuf` index) pairs where the vertices
   /// at level `nlevel` can be found in the given partition.
-  std::vector<sidx_tidx_t> result_idx;
+  std::vector<idx_t> results_mbuf_idx;
+  Results results;
 
   std::vector<size_t> dbg_idx;
  private:
