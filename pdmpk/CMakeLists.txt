@@ -112,7 +112,7 @@ add_executable (pdmpk_prep
   "partial_cd.cc"
   "CSR.cc"
   "Buffers.cc"
-  "mpi_bufs_t.cc"
+  "MPIBuffers.cc"
   "MCSR.cc"
   "pdmpk_bufs_t.cc"
   "Results.cc"
@@ -123,7 +123,7 @@ target_link_libraries(pdmpk_prep "${METIS}" MPI::MPI_CXX)
 add_executable (pdmpk_exec
   "pdmpk_exec.cc"
   "Buffers.cc"
-  "mpi_bufs_t.cc"
+  "MPIBuffers.cc"
   "MCSR.cc"
   "Results.cc"
   )

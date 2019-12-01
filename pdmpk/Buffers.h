@@ -19,7 +19,7 @@
 
 #include "Results.h"
 #include "typedefs.h"
-#include "mpi_bufs_t.h"
+#include "MPIBuffers.h"
 #include "MCSR.h"
 #include "phased_vector.hpp"
 
@@ -41,7 +41,7 @@ class Buffers {
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
-  mpi_bufs_t mpiBufs;
+  MPIBuffers mpiBufs;
 
   /// The largest send buffer size needed in all phases.
   size_t maxSbufSize;

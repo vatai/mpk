@@ -36,7 +36,7 @@ partial_cd::partial_cd(const char *fname,     //
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.NextMcolIdxToMptr();
-    buffer.mpiBufs.init_idcs.rec_begin();
+    buffer.mpiBufs.initIdcs.rec_begin();
   }
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
@@ -121,7 +121,7 @@ void partial_cd::add_to_init(const idx_t idx, const idx_t level) {
     init_dict[{src_part, tgt_part}].push_back({src_idx, tgt_idx});
   } else {
     // Add to `init_idcs`.
-    bufs[tgt_part].mpiBufs.init_idcs.push_back({src_idx, tgt_idx});
+    bufs[tgt_part].mpiBufs.initIdcs.push_back({src_idx, tgt_idx});
   }
 }
 
@@ -185,7 +185,7 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto vec = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbufIdcs.begin[phase] //
                                 + src_send_base(src_tgt);
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
                                 + tgt_buf.mcsr.mptr.size() //
@@ -195,7 +195,7 @@ void partial_cd::proc_comm_dict(const comm_dict_t::const_iterator &iter) {
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = vec[idx].first;
     const auto tgt_idx = vec[idx].second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_idx;
+    src_mpi_buf.sbufIdcs[src_send_baseidx + idx] = src_idx;
     // 142
     tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
   }
@@ -207,7 +207,7 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   const auto &vec = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbufIdcs.begin[phase] //
                                 + src_send_base(iter->first) + comm_dict_size;
   const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]  //
                                 + tgt_buf.mcsr.mptr.size() //
@@ -217,10 +217,10 @@ void partial_cd::proc_init_dict(const init_dict_t::const_iterator &iter) {
   for (size_t idx = 0; idx < size; idx++) {
     const auto src_idx = tgt_recv_baseidx + idx;
     const auto tgt_idx = vec[idx].second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = vec[idx].first;
+    src_mpi_buf.sbufIdcs[src_send_baseidx + idx] = vec[idx].first;
     // DEBUG //
     assert((int)src_idx < tgt_buf.mbufIdx);
-    tgt_buf.mpiBufs.init_idcs.push_back({src_idx, tgt_idx});
+    tgt_buf.mpiBufs.initIdcs.push_back({src_idx, tgt_idx});
   }
 }
 
@@ -244,7 +244,7 @@ void partial_cd::dbg_asserts() const {
     for (auto phase = 1; phase < this->phase; phase++) {
       auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];
       auto mpd = b.mcsr.mptr.begin[phase] - b.mcsr.mptr.begin[phase - 1];
-      auto rbs = b.mpiBufs.rbuf_size(phase - 1);
+      auto rbs = b.mpiBufs.RbufSize(phase - 1);
       if (mbd != mpd + rbs) {
         std::cout << "phase: " << phase << ", "
                   << "mbd: " << mbd << ", "
@@ -261,9 +261,9 @@ void partial_cd::dbg_mbuf_checks() {
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbufIdx;
     // Check init_idcs.
-    for (auto i = buffer.mpiBufs.init_idcs.begin[phase];
-         i < buffer.mpiBufs.init_idcs.size(); i++) {
-      auto pair = buffer.mpiBufs.init_idcs[i];
+    for (auto i = buffer.mpiBufs.initIdcs.begin[phase];
+         i < buffer.mpiBufs.initIdcs.size(); i++) {
+      auto pair = buffer.mpiBufs.initIdcs[i];
       if (pair.first >= mbuf_idx) {
         std::cout << pair.first << ", "
                   << mbuf_idx << std::endl;
@@ -272,9 +272,9 @@ void partial_cd::dbg_mbuf_checks() {
       assert(pair.second < mbuf_idx);
     }
     // Check sbuf_idcs.
-    for (auto i = buffer.mpiBufs.sbuf_idcs.begin[phase];
-         i < buffer.mpiBufs.sbuf_idcs.size(); i++) {
-      auto value = buffer.mpiBufs.sbuf_idcs[i];
+    for (auto i = buffer.mpiBufs.sbufIdcs.begin[phase];
+         i < buffer.mpiBufs.sbufIdcs.size(); i++) {
+      auto value = buffer.mpiBufs.sbufIdcs[i];
       assert(value < mbuf_idx);
     }
     // Check mcol.
