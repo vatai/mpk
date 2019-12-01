@@ -3,7 +3,9 @@
 
 #include <cassert>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <metis.h>
 #include <ostream>
 #include <sstream>
 #include <mpi.h>
@@ -144,42 +146,46 @@ void buffers_t::exec() {
     do_comp(phase);
   }
 
+  results.FillVal(results_mbuf_idx, mbuf);
   std::cout << "exec(" << rank << ")" << std::endl;
 }
 
 void buffers_t::dump(const int rank) {
-  const auto fname = FNAME + std::to_string(rank) + ".bin";
-  std::ofstream file(fname, std::ios::binary);
-
-  file.write((char*)&max_sbuf_size, sizeof(max_sbuf_size));
-  file.write((char*)&mbuf_idx, sizeof(mbuf_idx));
+  std::ofstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
+  file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
+  file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::dump_vec(mbuf.begin, file);
-  Utils::dump_vec(result_idx, file);
+  Utils::dump_vec(results_mbuf_idx, file);
+  Utils::dump_vec(results.vectIdx, file);
   mpi_bufs.dump_to_ofs(file);
   mcsr.dump_to_ofs(file);
 }
 
 void buffers_t::load(const int rank) {
-  const auto fname = FNAME + std::to_string(rank) + ".bin";
-  std::ifstream file(fname, std::ios::binary);
-
-  file.read((char*)&max_sbuf_size, sizeof(max_sbuf_size));
-  file.read((char*)&mbuf_idx, sizeof(mbuf_idx));
+  std::ifstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
+  file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
+  file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::load_vec(mbuf.begin, file);
-  Utils::load_vec(result_idx, file);
+  Utils::load_vec(results_mbuf_idx, file);
+  Utils::load_vec(results.vectIdx, file);
   mpi_bufs.load_from_ifs(file);
   mcsr.load_from_ifs(file);
 }
 
 void buffers_t::dump_txt(const int rank) {
-  const auto fname = FNAME + std::to_string(rank) + ".txt";
-  std::ofstream file(fname);
+  std::ofstream file(FNAME + std::to_string(rank) + ".txt");
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::dump_txt("mbuf_begin", mbuf.begin, file);
-  Utils::dump_txt("result_idx", result_idx, file);
+  Utils::dump_txt("result_mbuf_idx", results_mbuf_idx, file);
+  Utils::dump_txt("result_vect_idx", results.vectIdx, file);
   Utils::dump_txt("dbg_idx", dbg_idx, file);
   mpi_bufs.dump_to_txt(file);
   mcsr.dump_to_txt(file);
+}
+
+void buffers_t::dump_mbuf_txt(const int rank) {
+  std::ofstream file("dresult" + std::to_string(rank) + ".txt");
+  Utils::dump_txt("mbuf", mbuf, file);
 }
