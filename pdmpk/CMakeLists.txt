@@ -100,8 +100,8 @@ find_library(METIS metis)
 
 # MPI
 # set(MPI_GUESS_LIBRARY_NAME "ortecc")
-set(MPI_C_COMPILER "/usr/bin/mpicc")
-set(MPI_CXX_COMPILER "/usr/bin/mpic++")
+set(MPI_C_COMPILER "mpicc")
+set(MPI_CXX_COMPILER "mpic++")
 find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
