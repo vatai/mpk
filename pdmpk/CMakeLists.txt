@@ -100,8 +100,8 @@ find_library(METIS metis)
 # MPI
 # set(MPI_CXX_SKIP_MPICXX true)
 # set(MPI_CXX_SKIP_MPICXX true)
-# find_package(MPI REQUIRED)
-include(FindMPI)
+find_package(MPI REQUIRED)
+# include(FindMPI)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
 # add_definitions(-D_DEBUG_CSR_VALS)
