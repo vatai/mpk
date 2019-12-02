@@ -98,11 +98,8 @@ set(CMAKE_CXX_STANDARD 17)
 find_library(METIS metis)
 
 # MPI
-# set(MPI_GUESS_LIBRARY_NAME "opal_wrapper")
-# set(MPI_C_COMPILER "mpicc")
-# set(MPI_CXX_SKIP_MPICXX "Intel")
-# set(MPI_CXX_COMPILER "mpic++")
-set(MPI_EXECUTABLE_SUFFIX ".openmpi")
+# set(MPI_CXX_SKIP_MPICXX true)
+# set(MPI_CXX_SKIP_MPICXX true)
 # find_package(MPI REQUIRED)
 include(FindMPI)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
