@@ -58,6 +58,7 @@ private:
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void PhaseFinalize();
+  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
   void ProcCommDict(const CommDict::const_iterator &iter);
   void ProcInitDict(const InitDict::const_iterator &iter);
 
