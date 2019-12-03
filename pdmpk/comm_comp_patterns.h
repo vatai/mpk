@@ -49,15 +49,15 @@ private:
   /// partition) pairs.
   InitDict init_dict;
 
-  void PhaseInit();
+  void InitPhase();
+  bool ProcPhase();
 
-  bool UpdateLevels();
   bool ProcVertex(const idx_t idx, const level_t lbelow);
   void AddToInit(const idx_t idx, const idx_t level);
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
-  void PhaseFinalize();
+  void FinalizePhase();
   void ProcCommDict(const CommDict::const_iterator &iter);
   void ProcInitDict(const InitDict::const_iterator &iter);
 

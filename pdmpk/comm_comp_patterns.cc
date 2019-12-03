@@ -25,11 +25,11 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
-  bool was_active_phase = UpdateLevels();
+  bool was_active_phase = ProcPhase();
   while (was_active_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithLevels(npart);
-    was_active_phase = UpdateLevels();
+    was_active_phase = ProcPhase();
   }
   // nphase + 1
   for (auto &buffer : bufs) {
@@ -46,8 +46,8 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   DbgAsserts();
 }
 
-bool CommCompPatterns::UpdateLevels() {
-  PhaseInit();
+bool CommCompPatterns::ProcPhase() {
+  InitPhase();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
   bool was_active_level = true;
@@ -73,11 +73,11 @@ bool CommCompPatterns::UpdateLevels() {
       }
     }
   }
-  PhaseFinalize();
+  FinalizePhase();
   return retval;
 }
 
-void CommCompPatterns::PhaseInit() {
+void CommCompPatterns::InitPhase() {
   for (auto &buffer : bufs) {
     buffer.PhaseInit();
   }
@@ -156,7 +156,7 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
   bufs[part].mbuf_idx++;
 }
 
-void CommCompPatterns::PhaseFinalize() {
+void CommCompPatterns::FinalizePhase() {
   // Update each buffer (separately).
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
