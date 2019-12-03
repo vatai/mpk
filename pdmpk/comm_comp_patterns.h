@@ -29,7 +29,7 @@ public:
   /// partials.
   PDMPKBuffers pdmpk_bufs;
 
-  /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
+  /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.
   std::vector<Buffers> bufs;
 
