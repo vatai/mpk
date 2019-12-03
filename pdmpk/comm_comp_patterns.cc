@@ -25,11 +25,11 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
-  bool was_active = UpdateLevels();
-  while (was_active) {
+  bool was_active_phase = UpdateLevels();
+  while (was_active_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithLevels(npart);
-    was_active = UpdateLevels();
+    was_active_phase = UpdateLevels();
   }
   // nphase + 1
   for (auto &buffer : bufs) {
@@ -50,14 +50,15 @@ bool CommCompPatterns::UpdateLevels() {
   PhaseInit();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
-  bool was_active = true;
-  bool retval = false;
+  bool was_active_level = true;
+  bool retval = false; // used by was_active_phase
   // `min_level` is important, see NOTE1 below.
   auto min_level = pdmpk_bufs.MinLevel();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
-  for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {
-    was_active = false;
+  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
+       lbelow++) {
+    was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
     // where progress will be made, and set `was_active` to true
     // i.e. starting from level 0, might be a problem if all vertices
@@ -66,7 +67,7 @@ bool CommCompPatterns::UpdateLevels() {
     for (int idx = 0; idx < csr.n; idx++) {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (ProcVertex(idx, lbelow)) {
-          was_active = true;
+          was_active_level = true;
           retval = true;
         }
       }
