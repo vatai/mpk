@@ -61,11 +61,11 @@ private:
   void ProcCommDict(const CommDict::const_iterator &iter);
   void ProcInitDict(const InitDict::const_iterator &iter);
 
-  /// `src_send_base(src, tgt)` gives the base (0th index) of the send
+  /// `SrcSendBase(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t src_tgt) const;
 
-  /// `tgt_recv_base(src, tgt)` gives the base (0th index) of the
+  /// `TgtRecvBase(src, tgt)` gives the base (0th index) of the
   /// receive buffer in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
 
