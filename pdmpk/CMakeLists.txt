@@ -93,15 +93,11 @@ enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 
-set (CMAKE_CXX_STANDARD 17)
-
+set(CMAKE_CXX_STANDARD 17)
 # METIS
 find_library(METIS metis)
 
 # MPI
-# set(MPI_GUESS_LIBRARY_NAME "ortecc")
-set(MPI_C_COMPILER "/usr/bin/mpicc")
-set(MPI_CXX_COMPILER "/usr/bin/mpic++")
 find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
