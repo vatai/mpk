@@ -108,12 +108,6 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   for (auto i = begin; i < end; i++) {
     const auto &pair = mpi_bufs.init_idcs[i];
     const auto tgtIdx = pair.second;
-    if (tgtIdx >= (int)mbuf.size()) {
-      int rank;
-      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      std::cout << phase << "@" << rank << ": " << tgtIdx << ", " << mbuf.size()
-                << std::endl;
-    }
     assert(tgtIdx < (int)mbuf.size()); // crash!
     assert(mbuf[tgtIdx] == 0.0);       // crash!
     mbuf[tgtIdx] = mbuf[pair.first];
