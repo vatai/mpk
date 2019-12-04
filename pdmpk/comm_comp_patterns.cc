@@ -17,9 +17,9 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     : csr{fname},                                         //
       npart{npart},                                       //
       nlevels{nlevels},                                   //
-      pdmpk_bufs(csr),                                    //
+      pdmpk_bufs{csr},                                    //
       bufs(npart, Buffers(npart)),                        //
-      phase(0) {
+      phase{0} {
   pdmpk_bufs.MetisPartition(npart);
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
