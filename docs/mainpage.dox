@@ -24,7 +24,7 @@
 /// should probably rewritten in C++).
 ///
 /// @code
-/// ../mpk2/gen2 m5p4 4 m5p4
+/// ../mpk2/gen2 m5p 4 m5p4
 /// ../mpk2/gen2mtx m5p4.loop.g0
 /// @endcode
 ///

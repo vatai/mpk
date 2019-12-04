@@ -29,7 +29,7 @@ public:
   /// partials.
   PDMPKBuffers pdmpk_bufs;
 
-  /// `bufs[part]` is constins all the buffers such as `mcsr` and MPI
+  /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for partition `part`.
   std::vector<Buffers> bufs;
 
@@ -49,23 +49,24 @@ private:
   /// partition) pairs.
   InitDict init_dict;
 
-  void PhaseInit();
+  void InitPhase();
+  bool ProcPhase();
 
-  bool UpdateLevels();
   bool ProcVertex(const idx_t idx, const level_t lbelow);
   void AddToInit(const idx_t idx, const idx_t level);
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
-  void PhaseFinalize();
+  void FinalizePhase();
+  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
   void ProcCommDict(const CommDict::const_iterator &iter);
   void ProcInitDict(const InitDict::const_iterator &iter);
 
-  /// `src_send_base(src, tgt)` gives the base (0th index) of the send
+  /// `SrcSendBase(src, tgt)` gives the base (0th index) of the send
   /// buffer in the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t src_tgt) const;
 
-  /// `tgt_recv_base(src, tgt)` gives the base (0th index) of the
+  /// `TgtRecvBase(src, tgt)` gives the base (0th index) of the
   /// receive buffer in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
 

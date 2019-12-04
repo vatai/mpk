@@ -25,11 +25,11 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
-  bool was_active = UpdateLevels();
-  while (was_active) {
+  bool was_active_phase = ProcPhase();
+  while (was_active_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithLevels(npart);
-    was_active = UpdateLevels();
+    was_active_phase = ProcPhase();
   }
   // nphase + 1
   for (auto &buffer : bufs) {
@@ -46,18 +46,19 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   DbgAsserts();
 }
 
-bool CommCompPatterns::UpdateLevels() {
-  PhaseInit();
+bool CommCompPatterns::ProcPhase() {
+  InitPhase();
   // `was_active` is true, if there was progress made at a level. If
   // no progress is made, the next level is processed.
-  bool was_active = true;
-  bool retval = false;
+  bool was_active_level = true;
+  bool retval = false; // used by was_active_phase
   // `min_level` is important, see NOTE1 below.
   auto min_level = pdmpk_bufs.MinLevel();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
-  for (int lbelow = min_level; was_active and lbelow < nlevels; lbelow++) {
-    was_active = false;
+  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
+       lbelow++) {
+    was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
     // where progress will be made, and set `was_active` to true
     // i.e. starting from level 0, might be a problem if all vertices
@@ -66,17 +67,17 @@ bool CommCompPatterns::UpdateLevels() {
     for (int idx = 0; idx < csr.n; idx++) {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (ProcVertex(idx, lbelow)) {
-          was_active = true;
+          was_active_level = true;
           retval = true;
         }
       }
     }
   }
-  PhaseFinalize();
+  FinalizePhase();
   return retval;
 }
 
-void CommCompPatterns::PhaseInit() {
+void CommCompPatterns::InitPhase() {
   for (auto &buffer : bufs) {
     buffer.PhaseInit();
   }
@@ -115,9 +116,7 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
   const auto tgt_idx = bufs[tgt_part].mbuf_idx;
   if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
-    bufs[tgt_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
-    bufs[src_part].mpi_bufs.sendcounts[npart * phase + tgt_part]++;
-    init_dict[{src_part, tgt_part}].push_back({src_idx, tgt_idx});
+    init_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx});
   } else {
     // Add to `initIdcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
@@ -141,10 +140,8 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
-    bufs[cur_part].mpi_bufs.recvcounts[npart * phase + src_part]++;
-    bufs[src_part].mpi_bufs.sendcounts[npart * phase + cur_part]++;
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
-    comm_dict[{src_part, cur_part}].push_back({src_idx, tgt_idx});
+    comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx});
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
@@ -155,8 +152,14 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
   bufs[part].mbuf_idx++;
 }
 
-void CommCompPatterns::PhaseFinalize() {
-  // Update each buffer (separately).
+void CommCompPatterns::FinalizePhase() {
+  // Fill sendcount and recvcount.
+  for (const auto &iter : comm_dict)
+    UpdateMPICountBuffers(iter.first, iter.second.size());
+
+  for (const auto &iter : init_dict)
+    UpdateMPICountBuffers(iter.first, iter.second.size());
+
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
 
@@ -179,11 +182,19 @@ void CommCompPatterns::PhaseFinalize() {
   DbgMbufChecks();
 }
 
+void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
+                                             const size_t size) {
+  const auto src = src_tgt_part.first;
+  const auto tgt = src_tgt_part.second;
+  bufs[tgt].mpi_bufs.recvcounts[phase * npart + src] += size;
+  bufs[src].mpi_bufs.sendcounts[phase * npart + tgt] += size;
+}
+
 void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &src_tgt = iter->first;
   auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
   auto &tgt_buf = bufs[src_tgt.second];
-  const auto vec = iter->second;
+  const auto &src_tgt_index_set = iter->second;
 
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
                                 + SrcSendBase(src_tgt);
@@ -191,19 +202,20 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 + tgt_buf.mcsr.mptr.size()       //
                                 - tgt_buf.mcsr.mptr.begin[phase] //
                                 + TgtRecvBase(src_tgt);
-  const auto size = vec.size();
-  for (size_t idx = 0; idx < size; idx++) {
-    const auto src_idx = vec[idx].first;
-    const auto tgt_idx = vec[idx].second;
+  size_t idx = 0;
+  for (const auto &src_tgt_idx : src_tgt_index_set) {
+    const auto src_idx = src_tgt_idx.first;
+    const auto tgt_idx = src_tgt_idx.second;
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_idx;
     tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
+    idx++;
   }
 }
 
 void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
   auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
   auto &tgt_buf = bufs[iter->first.second];
-  const auto &vec = iter->second;
+  const auto &src_tgt_index_set = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
@@ -212,13 +224,14 @@ void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
                                 + tgt_buf.mcsr.mptr.size()       //
                                 - tgt_buf.mcsr.mptr.begin[phase] //
                                 + TgtRecvBase(iter->first) + comm_dict_size;
-  const auto size = vec.size();
-  for (size_t idx = 0; idx < size; idx++) {
+  size_t idx = 0;
+  for (const auto &src_tgt_idx : src_tgt_index_set) {
     const auto src_idx = tgt_recv_baseidx + idx;
-    const auto tgt_idx = vec[idx].second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = vec[idx].first;
+    const auto tgt_idx = src_tgt_idx.second;
+    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.first;
     assert((int)src_idx < tgt_buf.mbuf_idx);
     tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    idx++;
   }
 }
 

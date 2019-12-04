@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <vector>
 #include <utility>
 
@@ -28,6 +29,6 @@ typedef std::pair<idx_t, level_t> idx_lvl_t;
 
 typedef std::map<idx_lvl_t, part_sidx_t> StorePart;
 
-typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> CommDict;
+typedef std::map<src_tgt_t, std::set<sidx_tidx_t>> CommDict;
 
-typedef std::map<src_tgt_t, std::vector<sidx_tidx_t>> InitDict;
+typedef std::map<src_tgt_t, std::set<sidx_tidx_t>> InitDict;
