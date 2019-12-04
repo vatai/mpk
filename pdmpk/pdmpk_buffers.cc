@@ -9,9 +9,10 @@
 #define SMALL_N 4
 
 PDMPKBuffers::PDMPKBuffers(const CSR &csr)
-    : partials(csr.nnz, false),           //
-      partitions(csr.n),                  //
-      levels(csr.n, 0), weights(csr.nnz), //
+    : partials(csr.nnz, false), //
+      partitions(csr.n),        //
+      levels(csr.n, 0),         //
+      weights(csr.nnz),         //
       csr{csr} {}
 
 level_t PDMPKBuffers::MinLevel() {
