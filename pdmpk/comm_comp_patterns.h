@@ -62,12 +62,12 @@ private:
   void ProcCommDict(const CommDict::const_iterator &iter);
   void ProcInitDict(const InitDict::const_iterator &iter);
 
-  /// `SrcSendBase(src, tgt)` gives the base (0th index) of the send
-  /// buffer in the source buffer.
+  /// Return the base (0th index) of the subinterval of send buffer in
+  /// the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t src_tgt) const;
 
-  /// `TgtRecvBase(src, tgt)` gives the base (0th index) of the
-  /// receive buffer in the target buffer.
+  /// Return the base (0th index) of the subinterval of receive buffer
+  /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
 
   /// The current phase is set at the beginning of each phase.
