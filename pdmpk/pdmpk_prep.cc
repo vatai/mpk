@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
   int npart = std::stoi(argv[2]);
   level_t nlevels = std::stoi(argv[3]);
 
-  CommCompPatterns pcd(argv[1], (idx_t)npart, nlevels);
+  CommCompPatterns comm_comp_patterns(argv[1], (idx_t)npart, nlevels);
 
   for (int i = 0; i < npart; i++) {
-    pcd.bufs[i].Dump(i);
-    pcd.bufs[i].DumpTxt(i);
+    comm_comp_patterns.bufs[i].Dump(i);
+    comm_comp_patterns.bufs[i].DumpTxt(i);
   }
 
   return 0;
