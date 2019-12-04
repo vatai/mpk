@@ -17,7 +17,7 @@ const std::string FNAME{"bufs"};
 const std::string DBG_FNAME{"dbg_buff_"};
 
 Buffers::Buffers(const idx_t npart)
-    : mpi_bufs(npart), max_sbuf_size(0), mbuf_idx(0) {}
+    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0} {}
 
 void Buffers::PhaseInit() {
   mpi_bufs.AllocMpiBufs();
