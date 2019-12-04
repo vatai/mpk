@@ -21,6 +21,11 @@ class CommCompPatterns {
 public:
   CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
 
+  /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
+  /// buffers for partition `part`.
+  std::vector<Buffers> bufs;
+
+private:
   const CSR csr;
   const idx_t npart;
   const level_t nlevels;
@@ -29,11 +34,6 @@ public:
   /// partials.
   PDMPKBuffers pdmpk_bufs;
 
-  /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
-  /// buffers for partition `part`.
-  std::vector<Buffers> bufs;
-
-private:
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it is can be found.
   StorePart store_part;

@@ -14,11 +14,11 @@
 CommCompPatterns::CommCompPatterns(const char *fname,     //
                                    const idx_t npart,     //
                                    const level_t nlevels) //
-    : csr{fname},                                         //
+    : bufs(npart, Buffers(npart)),                        //
+      csr{fname},                                         //
       npart{npart},                                       //
       nlevels{nlevels},                                   //
       pdmpk_bufs{csr},                                    //
-      bufs(npart, Buffers(npart)),                        //
       phase{0} {
   pdmpk_bufs.MetisPartition(npart);
   for (int idx = 0; idx < csr.n; idx++) {
