@@ -21,7 +21,7 @@ public:
   bool PartialIsFull(const idx_t idx) const;
   bool PartialIsEmpty(const idx_t idx) const;
   void PartialReset(const idx_t idx);
-
+  /// METIS_PartGraphKway outputs by updating partitions.data()
   void MetisPartition(idx_t npart);
   void MetisPartitionWithLevels(idx_t npart);
 
