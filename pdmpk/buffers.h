@@ -58,10 +58,10 @@ public:
   /// allocate `mbuf` in the `pdmpk_exec` program.
   idx_t mbuf_idx;
 
-  /// The buffer where the to store the results of the computation
+  /// The buffer which stores the results of the computation
   /// (including the part of the input assigned to this partition, the
   /// intermediate results, the `rbuf`s and the final results).  It is
-  /// only used in the `pdmpk_exec` program.
+  /// used only in the `pdmpk_exec` program.
   ///
   /// The first `mpi_bufs.rbuf_size(phase)` number of elements of
   /// `mbuf[phase]` represent `rbuf[phase]`.  The elements which need
@@ -71,7 +71,7 @@ public:
   /// As a special case, `rbuf[0]` contains the elements of the input
   /// vector assigned to the given partition.  Also (unlike for `phase
   /// > 0`) mbuf.begin[0] points to the element after the last element
-  /// of `rbuf[phsae]` while `mpi_bufs.rbuf_size(0) == 0`, so the rule
+  /// of `rbuf[phase]` while `mpi_bufs.rbuf_size(0) == 0`, so the rule
   /// that the first element which should be calculated is at
   /// `mbuf.begin[phase] + mpi_bufs.rbuf_size(phase)` is not violated.
   phased_vector<double> mbuf;
