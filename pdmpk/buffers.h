@@ -63,7 +63,7 @@ public:
   /// intermediate results, the `rbuf`s and the final results).  It is
   /// used only in the `pdmpk_exec` program.
   ///
-  /// The first `mpi_bufs.rbuf_size(phase)` number of elements of
+  /// The last `mpi_bufs.rbuf_size(phase)` number of elements of
   /// `mbuf[phase]` represent `rbuf[phase]`.  The elements which need
   /// to be calculated start at `mbuf.begin[phase] +
   /// mpi_bufs.rbuf_size(phase)`.
