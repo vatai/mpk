@@ -110,9 +110,7 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   }
 }
 
-void Buffers::Exec() {
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+void Buffers::Exec(const int rank) {
   auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
   std::ofstream file(fname);
 

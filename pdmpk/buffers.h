@@ -29,7 +29,7 @@ public:
   void PhaseInit();
   void PhaseFinalize(const int phase);
 
-  void Exec();
+  void Exec(const int rank);
   void DoComp(int phase);
   /// Execute the communication needed at the beginning of each phase
   /// (before calling the `DoComp()` method).

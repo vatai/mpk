@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
   Buffers buf(npart);
   buf.Load(rank);
-  buf.Exec();
+  buf.Exec(rank);
 
   buf.DumpMbufTxt(rank);
 
