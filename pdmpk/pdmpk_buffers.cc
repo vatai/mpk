@@ -83,7 +83,7 @@ void PDMPKBuffers::MetisPartition(idx_t npart) {
                       NULL, NULL, &retval, partitions.data());
 }
 
-void PDMPKBuffers::MetisPartitionWithLevels(idx_t npart) {
+void PDMPKBuffers::MetisPartitionWithWeights(idx_t npart) {
   idx_t n = csr.n;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();

@@ -23,7 +23,7 @@ public:
   void PartialReset(const idx_t idx);
   /// METIS_PartGraphKway outputs by updating partitions.data()
   void MetisPartition(idx_t npart);
-  void MetisPartitionWithLevels(idx_t npart);
+  void MetisPartitionWithWeights(idx_t npart);
 
   void DebugPrintLevels(std::ostream &os);
   void DebugPrintPartials(std::ostream &os);

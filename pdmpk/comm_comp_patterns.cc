@@ -28,7 +28,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   bool was_active_phase = ProcPhase();
   while (was_active_phase) {
     phase++;
-    pdmpk_bufs.MetisPartitionWithLevels(npart);
+    pdmpk_bufs.MetisPartitionWithWeights(npart);
     was_active_phase = ProcPhase();
   }
   // nphase + 1
