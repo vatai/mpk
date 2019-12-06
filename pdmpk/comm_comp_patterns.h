@@ -35,7 +35,7 @@ private:
   PDMPKBuffers pdmpk_bufs;
 
   /// Map (vector index, level) pair to the (partition, mbuf index)
-  /// pair where it is can be found.
+  /// pair where it can be found.
   StorePart store_part;
 
   /// In each phase, collect the communication of complete indices as
@@ -70,7 +70,7 @@ private:
   /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
 
-  /// The current phase is set at the beginning of each phase.
+  /// The current phase set at the beginning of each phase.
   int phase;
 
   // ////// DEBUG //////

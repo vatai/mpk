@@ -118,7 +118,7 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
     init_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx});
   } else {
-    // Add to `initIdcs`.
+    // Add to `init_idcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
   }
 }
