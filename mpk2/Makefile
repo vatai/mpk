@@ -9,9 +9,8 @@ MPKBASE = comp skirt format driver stat verify_val work_count
 OMPBIN = mpktest mpkrun
 MPI1BIN = $(MPKBASE) mpi_mpktest
 MPI2BIN = $(MPKBASE) mpi2_mpktest mpi2_mpkwrtbufs mpi2_mpkexecbufs mpi2_mpkexecbufs_val
-MPIPBIN = pmpkwrtbufs
 
-default : $(UTILS) $(MPIPBIN)
+default : $(UTILS) $(MPI2BIN)
 
 clean :
 	rm -rf $(BIN) *.o *~ *.log
