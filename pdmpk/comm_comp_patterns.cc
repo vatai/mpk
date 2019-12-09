@@ -34,7 +34,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     was_active_phase = ProcPhase();
   }
-  // nphase + 1
+  // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_begin();
     buffer.mcsr.NextMcolIdxToMptr();
