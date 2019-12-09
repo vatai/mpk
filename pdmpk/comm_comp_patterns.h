@@ -22,7 +22,7 @@ public:
   CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
-  /// buffers for partition `part`.
+  /// buffers for each partition `part`.
   std::vector<Buffers> bufs;
 
 private:
