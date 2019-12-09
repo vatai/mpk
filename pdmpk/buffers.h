@@ -26,6 +26,8 @@
 class Buffers {
 public:
   Buffers(const idx_t npart);
+  /// Initialise/Allocate appropriate space in buffers to store
+  /// communication data.
   void PhaseInit();
   void PhaseFinalize(const int phase);
 
