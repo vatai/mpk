@@ -31,7 +31,8 @@ public:
   void DebugPrintPartials(std::ostream &os);
   void DebugPrintPartitions(std::ostream &os);
   void DebugPrintReport(std::ostream &os, const int phase);
-
+  /// `partials` stores the availibility of adjacent vertex
+  /// to provide input(True if available)
   std::vector<bool> partials;
   std::vector<idx_t> partitions;
   std::vector<level_t> levels;
