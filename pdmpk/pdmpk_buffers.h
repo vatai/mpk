@@ -21,6 +21,8 @@ public:
   bool PartialIsFull(const idx_t idx) const;
   bool PartialIsEmpty(const idx_t idx) const;
   void PartialReset(const idx_t idx);
+  /// Since all the vertices are initially at level = 0,
+  /// partition is done without any weights input.
   /// METIS_PartGraphKway outputs by updating partitions.data()
   void MetisPartition(idx_t npart);
   void MetisPartitionWithWeights(idx_t npart);
