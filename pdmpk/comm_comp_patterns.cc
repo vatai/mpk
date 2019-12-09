@@ -26,6 +26,8 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
+  // Process phase = 0 and keep processing next higher phases
+  // till the time last phase showed any update
   bool was_active_phase = ProcPhase();
   while (was_active_phase) {
     phase++;
