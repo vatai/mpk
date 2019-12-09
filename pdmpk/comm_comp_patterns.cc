@@ -21,6 +21,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
       pdmpk_bufs{csr},                                    //
       phase{0} {
   pdmpk_bufs.MetisPartition(npart);
+  // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
