@@ -51,8 +51,15 @@ void Buffers::DoComp(int phase) {
                 mcsr.mptr.phase_begin[phase];
   auto cur_mbuf = mbuf.get_ptr(phase);
   auto cur_mptr = mcsr.mptr.get_ptr(phase);
+
+  auto init_idx = mpi_bufs.init_idcs.phase_begin[phase];
   for (size_t mi = 0; mi < mcount; mi++) {
-    double tmp = cur_mbuf[mi];
+    double tmp = 0.0;
+    const auto &pair = mpi_bufs.init_idcs[init_idx];
+    if (mbuf.phase_begin[phase] + mi == pair.second) {
+      tmp = mbuf[pair.first];
+      init_idx++;
+    };
     for (auto mj = cur_mptr[mi]; mj < cur_mptr[mi + 1]; mj++) {
       tmp += mcsr.mval[mj] * mbuf[mcsr.mcol[mj]];
     }
@@ -97,18 +104,6 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   for (int i = -1; i < (int)mpi_bufs.RbufSize(phase); i++)
     os << rbuf[i] << ", ";
   os << std::endl;
-
-  // DoInit()
-  /// @todo(vatai): Implement get_init_span.
-  const auto begin = mpi_bufs.init_idcs.phase_begin[phase];
-  const auto end = mpi_bufs.init_idcs.phase_begin[phase + 1];
-  for (auto i = begin; i < end; i++) {
-    const auto &pair = mpi_bufs.init_idcs[i];
-    const auto tgtIdx = pair.second;
-    assert(tgtIdx < (int)mbuf.size()); // crash!
-    assert(mbuf[tgtIdx] == 0.0);       // crash!
-    mbuf[tgtIdx] = mbuf[pair.first];
-  }
 }
 
 void Buffers::Exec(const int rank) {

@@ -2,6 +2,7 @@
 // Date: 2019-09-17
 
 #include "metis.h"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iterator>
@@ -182,6 +183,13 @@ void CommCompPatterns::FinalizePhase() {
   pdmpk_bufs.UpdateWeights();
   pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
+  // Sort `init_idcs`.
+  for (auto &buffer : bufs) {
+  auto &init_idcs = buffer.mpi_bufs.init_idcs;
+  std::sort(std::begin(init_idcs) + init_idcs.phase_begin[phase],
+            std::end(init_idcs),
+            [](const sidx_tidx_t &a, const sidx_tidx_t &b) { return a.second < b.second; });
+  }
   DbgMbufChecks();
 }
 
