@@ -35,7 +35,9 @@ public:
   /// `partials` stores the availibility of adjacent vertex's
   /// value to our target vertex(True if available)
   std::vector<bool> partials;
+  /// Stores partitions of the phase allotted by Metis
   std::vector<idx_t> partitions;
+  /// Stores the levels of vertices just before starting of phase
   std::vector<level_t> levels;
 
 private:
