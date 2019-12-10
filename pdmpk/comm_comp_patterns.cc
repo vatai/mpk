@@ -36,9 +36,9 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
-    buffer.mcsr.mptr.rec_begin();
+    buffer.mcsr.mptr.rec_phase_begin();
     buffer.mcsr.NextMcolIdxToMptr();
-    buffer.mpi_bufs.init_idcs.rec_begin();
+    buffer.mpi_bufs.init_idcs.rec_phase_begin();
   }
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
@@ -199,11 +199,11 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto &src_tgt_index_set = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
                                 + SrcSendBase(src_tgt);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]        //
-                                + tgt_buf.mcsr.mptr.size()       //
-                                - tgt_buf.mcsr.mptr.begin[phase] //
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
+                                + tgt_buf.mcsr.mptr.size()             //
+                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &src_tgt_idx : src_tgt_index_set) {
@@ -221,11 +221,11 @@ void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
   const auto &src_tgt_index_set = iter->second;
 
   const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
                                 + SrcSendBase(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.begin[phase]        //
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
                                 + tgt_buf.mcsr.mptr.size()       //
-                                - tgt_buf.mcsr.mptr.begin[phase] //
+                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
                                 + TgtRecvBase(iter->first) + comm_dict_size;
   size_t idx = 0;
   for (const auto &src_tgt_idx : src_tgt_index_set) {
@@ -256,8 +256,9 @@ void CommCompPatterns::DbgAsserts() const {
   /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
   for (auto b : bufs) {
     for (auto phase = 1; phase < this->phase; phase++) {
-      auto mbd = b.mbuf.begin[phase] - b.mbuf.begin[phase - 1];
-      auto mpd = b.mcsr.mptr.begin[phase] - b.mcsr.mptr.begin[phase - 1];
+      auto mbd = b.mbuf.phase_begin[phase] - b.mbuf.phase_begin[phase - 1];
+      auto mpd = b.mcsr.mptr.phase_begin[phase] //
+                 - b.mcsr.mptr.phase_begin[phase - 1];
       auto rbs = b.mpi_bufs.RbufSize(phase - 1);
       if (mbd != mpd + rbs) {
         std::cout << "phase: " << phase << ", "
@@ -275,7 +276,7 @@ void CommCompPatterns::DbgMbufChecks() {
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
     // Check init_idcs.
-    for (auto i = buffer.mpi_bufs.init_idcs.begin[phase];
+    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[phase];
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
       if (pair.first >= mbuf_idx) {
@@ -285,7 +286,7 @@ void CommCompPatterns::DbgMbufChecks() {
       assert(pair.second < mbuf_idx);
     }
     // Check sbuf_idcs.
-    for (auto i = buffer.mpi_bufs.sbuf_idcs.begin[phase];
+    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[phase];
          i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
       auto value = buffer.mpi_bufs.sbuf_idcs[i];
       assert(value < mbuf_idx);

@@ -7,7 +7,7 @@
 /// `phase`.
 template <typename T> class phased_vector : public std::vector<T> {
  public:
-  std::vector<size_t> begin;
-  void rec_begin() { begin.push_back(this->size()); };
-  T *get_ptr(const int phase) { return this->data() + begin[phase]; }
+  std::vector<size_t> phase_begin;
+  void rec_phase_begin() { phase_begin.push_back(this->size()); };
+  T *get_ptr(const int phase) { return this->data() + phase_begin[phase]; }
 };

@@ -1,6 +1,7 @@
 // Author: Emil VATAI <emil.vatai@gmail.com>
 // Date: 2019-10-17
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -21,11 +22,11 @@ Buffers::Buffers(const idx_t npart)
 
 void Buffers::PhaseInit() {
   mpi_bufs.AllocMpiBufs();
-  mpi_bufs.sbuf_idcs.rec_begin();
-  mpi_bufs.init_idcs.rec_begin();
+  mpi_bufs.sbuf_idcs.rec_phase_begin();
+  mpi_bufs.init_idcs.rec_phase_begin();
 
-  mcsr.mptr.rec_begin();
-  mbuf.begin.push_back(mbuf_idx);
+  mcsr.mptr.rec_phase_begin();
+  mbuf.phase_begin.push_back(mbuf_idx);
 }
 
 void Buffers::PhaseFinalize(const int phase) {
@@ -46,8 +47,8 @@ void Buffers::PhaseFinalize(const int phase) {
 }
 
 void Buffers::DoComp(int phase) {
-  auto mcount = mcsr.mptr.begin[phase + 1] - //
-                mcsr.mptr.begin[phase];
+  auto mcount = mcsr.mptr.phase_begin[phase + 1] - //
+                mcsr.mptr.phase_begin[phase];
   auto cur_mbuf = mbuf.get_ptr(phase);
   auto cur_mptr = mcsr.mptr.get_ptr(phase);
   for (size_t mi = 0; mi < mcount; mi++) {
@@ -67,7 +68,7 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
     assert(0 <= sbuf_idcs[i]);
-    assert(sbuf_idcs[i] < (int)mbuf.begin[phase]);
+    assert(sbuf_idcs[i] < (int)mbuf.phase_begin[phase]);
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -87,7 +88,7 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
     os << rbuf[i] << ", ";
   os << std::endl;
 
-  assert(mpi_bufs.RbufSize(phase) == 0 or mbuf.begin[phase] < mbuf.size());
+  assert(mpi_bufs.RbufSize(phase) == 0 or mbuf.phase_begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 
@@ -99,8 +100,8 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
 
   // DoInit()
   /// @todo(vatai): Implement get_init_span.
-  const auto begin = mpi_bufs.init_idcs.begin[phase];
-  const auto end = mpi_bufs.init_idcs.begin[phase + 1];
+  const auto begin = mpi_bufs.init_idcs.phase_begin[phase];
+  const auto end = mpi_bufs.init_idcs.phase_begin[phase + 1];
   for (auto i = begin; i < end; i++) {
     const auto &pair = mpi_bufs.init_idcs[i];
     const auto tgtIdx = pair.second;
@@ -114,13 +115,13 @@ void Buffers::Exec(const int rank) {
   auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
   std::ofstream file(fname);
 
-  const auto nphases = mbuf.begin.size();
-  assert(mcsr.mptr.begin.size() == nphases + 1);
+  const auto nphases = mbuf.phase_begin.size();
+  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
   mbuf.resize(mbuf_idx, 0);
   sbuf.resize(max_sbuf_size);
 
   // Load vector!
-  for (size_t i = 0; i < mbuf.begin[0]; i++)
+  for (size_t i = 0; i < mbuf.phase_begin[0]; i++)
     mbuf[i] = 1.0;
 
   DoComp(0);
@@ -137,7 +138,7 @@ void Buffers::Dump(const int rank) {
   std::ofstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
-  Utils::DumpVec(mbuf.begin, file);
+  Utils::DumpVec(mbuf.phase_begin, file);
   Utils::DumpVec(results_mbuf_idx, file);
   Utils::DumpVec(results.vect_idx, file);
   mpi_bufs.DumpToOFS(file);
@@ -148,7 +149,7 @@ void Buffers::Load(const int rank) {
   std::ifstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
-  Utils::LoadVec(mbuf.begin, file);
+  Utils::LoadVec(mbuf.phase_begin, file);
   Utils::LoadVec(results_mbuf_idx, file);
   Utils::LoadVec(results.vect_idx, file);
   mpi_bufs.LoadFromIFS(file);
@@ -160,7 +161,7 @@ void Buffers::DumpTxt(const int rank) {
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
-  Utils::DumpTxt("mbuf_begin", mbuf.begin, file);
+  Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
   Utils::DumpTxt("result_mbuf_idx", results_mbuf_idx, file);
   Utils::DumpTxt("result_vect_idx", results.vect_idx, file);
   Utils::DumpTxt("dbg_idx", dbg_idx, file);
