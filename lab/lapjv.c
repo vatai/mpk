@@ -7,6 +7,14 @@
 ///
 /// Run using ./lapjv csum_xenon2....txt
 
+// elem(mat, i, j) is c[i, j]
+//
+// assign->col_at[i] is x[i]
+// assign->row_at[j] is y[j]
+//
+// dual->row[i] is u[i]
+// dual->col[j] is v[j]
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
