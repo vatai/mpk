@@ -4,6 +4,9 @@
 /// Jonker-Volgenant algorithm - buggy for now.
 ///
 /// Paper: https://link.springer.com/article/10.1007%2FBF02278710
+///
+/// Run using ./lapjv csum_xenon2....txt
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
