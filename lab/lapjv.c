@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <limits.h>
 const int kUnassigned = -1;
 
 void check_alloc(void *ptr) {
@@ -294,28 +294,29 @@ static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
   const int n = m->n;
   for (int j = n - 1; j >= 0; j--) {
     col->data[j] = j;
-    int h = elem(m, 0, j);
-    int i1 = 0;
+    int min_val = elem(m, 0, j);
+    int min_idx = 0;
     for (int i = 1; i < n; i++) {
-      if (elem(m, i, j) < h) {
-        h = elem(m, i, j);
-        i1 = i;
+      if (elem(m, i, j) < min_val) {
+        min_val = elem(m, i, j);
+        min_idx = i;
       }
-      d->col[j] = h;
-      if (a->col_at[i1] == kUnassigned) {
-        a->col_at[i1] = j;
-        a->row_at[j] = i1;
+      d->col[j] = min_val;
+      if (a->col_at[min_idx] == kUnassigned) {
+        a->col_at[min_idx] = j;
+        a->row_at[j] = min_idx;
       } else {
-        a->col_at[i1] = lapjv_abs(a->col_at[i1]);
+        a->col_at[min_idx] = lapjv_abs(a->col_at[min_idx]);
         a->row_at[j] = kUnassigned;
       }
     }
   }
 }
 
-static void lapjv_redtransf(struct mat *m, int inf, struct assign *a,
+static void lapjv_redtransf(struct mat *m, struct assign *a,
                             struct dual *d, struct col *col,
                             struct free *free) {
+  free->size = 0;
   const int n = m->n;
   for (int i = 0; i < n; i++) {
     if (a->col_at[i] == kUnassigned)
@@ -324,7 +325,7 @@ static void lapjv_redtransf(struct mat *m, int inf, struct assign *a,
       a->col_at[i] = lapjv_neg(a->col_at[i]);
     else {
       int j1 = a->col_at[i];
-      int min = inf;
+      int min = INT_MAX;
       for (int j = 0; j < n; j++) {
         if (j != j1) {
           if (elem(m, i, j) - d->col[j] < min)
@@ -336,7 +337,7 @@ static void lapjv_redtransf(struct mat *m, int inf, struct assign *a,
   }
 }
 
-static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
+static void lapjv_augrowred(struct mat *m, struct assign *a,
                             struct dual *d, struct free *free) {
   const int n = m->n;
   const int f_size = free->size;
@@ -345,7 +346,7 @@ static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
   while (k_size < f_size) {
     int i = free->data[k_size++];
     int u1 = elem(m, i, 0) - d->col[0];
-    int u2 = inf;
+    int u2 = INT_MAX;
     int j1 = 0;
     int j2;
     for (int j = 1; j < n; j++) {
@@ -362,7 +363,7 @@ static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
         }
       }
     }
-    int i1 = d->col[j1];
+    int i1 = a->row_at[j1];
     if (u1 < u2)
       d->col[j1] = d->col[j1] - u2 + u1;
     else if (i1 > kUnassigned) {
@@ -387,7 +388,7 @@ static int lapjv_auginner(struct mat *m, struct assign *a, struct dual *d,
   int h, j;
   while (1) {
     if (col->up == col->low) {
-      *last = col->low - 1; /// ???
+      *last = col->low;
       *min = d_arr[col->data[col->up++]];
       for (int k = col->up; k < n; k++) {
         j = col->data[k];
@@ -401,7 +402,7 @@ static int lapjv_auginner(struct mat *m, struct assign *a, struct dual *d,
           col->data[col->up++] = j;
         }
       }
-      for (h = col->low; col->low < col->up; h++) {
+      for (h = col->low; h < col->up; h++) {
         j = col->data[h];
         if (a->row_at[j] == kUnassigned)
           return j; // GOTO
@@ -438,8 +439,8 @@ static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
   int *d_arr = (int *)malloc(n * sizeof(*d_arr));
   int *pred = (int *)malloc(n * sizeof(*pred));
   // For every free ertex.
-  for (int f = 0; f < f_size; f++) {
-    int i1 = fr->data[f];
+  for (fr->size = 0; fr->size < f_size; fr->size++) {
+    int i1 = fr->data[fr->size];
     int min;
     col->low = 0;
     col->up = 0;
@@ -453,7 +454,7 @@ static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
     // Inner end.
     for (int k = 0; k < last; k++) {
       j1 = col->data[k];
-      d->col[j1] += d->col[j1] + d_arr[j1] - min;
+      d->col[j1] = d->col[j1] + d_arr[j1] - min;
     }
     int i;
     do {
@@ -499,19 +500,36 @@ static void lapjv(int *sums, int npart, int *perm) {
   print_dual(npart, dual);
   print_assign(npart, asgn);
   check_dual(msums, dual);
-  lapjv_redtransf(msums, max_sum, asgn, dual, col, free);
+  lapjv_redtransf(msums, asgn, dual, col, free);
   printf("=== after redtransf ===\n");
   print_dual(npart, dual);
   print_assign(npart, asgn);
   check_dual(msums, dual);
-  lapjv_augrowred(msums, max_sum, asgn, dual, free);
-  lapjv_augrowred(msums, max_sum, asgn, dual, free);
+  lapjv_augrowred(msums, asgn, dual, free);
+  printf("=== lapjv_augrowred ===\n");
+  print_dual(npart, dual);
+  print_assign(npart, asgn);
+  check_dual(msums, dual);
+
+  lapjv_augrowred(msums, asgn, dual, free);
+  printf("=== lapjv_augrowred ===\n");
+  print_dual(npart, dual);
+  print_assign(npart, asgn);
+  check_dual(msums, dual);
+
   lapjv_augment(msums, asgn, dual, col, free);
+  printf("=== lapjv_augment ===\n");
+  print_dual(npart, dual);
+  print_assign(npart, asgn);
+  check_dual(msums, dual);
+
   lapjv_finalize(msums, asgn, dual);
 
   printf("=== final ===\n");
   print_dual(npart, dual);
   print_assign(npart, asgn);
+  check_dual(msums, dual);
+
 
   for (int i = 0; i < npart; i++)
     perm[i] = asgn->col_at[i];
