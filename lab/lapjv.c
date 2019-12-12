@@ -495,44 +495,53 @@ static void lapjv(int *sums, int npart, int *perm) {
 
   lapjv_colred(msums, asgn, dual, col);
   printf("=== after colred ===\n");
+  printf("free->size: %d\n", free->size);
   print_dual(npart, dual);
   print_assign(npart, asgn);
   check_dual(msums, dual);
+
   lapjv_redtransf(msums, asgn, dual, col, free);
   printf("=== after redtransf ===\n");
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
-  check_dual(msums, dual);
-  lapjv_augrowred(msums, asgn, dual, free);
-  printf("=== lapjv_augrowred ===\n");
+  printf("free->size: %d\n", free->size);
   print_dual(npart, dual);
   print_assign(npart, asgn);
   check_dual(msums, dual);
 
   lapjv_augrowred(msums, asgn, dual, free);
-  printf("=== lapjv_augrowred ===\n");
+  printf("=== after lapjv_augrowred ===\n");
+  printf("free->size: %d\n", free->size);
+  print_dual(npart, dual);
+  print_assign(npart, asgn);
+  check_dual(msums, dual);
+
+  lapjv_augrowred(msums, asgn, dual, free);
+  printf("=== after lapjv_augrowred ===\n");
+  printf("free->size: %d\n", free->size);
   print_dual(npart, dual);
   print_assign(npart, asgn);
   check_dual(msums, dual);
 
   lapjv_augment(msums, asgn, dual, col, free);
-  printf("=== lapjv_augment ===\n");
+  printf("=== after lapjv_augment ===\n");
+  print_mat("msums", msums);
+  printf("free->size: %d\n", free->size);
   print_dual(npart, dual);
   print_assign(npart, asgn);
-  check_dual(msums, dual);
+  /* check_dual(msums, dual); */
 
   lapjv_finalize(msums, asgn, dual);
-
-  printf("=== final ===\n");
+  printf("=== after lapjv_finalize ===\n");
+  printf("free->size: %d\n", free->size);
+  print_mat("msums", msums);
   print_dual(npart, dual);
   print_assign(npart, asgn);
-  check_dual(msums, dual);
+  /* check_dual(msums, dual); */
 
 
   for (int i = 0; i < npart; i++)
     perm[i] = asgn->col_at[i];
 
-  print_mat("lapjv::msums", msums);
+  /* print_mat("lapjv::msums", msums); */
 
   del_free(free);
   del_col(col);
