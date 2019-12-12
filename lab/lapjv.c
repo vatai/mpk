@@ -287,11 +287,18 @@ static void lapjv_prep(int *sums, struct mat *m, struct assign *a,
   }
 }
 
+/// Input:
+///   `d->row[i] = d->col[j] = 0;`
+///   `a->col_at[i] = a->row_ar[j] = 0;`
+///
+/// Output:
+///   `col->data[j] = j;`
+///   For a column `j`
 static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
                          struct col *col) {
   const int n = m->n;
   for (int j = n - 1; j >= 0; j--) {
-    col->data[j] = j;
+    col->data[j] = j; // Init `col`
     int min_val = elem(m, 0, j);
     int i1 = 0;
     for (int i = 1; i < n; i++) {
@@ -487,59 +494,59 @@ static void lapjv(int *sums, int npart, int *perm) {
   struct free *free = new_free(npart);
 
   lapjv_prep(sums, msums, asgn, dual);
-  printf("=== after init ===\n");
-  print_mat("msums", msums);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after init ===\n"); */
+  /* print_mat("msums", msums); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_colred(msums, asgn, dual, col);
-  printf("=== after colred ===\n");
-  printf("free->size: %d\n", free->size);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after colred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_redtransf(msums, asgn, dual, col, free);
-  printf("=== after redtransf ===\n");
-  printf("free->size: %d\n", free->size);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after redtransf ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_augrowred(msums, asgn, dual, free);
-  printf("=== after lapjv_augrowred ===\n");
-  printf("free->size: %d\n", free->size);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after lapjv_augrowred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_augrowred(msums, asgn, dual, free);
-  printf("=== after lapjv_augrowred ===\n");
-  printf("free->size: %d\n", free->size);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after lapjv_augrowred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_augment(msums, asgn, dual, col, free);
-  printf("=== after lapjv_augment ===\n");
-  print_mat("msums", msums);
-  printf("free->size: %d\n", free->size);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
-  /* check_dual(msums, dual); */
+  /* printf("=== after lapjv_augment ===\n"); */
+  /* print_mat("msums", msums); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
 
   lapjv_finalize(msums, asgn, dual);
-  printf("=== after lapjv_finalize ===\n");
-  printf("free->size: %d\n", free->size);
-  print_mat("msums", msums);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
-  /* check_dual(msums, dual); */
+  /* printf("=== after lapjv_finalize ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_mat("msums", msums); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
 
 
-  for (int i = 0; i < npart; i++)
-    perm[i] = asgn->col_at[i];
+  for (int j = 0; j < npart; j++)
+    perm[j] = asgn->row_at[j];
 
   /* print_mat("lapjv::msums", msums); */
 
@@ -548,9 +555,9 @@ static void lapjv(int *sums, int npart, int *perm) {
   del_assign(asgn);
   del_dual(dual);
   del_mat(msums);
-
-  printf("LAPJV::END\n");
 }
+
+// /// Tests ///
 
 void test_mark_unmark() {
   for (int i = -1; i < 4; i++) {
@@ -563,26 +570,86 @@ void test_mark_unmark() {
   }
 }
 
+int calc_cost(struct mat *m, int *row_at) {
+  const int n = m->n;
+  int result = 0;
+  for (int j = 0; j < n; j++) {
+    const int i = row_at[j];
+    result += elem(m, i, j);
+  }
+  return result;
+}
+
+/// Return 1 if arrays are equal, 0 if arrays differ.
+int arr_eq(const int n, int *arr1, int *arr2) {
+  for (int i = 0; i < n; i++)
+    if (arr1[i] != arr2[i])
+      return 0;
+  return 1;
+}
+
+void make_input(const int n, int *input) {
+  for (int i = 0; i < n; i++)
+    input[i] = rand() % 10000;
+}
+
+int test_core(const int n, int *input, int *buf1, int *buf2) {
+  make_input(n * n, input);
+  make_perm(buf1, input, n);
+  lapjv(input, n, buf2);
+  /* return arr_eq(n, buf1, buf2); */
+  struct mat m = {input, n};
+  return calc_cost(&m, buf1) == calc_cost(&m, buf2);
+}
+
+void test_loop(const int count, const int n) {
+  int size = n * n;
+  int *input = (int *)malloc(size * sizeof(int));
+  int *buf1 = (int *)malloc(n * sizeof(int));
+  int *buf2 = (int *)malloc(n * sizeof(int));
+
+  for (int i = 0; i < count; i++) {
+    int result = test_core(n, input, buf1, buf2);
+    if (!result) {
+      struct mat m = {input, n};
+
+      print_arr("buf1", n, buf1);
+      printf("cost1: %d\n", calc_cost(&m, buf1));
+      print_arr("buf2", n, buf2);
+      printf("cost2: %d\n", calc_cost(&m, buf2));
+      print_mat("input: ", &m);
+      printf("Error!\n");
+    } else
+      printf("OK!\n");
+    assert(result);
+  }
+
+  free(buf2);
+  free(buf1);
+  free(input);
+}
+
 int main(int argc, char *argv[]) {
   printf("hi\n");
-
-  test_mark_unmark();
 
   assert(argc == 2);
   int npart;
   int *sums = alloc_read_comm_sums(argv[1], &npart);
+  int *buf1 = (int *)malloc(npart * sizeof(*buf1));
+  int *buf2 = (int *)malloc(npart * sizeof(*buf1));
 
-  int *perm = (int *)malloc(npart * sizeof(*perm));
-  assert(perm != NULL);
+  make_perm(buf1, sums, npart);
+  lapjv(sums, npart, buf2);
+  assert(arr_eq(npart, buf1, buf2));
 
-  make_perm(perm, sums, npart);
-  print_arr("1perm: ", npart, perm);
-
-  lapjv(sums, npart, perm);
-  print_arr("2perm: ", npart, perm);
-
-  printf("npart: %d\n", npart);
-  free(perm);
+  free(buf2);
+  free(buf1);
   free(sums);
+
+  // test_mark_unmark();
+  const int count = 10000;
+  const int n = 5;
+  // srand(time);
+  test_loop(count, n);
   return 0;
 }
