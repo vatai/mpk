@@ -129,8 +129,13 @@ void print_dual(const int n, struct dual *dual) {
 void check_dual(struct mat *m, struct dual *dual) {
   const int n = m->n;
   for (int i = 0; i < n; i++)
-    for (int j = 0; j < n; j++)
+    for (int j = 0; j < n; j++) {
+      if (0 > elem(m, i, j) - dual->row[i] - dual->col[j]) {
+        printf("check_dual():: %d and %d,%d at %d,%d\n", elem(m, i, j),
+               dual->row[i], dual->col[j], i, j);
+      }
       assert(0 <= elem(m, i, j) - dual->row[i] - dual->col[j]);
+    }
 }
 
 // struct free //
