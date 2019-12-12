@@ -255,18 +255,12 @@ static int *alloc_read_comm_sums(char *fname, int *npart) {
 
 // /// /// //
 
-static int lapjv_abs(int val) {
-  int pascal = val + 1;
-  pascal = pascal > 0 ? pascal : -pascal;
-  return pascal - 1;
-  // val > -1 ? val : -val -2;
+static int lapjv_mark(int val) {
+  return val < kUnassigned ? val: -val - 2;
 }
 
-static int lapjv_neg(int val) {
-  int pascal = val + 1;
-  pascal = -pascal;
-  return pascal - 1;
-  // -val - 2
+static int lapjv_unmark(int val) {
+  return -val - 2;
 }
 
 static void lapjv_prep(int *sums, struct mat *m, struct assign *a,
@@ -299,18 +293,18 @@ static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
   for (int j = n - 1; j >= 0; j--) {
     col->data[j] = j;
     int min_val = elem(m, 0, j);
-    int min_idx = 0;
+    int i1 = 0;
     for (int i = 1; i < n; i++) {
       if (elem(m, i, j) < min_val) {
         min_val = elem(m, i, j);
-        min_idx = i;
+        i1 = i;
       }
       d->col[j] = min_val;
-      if (a->col_at[min_idx] == kUnassigned) {
-        a->col_at[min_idx] = j;
-        a->row_at[j] = min_idx;
+      if (a->col_at[i1] == kUnassigned) {
+        a->col_at[i1] = j;
+        a->row_at[j] = i1;
       } else {
-        a->col_at[min_idx] = lapjv_abs(a->col_at[min_idx]);
+        a->col_at[i1] = lapjv_mark(a->col_at[i1]);
         a->row_at[j] = kUnassigned;
       }
     }
@@ -326,7 +320,7 @@ static void lapjv_redtransf(struct mat *m, struct assign *a,
     if (a->col_at[i] == kUnassigned)
       insert(free, i);
     else if (a->col_at[i] < kUnassigned)
-      a->col_at[i] = lapjv_neg(a->col_at[i]);
+      a->col_at[i] = lapjv_unmark(a->col_at[i]);
     else {
       int j1 = a->col_at[i];
       int min = INT_MAX;
