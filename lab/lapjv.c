@@ -299,14 +299,14 @@ static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
         min_val = elem(m, i, j);
         i1 = i;
       }
-      d->col[j] = min_val;
-      if (a->col_at[i1] == kUnassigned) {
-        a->col_at[i1] = j;
-        a->row_at[j] = i1;
-      } else {
-        a->col_at[i1] = lapjv_mark(a->col_at[i1]);
-        a->row_at[j] = kUnassigned;
-      }
+    }
+    d->col[j] = min_val;
+    if (a->col_at[i1] == kUnassigned) {
+      a->col_at[i1] = j;
+      a->row_at[j] = i1;
+    } else {
+      a->col_at[i1] = lapjv_mark(a->col_at[i1]);
+      a->row_at[j] = kUnassigned;
     }
   }
 }
