@@ -269,7 +269,7 @@ static int lapjv_neg(int val) {
   // -val - 2
 }
 
-static int lapjv_perp(int *sums, struct mat *m, struct assign *a,
+static void lapjv_prep(int *sums, struct mat *m, struct assign *a,
                       struct dual *d) {
   const int n = m->n;
   const int size = n * n;
@@ -291,7 +291,6 @@ static int lapjv_perp(int *sums, struct mat *m, struct assign *a,
     d->row[i] = 0;
     d->col[i] = 0;
   }
-  return max_sum;
 }
 
 static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
@@ -493,7 +492,7 @@ static void lapjv(int *sums, int npart, int *perm) {
   struct col *col = new_col(npart);
   struct free *free = new_free(npart);
 
-  int max_sum = lapjv_perp(sums, msums, asgn, dual);
+  lapjv_prep(sums, msums, asgn, dual);
   printf("=== after init ===\n");
   print_mat("msums", msums);
   print_dual(npart, dual);
