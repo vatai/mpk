@@ -552,8 +552,22 @@ static void lapjv(int *sums, int npart, int *perm) {
   printf("LAPJV::END\n");
 }
 
+void test_mark_unmark() {
+  for (int i = -1; i < 4; i++) {
+    printf("i: %d, mark(i): %d, mark(mark(i)): %d, unmark: %d\n", i, lapjv_mark(i),
+           lapjv_mark(lapjv_mark(i)), lapjv_unmark(lapjv_mark(i)));
+    assert(lapjv_mark(i) == lapjv_mark(lapjv_mark(i)));
+    if (i != kUnassigned) assert(lapjv_mark(i) < kUnassigned);
+    else assert(i == lapjv_mark(i));
+    assert(lapjv_unmark(lapjv_mark(i)) == i);
+  }
+}
+
 int main(int argc, char *argv[]) {
   printf("hi\n");
+
+  test_mark_unmark();
+
   assert(argc == 2);
   int npart;
   int *sums = alloc_read_comm_sums(argv[1], &npart);
