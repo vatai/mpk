@@ -8,6 +8,7 @@ addons:
   apt:
     packages:
       - doxygen
+      - libopenmpi-dev
 
 script:
   - mkdir build
