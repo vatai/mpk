@@ -10,13 +10,14 @@ addons:
       - doxygen
 
 script:
-  - cd pdmpk
-  - doxygen Doxyfile
+  - mkdir build
+  - cmake -S pdmpk -B build
+  - cmake --build build
 
 deploy:
   provider: pages
   skip_cleanup: true
-  local_dir: pdmpk/html
+  local_dir: build/html
   github_token: $GH_REPO_TOKEN
   on:
     branch: master
