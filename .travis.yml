@@ -11,8 +11,9 @@ addons:
 
 script:
   - mkdir build
-  - cmake -S pdmpk -B build
-  - cmake --build build
+  - cd build
+  - cmake ../pdmpk
+  - cmake --build .
 
 deploy:
   provider: pages
