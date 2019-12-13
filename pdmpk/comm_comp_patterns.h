@@ -26,6 +26,16 @@ public:
   std::vector<Buffers> bufs;
 
 private:
+  enum CommType {
+    kMcol,
+    kInitIdcs
+  };
+
+  struct SrcTgtType {
+    idx_t src_mbuf_idx;
+    idx_t tgt_idx;
+    CommType type;
+  };
   const CSR csr;
   const idx_t npart;
   const level_t nlevels;
