@@ -35,7 +35,7 @@ public:
   void DoComp(int phase);
   /// Execute the communication needed at the beginning of each phase
   /// (before calling the `DoComp()` method).
-  void DoComm(int phase, std::ofstream &os);
+  void DoComm(int phase);
   void Dump(const int rank);
   void Load(const int rank);
   void DumpTxt(const int rank);

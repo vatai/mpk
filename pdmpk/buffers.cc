@@ -56,7 +56,7 @@ void Buffers::DoComp(int phase) {
   for (size_t mi = 0; mi < mcount; mi++) {
     double tmp = 0.0;
     const auto &pair = mpi_bufs.init_idcs[init_idx];
-    if (mbuf.phase_begin[phase] + mi == pair.second) {
+    if (mbuf.phase_begin[phase] + mi == (size_t)pair.second) {
       tmp = mbuf[pair.first];
       init_idx++;
     };
@@ -67,7 +67,7 @@ void Buffers::DoComp(int phase) {
   }
 }
 
-void Buffers::DoComm(int phase, std::ofstream &os) {
+void Buffers::DoComm(int phase) {
   /// @todo(vatai): Remove asserts and clean up.
   const auto scount = mpi_bufs.SbufSize(phase);
 
@@ -86,30 +86,13 @@ void Buffers::DoComm(int phase, std::ofstream &os) {
   const auto sdispls = mpi_bufs.sdispls.data() + offset;
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
-  /// @todo(vatai): Convert `rbuf` to span.
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
-
-  // ////// Debug //////
-  os << "rbuf(before)(" << phase << "): ";
-  for (int i = -1; i < (int)mpi_bufs.RbufSize(phase); i++)
-    os << rbuf[i] << ", ";
-  os << std::endl;
-
   assert(mpi_bufs.RbufSize(phase) == 0 or mbuf.phase_begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
-
-  // ////// Debug //////
-  os << "rbuf        (" << phase << "): ";
-  for (int i = -1; i < (int)mpi_bufs.RbufSize(phase); i++)
-    os << rbuf[i] << ", ";
-  os << std::endl;
 }
 
 void Buffers::Exec(const int rank) {
-  auto const fname = DBG_FNAME + std::to_string(rank) + ".txt";
-  std::ofstream file(fname);
-
   const auto nphases = mbuf.phase_begin.size();
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
   mbuf.resize(mbuf_idx, 0);
@@ -121,7 +104,7 @@ void Buffers::Exec(const int rank) {
 
   DoComp(0);
   for (size_t phase = 1; phase < nphases; phase++) {
-    DoComm(phase, file);
+    DoComm(phase);
     DoComp(phase);
   }
 
