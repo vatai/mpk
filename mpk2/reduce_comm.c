@@ -33,9 +33,8 @@ static void visit_perm(int npart, int *sums, int *tperm, int *perm, int *_max) {
   }
 }
 
-static void make_perm(int *perm, int *sums, comm_data_t *cd, char *comm_table) {
+static void make_perm(int *perm, int *sums, int npart) {
   int tmp;
-  int npart = cd->npart;
   int *tmpperm = (int *)malloc(sizeof(*tmpperm) * npart);
   // init perm a1 <= a2 <= .. <= an
   for (int i = 0; i < npart; i++) {
@@ -44,7 +43,7 @@ static void make_perm(int *perm, int *sums, comm_data_t *cd, char *comm_table) {
   }
   int maxsum = 0;
   while (1) {
-    visit_perm(cd->npart, sums, tmpperm, perm, &maxsum);
+    visit_perm(npart, sums, tmpperm, perm, &maxsum);
     // Set j.
     int j = npart - 2;
     while (j >= 0 && tmpperm[j] >= tmpperm[j + 1]) j--;
@@ -119,7 +118,6 @@ void debug_print(comm_data_t *cd, char *comm_table) {
 }
 
 static void debug_(
-    int id,
     int phase,
     comm_data_t *cd,
     char *comm_table,
@@ -145,6 +143,20 @@ static void debug_(
   fclose(file);
 }
 
+// Save/write out the `sums` array.  This output will be used as the
+// input, to aid LAPJV development
+static void save_sums(int *sums, comm_data_t *cd, int phase) {
+  const int N = cd->npart * cd->npart;
+  char fname[1024];
+  sprintf(fname, "csum_%s_%d.txt", cd->dir, phase);
+  FILE *file = fopen(fname, "w");
+  fprintf(file, "%d\n", cd->npart);
+  for (int i = 0; i < N; i++) {
+    fprintf(file, "%d\n", sums[i]);
+  }
+  fclose(file);
+}
+
 void reduce_comm(
     int phase,
     comm_data_t *cd,
@@ -155,7 +167,9 @@ void reduce_comm(
   int *perm = (int *)malloc(sizeof(*perm) * cd->npart);
   int *sums = (int *)malloc(sizeof(*sums) * cd->npart * cd->npart);
   make_sums(sums, cd, comm_table);
-  make_perm(perm, sums, cd, comm_table);
+  save_sums(sums, cd, phase);
+  debug_(phase, cd, comm_table, store_part);
+  make_perm(perm, sums, cd->npart);
 
   assert_perm(perm, cd->npart); // TODO(vatai): remove
 

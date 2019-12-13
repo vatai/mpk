@@ -89,6 +89,39 @@ static int max_or_nlevel(comm_data_t *cd, int phase) {
   return rv;
 }
 
+static void collect_comm(
+    int phase,
+    comm_data_t *cd,
+    int *store_part,
+    char *comm_table)
+{
+  assert(cd->plist[phase] != NULL);
+  const int size = cd->npart * cd->npart;
+  clear_comm_table(cd, comm_table);
+  int n = cd->n;
+  int *ll = cd->llist[phase]->level;
+  int lmax = max_or_nlevel(cd, phase);
+  int prevlmin = min_or_0(cd, phase - 1);
+  for (int level = prevlmin + 1; level <= lmax; level++) {
+    for (int i = 0; i < n; i++) {
+      int i_vvidx = n * level + i;
+      int prevli = phase ? cd->llist[phase - 1]->level[i] : 0;
+      if (prevli < level && level <= ll[i]) {
+        const int tgt_part = cd->plist[phase]->part[i];
+        for (int j = cd->graph->ptr[i]; j < cd->graph->ptr[i + 1]; j++) {
+          const int k_vvidx = cd->n * (level - 1) + cd->graph->col[j];
+          const int src_part = store_part[k_vvidx];
+          if (src_part != -1) {
+            int idx = get_ct_idx(src_part, tgt_part, k_vvidx, cd->n,
+                                 cd->npart, cd->nlevel);
+            comm_table[idx] = 1;
+          }
+        }
+      }
+    }
+  }
+}
+
 static void phase_comm_table(
     int phase,
     comm_data_t *cd,
@@ -262,13 +295,13 @@ static void fill_bufsize_rscount_displs(
   for (int phase = 0; phase < cd->nphase; phase++) {
     // Clear cursp
     for (int i = 0; i < size; i++) cursp[i] = 0;
-    phase_comm_table(phase, cd, comm_table, store_part, cursp);
     if (phase > 0) {
+      collect_comm(phase, cd, store_part, comm_table);
       reduce_comm(phase, cd, comm_table, store_part, cursp);
       clear_comm_table(cd, comm_table);
       for (int i = 0; i < size; i++) if (cursp[i]) store_part[i] = -1;
-      phase_comm_table(phase, cd, comm_table, store_part, cursp);
     }
+    phase_comm_table(phase, cd, comm_table, store_part, cursp);
     iterator(phase_cond, phase, cd, bufs);
     fill_rscounts(phase, bufs, comm_table);
     fill_displs(phase, bufs);
