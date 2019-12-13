@@ -3,7 +3,7 @@
 # -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_DEBUG_CSR_VALS
 
 # CMakeLists.txt
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required (VERSION 3.12)
 
 ### Doxygen ###
 # From: https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
