@@ -1,25 +1,11 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-12-07
-///
-/// Jonker-Volgenant algorithm - buggy for now.
-///
-/// Paper: https://link.springer.com/article/10.1007%2FBF02278710
-///
-/// Run using ./lapjv csum_xenon2....txt
-
-// elem(mat, i, j) is c[i, j]
-//
-// assign->col_at[i] is x[i]
-// assign->row_at[j] is y[j]
-//
-// dual->row[i] is u[i]
-// dual->col[j] is v[j]
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+
 const int kUnassigned = -1;
 
 void check_alloc(void *ptr) {
@@ -27,13 +13,6 @@ void check_alloc(void *ptr) {
     fprintf(stderr, "Not enough memory!\n");
     exit(-1);
   }
-}
-
-static void print_arr(char *name, int n, int *vec) {
-  printf("%s: ", name);
-  for (int i = 0; i < n; i++)
-    printf("%d, ", vec[i]);
-  printf("\n");
 }
 
 struct mat {
@@ -60,16 +39,6 @@ void del_mat(struct mat *m) {
 
 int elem(struct mat *m, int i, int j) { return m->data[i * m->n + j]; }
 
-static void print_mat(char *name, struct mat *m) {
-  printf("%s:\n", name);
-  for (int i = 0; i < m->n; i++) {
-    for (int j = 0; j < m->n; j++)
-      printf("%d, ", elem(m, i, j));
-    printf("\n");
-  }
-  printf("\n");
-}
-
 // struct assign //
 
 struct assign {
@@ -93,11 +62,6 @@ void del_assign(struct assign *a) {
   free(a);
 }
 
-void print_assign(const int n, struct assign *a) {
-  print_arr("col_at: ", n, a->col_at);
-  print_arr("row_at: ", n, a->row_at);
-}
-
 // struct dual //
 
 struct dual {
@@ -119,23 +83,6 @@ void del_dual(struct dual *dual) {
   free(dual->col);
   free(dual->row);
   free(dual);
-}
-
-void print_dual(const int n, struct dual *dual) {
-  print_arr("dual_row: ", n, dual->row);
-  print_arr("dual_col: ", n, dual->col);
-}
-
-void check_dual(struct mat *m, struct dual *dual) {
-  const int n = m->n;
-  for (int i = 0; i < n; i++)
-    for (int j = 0; j < n; j++) {
-      if (0 > elem(m, i, j) - dual->row[i] - dual->col[j]) {
-        printf("check_dual():: %d and %d,%d at %d,%d\n", elem(m, i, j),
-               dual->row[i], dual->col[j], i, j);
-      }
-      assert(0 <= elem(m, i, j) - dual->row[i] - dual->col[j]);
-    }
 }
 
 // struct free //
@@ -188,72 +135,6 @@ void del_col(struct col *col) {
 }
 
 // // // // // //
-
-static void visit_perm(int npart, int *sums, int *tperm, int *perm, int *_max) {
-  int sum = 0;
-  for (int i = 0; i < npart; i++) {
-    int j = tperm[i];
-    sum += sums[j * npart + i];
-  }
-  if (sum > *_max) {
-    *_max = sum;
-    memcpy(perm, tperm, sizeof(*tperm) * npart);
-  }
-}
-
-static void make_perm(int *perm, int *sums, int npart) {
-  int tmp;
-  int *tmpperm = (int *)malloc(sizeof(*tmpperm) * npart);
-  // init perm a1 <= a2 <= .. <= an
-  for (int i = 0; i < npart; i++) {
-    tmpperm[i] = i;
-    perm[i] = i;
-  }
-  int maxsum = 0;
-  while (1) {
-    visit_perm(npart, sums, tmpperm, perm, &maxsum);
-    // Set j.
-    int j = npart - 2;
-    while (j >= 0 && tmpperm[j] >= tmpperm[j + 1])
-      j--;
-    if (j < 0)
-      break;
-    // Set i. (ell in TAOCP)
-    int i = npart - 1;
-    while (i >= 0 && tmpperm[j] >= tmpperm[i])
-      i--;
-    // Swap tmpperm[i] and tmpperm[j].
-    tmp = tmpperm[j];
-    tmpperm[j] = tmpperm[i];
-    tmpperm[i] = tmp;
-    assert(j >= 0);
-    j++;
-    i = npart - 1;
-    while (j < i) {
-      // Swap tmpperm[i] == tmpperm[j].
-      tmp = tmpperm[j];
-      tmpperm[j] = tmpperm[i];
-      tmpperm[i] = tmp;
-      j++;
-      i--;
-    }
-  }
-  free(tmpperm);
-}
-
-static int *alloc_read_comm_sums(char *fname, int *npart) {
-  FILE *file = fopen(fname, "r");
-  fscanf(file, "%d\n", npart);
-  int size = (*npart) * (*npart);
-  int *comm_sums = (int *)malloc(size * sizeof(*comm_sums));
-  assert(comm_sums != NULL);
-  for (int i = 0; i < size; i++)
-    fscanf(file, "%d\n", comm_sums + i);
-  fclose(file);
-  return comm_sums;
-}
-
-// /// /// //
 
 static int lapjv_mark(int val) {
   return val < kUnassigned ? val: -val - 2;
@@ -485,7 +366,7 @@ static int lapjv_finalize(struct mat *m, struct assign *a, struct dual *d) {
   return cost;
 }
 
-static void lapjv(int *sums, int npart, int *perm) {
+void lapjv(int *sums, int npart, int *perm) {
   // "local" arrays
   struct mat *msums = new_mat(npart);
   struct assign *asgn = new_assign(npart);
@@ -494,61 +375,16 @@ static void lapjv(int *sums, int npart, int *perm) {
   struct free *free = new_free(npart);
 
   lapjv_prep(sums, msums, asgn, dual);
-  /* printf("=== after init ===\n"); */
-  /* print_mat("msums", msums); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_colred(msums, asgn, dual, col);
-  /* printf("=== after colred ===\n"); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_redtransf(msums, asgn, dual, col, free);
-  /* printf("=== after redtransf ===\n"); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_augrowred(msums, asgn, dual, free);
-  /* printf("=== after lapjv_augrowred ===\n"); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_augrowred(msums, asgn, dual, free);
-  /* printf("=== after lapjv_augrowred ===\n"); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_augment(msums, asgn, dual, col, free);
-  /* printf("=== after lapjv_augment ===\n"); */
-  /* print_mat("msums", msums); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
   lapjv_finalize(msums, asgn, dual);
-  /* printf("=== after lapjv_finalize ===\n"); */
-  /* printf("free->size: %d\n", free->size); */
-  /* print_mat("msums", msums); */
-  /* print_dual(npart, dual); */
-  /* print_assign(npart, asgn); */
-  check_dual(msums, dual);
-
 
   for (int j = 0; j < npart; j++)
     perm[j] = asgn->row_at[j];
 
-  /* print_mat("lapjv::msums", msums); */
 
   del_free(free);
   del_col(col);
@@ -557,99 +393,3 @@ static void lapjv(int *sums, int npart, int *perm) {
   del_mat(msums);
 }
 
-// /// Tests ///
-
-void test_mark_unmark() {
-  for (int i = -1; i < 4; i++) {
-    printf("i: %d, mark(i): %d, mark(mark(i)): %d, unmark: %d\n", i, lapjv_mark(i),
-           lapjv_mark(lapjv_mark(i)), lapjv_unmark(lapjv_mark(i)));
-    assert(lapjv_mark(i) == lapjv_mark(lapjv_mark(i)));
-    if (i != kUnassigned) assert(lapjv_mark(i) < kUnassigned);
-    else assert(i == lapjv_mark(i));
-    assert(lapjv_unmark(lapjv_mark(i)) == i);
-  }
-}
-
-int calc_cost(struct mat *m, int *row_at) {
-  const int n = m->n;
-  int result = 0;
-  for (int j = 0; j < n; j++) {
-    const int i = row_at[j];
-    result += elem(m, i, j);
-  }
-  return result;
-}
-
-/// Return 1 if arrays are equal, 0 if arrays differ.
-int arr_eq(const int n, int *arr1, int *arr2) {
-  for (int i = 0; i < n; i++)
-    if (arr1[i] != arr2[i])
-      return 0;
-  return 1;
-}
-
-void make_input(const int n, int *input) {
-  for (int i = 0; i < n; i++)
-    input[i] = rand() % 10000;
-}
-
-int test_core(const int n, int *input, int *buf1, int *buf2) {
-  make_input(n * n, input);
-  make_perm(buf1, input, n);
-  lapjv(input, n, buf2);
-  /* return arr_eq(n, buf1, buf2); */
-  struct mat m = {input, n};
-  return calc_cost(&m, buf1) == calc_cost(&m, buf2);
-}
-
-void test_loop(const int count, const int n) {
-  int size = n * n;
-  int *input = (int *)malloc(size * sizeof(int));
-  int *buf1 = (int *)malloc(n * sizeof(int));
-  int *buf2 = (int *)malloc(n * sizeof(int));
-
-  for (int i = 0; i < count; i++) {
-    int result = test_core(n, input, buf1, buf2);
-    if (!result) {
-      struct mat m = {input, n};
-
-      print_arr("buf1", n, buf1);
-      printf("cost1: %d\n", calc_cost(&m, buf1));
-      print_arr("buf2", n, buf2);
-      printf("cost2: %d\n", calc_cost(&m, buf2));
-      print_mat("input: ", &m);
-      printf("Error!\n");
-    } else
-      printf("OK!\n");
-    assert(result);
-  }
-
-  free(buf2);
-  free(buf1);
-  free(input);
-}
-
-int main(int argc, char *argv[]) {
-  printf("hi\n");
-
-  assert(argc == 2);
-  int npart;
-  int *sums = alloc_read_comm_sums(argv[1], &npart);
-  int *buf1 = (int *)malloc(npart * sizeof(*buf1));
-  int *buf2 = (int *)malloc(npart * sizeof(*buf1));
-
-  make_perm(buf1, sums, npart);
-  lapjv(sums, npart, buf2);
-  assert(arr_eq(npart, buf1, buf2));
-
-  free(buf2);
-  free(buf1);
-  free(sums);
-
-  // test_mark_unmark();
-  const int count = 10000;
-  const int n = 5;
-  // srand(time);
-  test_loop(count, n);
-  return 0;
-}
