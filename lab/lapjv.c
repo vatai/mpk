@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <limits.h>
 const int kUnassigned = -1;
 
 void check_alloc(void *ptr) {
@@ -129,8 +129,13 @@ void print_dual(const int n, struct dual *dual) {
 void check_dual(struct mat *m, struct dual *dual) {
   const int n = m->n;
   for (int i = 0; i < n; i++)
-    for (int j = 0; j < n; j++)
+    for (int j = 0; j < n; j++) {
+      if (0 > elem(m, i, j) - dual->row[i] - dual->col[j]) {
+        printf("check_dual():: %d and %d,%d at %d,%d\n", elem(m, i, j),
+               dual->row[i], dual->col[j], i, j);
+      }
       assert(0 <= elem(m, i, j) - dual->row[i] - dual->col[j]);
+    }
 }
 
 // struct free //
@@ -250,21 +255,15 @@ static int *alloc_read_comm_sums(char *fname, int *npart) {
 
 // /// /// //
 
-static int lapjv_abs(int val) {
-  int pascal = val + 1;
-  pascal = pascal > 0 ? pascal : -pascal;
-  return pascal - 1;
-  // val > -1 ? val : -val -2;
+static int lapjv_mark(int val) {
+  return val < kUnassigned ? val: -val - 2;
 }
 
-static int lapjv_neg(int val) {
-  int pascal = val + 1;
-  pascal = -pascal;
-  return pascal - 1;
-  // -val - 2
+static int lapjv_unmark(int val) {
+  return -val - 2;
 }
 
-static int lapjv_perp(int *sums, struct mat *m, struct assign *a,
+static void lapjv_prep(int *sums, struct mat *m, struct assign *a,
                       struct dual *d) {
   const int n = m->n;
   const int size = n * n;
@@ -286,45 +285,52 @@ static int lapjv_perp(int *sums, struct mat *m, struct assign *a,
     d->row[i] = 0;
     d->col[i] = 0;
   }
-  return max_sum;
 }
 
+/// Input:
+///   `d->row[i] = d->col[j] = 0;`
+///   `a->col_at[i] = a->row_ar[j] = 0;`
+///
+/// Output:
+///   `col->data[j] = j;`
+///   For a column `j`
 static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
                          struct col *col) {
   const int n = m->n;
   for (int j = n - 1; j >= 0; j--) {
-    col->data[j] = j;
-    int h = elem(m, 0, j);
+    col->data[j] = j; // Init `col`
+    int min_val = elem(m, 0, j);
     int i1 = 0;
     for (int i = 1; i < n; i++) {
-      if (elem(m, i, j) < h) {
-        h = elem(m, i, j);
+      if (elem(m, i, j) < min_val) {
+        min_val = elem(m, i, j);
         i1 = i;
       }
-      d->col[j] = h;
-      if (a->col_at[i1] == kUnassigned) {
-        a->col_at[i1] = j;
-        a->row_at[j] = i1;
-      } else {
-        a->col_at[i1] = lapjv_abs(a->col_at[i1]);
-        a->row_at[j] = kUnassigned;
-      }
+    }
+    d->col[j] = min_val;
+    if (a->col_at[i1] == kUnassigned) {
+      a->col_at[i1] = j;
+      a->row_at[j] = i1;
+    } else {
+      a->col_at[i1] = lapjv_mark(a->col_at[i1]);
+      a->row_at[j] = kUnassigned;
     }
   }
 }
 
-static void lapjv_redtransf(struct mat *m, int inf, struct assign *a,
+static void lapjv_redtransf(struct mat *m, struct assign *a,
                             struct dual *d, struct col *col,
                             struct free *free) {
+  free->size = 0;
   const int n = m->n;
   for (int i = 0; i < n; i++) {
     if (a->col_at[i] == kUnassigned)
       insert(free, i);
     else if (a->col_at[i] < kUnassigned)
-      a->col_at[i] = lapjv_neg(a->col_at[i]);
+      a->col_at[i] = lapjv_unmark(a->col_at[i]);
     else {
       int j1 = a->col_at[i];
-      int min = inf;
+      int min = INT_MAX;
       for (int j = 0; j < n; j++) {
         if (j != j1) {
           if (elem(m, i, j) - d->col[j] < min)
@@ -336,7 +342,7 @@ static void lapjv_redtransf(struct mat *m, int inf, struct assign *a,
   }
 }
 
-static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
+static void lapjv_augrowred(struct mat *m, struct assign *a,
                             struct dual *d, struct free *free) {
   const int n = m->n;
   const int f_size = free->size;
@@ -345,7 +351,7 @@ static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
   while (k_size < f_size) {
     int i = free->data[k_size++];
     int u1 = elem(m, i, 0) - d->col[0];
-    int u2 = inf;
+    int u2 = INT_MAX;
     int j1 = 0;
     int j2;
     for (int j = 1; j < n; j++) {
@@ -362,7 +368,7 @@ static void lapjv_augrowred(struct mat *m, int inf, struct assign *a,
         }
       }
     }
-    int i1 = d->col[j1];
+    int i1 = a->row_at[j1];
     if (u1 < u2)
       d->col[j1] = d->col[j1] - u2 + u1;
     else if (i1 > kUnassigned) {
@@ -387,7 +393,7 @@ static int lapjv_auginner(struct mat *m, struct assign *a, struct dual *d,
   int h, j;
   while (1) {
     if (col->up == col->low) {
-      *last = col->low - 1; /// ???
+      *last = col->low;
       *min = d_arr[col->data[col->up++]];
       for (int k = col->up; k < n; k++) {
         j = col->data[k];
@@ -401,7 +407,7 @@ static int lapjv_auginner(struct mat *m, struct assign *a, struct dual *d,
           col->data[col->up++] = j;
         }
       }
-      for (h = col->low; col->low < col->up; h++) {
+      for (h = col->low; h < col->up; h++) {
         j = col->data[h];
         if (a->row_at[j] == kUnassigned)
           return j; // GOTO
@@ -438,8 +444,8 @@ static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
   int *d_arr = (int *)malloc(n * sizeof(*d_arr));
   int *pred = (int *)malloc(n * sizeof(*pred));
   // For every free ertex.
-  for (int f = 0; f < f_size; f++) {
-    int i1 = fr->data[f];
+  for (fr->size = 0; fr->size < f_size; fr->size++) {
+    int i1 = fr->data[fr->size];
     int min;
     col->low = 0;
     col->up = 0;
@@ -453,7 +459,7 @@ static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
     // Inner end.
     for (int k = 0; k < last; k++) {
       j1 = col->data[k];
-      d->col[j1] += d->col[j1] + d_arr[j1] - min;
+      d->col[j1] = d->col[j1] + d_arr[j1] - min;
     }
     int i;
     do {
@@ -487,63 +493,163 @@ static void lapjv(int *sums, int npart, int *perm) {
   struct col *col = new_col(npart);
   struct free *free = new_free(npart);
 
-  int max_sum = lapjv_perp(sums, msums, asgn, dual);
-  printf("=== after init ===\n");
-  print_mat("msums", msums);
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  lapjv_prep(sums, msums, asgn, dual);
+  /* printf("=== after init ===\n"); */
+  /* print_mat("msums", msums); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
 
   lapjv_colred(msums, asgn, dual, col);
-  printf("=== after colred ===\n");
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+  /* printf("=== after colred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
-  lapjv_redtransf(msums, max_sum, asgn, dual, col, free);
-  printf("=== after redtransf ===\n");
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
+
+  lapjv_redtransf(msums, asgn, dual, col, free);
+  /* printf("=== after redtransf ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
   check_dual(msums, dual);
-  lapjv_augrowred(msums, max_sum, asgn, dual, free);
-  lapjv_augrowred(msums, max_sum, asgn, dual, free);
+
+  lapjv_augrowred(msums, asgn, dual, free);
+  /* printf("=== after lapjv_augrowred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
+
+  lapjv_augrowred(msums, asgn, dual, free);
+  /* printf("=== after lapjv_augrowred ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
+
   lapjv_augment(msums, asgn, dual, col, free);
+  /* printf("=== after lapjv_augment ===\n"); */
+  /* print_mat("msums", msums); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
+
   lapjv_finalize(msums, asgn, dual);
+  /* printf("=== after lapjv_finalize ===\n"); */
+  /* printf("free->size: %d\n", free->size); */
+  /* print_mat("msums", msums); */
+  /* print_dual(npart, dual); */
+  /* print_assign(npart, asgn); */
+  check_dual(msums, dual);
 
-  printf("=== final ===\n");
-  print_dual(npart, dual);
-  print_assign(npart, asgn);
 
-  for (int i = 0; i < npart; i++)
-    perm[i] = asgn->col_at[i];
+  for (int j = 0; j < npart; j++)
+    perm[j] = asgn->row_at[j];
 
-  print_mat("lapjv::msums", msums);
+  /* print_mat("lapjv::msums", msums); */
 
   del_free(free);
   del_col(col);
   del_assign(asgn);
   del_dual(dual);
   del_mat(msums);
+}
 
-  printf("LAPJV::END\n");
+// /// Tests ///
+
+void test_mark_unmark() {
+  for (int i = -1; i < 4; i++) {
+    printf("i: %d, mark(i): %d, mark(mark(i)): %d, unmark: %d\n", i, lapjv_mark(i),
+           lapjv_mark(lapjv_mark(i)), lapjv_unmark(lapjv_mark(i)));
+    assert(lapjv_mark(i) == lapjv_mark(lapjv_mark(i)));
+    if (i != kUnassigned) assert(lapjv_mark(i) < kUnassigned);
+    else assert(i == lapjv_mark(i));
+    assert(lapjv_unmark(lapjv_mark(i)) == i);
+  }
+}
+
+int calc_cost(struct mat *m, int *row_at) {
+  const int n = m->n;
+  int result = 0;
+  for (int j = 0; j < n; j++) {
+    const int i = row_at[j];
+    result += elem(m, i, j);
+  }
+  return result;
+}
+
+/// Return 1 if arrays are equal, 0 if arrays differ.
+int arr_eq(const int n, int *arr1, int *arr2) {
+  for (int i = 0; i < n; i++)
+    if (arr1[i] != arr2[i])
+      return 0;
+  return 1;
+}
+
+void make_input(const int n, int *input) {
+  for (int i = 0; i < n; i++)
+    input[i] = rand() % 10000;
+}
+
+int test_core(const int n, int *input, int *buf1, int *buf2) {
+  make_input(n * n, input);
+  make_perm(buf1, input, n);
+  lapjv(input, n, buf2);
+  /* return arr_eq(n, buf1, buf2); */
+  struct mat m = {input, n};
+  return calc_cost(&m, buf1) == calc_cost(&m, buf2);
+}
+
+void test_loop(const int count, const int n) {
+  int size = n * n;
+  int *input = (int *)malloc(size * sizeof(int));
+  int *buf1 = (int *)malloc(n * sizeof(int));
+  int *buf2 = (int *)malloc(n * sizeof(int));
+
+  for (int i = 0; i < count; i++) {
+    int result = test_core(n, input, buf1, buf2);
+    if (!result) {
+      struct mat m = {input, n};
+
+      print_arr("buf1", n, buf1);
+      printf("cost1: %d\n", calc_cost(&m, buf1));
+      print_arr("buf2", n, buf2);
+      printf("cost2: %d\n", calc_cost(&m, buf2));
+      print_mat("input: ", &m);
+      printf("Error!\n");
+    } else
+      printf("OK!\n");
+    assert(result);
+  }
+
+  free(buf2);
+  free(buf1);
+  free(input);
 }
 
 int main(int argc, char *argv[]) {
   printf("hi\n");
+
   assert(argc == 2);
   int npart;
   int *sums = alloc_read_comm_sums(argv[1], &npart);
+  int *buf1 = (int *)malloc(npart * sizeof(*buf1));
+  int *buf2 = (int *)malloc(npart * sizeof(*buf1));
 
-  int *perm = (int *)malloc(npart * sizeof(*perm));
-  assert(perm != NULL);
+  make_perm(buf1, sums, npart);
+  lapjv(sums, npart, buf2);
+  assert(arr_eq(npart, buf1, buf2));
 
-  make_perm(perm, sums, npart);
-  print_arr("1perm: ", npart, perm);
-
-  lapjv(sums, npart, perm);
-  print_arr("2perm: ", npart, perm);
-
-  printf("npart: %d\n", npart);
-  free(perm);
+  free(buf2);
+  free(buf1);
   free(sums);
+
+  // test_mark_unmark();
+  const int count = 10000;
+  const int n = 5;
+  // srand(time);
+  test_loop(count, n);
   return 0;
 }
