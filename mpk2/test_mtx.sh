@@ -14,7 +14,7 @@ NPHASE=${NPHASE:=3}
 DIRNAME=${NAME}_${NPART}_${NLEVEL}_${NPHASE}
 rm -rf ${DIRNAME}
 
-test -f $G0FILE || test -f $LOOPFILE || test -f $NAME.val || ./mtx2gen $MTXFILE
+test -f $G0FILE || test -f $LOOPFILE || test -f $NAME.loop.val || ./mtx1gen $MTXFILE
 ./driver $NAME $NPART $NLEVEL $NPHASE
 cp -f $LOOPFILE $DIRNAME/loop.g0
 
