@@ -6,11 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "lapjv.h"
+
 const int kUnassigned = -1;
 
 void check_alloc(void *ptr) {
   if (ptr == NULL) {
-    fprintf(stderr, "Not enough memory!\n");
+    fprintf(stderr, "%s::check_alloc(): Not enough memory!\n", __FILE__);
     exit(-1);
   }
 }
@@ -136,16 +138,12 @@ void del_col(struct col *col) {
 
 // // // // // //
 
-static int lapjv_mark(int val) {
-  return val < kUnassigned ? val: -val - 2;
-}
+static int lapjv_mark(int val) { return val < kUnassigned ? val : -val - 2; }
 
-static int lapjv_unmark(int val) {
-  return -val - 2;
-}
+static int lapjv_unmark(int val) { return -val - 2; }
 
 static void lapjv_prep(int *sums, struct mat *m, struct assign *a,
-                      struct dual *d) {
+                       struct dual *d) {
   const int n = m->n;
   const int size = n * n;
 
@@ -199,9 +197,8 @@ static void lapjv_colred(struct mat *m, struct assign *a, struct dual *d,
   }
 }
 
-static void lapjv_redtransf(struct mat *m, struct assign *a,
-                            struct dual *d, struct col *col,
-                            struct free *free) {
+static void lapjv_redtransf(struct mat *m, struct assign *a, struct dual *d,
+                            struct col *col, struct free *free) {
   free->size = 0;
   const int n = m->n;
   for (int i = 0; i < n; i++) {
@@ -223,8 +220,8 @@ static void lapjv_redtransf(struct mat *m, struct assign *a,
   }
 }
 
-static void lapjv_augrowred(struct mat *m, struct assign *a,
-                            struct dual *d, struct free *free) {
+static void lapjv_augrowred(struct mat *m, struct assign *a, struct dual *d,
+                            struct free *free) {
   const int n = m->n;
   const int f_size = free->size;
   int k_size = 0;
@@ -385,11 +382,9 @@ void lapjv(int *sums, int npart, int *perm) {
   for (int j = 0; j < npart; j++)
     perm[j] = asgn->row_at[j];
 
-
   del_free(free);
   del_col(col);
   del_assign(asgn);
   del_dual(dual);
   del_mat(msums);
 }
-

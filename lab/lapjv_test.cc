@@ -1,9 +1,9 @@
+#include "../mpk2/lapjv.h"
 #include <assert.h>
+#include <gtest/gtest.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtest/gtest.h>
-#include "lapjv.h"
 
 // /// /// //
 
@@ -82,7 +82,8 @@ static int *alloc_read_comm_sums(char *fname, int *npart) {
 
 /* void test_mark_unmark() { */
 /*   for (int i = -1; i < 4; i++) { */
-/*     printf("i: %d, mark(i): %d, mark(mark(i)): %d, unmark: %d\n", i, lapjv_mark(i), */
+/*     printf("i: %d, mark(i): %d, mark(mark(i)): %d, unmark: %d\n", i,
+ * lapjv_mark(i), */
 /*            lapjv_mark(lapjv_mark(i)), lapjv_unmark(lapjv_mark(i))); */
 /*     assert(lapjv_mark(i) == lapjv_mark(lapjv_mark(i))); */
 /*     if (i != kUnassigned) assert(lapjv_mark(i) < kUnassigned); */
