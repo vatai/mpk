@@ -1,7 +1,16 @@
 // -*- mode:c -*-
 /// @mainpage
 ///
-/// The content of the main page.
+/// @section Scripts
+/// @see batch_gen.sh
+/// @see batch_mtx.sh
+///
+/// @see test_mtx.sh
+/// @see test_build.sh
+///
+/// @see run_script.sh
+///
+/// @section Binaries
 ///
 /// @see mpi2_mpktest.c
 /// @see mpi2_mpkwrtbufs.c
@@ -9,5 +18,3 @@
 /// @see mpi2_mpkexecbufs_val.c
 /// @see verify_val.c
 /// @see work_count.c
-
-

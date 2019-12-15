@@ -1,9 +1,18 @@
-#!/bin/sh
+#!/bin/bash
+
+# Create the data for one table for the .mtx matrix $NAME (=$1).  The
+# *ITER variables below are used to generate the rows of one table.
+#
+# The results is piped into the $OUTPUT.txt file where $OUTPUT is the
+# input $NAME without the .mtx extension.
+#
+# Details: uses `mtx2gen` and `test_mtx.sh`.  It should delete all
+# files it generates.
 
 NLEVELITER="10 20"
 NPARTITER="4 8"
 NPHASEITER=$(seq 0 4)
-# SIZEITER="10"
+# NLEVELITER="10"
 # NPARTITER="4"
 # NPHASEITER=$(seq 1 2)
 
@@ -18,6 +27,8 @@ for NLEVEL in $NLEVELITER; do #
 done
 
 OUTPUT=$(echo ${NAME} | sed 's/\.mtx//')
-./collect-logs.sh > $OUTPUT.txt
+ls summary-* | while read f; do echo -n $f: && tail -1 $f ; done > $OUTPUT.txt
+ls times-* | while read f; do echo -n $f: && tail -1 $f ; done > $OUTPUT.times.txt
 rm {summary,times}-$OUTPUT*.log
-rm $OUTPUT*.{co,g0,val}
+rm $OUTPUT*.{g0,val}
+rm -rf ${OUTPUT}_*
