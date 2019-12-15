@@ -12,8 +12,14 @@
 ///
 /// @code
 /// mkdir _Debug
-/// cmake pdmpk/ -DCMAKE_BUILD_TYPE=Debug -B _Debug
+/// cmake -S pdmpk/ -B _Debug -DCMAKE_BUILD_TYPE=Debug
 /// cmake --build _Debug
+/// @endcode
+///
+/// @code
+/// cmake -S pdmpk -B build               \
+///    -DMPI_C_COMPILER=/usr/bin/mpiCC    \
+///    -DMPI_CXX_COMPILER=/usr/bin/mpic++
 /// @endcode
 ///
 /// # Usage
