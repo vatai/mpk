@@ -120,11 +120,7 @@ void CommCompPatterns::AddToBackPatch(const idx_t idx, const idx_t level) {
   const auto tgt_idx = bufs[tgt_part].mbuf_idx;
   if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
-    SrcTgtType insert_data;
-    insert_data.src_mbuf_idx = src_idx;
-    insert_data.tgt_idx = tgt_idx;
-    insert_data.type = kInitIdcs;
-    back_patch[{src_part, tgt_part}].insert(insert_data);
+    back_patch[{src_part, tgt_part}].insert({src_idx, tgt_idx, kInitIdcs});
   } else {
     // Add to `init_idcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
@@ -150,11 +146,7 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   } else {
     // Record communication.
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
-    SrcTgtType insert_data;
-    insert_data.src_mbuf_idx = src_idx;
-    insert_data.tgt_idx = tgt_idx;
-    insert_data.type = kMcol;
-    back_patch[{src_part, cur_part}].insert(insert_data);
+    back_patch[{src_part, cur_part}].insert({src_idx, tgt_idx, kMcol});
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
