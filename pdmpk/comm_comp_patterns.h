@@ -26,18 +26,15 @@ public:
   std::vector<Buffers> bufs;
 
 private:
-  enum CommType {
-    kMcol,
-    kInitIdcs
-  };
+  enum CommType { kMcol, kInitIdcs };
 
   struct SrcTgtType {
     idx_t src_mbuf_idx;
     idx_t tgt_idx;
     CommType type;
-    friend bool operator< (const SrcTgtType& l, const SrcTgtType& r) {
-      return std::tie(l.src_mbuf_idx, l.tgt_idx, l.type)
-           < std::tie(r.src_mbuf_idx, r.tgt_idx, r.type);
+    friend bool operator<(const SrcTgtType &l, const SrcTgtType &r) {
+      return std::tie(l.src_mbuf_idx, l.tgt_idx, l.type) <
+             std::tie(r.src_mbuf_idx, r.tgt_idx, r.type);
     }
   };
   const CSR csr;

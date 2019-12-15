@@ -87,7 +87,8 @@ void Buffers::DoComm(int phase) {
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
-  assert(mpi_bufs.RbufSize(phase) == 0 or mbuf.phase_begin[phase] < mbuf.size());
+  assert(mpi_bufs.RbufSize(phase) == 0 or
+         mbuf.phase_begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }

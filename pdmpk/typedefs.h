@@ -8,8 +8,8 @@
 
 #include <map>
 #include <set>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include <metis.h>
 

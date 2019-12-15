@@ -4,9 +4,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <mpi.h>
 #include <string>
 #include <unistd.h>
-#include <mpi.h>
 
 #include "buffers.h"
 #include "utils.hpp"
@@ -15,8 +15,7 @@
 ///
 /// The body of `pdmpk_exec` page.
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int rank, npart;
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &npart);

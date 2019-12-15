@@ -9,7 +9,7 @@
 const std::string FNAME{"fresults"};
 
 void Results::FillVal(const std::vector<idx_t> &idx,
-                       const std::vector<double> &mbuf) {
+                      const std::vector<double> &mbuf) {
   for (const auto i : idx) {
     val.push_back(mbuf[i]);
   }

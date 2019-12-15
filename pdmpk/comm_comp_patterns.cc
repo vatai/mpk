@@ -169,8 +169,8 @@ void CommCompPatterns::FinalizePhase() {
   // (In case of type = kMcol)
   // Fill `ibuf` and the remainder of `sbuf`.
   // (In case of type = kInitIdcs)
-  for (CommDict::const_iterator iter = begin(comm_dict);
-       iter != end(comm_dict); iter++)
+  for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
+       iter++)
     ProcCommDict(iter);
 
   comm_dict.clear();
@@ -180,10 +180,12 @@ void CommCompPatterns::FinalizePhase() {
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
-  auto &init_idcs = buffer.mpi_bufs.init_idcs;
-  std::sort(std::begin(init_idcs) + init_idcs.phase_begin[phase],
-            std::end(init_idcs),
-            [](const sidx_tidx_t &a, const sidx_tidx_t &b) { return a.second < b.second; });
+    auto &init_idcs = buffer.mpi_bufs.init_idcs;
+    std::sort(std::begin(init_idcs) + init_idcs.phase_begin[phase],
+              std::end(init_idcs),
+              [](const sidx_tidx_t &a, const sidx_tidx_t &b) {
+                return a.second < b.second;
+              });
   }
   DbgMbufChecks();
 }
@@ -212,7 +214,7 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   for (const auto &src_tgt_idx : src_tgt_index_set) {
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.src_mbuf_idx;
     const auto src_idx = tgt_recv_baseidx + idx;
-    if (src_tgt_idx.type==kMcol) {
+    if (src_tgt_idx.type == kMcol) {
       const auto tgt_idx = src_tgt_idx.tgt_idx;
       tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
     } else {

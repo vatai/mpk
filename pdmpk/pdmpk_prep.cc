@@ -9,11 +9,10 @@
 #include <cassert>
 #include <iostream>
 
-#include "typedefs.h"
 #include "comm_comp_patterns.h"
+#include "typedefs.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   assert(argc == 4);
   int npart = std::stoi(argv[2]);
   level_t nlevels = std::stoi(argv[3]);

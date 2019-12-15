@@ -10,17 +10,16 @@
 #include <unistd.h>
 #include <vector>
 
-#include "results.h"
 #include "buffers.h"
 #include "csr.h"
+#include "results.h"
 #include "utils.hpp"
 
 /// @page pdmpk_test pdmpk_test
 ///
 /// Body of `pdmpk_test` page.
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   assert(argc == 4);
   CSR csr(argv[1]);
   const int npart = std::stoi(argv[2]);
