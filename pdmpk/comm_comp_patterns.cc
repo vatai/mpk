@@ -48,7 +48,9 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     bufs[pair.first].results.vect_idx.push_back(i);
     bufs[pair.first].results_mbuf_idx.push_back(pair.second);
   }
+#ifndef NDEBUG
   DbgAsserts();
+#endif
 }
 
 bool CommCompPatterns::ProcPhase() {
@@ -146,7 +148,7 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
-    const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
+    const idx_t tgt_idx = bufs[cur_part].mcsr.mcol.size();
     comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx, kMcol});
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
@@ -188,7 +190,9 @@ void CommCompPatterns::FinalizePhase() {
                 return a.second < b.second;
               });
   }
+#ifndef NDEBUG
   DbgMbufChecks();
+#endif
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
@@ -234,7 +238,7 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t src_tgt) const {
   return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
 }
 
-// ////// DEBUG //////
+#ifndef NDEBUG
 
 void CommCompPatterns::DbgAsserts() const {
   /// Check all vertices reach `nlevels`.
@@ -285,3 +289,5 @@ void CommCompPatterns::DbgMbufChecks() {
     }
   }
 }
+
+#endif

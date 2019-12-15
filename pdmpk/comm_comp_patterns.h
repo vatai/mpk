@@ -52,11 +52,11 @@ private:
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
-  /// source partition. (In case of type = kMcol)
-  /// Also, collect the communication of partial indices (for
-  /// initialization) as a map from (source, target) pairs to (mbuf
-  /// indices of source partition, mcol indices in the target
-  /// partition) pairs. (In case of type = kInitIdcs)
+  /// source partition. (In case of type = kMcol) Also, collect the
+  /// communication of partial indices (for initialization) as a map
+  /// from (source, target) pairs to (mbuf indices of source
+  /// partition, mcol indices in the target partition) pairs. (In case
+  /// of type = kInitIdcs)
   typedef std::map<src_tgt_t, std::set<SrcTgtType>> CommDict;
   CommDict comm_dict;
 
@@ -83,7 +83,8 @@ private:
   /// The current phase set at the beginning of each phase.
   int phase;
 
-  // ////// DEBUG //////
+#ifndef NDEBUG
   void DbgAsserts() const;
   void DbgMbufChecks();
+#endif
 };
