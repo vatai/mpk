@@ -2,6 +2,7 @@
 // Date: 2019-09-17
 
 #include <sstream>
+#include <string>
 
 #include "csr.h"
 
@@ -36,14 +37,24 @@ void CSR::MtxCheckBanner(std::ifstream &file) {
   std::stringstream tmp;
   std::string word;
   tmp << banner;
-  const std::string words[] = {"%%MatrixMarket", "matrix", "coordinate", "real",
-                               "general"};
-  for (auto w : words) {
-    tmp >> word;
-    if (w != word) {
-      throw std::logic_error("Incorrect mtx banner");
-    }
-  }
+
+  tmp >> word;
+  if (word != "%%MatrixMarket")
+    throw std::logic_error("Incorrect mtx banner!");
+
+  tmp >> word;
+  if (word != "matrix")
+    throw std::logic_error("Incorrect mtx banner!");
+
+  tmp >> word;
+  coordinate = (word == std::string("coordinate"));
+
+  tmp >> word;
+  if (word != std::string("real"))
+    throw std::logic_error("Not real matrix!");
+
+  tmp >> word;
+  symmetric = (word == std::string("symmetric"));
 }
 
 void CSR::MtxFillSize(std::ifstream &file) {
@@ -80,6 +91,10 @@ void CSR::MtxFillVectors(std::ifstream &file) {
       ptr[i + 1]++;
       Js[i].push_back(j);
       vs[i].push_back(val);
+      if (symmetric) {
+        Js[j].push_back(i);
+        vs[j].push_back(val);
+      }
     }
   }
   for (int i = 0; i < n; i++) {
@@ -87,12 +102,12 @@ void CSR::MtxFillVectors(std::ifstream &file) {
     col.insert(std::end(col), std::begin(Js[i]), std::end(Js[i]));
     val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
-#ifdef _DEBUG_CSR_VALS
-  for (int i = 0; i < n; i++) {
-    double v = 1. / (ptr[i + 1] - ptr[i]);
-    for (int t = ptr[i]; t < ptr[i + 1]; t++) {
-      val[t] = v;
+  if (coordinate) {
+    for (int i = 0; i < n; i++) {
+      double v = 1. / (ptr[i + 1] - ptr[i]);
+      for (int t = ptr[i]; t < ptr[i + 1]; t++) {
+        val[t] = v;
+      }
     }
   }
-#endif
 }
