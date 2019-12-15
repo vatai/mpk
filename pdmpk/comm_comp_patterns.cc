@@ -134,6 +134,7 @@ void CommCompPatterns::AddToBackPatch(const idx_t idx, const idx_t level) {
 void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
                                     const level_t lbelow, //
                                     const idx_t t) {
+  /// @todo(utsav): Remove debug code
   pdmpk_bufs.partials[t] = true;
 
   const auto j = csr.col[t]; // Matrix column index.
@@ -218,11 +219,11 @@ void CommCompPatterns::ProcBackPatch(const BackPatch::const_iterator &iter) {
   size_t idx = 0;
   for (const auto &src_tgt_idx : src_tgt_index_set) {
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.src_mbuf_idx;
+    const auto src_idx = tgt_recv_baseidx + idx;
     if (src_tgt_idx.type==kMcol) {
       const auto tgt_idx = src_tgt_idx.tgt_idx;
       tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
     } else {
-      const auto src_idx = tgt_recv_baseidx + idx;
       const auto tgt_idx = src_tgt_idx.tgt_idx;
       tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
     }
