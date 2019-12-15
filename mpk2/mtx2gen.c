@@ -111,7 +111,7 @@ void write_crs_as_gen(
   FILE *fl = fopen(fname, "w");
   fprintf(fl, "%d %d\n", M, (nz + numdiag) / 2);
 
-  sprintf(fname, "%s.val", fn);
+  sprintf(fname, "%s.loop.val", fn);
   FILE *fv = fopen(fname, "w");
 
   int *counts = (int *)malloc(sizeof(counts) * M);

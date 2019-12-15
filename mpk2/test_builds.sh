@@ -31,4 +31,4 @@ for file in $(ls $DIRNAME/l[0-9]* $DIRNAME/g*part*); do
     perl -lne 'if ($. % '$SIZE' == 0) {print "$p $_"; $p=""} else { $p="$p $_"}' $file > $file.pp
 done
 
-./run_script.sh $DIRNAME && rm $DIRNAME
+./run_script.sh $DIRNAME
