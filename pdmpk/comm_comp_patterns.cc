@@ -104,7 +104,7 @@ bool CommCompPatterns::ProcVertex(const idx_t idx, const level_t lbelow) {
   }
   if (retval == true) {
     if (send_partial) {
-      AddToInit(idx, lbelow + 1);
+      AddToBackPatch(idx, lbelow + 1);
     }
     pdmpk_bufs.IncLevel(idx);
     FinalizeVertex({idx, lbelow + 1}, cur_part);
@@ -112,7 +112,7 @@ bool CommCompPatterns::ProcVertex(const idx_t idx, const level_t lbelow) {
   return retval;
 }
 
-void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
+void CommCompPatterns::AddToBackPatch(const idx_t idx, const idx_t level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
@@ -120,7 +120,11 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
   const auto tgt_idx = bufs[tgt_part].mbuf_idx;
   if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
-    init_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx});
+    SrcTgtType insert_data;
+    insert_data.src_mbuf_idx = src_idx;
+    insert_data.tgt_idx = tgt_idx;
+    insert_data.type = kInitIdcs;
+    back_patch[{src_part, tgt_part}].insert(insert_data);
   } else {
     // Add to `init_idcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
@@ -145,7 +149,11 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   } else {
     // Record communication.
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
-    comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx});
+    SrcTgtType insert_data;
+    insert_data.src_mbuf_idx = src_idx;
+    insert_data.tgt_idx = tgt_idx;
+    insert_data.type = kMcol;
+    back_patch[{src_part, cur_part}].insert(insert_data);
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
@@ -158,27 +166,21 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
 
 void CommCompPatterns::FinalizePhase() {
   // Fill sendcount and recvcount.
-  for (const auto &iter : comm_dict)
-    UpdateMPICountBuffers(iter.first, iter.second.size());
-
-  for (const auto &iter : init_dict)
+  for (const auto &iter : back_patch)
     UpdateMPICountBuffers(iter.first, iter.second.size());
 
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
 
-  // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
-  for (CommDict::const_iterator iter = begin(comm_dict);
-       iter != end(comm_dict); iter++)
-    ProcCommDict(iter);
-
+  // Update `mcol` and fill `sbuf_idcs` from `back_patch`.
+  // (In case of type = kMcol)
   // Fill `ibuf` and the remainder of `sbuf`.
-  for (InitDict::const_iterator iter = begin(init_dict);
-       iter != end(init_dict); iter++)
-    ProcInitDict(iter);
+  // (In case of type = kInitIdcs)
+  for (BackPatch::const_iterator iter = begin(back_patch);
+       iter != end(back_patch); iter++)
+    ProcBackPatch(iter);
 
-  comm_dict.clear();
-  init_dict.clear();
+  back_patch.clear();
 
   pdmpk_bufs.UpdateWeights();
   pdmpk_bufs.DebugPrintReport(std::cout, phase);
@@ -201,7 +203,7 @@ void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
   bufs[src].mpi_bufs.sendcounts[phase * npart + tgt] += size;
 }
 
-void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
+void CommCompPatterns::ProcBackPatch(const BackPatch::const_iterator &iter) {
   auto &src_tgt = iter->first;
   auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
   auto &tgt_buf = bufs[src_tgt.second];
@@ -215,33 +217,15 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &src_tgt_idx : src_tgt_index_set) {
-    const auto src_idx = src_tgt_idx.first;
-    const auto tgt_idx = src_tgt_idx.second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_idx;
-    tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
-    idx++;
-  }
-}
-
-void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
-  auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
-  auto &tgt_buf = bufs[iter->first.second];
-  const auto &src_tgt_index_set = iter->second;
-
-  const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
-                                + SrcSendBase(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
-                                + tgt_buf.mcsr.mptr.size()       //
-                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
-                                + TgtRecvBase(iter->first) + comm_dict_size;
-  size_t idx = 0;
-  for (const auto &src_tgt_idx : src_tgt_index_set) {
-    const auto src_idx = tgt_recv_baseidx + idx;
-    const auto tgt_idx = src_tgt_idx.second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.first;
-    assert((int)src_idx < tgt_buf.mbuf_idx);
-    tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.src_mbuf_idx;
+    if (src_tgt_idx.type==kMcol) {
+      const auto tgt_idx = src_tgt_idx.tgt_idx;
+      tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
+    } else {
+      const auto src_idx = tgt_recv_baseidx + idx;
+      const auto tgt_idx = src_tgt_idx.tgt_idx;
+      tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    }
     idx++;
   }
 }

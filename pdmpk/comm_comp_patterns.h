@@ -35,6 +35,10 @@ private:
     idx_t src_mbuf_idx;
     idx_t tgt_idx;
     CommType type;
+    friend bool operator< (const SrcTgtType& l, const SrcTgtType& r) {
+      return std::tie(l.src_mbuf_idx, l.tgt_idx, l.type)
+           < std::tie(r.src_mbuf_idx, r.tgt_idx, r.type);
+    }
   };
   const CSR csr;
   const idx_t npart;
@@ -50,27 +54,25 @@ private:
 
   /// In each phase, collect the communication of complete indices as
   /// a map from (source, target) pairs to `mbuf` indices of the
-  /// source partition.
-  CommDict comm_dict;
-
-  /// In each phase, collect the communication of partial indices (for
+  /// source partition. (In case of type = kMcol)
+  /// Also, collect the communication of partial indices (for
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
-  /// partition) pairs.
-  InitDict init_dict;
+  /// partition) pairs. (In case of type = kInitIdcs)
+  typedef std::map<src_tgt_t, std::set<SrcTgtType>> BackPatch;
+  BackPatch back_patch;
 
   void InitPhase();
   bool ProcPhase();
 
   bool ProcVertex(const idx_t idx, const level_t lbelow);
-  void AddToInit(const idx_t idx, const idx_t level);
+  void AddToBackPatch(const idx_t idx, const idx_t level);
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void FinalizePhase();
   void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
-  void ProcCommDict(const CommDict::const_iterator &iter);
-  void ProcInitDict(const InitDict::const_iterator &iter);
+  void ProcBackPatch(const BackPatch::const_iterator &iter);
 
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
