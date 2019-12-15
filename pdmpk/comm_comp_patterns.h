@@ -59,20 +59,20 @@ private:
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs. (In case of type = kInitIdcs)
-  typedef std::map<src_tgt_t, std::set<SrcTgtType>> BackPatch;
-  BackPatch back_patch;
+  typedef std::map<src_tgt_t, std::set<SrcTgtType>> CommDict;
+  CommDict comm_dict;
 
   void InitPhase();
   bool ProcPhase();
 
   bool ProcVertex(const idx_t idx, const level_t lbelow);
-  void AddToBackPatch(const idx_t idx, const idx_t level);
+  void AddToInit(const idx_t idx, const idx_t level);
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
   void FinalizePhase();
   void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
-  void ProcBackPatch(const BackPatch::const_iterator &iter);
+  void ProcCommDict(const CommDict::const_iterator &iter);
 
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
