@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Run
+#
+# - DMPK (`mpi2_mpkworkbufs` and `mpi2_mpkexecbufs_val`) 
+#
+# - Measurements (`word_count`)
+#
+# - Verification (`verify_val`)
+
 DIRNAME=$1
 NAME=$(echo $1 | cut -d_ -f1)
 NPART=$(echo $1 | cut -d_ -f2)

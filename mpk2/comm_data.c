@@ -125,15 +125,17 @@ double *alloc_read_val(crs0_t *g0, char *dir) {
 
   int cnt = 0; // Check for 3x '_'!
   for (int i = strlen(dir); 0 <= i; i--)
-    if (dir[i] == '_') cnt++;
+    if (dir[i] == '_')
+      cnt++;
   assert(cnt == 3);
 
   cnt = 0; // Find first '_'!
-  while (dir[cnt] != '_') cnt++;
+  while (dir[cnt] != '_')
+    cnt++;
 
   char fname[1024]; // Open file!
   sprintf(fname, "%s", dir);
-  sprintf(fname + cnt, "%s", ".val");
+  sprintf(fname + cnt, "%s", ".loop.val");
   FILE *file = fopen(fname, "r");
   if (file == NULL) {
     fprintf(stderr, "cannot open %s\n", fname);

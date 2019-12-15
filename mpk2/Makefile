@@ -37,13 +37,14 @@ gen2mtx : lib.o
 mtx2gen : mmio.o lib.o
 
 MPKOBJ = lib.o mpkread.o mpkprep.o mpkexec.o mpktexec.o spmvexec.o
+BUFOBJ = buffers.o reduce_comm.o lapjv.o
 mpktest : mpktest.o $(MPKOBJ)
 
 mpi_mpktest : mpi_mpkprep.o mpi_mpkexec.o lib.o mpkread.o mpkprep.o spmvexec.o
-mpi2_mpktest : mpi2_mpktest.o mpi2_mpkexec.o comm_data.o buffers.o lib.o reduce_comm.o
+mpi2_mpktest : mpi2_mpktest.o mpi2_mpkexec.o comm_data.o lib.o $(BUFOBJ)
 mpkrun : mpkvexec.o lib.o mpkread.o mpkprep.o spmvexec.o
-mpi2_mpkwrtbufs : buffers.o comm_data.o lib.o reduce_comm.o
-mpi2_mpkexecbufs : buffers.o comm_data.o mpi2_mpkexec.o lib.o reduce_comm.o
-mpi2_mpkexecbufs_val : buffers.o comm_data.o mpi2_mpkexec.o lib.o reduce_comm.o
+mpi2_mpkwrtbufs : comm_data.o lib.o $(BUFOBJ)
+mpi2_mpkexecbufs : comm_data.o mpi2_mpkexec.o lib.o $(BUFOBJ)
+mpi2_mpkexecbufs_val : comm_data.o mpi2_mpkexec.o lib.o $(BUFOBJ)
 verify_val : comm_data.o lib.o
-work_count : comm_data.o buffers.o lib.o reduce_comm.o
+work_count : comm_data.o lib.o $(BUFOBJ)

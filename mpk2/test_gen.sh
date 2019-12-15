@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Generate a matrix an run DMPK, measurements and verification (see
+# run_script.sh) of the results based on the (optional) parameters
+# below.
+
 NAME=${NAME:=m5p}
 SIZE=${SIZE:=100}
 NPART=${NPART:=4}
