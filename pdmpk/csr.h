@@ -20,6 +20,8 @@ public:
   std::vector<double> val;
 
 private:
+  bool symmetric;
+  bool coordinate;
   void MtxCheckBanner(std::ifstream &file);
   void MtxFillSize(std::ifstream &file);
   void MtxFillVectors(std::ifstream &file);
