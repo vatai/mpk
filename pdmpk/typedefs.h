@@ -17,7 +17,6 @@ typedef unsigned short level_t;
 
 /// (source, target) pair.
 typedef std::pair<idx_t, idx_t> src_tgt_t;
-
 /// (source index, target index) pair.
 typedef std::pair<idx_t, idx_t> sidx_tidx_t;
 
@@ -28,7 +27,3 @@ typedef std::pair<idx_t, idx_t> part_sidx_t;
 typedef std::pair<idx_t, level_t> idx_lvl_t;
 
 typedef std::map<idx_lvl_t, part_sidx_t> StorePart;
-
-typedef std::map<src_tgt_t, std::set<sidx_tidx_t>> CommDict;
-
-typedef std::map<src_tgt_t, std::set<sidx_tidx_t>> InitDict;

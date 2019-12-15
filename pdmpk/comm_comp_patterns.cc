@@ -120,7 +120,7 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
   const auto tgt_idx = bufs[tgt_part].mbuf_idx;
   if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
-    init_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx});
+    comm_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx, kInitIdcs});
   } else {
     // Add to `init_idcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
@@ -130,6 +130,7 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
 void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
                                     const level_t lbelow, //
                                     const idx_t t) {
+  /// @todo(utsav): Remove debug code
   pdmpk_bufs.partials[t] = true;
 
   const auto j = csr.col[t]; // Matrix column index.
@@ -145,7 +146,7 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   } else {
     // Record communication.
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
-    comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx});
+    comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx, kMcol});
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
@@ -161,24 +162,18 @@ void CommCompPatterns::FinalizePhase() {
   for (const auto &iter : comm_dict)
     UpdateMPICountBuffers(iter.first, iter.second.size());
 
-  for (const auto &iter : init_dict)
-    UpdateMPICountBuffers(iter.first, iter.second.size());
-
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
 
   // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
+  // (In case of type = kMcol)
+  // Fill `ibuf` and the remainder of `sbuf`.
+  // (In case of type = kInitIdcs)
   for (CommDict::const_iterator iter = begin(comm_dict);
        iter != end(comm_dict); iter++)
     ProcCommDict(iter);
 
-  // Fill `ibuf` and the remainder of `sbuf`.
-  for (InitDict::const_iterator iter = begin(init_dict);
-       iter != end(init_dict); iter++)
-    ProcInitDict(iter);
-
   comm_dict.clear();
-  init_dict.clear();
 
   pdmpk_bufs.UpdateWeights();
   pdmpk_bufs.DebugPrintReport(std::cout, phase);
@@ -215,33 +210,15 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &src_tgt_idx : src_tgt_index_set) {
-    const auto src_idx = src_tgt_idx.first;
-    const auto tgt_idx = src_tgt_idx.second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_idx;
-    tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
-    idx++;
-  }
-}
-
-void CommCompPatterns::ProcInitDict(const InitDict::const_iterator &iter) {
-  auto &src_mpi_buf = bufs[iter->first.first].mpi_bufs;
-  auto &tgt_buf = bufs[iter->first.second];
-  const auto &src_tgt_index_set = iter->second;
-
-  const auto comm_dict_size = comm_dict[iter->first].size();
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
-                                + SrcSendBase(iter->first) + comm_dict_size;
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
-                                + tgt_buf.mcsr.mptr.size()       //
-                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
-                                + TgtRecvBase(iter->first) + comm_dict_size;
-  size_t idx = 0;
-  for (const auto &src_tgt_idx : src_tgt_index_set) {
+    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.src_mbuf_idx;
     const auto src_idx = tgt_recv_baseidx + idx;
-    const auto tgt_idx = src_tgt_idx.second;
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.first;
-    assert((int)src_idx < tgt_buf.mbuf_idx);
-    tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    if (src_tgt_idx.type==kMcol) {
+      const auto tgt_idx = src_tgt_idx.tgt_idx;
+      tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
+    } else {
+      const auto tgt_idx = src_tgt_idx.tgt_idx;
+      tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    }
     idx++;
   }
 }
