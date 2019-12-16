@@ -36,6 +36,19 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     OptimizePartitionLabels();
     was_active_phase = ProcPhase();
+    for (int s = 0; s < npart; s++) {
+      for (int t = 0; t < npart; t++) {
+        // if (s != t) {
+        const auto set = comm_table[{s, t}].size();
+        const auto mpi = bufs[s].mpi_bufs.sendcounts[npart * phase + t];
+        // if (set != mpi) {
+        std::cout << "(" << s << ", " << t << ") "
+                  << "set: " << set << ", "
+                  << "mpi: " << mpi << std::endl;
+        //   }
+        // }
+      }
+    }
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
