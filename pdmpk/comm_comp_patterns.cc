@@ -109,8 +109,8 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
 
 bool CommCompPatterns::ProcPhase() {
   InitPhase();
-  // `was_active` is true, if there was progress made at a level. If
-  // no progress is made, the next level is processed.
+  // `was_active_level` is true, if there was progress made at a
+  // level. If no progress is made, the next level is processed.
   bool was_active_level = true;
   bool retval = false; // used by was_active_phase
   // `min_level` is important, see NOTE1 below.
