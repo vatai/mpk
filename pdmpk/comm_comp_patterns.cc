@@ -38,15 +38,16 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     was_active_phase = ProcPhase();
     for (int s = 0; s < npart; s++) {
       for (int t = 0; t < npart; t++) {
-        // if (s != t) {
-        const auto set = comm_table[{s, t}].size();
-        const auto mpi = bufs[s].mpi_bufs.sendcounts[npart * phase + t];
-        // if (set != mpi) {
-        std::cout << "(" << s << ", " << t << ") "
-                  << "set: " << set << ", "
-                  << "mpi: " << mpi << std::endl;
-        //   }
-        // }
+        if (s != t) {
+          const auto set = comm_table[{s, t}].size();
+          const auto mpi = bufs[s].mpi_bufs.sendcounts[npart * phase + t];
+          if (set != mpi) {
+            std::cout << "(" << s << ", " << t << ") "
+                      << "set: " << set << ", "
+                      << "mpi: " << mpi << std::endl;
+          }
+        }
+        comm_table[{s, t}].clear(); /// @todo(vatai): This is IMPORTANT!
       }
     }
   }
