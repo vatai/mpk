@@ -234,7 +234,7 @@ void CommCompPatterns::FinalizePhase() {
   comm_dict.clear();
 
   pdmpk_bufs.UpdateWeights();
-  pdmpk_bufs.DebugPrintReport(std::cout, phase);
+  // pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
