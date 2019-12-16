@@ -34,6 +34,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   while (was_active_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
+    OptimizePartitionLabels();
     was_active_phase = ProcPhase();
   }
   // nphase + 1 since last phase didn't do any update of levels
@@ -49,6 +50,48 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     bufs[pair.first].results_mbuf_idx.push_back(pair.second);
   }
   DbgAsserts();
+}
+
+void CommCompPatterns::OptimizePartitionLabels() {
+  bool was_active_level = true;
+  /// @todo(vatai): min_level should be obtained only once.
+  auto min_level = pdmpk_bufs.MinLevel();
+  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
+       lbelow++) {
+    was_active_level = false;
+    for (int idx = 0; idx < csr.n; idx++) {
+      if (pdmpk_bufs.levels[idx] == lbelow) {
+        if (OptimizeVertex(idx, lbelow)) {
+          was_active_level = true;
+        }
+      }
+    }
+  }
+  // FindLabelPermutation()
+  // ApplyLabelPermutation()
+  //
+}
+
+bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
+  bool retval = false;
+  const auto tgt_part = pdmpk_bufs.partitions[idx];
+  bool send_partial = not pdmpk_bufs.PartialIsEmpty(idx);
+
+  for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
+      const auto j = csr.col[t];
+      const auto src_part = store_part.at({j, lbelow}).first;
+      if (src_part != tgt_part)
+        comm_table[{src_part, tgt_part}].insert({j, lbelow});
+      retval = true;
+    }
+  }
+  if (retval == true and send_partial) {
+    const auto src_part = store_part.at({idx, lbelow + 1}).first;
+    if (src_part != tgt_part)
+      comm_table[{src_part, tgt_part}].insert({idx, lbelow + 1});
+  }
+  return retval;
 }
 
 bool CommCompPatterns::ProcPhase() {

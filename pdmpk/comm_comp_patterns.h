@@ -61,6 +61,12 @@ private:
   typedef std::map<src_tgt_t, std::set<SrcTgtType>> CommDict;
   CommDict comm_dict;
 
+  typedef std::map<src_tgt_t, std::set<idx_lvl_t>> CommTable;
+  CommTable comm_table;
+
+  void OptimizePartitionLabels();
+  bool OptimizeVertex(const idx_t idx, const level_t lbelow);
+
   bool ProcPhase();
   void InitPhase();
 
