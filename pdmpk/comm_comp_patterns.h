@@ -48,6 +48,7 @@ private:
 
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it can be found.
+  typedef std::map<idx_lvl_t, part_sidx_t> StorePart;
   StorePart store_part;
 
   /// In each phase, collect the communication of complete indices as
