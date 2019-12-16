@@ -36,6 +36,8 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     OptimizePartitionLabels();
     was_active_phase = ProcPhase();
+    // `comm_table` verification!
+    std::cout << "Phase: " << phase << std::endl;
     for (int s = 0; s < npart; s++) {
       for (int t = 0; t < npart; t++) {
         if (s != t) {
