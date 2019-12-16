@@ -61,8 +61,8 @@ private:
   typedef std::map<src_tgt_t, std::set<SrcTgtType>> CommDict;
   CommDict comm_dict;
 
-  void InitPhase();
   bool ProcPhase();
+  void InitPhase();
 
   bool ProcVertex(const idx_t idx, const level_t lbelow);
   void AddToInit(const idx_t idx, const idx_t level);
