@@ -97,15 +97,13 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
     if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
       const auto j = csr.col[t];
       const auto src_part = store_part.at({j, lbelow}).first;
-      if (src_part != tgt_part)
-        comm_table[{src_part, tgt_part}].insert({j, lbelow});
+      comm_table[{src_part, tgt_part}].insert({j, lbelow});
       retval = true;
     }
   }
   if (retval == true and send_partial) {
     const auto src_part = store_part.at({idx, lbelow + 1}).first;
-    if (src_part != tgt_part)
-      comm_table[{src_part, tgt_part}].insert({idx, lbelow + 1});
+    comm_table[{src_part, tgt_part}].insert({idx, lbelow + 1});
   }
   return retval;
 }
