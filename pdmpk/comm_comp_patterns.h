@@ -27,17 +27,6 @@ public:
   std::vector<Buffers> bufs;
 
 private:
-  enum CommType { kMcol, kInitIdcs };
-
-  struct SrcTgtType {
-    idx_t src_mbuf_idx;
-    idx_t tgt_idx;
-    CommType type;
-    friend bool operator<(const SrcTgtType &l, const SrcTgtType &r) {
-      return std::tie(l.src_mbuf_idx, l.tgt_idx, l.type) <
-             std::tie(r.src_mbuf_idx, r.tgt_idx, r.type);
-    }
-  };
   const CSR csr;
   const idx_t npart;
   const level_t nlevels;
@@ -58,7 +47,16 @@ private:
   /// initialization) as a map from (source, target) pairs to (mbuf
   /// indices of source partition, mcol indices in the target
   /// partition) pairs. (In case of type = kInitIdcs)
-  typedef std::map<src_tgt_t, std::set<SrcTgtType>> CommDict;
+  enum CommType { kMcol, kInitIdcs };
+  struct SrcType {
+    idx_t src_mbuf_idx;
+    CommType type;
+    friend bool operator<(const SrcType &l, const SrcType &r) {
+      return std::tie(l.src_mbuf_idx, l.type) <
+             std::tie(r.src_mbuf_idx, r.type);
+    }
+  };
+  typedef std::map<src_tgt_t, std::map<SrcType, std::set<idx_t>>> CommDict;
   CommDict comm_dict;
 
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;

@@ -174,7 +174,7 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
   const auto tgt_idx = bufs[tgt_part].mbuf_idx;
   if (src_part != tgt_part) {
     // Add to `init_dict`, process it with `ProcInitDict()`.
-    comm_dict[{src_part, tgt_part}].insert({src_idx, tgt_idx, kInitIdcs});
+    comm_dict[{src_part, tgt_part}][{src_idx, kInitIdcs}].insert(tgt_idx);
   } else {
     // Add to `init_idcs`.
     bufs[tgt_part].mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
@@ -200,7 +200,7 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   } else {
     // Record communication.
     const auto tgt_idx = bufs[cur_part].mcsr.mcol.size();
-    comm_dict[{src_part, cur_part}].insert({src_idx, tgt_idx, kMcol});
+    comm_dict[{src_part, cur_part}][{src_idx, kMcol}].insert(tgt_idx);
     bufs[cur_part].mcsr.mcol.push_back(-1); // Push dummy value.
   }
 }
@@ -218,7 +218,7 @@ void CommCompPatterns::FinalizePhase() {
   comm_table.clear(); /// @todo(vatai): This is IMPORTANT!
 
   // Fill sendcount and recvcount.
-  for (const auto &iter : comm_dict)
+  for (const auto &iter : comm_dict) // CHECK
     UpdateMPICountBuffers(iter.first, iter.second.size());
 
   for (auto &buffer : bufs)
@@ -261,7 +261,7 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &src_tgt = iter->first;
   auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
   auto &tgt_buf = bufs[src_tgt.second];
-  const auto &src_tgt_index_set = iter->second;
+  const auto &src_type_mapto_tgt_index_set = iter->second;
 
   const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
                                 + SrcSendBase(src_tgt);
@@ -270,16 +270,17 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 - tgt_buf.mcsr.mptr.phase_begin[phase] //
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
-  for (const auto &src_tgt_idx : src_tgt_index_set) {
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_tgt_idx.src_mbuf_idx;
+  for (const auto &map_iter : src_type_mapto_tgt_index_set) {
     const auto src_idx = tgt_recv_baseidx + idx;
-    if (src_tgt_idx.type == kMcol) {
-      const auto tgt_idx = src_tgt_idx.tgt_idx;
-      tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
-    } else {
-      const auto tgt_idx = src_tgt_idx.tgt_idx;
-      tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    for (const auto &tgt_idx : map_iter.second) {
+      if (map_iter.first.type == kMcol) {
+        tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
+      } else {
+        tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+      }
     }
+
+    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
     idx++;
   }
 }
@@ -362,7 +363,7 @@ void CommCompPatterns::DbgCountTable() {
     const auto &src_tgt = pair.first;
     for (const auto &src_tgt_type : pair.second) {
       const auto &set = comm_table[src_tgt];
-      const auto &idx = src_tgt_type.src_mbuf_idx;
+      const auto &idx = src_tgt_type.first.src_mbuf_idx;
       auto iter = std::find(std::begin(set), std::end(set), idx);
       // comm_table[src_tgt].find(src_tgt_type.src_mbuf_idx);
       if (iter == std::end(set)) {
