@@ -5,11 +5,13 @@
 #include "metis.h"
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <iterator>
 
 #include "buffers.h"
 #include "comm_comp_patterns.h"
+#include "lapjv.h"
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
@@ -71,9 +73,7 @@ void CommCompPatterns::OptimizePartitionLabels(size_t min_level) {
       }
     }
   }
-  // FindLabelPermutation()
-  // ApplyLabelPermutation()
-  //
+  FindLabelPermutation();
   comm_table.clear();
 }
 
@@ -104,6 +104,25 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
     pdmpk_count.IncLevel(idx);
   }
   return retval;
+}
+
+void CommCompPatterns::FindLabelPermutation() {
+  std::vector<int> comm_sums;
+  comm_sums.reserve(npart * npart);
+  for (auto s = 0; s < npart; s++) {
+    for (auto t = 0; t < npart; t++) {
+      comm_sums.push_back(comm_table[{s, t}].size());
+    }
+  }
+  const auto min_sum = *std::min(std::begin(comm_sums), std::end(comm_sums));
+  for (auto &elem : comm_sums) {
+    elem = elem - min_sum;
+  }
+  std::vector<int> permutation(npart);
+  lapjv(comm_sums.data(), npart, permutation.data());
+  for (auto &part : pdmpk_bufs.partitions) {
+    part = permutation[part];
+  }
 }
 
 bool CommCompPatterns::ProcPhase(size_t min_level) {
