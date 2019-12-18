@@ -72,12 +72,13 @@ void CommCompPatterns::OptimizePartitionLabels() {
   bool was_active_level = true;
   /// @todo(vatai): min_level should be obtained only once.
   auto min_level = pdmpk_bufs.MinLevel();
+  auto pdmpk_cpy = this->pdmpk_bufs;
   for (int lbelow = min_level; was_active_level and lbelow < nlevels;
        lbelow++) {
     was_active_level = false;
     for (int idx = 0; idx < csr.n; idx++) {
-      if (pdmpk_bufs.levels[idx] == lbelow) {
-        if (OptimizeVertex(idx, lbelow)) {
+      if (pdmpk_cpy.levels[idx] == lbelow) {
+        if (OptimizeVertex(idx, lbelow, &pdmpk_cpy)) {
           was_active_level = true;
         }
       }
@@ -88,18 +89,23 @@ void CommCompPatterns::OptimizePartitionLabels() {
   //
 }
 
-bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
+bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow,
+                                      PDMPKBuffers *pdmpk_bufs) {
   bool retval = false;
-  const auto tgt_part = pdmpk_bufs.partitions[idx];
-  bool send_partial = not pdmpk_bufs.PartialIsEmpty(idx);
+  const auto tgt_part = pdmpk_bufs->partitions[idx];
+  bool send_partial = not pdmpk_bufs->PartialIsEmpty(idx);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
+    if (pdmpk_bufs->CanAdd(idx, lbelow, t)) {
+      pdmpk_bufs->partials[t] = true;
       const auto j = csr.col[t];
-      const auto &src_part_idx = store_part.at({j, lbelow});
-      const auto &src_part = src_part_idx.first;
-      comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
-      retval = true;
+      const auto &iter = store_part.find({j, lbelow});
+      if (iter != store_part.end()) {
+        const auto &src_part_idx = iter->second;
+        const auto &src_part = src_part_idx.first;
+        comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
+        retval = true;
+      }
     }
   }
   if (retval == true) {
@@ -108,6 +114,7 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
       const auto &src_part = src_part_idx.first;
       comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
     }
+    pdmpk_bufs->IncLevel(idx);
   }
   return retval;
 }

@@ -65,7 +65,8 @@ private:
   CommTable comm_table;
 
   void OptimizePartitionLabels();
-  bool OptimizeVertex(const idx_t idx, const level_t lbelow);
+  bool OptimizeVertex(const idx_t idx, const level_t lbelow,
+                      PDMPKBuffers *pdmpk_bufs);
 
   bool ProcPhase();
   void InitPhase();
