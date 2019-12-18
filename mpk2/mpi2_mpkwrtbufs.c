@@ -38,7 +38,7 @@ static void alloc_fill_mval(buffers_t *bufs, double *val, crs0_t *g) {
 /// communication patterns.  The `mval` array of the buffer is filled
 /// separately (see the function above).
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   check_args(argc, argv[0]);
   MPI_Init(&argc, &argv);
   int rank;
@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
 
   del_bufs(bufs);
   del_comm_data(cd);
+  free(val);
   MPI_Finalize();
   return 0;
 }
