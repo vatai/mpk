@@ -34,6 +34,8 @@ private:
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
   PDMPKBuffers pdmpk_bufs;
+  /// "Shadow" copy of `pdmpk_bufs` used for optimization.
+  PDMPKBuffers pdmpk_count;
 
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it can be found.
@@ -63,8 +65,7 @@ private:
   CommTable comm_table;
 
   void OptimizePartitionLabels();
-  bool OptimizeVertex(const idx_t idx, const level_t lbelow,
-                      PDMPKBuffers *pdmpk_bufs);
+  bool OptimizeVertex(const idx_t idx, const level_t lbelow);
 
   bool ProcPhase();
   void InitPhase();

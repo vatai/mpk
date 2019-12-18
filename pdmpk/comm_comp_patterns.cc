@@ -21,6 +21,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
       npart{npart},                                       //
       nlevels{nlevels},                                   //
       pdmpk_bufs{csr},                                    //
+      pdmpk_count{csr},                                   //
       phase{0} {
   pdmpk_bufs.MetisPartition(npart);
   // Distribute all the vertices to their initial partitions
@@ -54,16 +55,18 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
 }
 
 void CommCompPatterns::OptimizePartitionLabels() {
+  pdmpk_count.partitions = pdmpk_bufs.partitions;
+  pdmpk_count.partials = pdmpk_bufs.partials;
+  pdmpk_count.levels = pdmpk_bufs.levels;
   bool was_active_level = true;
   /// @todo(vatai): min_level should be obtained only once.
   auto min_level = pdmpk_bufs.MinLevel();
-  auto pdmpk_cpy = this->pdmpk_bufs;
   for (int lbelow = min_level; was_active_level and lbelow < nlevels;
        lbelow++) {
     was_active_level = false;
     for (int idx = 0; idx < csr.n; idx++) {
-      if (pdmpk_cpy.levels[idx] == lbelow) {
-        if (OptimizeVertex(idx, lbelow, &pdmpk_cpy)) {
+      if (pdmpk_count.levels[idx] == lbelow) {
+        if (OptimizeVertex(idx, lbelow)) {
           was_active_level = true;
         }
       }
@@ -75,15 +78,14 @@ void CommCompPatterns::OptimizePartitionLabels() {
   comm_table.clear();
 }
 
-bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow,
-                                      PDMPKBuffers *pdmpk_bufs) {
+bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
   bool retval = false;
-  const auto tgt_part = pdmpk_bufs->partitions[idx];
-  bool send_partial = not pdmpk_bufs->PartialIsEmpty(idx);
+  const auto tgt_part = pdmpk_count.partitions[idx];
+  bool send_partial = not pdmpk_count.PartialIsEmpty(idx);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-    if (pdmpk_bufs->CanAdd(idx, lbelow, t)) {
-      pdmpk_bufs->partials[t] = true;
+    if (pdmpk_count.CanAdd(idx, lbelow, t)) {
+      pdmpk_count.partials[t] = true;
       const auto j = csr.col[t];
       const auto &iter = store_part.find({j, lbelow});
       if (iter != store_part.end()) {
@@ -100,7 +102,7 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow,
       const auto &src_part = src_part_idx.first;
       comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
     }
-    pdmpk_bufs->IncLevel(idx);
+    pdmpk_count.IncLevel(idx);
   }
   return retval;
 }
