@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 
 #include "buffers.h"
 #include "comm_comp_patterns.h"
@@ -118,10 +120,21 @@ void CommCompPatterns::FindLabelPermutation() {
   for (auto &elem : comm_sums) {
     elem = elem - min_sum;
   }
+
   std::vector<int> permutation(npart);
-  lapjv(comm_sums.data(), npart, permutation.data());
+  // The following permutations break ```$ ./pdmpk_prep mp4p4 4 4```
+  // std::vector<std::vector<int>> pperms{
+  //     {3, 0, 2, 1}, {1, 2, 3, 0}, {1, 0, 3, 2}, {0, 2, 3, 1},
+  //     {1, 2, 3, 0}, {2, 3, 1, 0}, {3, 2, 1, 0}, {1, 2, 3, 0},
+  // };
+  // permutation = pperms[phase - 1];
+
+  lapjv(comm_sums.data(), (int)npart, permutation.data());
+
   for (auto &part : pdmpk_bufs.partitions) {
+    assert(0 <= part and part < npart);
     part = permutation[part];
+    assert(0 <= part and part < npart);
   }
 }
 
