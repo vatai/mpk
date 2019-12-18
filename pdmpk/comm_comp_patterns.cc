@@ -36,22 +36,7 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     OptimizePartitionLabels();
     was_active_phase = ProcPhase();
-    // `comm_table` verification!
-    std::cout << "Phase: " << phase << std::endl;
-    for (int s = 0; s < npart; s++) {
-      for (int t = 0; t < npart; t++) {
-        if (s != t) {
-          const auto set = comm_table[{s, t}].size();
-          const auto mpi = bufs[s].mpi_bufs.sendcounts[npart * phase + t];
-          if (set != mpi) {
-            std::cout << "(" << s << ", " << t << ") "
-                      << "set: " << set << ", "
-                      << "mpi: " << mpi << std::endl;
-          }
-        }
-        comm_table[{s, t}].clear(); /// @todo(vatai): This is IMPORTANT!
-      }
-    }
+    // Check out FinalizePhase!!!
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
@@ -227,6 +212,11 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
 }
 
 void CommCompPatterns::FinalizePhase() {
+  // `comm_table` verification!
+  std::cout << "Phase: " << phase << std::endl;
+  DbgCountTable();
+  comm_table.clear(); /// @todo(vatai): This is IMPORTANT!
+
   // Fill sendcount and recvcount.
   for (const auto &iter : comm_dict)
     UpdateMPICountBuffers(iter.first, iter.second.size());
@@ -350,6 +340,36 @@ void CommCompPatterns::DbgMbufChecks() {
     // Check mcol.
     for (auto value : buffer.mcsr.mcol) {
       assert(value < mbuf_idx);
+    }
+  }
+}
+
+void CommCompPatterns::DbgCountTable() {
+  for (int s = 0; s < npart; s++) {
+    for (int t = 0; t < npart; t++) {
+      if (s != t) {
+        const auto comm_table_size = comm_table[{s, t}].size();
+        const auto comm_dict_size = comm_dict[{s, t}].size();
+        if (comm_table_size != comm_dict_size) {
+          std::cout << "(" << s << ", " << t << ") "
+                    << "comm_table: " << comm_table_size << ", "
+                    << "comm_dict: " << comm_dict_size << std::endl;
+        }
+      }
+    }
+  }
+  for (const auto &pair : comm_dict) {
+    const auto &src_tgt = pair.first;
+    for (const auto &src_tgt_type : pair.second) {
+      const auto &set = comm_table[src_tgt];
+      const auto &idx = src_tgt_type.src_mbuf_idx;
+      auto iter = std::find(std::begin(set), std::end(set), idx);
+      // comm_table[src_tgt].find(src_tgt_type.src_mbuf_idx);
+      if (iter == std::end(set)) {
+        std::cout << "!!! Missing "
+                  << "(" << src_tgt.first << ", " << src_tgt.second << ")"
+                  << ": " << idx << std::endl;
+      }
     }
   }
 }

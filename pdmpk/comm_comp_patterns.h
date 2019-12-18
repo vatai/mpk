@@ -94,4 +94,5 @@ private:
   // ////// DEBUG //////
   void DbgAsserts() const;
   void DbgMbufChecks();
+  void DbgCountTable();
 };
