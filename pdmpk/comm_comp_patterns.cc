@@ -31,12 +31,13 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   }
   // Process phase = 0 and keep processing next higher phases
   // till the time last phase showed any update
-  bool was_active_phase = ProcPhase();
+  bool was_active_phase = ProcPhase(0);
   while (was_active_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
-    OptimizePartitionLabels();
-    was_active_phase = ProcPhase();
+    const auto min_level = pdmpk_bufs.MinLevel();
+    OptimizePartitionLabels(min_level);
+    was_active_phase = ProcPhase(min_level);
     // Check out FinalizePhase!!!
   }
   // nphase + 1 since last phase didn't do any update of levels
@@ -54,13 +55,11 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
   DbgAsserts();
 }
 
-void CommCompPatterns::OptimizePartitionLabels() {
+void CommCompPatterns::OptimizePartitionLabels(size_t min_level) {
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
   bool was_active_level = true;
-  /// @todo(vatai): min_level should be obtained only once.
-  auto min_level = pdmpk_bufs.MinLevel();
   for (int lbelow = min_level; was_active_level and lbelow < nlevels;
        lbelow++) {
     was_active_level = false;
@@ -107,14 +106,12 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
   return retval;
 }
 
-bool CommCompPatterns::ProcPhase() {
+bool CommCompPatterns::ProcPhase(size_t min_level) {
   InitPhase();
   // `was_active_level` is true, if there was progress made at a
   // level. If no progress is made, the next level is processed.
   bool was_active_level = true;
   bool retval = false; // used by was_active_phase
-  // `min_level` is important, see NOTE1 below.
-  auto min_level = pdmpk_bufs.MinLevel();
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < nlevels;

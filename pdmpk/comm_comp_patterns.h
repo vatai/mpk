@@ -64,10 +64,10 @@ private:
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
   CommTable comm_table;
 
-  void OptimizePartitionLabels();
+  void OptimizePartitionLabels(size_t min_level);
   bool OptimizeVertex(const idx_t idx, const level_t lbelow);
 
-  bool ProcPhase();
+  bool ProcPhase(size_t min_level);
   void InitPhase();
 
   bool ProcVertex(const idx_t idx, const level_t lbelow);
