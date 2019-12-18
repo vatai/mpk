@@ -24,5 +24,7 @@ int main(int argc, char *argv[]) {
     comm_comp_patterns.bufs[i].DumpTxt(i);
   }
 
+  std::cout << "pdmpk_prep done" << std::endl;
+
   return 0;
 }
