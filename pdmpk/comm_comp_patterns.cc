@@ -96,14 +96,18 @@ bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
       const auto j = csr.col[t];
-      const auto src_part = store_part.at({j, lbelow}).first;
-      comm_table[{src_part, tgt_part}].insert({j, lbelow});
+      const auto &src_part_idx = store_part.at({j, lbelow});
+      const auto &src_part = src_part_idx.first;
+      comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
       retval = true;
     }
   }
-  if (retval == true and send_partial) {
-    const auto src_part = store_part.at({idx, lbelow + 1}).first;
-    comm_table[{src_part, tgt_part}].insert({idx, lbelow + 1});
+  if (retval == true) {
+    if (send_partial) {
+      const auto &src_part_idx = store_part.at({idx, lbelow + 1});
+      const auto &src_part = src_part_idx.first;
+      comm_table[{src_part, tgt_part}].insert(src_part_idx.second);
+    }
   }
   return retval;
 }
