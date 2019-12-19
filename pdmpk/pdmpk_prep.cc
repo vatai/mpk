@@ -24,7 +24,7 @@
 int main(int argc, char *argv[]) {
   const Args args(argc, argv);
   CommCompPatterns comm_comp_patterns(args.mtxname, args.npart, args.nlevels);
-  comm_comp_patterns.Stats(args.mtxname);
+  comm_comp_patterns.Stats();
 
   for (int i = 0; i < args.npart; i++) {
     comm_comp_patterns.bufs[i].Dump(i);

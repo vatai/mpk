@@ -31,7 +31,7 @@ public:
                    const idx_t npart,          //
                    const level_t nlevels);
   /// Print the statistics of communication.
-  void Stats(const std::string &name);
+  void Stats();
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for each partition `part`.

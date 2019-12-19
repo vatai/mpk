@@ -62,8 +62,8 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
 #endif
 }
 
-void CommCompPatterns::Stats(const std::string &name) {
-  std::ofstream of(name + "-" + std::to_string(npart) + "-" +
+void CommCompPatterns::Stats() {
+  std::ofstream of(mtxname + "-" + std::to_string(npart) + "-" +
                    std::to_string(nlevels));
 
   size_t sum = 0;
