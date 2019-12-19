@@ -20,7 +20,9 @@
 class CommCompPatterns {
 
 public:
+  /// Construct and fill all the buffers in a CommCompPatterns object.
   CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
+  /// Print the statistics of communication.
   void Stats(const std::string &name);
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
@@ -28,8 +30,11 @@ public:
   std::vector<Buffers> bufs;
 
 private:
+  /// The graph/matrix being processed.
   const CSR csr;
+  /// Number of partition/processes.
   const idx_t npart;
+  /// Number of levels the algorithm aims to achieve.
   const level_t nlevels;
 
   /// All MPK buffers such as levels, weights, partitions, and
@@ -84,25 +89,61 @@ private:
   bool OptimizeVertex(const idx_t idx, const level_t lbelow);
   void FindLabelPermutation();
 
-  bool ProcPhase(size_t min_level);
+  /// Code executed before each phase.
   void InitPhase();
+  /// Generate one phase.
+  bool ProcPhase(size_t min_level);
 
+  /// Process one vertex.
+  ///
+  /// @param idx The index of the vertex being processed.
+  ///
+  /// @param lbelow The current level of the vertex.
   bool ProcVertex(const idx_t idx, const level_t lbelow);
+  /// Register a partial vertex.
+  ///
+  /// @param idx The index of the vertex to be registered.
+  ///
+  /// @param level the level which the vertex tries to achieve
+  /// (i.e. `lbelow + 1`).
   void AddToInit(const idx_t idx, const idx_t level);
+  /// Process adjacent vertex.
+  ///
+  /// @param idx The index of the vertex being processed/calculated.
+  ///
+  /// @param lbelow The level of the vertex at `idx`.
+  ///
+  /// @param t The index of the adjacent vertex in @ref Buffers::mbuf.
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  /// Clean up after processing a vertex
+  ///
+  /// @param idx_lvl Index-level pair of the vertex being processed.
+  ///
+  /// @param part the partition where the vertex can be found can be
+  /// found.
   void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
 
+  /// Code executed after each phase.
   void FinalizePhase();
+  /// Update the send count on the source partition, and the receive
+  /// count on the target partition.
+  ///
+  /// @param src_tgt_part (Source partition, target partition) pair.
+  ///
+  /// @param size The size of the by which the given entry should be
+  /// increased.
   void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
 
-  /// Process every @ref CommDict. The key of a CommDict determines
-  /// the source and target partitions, the @ref Backpatch determines
-  /// what needs to be done. The @ref SrcType::src_mbuf_idx in the
-  /// index added to @ref Buffers::sbuf, the @ref SrcType::type
-  /// determines which what needs to be updated (@ref MCSR::mcol for
-  /// @ref kMcol, @ref MPIBuffers::init_idcs for @ref kInitIdcs), and
-  /// the set mapped to by the backpatch contains all the indices
-  /// which need to be updated.
+  /// Process one element/iterator of @ref CommDict. The key of a
+  /// CommDict determines the source and target partitions, the @ref
+  /// Backpatch determines what needs to be done. The @ref
+  /// SrcType::src_mbuf_idx in the index added to @ref Buffers::sbuf,
+  /// the @ref SrcType::type determines which what needs to be updated
+  /// (@ref MCSR::mcol for @ref kMcol, @ref MPIBuffers::init_idcs for
+  /// @ref kInitIdcs), and the set mapped to by the backpatch contains
+  /// all the indices which need to be updated.
+  ///
+  /// @param iter Iterator representing one element in @ref CommDict.
   void ProcCommDict(const CommDict::const_iterator &iter);
 
   /// Return the base (0th index) of the subinterval of send buffer in
@@ -117,7 +158,9 @@ private:
   int phase;
 
 #ifndef NDEBUG
+  /// @todo(vatai): Remove debug DbgAsserts().
   void DbgAsserts() const;
+  /// @todo(vatai): Remove debug DbgMbufChecks().
   void DbgMbufChecks();
 #endif
 };
