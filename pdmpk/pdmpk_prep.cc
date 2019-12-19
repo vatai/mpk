@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
   level_t nlevels = std::stoi(argv[3]);
 
   CommCompPatterns comm_comp_patterns(argv[1], (idx_t)npart, nlevels);
+  comm_comp_patterns.Stats(argv[1]);
 
   for (int i = 0; i < npart; i++) {
     comm_comp_patterns.bufs[i].Dump(i);

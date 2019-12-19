@@ -5,8 +5,11 @@
 #include "metis.h"
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 
 #include "buffers.h"
 #include "comm_comp_patterns.h"
@@ -51,6 +54,19 @@ CommCompPatterns::CommCompPatterns(const char *fname,     //
 #ifndef NDEBUG
   DbgAsserts();
 #endif
+}
+
+void CommCompPatterns::Stats(const std::string &name) {
+  std::ofstream of(name + "-" + std::to_string(npart) + "-" +
+                   std::to_string(nlevels));
+
+  size_t sum = 0;
+  for (const auto &buffer : bufs) {
+    for (int i = 0; i < phase; i++) {
+      sum += buffer.mpi_bufs.RbufSize(i);
+    }
+  }
+  of << sum << " " << phase << std::endl;
 }
 
 bool CommCompPatterns::ProcPhase() {

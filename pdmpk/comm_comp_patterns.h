@@ -21,6 +21,7 @@ class CommCompPatterns {
 
 public:
   CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
+  void Stats(const std::string &name);
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for each partition `part`.
