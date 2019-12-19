@@ -83,8 +83,9 @@ int main(int argc, char *argv[]) {
     return 2;
   }
   crs0_t *g = read_crs(g0_file); // closes file
-  double *val = (double *)malloc(sizeof(*val) * g->n);
-  read_val(val_file, val, g->ptr[g->n]);
+  const size_t col_size = g->ptr[g->n];
+  double *val = (double *)malloc(sizeof(*val) * col_size);
+  read_val(val_file, val, col_size);
   save_mtx(g, val, mtx_file);
   fclose(mtx_file);
 }
