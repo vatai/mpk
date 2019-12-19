@@ -20,7 +20,7 @@
 CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
                                    const idx_t npart,          //
                                    const level_t nlevels)      //
-    : bufs(npart, Buffers(npart)),                             //
+    : bufs(npart, Buffers(npart, mtxname)),                    //
       csr{mtxname},                                            //
       npart{npart},                                            //
       nlevels{nlevels},                                        //

@@ -2,6 +2,7 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-11-11
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <mpi.h>
@@ -36,9 +37,10 @@ int main(int argc, char *argv[]) {
   //     sleep(5);
   // }
 
-  Buffers buf(npart);
+  assert(argc == 2);
+  Buffers buf(npart, argv[1]);
   buf.Load(rank);
-  buf.Exec(rank);
+  buf.Exec();
 
   buf.DumpMbufTxt(rank);
 

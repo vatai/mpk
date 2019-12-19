@@ -14,11 +14,10 @@
 #include "typedefs.h"
 #include "utils.hpp"
 
-const std::string FNAME{"bufs"};
-const std::string DBG_FNAME{"dbg_buff_"};
+const std::string kFname{"bufs"};
 
-Buffers::Buffers(const idx_t npart)
-    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0} {}
+Buffers::Buffers(const idx_t &npart, const std::string &name)
+    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0}, name{name} {}
 
 void Buffers::PhaseInit() {
   mpi_bufs.AllocMpiBufs();
@@ -88,7 +87,7 @@ void Buffers::DoComm(int phase) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
-void Buffers::Exec(const int rank) {
+void Buffers::Exec() {
   const auto nphases = mbuf.phase_begin.size();
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
   mbuf.resize(mbuf_idx, 0);
@@ -108,7 +107,8 @@ void Buffers::Exec(const int rank) {
 }
 
 void Buffers::Dump(const int rank) {
-  std::ofstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
+  std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
+                     std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
@@ -119,7 +119,8 @@ void Buffers::Dump(const int rank) {
 }
 
 void Buffers::Load(const int rank) {
-  std::ifstream file(FNAME + std::to_string(rank) + ".bin", std::ios::binary);
+  std::ifstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
+                     std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::LoadVec(mbuf.phase_begin, file);
@@ -130,7 +131,7 @@ void Buffers::Load(const int rank) {
 }
 
 void Buffers::DumpTxt(const int rank) {
-  std::ofstream file(FNAME + std::to_string(rank) + ".txt");
+  std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".txt");
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;

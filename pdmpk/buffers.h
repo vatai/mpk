@@ -27,16 +27,18 @@ class Buffers {
 public:
   /// Only constructor for @ref Buffers.
   ///
-  /// @param npart number of
+  /// @param npart Number of
   /// partition/processes (used by @ref MPIBuffers).
-  Buffers(const idx_t npart);
+  ///
+  /// @param name The string which is appended to create output files.
+  Buffers(const idx_t &npart, const std::string &name);
   /// Code executed before each phase for a single buffer.
   void PhaseInit();
   /// Code executed after each phase for a single buffer.
   void PhaseFinalize(const int phase);
 
   /// Execute the computations and communication for all phases.
-  void Exec(const int rank);
+  void Exec();
   /// Execute the computation for one phase.
   void DoComp(int phase);
   /// Execute the communication for one phase.
@@ -95,6 +97,9 @@ public:
   /// Information needed to reconstruct the result from the output of
   /// the partitions (store ind Buffers).
   Results results;
+
+  /// @see CommCompPatterns::mtxname
+  const std::string name;
 
   /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx;
