@@ -6,7 +6,7 @@
 
 #include "csr.h"
 
-CSR::CSR(const char *fname) {
+CSR::CSR(const std::string &fname) {
   std::ifstream file{fname};
 
   MtxCheckBanner(file);

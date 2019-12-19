@@ -17,15 +17,16 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-CommCompPatterns::CommCompPatterns(const char *fname,     //
-                                   const idx_t npart,     //
-                                   const level_t nlevels) //
-    : bufs(npart, Buffers(npart)),                        //
-      csr{fname},                                         //
-      npart{npart},                                       //
-      nlevels{nlevels},                                   //
-      pdmpk_bufs{csr},                                    //
-      pdmpk_count{csr},                                   //
+CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
+                                   const idx_t npart,          //
+                                   const level_t nlevels)      //
+    : bufs(npart, Buffers(npart)),                             //
+      csr{mtxname},                                            //
+      npart{npart},                                            //
+      nlevels{nlevels},                                        //
+      pdmpk_bufs{csr},                                         //
+      pdmpk_count{csr},                                        //
+      mtxname{mtxname},                                        //
       phase{0} {
   pdmpk_bufs.MetisPartition(npart);
   // Distribute all the vertices to their initial partitions

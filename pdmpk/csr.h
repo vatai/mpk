@@ -4,6 +4,7 @@
 #pragma once
 
 #include <fstream>
+#include <string>
 #include <vector>
 
 #include <metis.h>
@@ -13,7 +14,7 @@ public:
   /// Construct a matrix by reading it from a file.
   ///
   /// @param fname The name of an `.mtx` file.
-  CSR(const char *fname);
+  CSR(const std::string &fname);
   /// Execute an SpMV operation on the given vector and the value
   /// represented by @ref ptr, @ref col and @ref val.
   ///

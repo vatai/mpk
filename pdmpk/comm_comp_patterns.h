@@ -21,7 +21,15 @@ class CommCompPatterns {
 
 public:
   /// Construct and fill all the buffers in a CommCompPatterns object.
-  CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
+  ///
+  /// @param mtxname The filename of the mtx file.
+  ///
+  /// @param npart @see npart
+  ///
+  /// @param nlevels @see nlevels
+  CommCompPatterns(const std::string &mtxname, //
+                   const idx_t npart,          //
+                   const level_t nlevels);
   /// Print the statistics of communication.
   void Stats(const std::string &name);
 
@@ -100,6 +108,7 @@ private:
   ///
   /// @param lbelow The current level of the vertex.
   bool ProcVertex(const idx_t idx, const level_t lbelow);
+
   /// Register a partial vertex.
   ///
   /// @param idx The index of the vertex to be registered.
@@ -107,6 +116,7 @@ private:
   /// @param level the level which the vertex tries to achieve
   /// (i.e. `lbelow + 1`).
   void AddToInit(const idx_t idx, const idx_t level);
+
   /// Process adjacent vertex.
   ///
   /// @param idx The index of the vertex being processed/calculated.
@@ -115,6 +125,7 @@ private:
   ///
   /// @param t The index of the adjacent vertex in @ref Buffers::mbuf.
   void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+
   /// Clean up after processing a vertex
   ///
   /// @param idx_lvl Index-level pair of the vertex being processed.
@@ -125,6 +136,7 @@ private:
 
   /// Code executed after each phase.
   void FinalizePhase();
+
   /// Update the send count on the source partition, and the receive
   /// count on the target partition.
   ///
@@ -153,6 +165,10 @@ private:
   /// Return the base (0th index) of the subinterval of receive buffer
   /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
+
+  /// Name of the graph (usually the mtx filename without the
+  /// extension).
+  const std::string mtxname;
 
   /// The current phase set at the beginning of each phase.
   int phase;
