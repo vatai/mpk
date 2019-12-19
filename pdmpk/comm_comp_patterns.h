@@ -21,6 +21,7 @@ class CommCompPatterns {
 
 public:
   CommCompPatterns(const char *fname, const idx_t npart, const level_t nlevels);
+  void Stats(const std::string &name);
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for each partition `part`.
@@ -72,6 +73,7 @@ private:
   /// In each phase, collect the communication as a map from (source,
   /// target) pairs to a @ref Backpatch.
   typedef std::map<src_tgt_t, Backpatch> CommDict;
+
   /// @see CommDict
   CommDict comm_dict;
 
@@ -114,7 +116,8 @@ private:
   /// The current phase set at the beginning of each phase.
   int phase;
 
-  // ////// DEBUG //////
+#ifndef NDEBUG
   void DbgAsserts() const;
   void DbgMbufChecks();
+#endif
 };
