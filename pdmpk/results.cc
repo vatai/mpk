@@ -5,31 +5,45 @@
 #include "utils.hpp"
 #include <fstream>
 #include <ios>
+#include <string>
 
-const std::string FNAME{"fresults"};
+const std::string kFname{"fresults"};
+
+Results::Results(const std::string &name) : name{name} {}
 
 void Results::FillVal(const std::vector<idx_t> &idx,
                       const std::vector<double> &mbuf) {
+  val.clear();
   for (const auto i : idx) {
     val.push_back(mbuf[i]);
   }
 }
 
+void Results::FillResults(std::vector<double> *results) {
+  const size_t size = val.size();
+  for (size_t i = 0; i < size; i++) {
+    auto idx = vect_idx[i];
+    (*results)[idx] = val[i];
+  }
+}
+
 void Results::Dump(const int rank) {
-  std::ofstream file(FNAME + std::to_string(rank) + ".bin",
+  std::ofstream file(name + "-" + kFname + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
   Utils::DumpVec(vect_idx, file);
   Utils::DumpVec(val, file);
 }
 
 void Results::Load(const int rank) {
-  std::ifstream file(FNAME + std::to_string(rank) + ".bin",
+  std::ifstream file(name + "-" + kFname + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
   Utils::LoadVec(vect_idx, file);
   Utils::LoadVec(val, file);
 }
 
 void Results::DumpTxt(const int rank) {
-  std::ofstream file(FNAME + std::to_string(rank) + ".txt");
+  std::ofstream file(name + "-" + kFname + std::to_string(rank) + ".txt");
   Utils::DumpTxt("result_val", val, file);
 }
+
+void Results::SaveIndex(const int &idx) { vect_idx.push_back(idx); }

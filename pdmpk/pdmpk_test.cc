@@ -35,13 +35,9 @@ int main(int argc, char *argv[]) {
   // Get finalResult.
   std::vector<double> loadResult(csr.n);
   for (auto i = 0; i < args.npart; i++) {
-    Results results;
+    Results results(args.mtxname);
     results.Load(i);
-    const size_t size = results.val.size();
-    for (size_t i = 0; i < size; i++) {
-      auto idx = results.vect_idx[i];
-      loadResult[idx] = results.val[i];
-    }
+    results.FillResults(&loadResult);
   }
 
   double max = 0;

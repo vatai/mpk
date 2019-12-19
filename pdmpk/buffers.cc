@@ -11,13 +11,15 @@
 #include <vector>
 
 #include "buffers.h"
+#include "results.h"
 #include "typedefs.h"
 #include "utils.hpp"
 
 const std::string kFname{"bufs"};
 
 Buffers::Buffers(const idx_t &npart, const std::string &name)
-    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0}, name{name} {}
+    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0},
+      results(name), name{name} {}
 
 void Buffers::PhaseInit() {
   mpi_bufs.AllocMpiBufs();
@@ -113,7 +115,8 @@ void Buffers::Dump(const int rank) {
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
   Utils::DumpVec(results_mbuf_idx, file);
-  Utils::DumpVec(results.vect_idx, file);
+  // Utils::DumpVec(results.vect_idx, file);
+  results.Dump(rank);
   mpi_bufs.DumpToOFS(file);
   mcsr.DumpToOFS(file);
 }
@@ -125,7 +128,8 @@ void Buffers::Load(const int rank) {
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::LoadVec(mbuf.phase_begin, file);
   Utils::LoadVec(results_mbuf_idx, file);
-  Utils::LoadVec(results.vect_idx, file);
+  // Utils::LoadVec(results.vect_idx, file);
+  results.Load(rank);
   mpi_bufs.LoadFromIFS(file);
   mcsr.LoadFromIFS(file);
 }
@@ -137,13 +141,14 @@ void Buffers::DumpTxt(const int rank) {
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
   Utils::DumpTxt("result_mbuf_idx", results_mbuf_idx, file);
-  Utils::DumpTxt("result_vect_idx", results.vect_idx, file);
+  // Utils::DumpTxt("result_vect_idx", results.vect_idx, file);
+  results.DumpTxt(rank);
   Utils::DumpTxt("dbg_idx", dbg_idx, file);
   mpi_bufs.DumpToTxt(file);
   mcsr.DumpToTxt(file);
 }
 
 void Buffers::DumpMbufTxt(const int rank) {
-  std::ofstream file("dresult" + std::to_string(rank) + ".txt");
+  std::ofstream file(name + "-dresult" + std::to_string(rank) + ".txt");
   Utils::DumpTxt("mbuf", mbuf, file);
 }
