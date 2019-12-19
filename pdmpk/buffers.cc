@@ -68,14 +68,11 @@ void Buffers::DoComp(int phase) {
 }
 
 void Buffers::DoComm(int phase) {
-  /// @todo(vatai): Remove asserts and clean up.
   const auto scount = mpi_bufs.SbufSize(phase);
 
   // fill_sbuf()
   const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
   for (size_t i = 0; i < scount; i++) {
-    assert(0 <= sbuf_idcs[i]);
-    assert(sbuf_idcs[i] < (int)mbuf.phase_begin[phase]);
     sbuf[i] = mbuf[sbuf_idcs[i]];
   }
 
@@ -87,8 +84,6 @@ void Buffers::DoComm(int phase) {
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
-  assert(mpi_bufs.RbufSize(phase) == 0 or
-         mbuf.phase_begin[phase] < mbuf.size());
   MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }

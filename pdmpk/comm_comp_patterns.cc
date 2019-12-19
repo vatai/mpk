@@ -109,8 +109,6 @@ void CommCompPatterns::InitPhase() {
 bool CommCompPatterns::ProcVertex(const idx_t idx, const level_t lbelow) {
   bool retval = false;
   const auto cur_part = pdmpk_bufs.partitions[idx];
-  /// @todo(vatai): This init_idcs is a bit tricky, currently it
-  /// should probably converted into a `std::map` or just sort it?
   bool send_partial = not pdmpk_bufs.PartialIsEmpty(idx);
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {

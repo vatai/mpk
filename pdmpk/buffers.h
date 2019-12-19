@@ -25,20 +25,30 @@
 /// the computation and communication for each partition.
 class Buffers {
 public:
+  /// Only constructor for @ref Buffers.
+  ///
+  /// @param npart number of
+  /// partition/processes (used by @ref MPIBuffers).
   Buffers(const idx_t npart);
-  /// Initialise/Allocate appropriate space in buffers to store
-  /// communication data.
+  /// Code executed before each phase for a single buffer.
   void PhaseInit();
+  /// Code executed after each phase for a single buffer.
   void PhaseFinalize(const int phase);
 
+  /// Execute the computations and communication for all phases.
   void Exec(const int rank);
+  /// Execute the computation for one phase.
   void DoComp(int phase);
-  /// Execute the communication needed at the beginning of each phase
-  /// (before calling the `DoComp()` method).
+  /// Execute the communication for one phase.
   void DoComm(int phase);
+  /// Store @ref Buffers to disk which should be loaded using @ref
+  /// Buffers::Load.
   void Dump(const int rank);
+  /// Load @ref Buffers from disk saved using @ref Buffers::Dump.
   void Load(const int rank);
+  /// Store @ref Buffers to disk in `.txt` format.
   void DumpTxt(const int rank);
+  /// Store @ref Buffers::mbuf to disk in `.txt` format.
   void DumpMbufTxt(const int rank);
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
@@ -86,6 +96,7 @@ public:
   /// the partitions (store ind Buffers).
   Results results;
 
+  /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx;
 
 private:

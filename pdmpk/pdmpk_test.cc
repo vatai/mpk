@@ -19,6 +19,8 @@
 ///
 /// Body of `pdmpk_test` page.
 
+/// Test the results of @ref pdmpk_exec. The arguments are the same as
+/// for @ref pdmpk_prep.c::main
 int main(int argc, char *argv[]) {
   assert(argc == 4);
   CSR csr(argv[1]);
