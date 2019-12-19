@@ -105,7 +105,6 @@ void Buffers::Exec(const int rank) {
   }
 
   results.FillVal(results_mbuf_idx, mbuf);
-  std::cout << "exec(" << rank << ")" << std::endl;
 }
 
 void Buffers::Dump(const int rank) {

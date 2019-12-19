@@ -46,6 +46,6 @@ int main(int argc, char *argv[]) {
   buf.results.DumpTxt(rank);
 
   MPI_Finalize();
-  std::cout << "MPI_Finalize()" << std::endl;
+  std::cout << "pdmpK_exec: process " << rank << " finished" << std::endl;
   return 0;
 }

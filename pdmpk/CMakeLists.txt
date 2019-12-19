@@ -104,6 +104,7 @@ find_package(MPI REQUIRED)
 # add_definitions(-D_DEBUG_CSR_VALS)
 
 add_executable (pdmpk_prep
+  args.cc
   pdmpk_prep.cc
   comm_comp_patterns.cc
   csr.cc
@@ -129,6 +130,7 @@ target_link_libraries(pdmpk_exec "${METIS}" MPI::MPI_CXX)
 
 add_executable (pdmpk_test
   pdmpk_test.cc
+  args.cc
   csr.cc
   results.cc
   )

@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <vector>
 
+#include "args.h"
 #include "buffers.h"
 #include "csr.h"
 #include "results.h"
@@ -22,20 +23,18 @@
 /// Test the results of @ref pdmpk_exec. The arguments are the same as
 /// for @ref pdmpk_prep.c::main
 int main(int argc, char *argv[]) {
-  assert(argc == 4);
-  CSR csr(argv[1]);
-  const int npart = std::stoi(argv[2]);
-  const int nlevels = std::stoi(argv[3]);
+  const Args args(argc, argv);
+  CSR csr(args.mtxname);
 
   // Calculate "gold" result.
   std::vector<double> goldResult(csr.n);
   for (auto &v : goldResult)
     v = 1.0;
-  csr.MPK(nlevels, goldResult);
+  csr.MPK(args.nlevels, goldResult);
 
   // Get finalResult.
   std::vector<double> loadResult(csr.n);
-  for (auto i = 0; i < npart; i++) {
+  for (auto i = 0; i < args.npart; i++) {
     Results results;
     results.Load(i);
     const size_t size = results.val.size();
@@ -45,7 +44,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // assert(loadResult == goldResult);
   double max = 0;
   for (size_t i = 0; i < loadResult.size(); i++) {
     auto diff = loadResult[i] - goldResult[i];
@@ -54,8 +52,8 @@ int main(int argc, char *argv[]) {
     if (max < diff)
       max = diff;
   }
-  std::cout << "Maximum absolute error: " << max << std::endl;
-  std::cout << "Maximum absolute error: " << (max == 0.0) << std::endl;
-  std::cout << "Test over" << std::endl;
+  std::cout << "pdmpk_test: Maximum absolute error: " << max << std::endl;
+  std::cout << "pdmpk_test: Maximum absolute is zero: "
+            << (max == 0.0 ? "true" : "false") << std::endl;
   return 0;
 }
