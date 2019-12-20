@@ -8,6 +8,7 @@
 # Optional input variables
 TYPE_ITER=${TYPE_ITER:="m5p m9p"}
 SIZE_ITER=${SIZE_ITER:="10 20"}
+PREFIX=${PREFIX:=$(dirname $0)/../mpk2}
 
 function list_matrices() {
     echo "The following matrices will be generated in the current directory."
@@ -22,8 +23,8 @@ function list_matrices() {
 }
 
 function gen_matrix() {
-    local GEN2=$(dirname $0)/../mpk2/gen2
-    local GEN2MTX=$(dirname $0)/../mpk2/gen2mtx
+    local GEN2=$PREFIX/gen2
+    local GEN2MTX=$PREFIX/gen2mtx
     local TYPE=$1
     local SIZE=$2
     local NAME=$1$2
