@@ -38,6 +38,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // till the time last phase showed any update
   bool was_active_phase = ProcPhase(0);
   while (was_active_phase) {
+    std::cout << "Phase: " << phase << " done." << std::endl;
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     const auto min_level = pdmpk_bufs.MinLevel();

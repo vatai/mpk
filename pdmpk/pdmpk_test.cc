@@ -51,5 +51,6 @@ int main(int argc, char *argv[]) {
   std::cout << "pdmpk_test: Maximum absolute error: " << max << std::endl;
   std::cout << "pdmpk_test: Maximum absolute is zero: "
             << (max == 0.0 ? "true" : "false") << std::endl;
+  std::cout << "pdmpk_test: for " << argv[1] << " finished" << std::endl;
   return 0;
 }

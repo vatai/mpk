@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     comm_comp_patterns.bufs[i].DumpTxt(i);
   }
 
-  std::cout << "pdmpk_prep: finished" << std::endl;
+  std::cout << "pdmpk_prep: for " << argv[1] << " finished" << std::endl;
 
   return 0;
 }
