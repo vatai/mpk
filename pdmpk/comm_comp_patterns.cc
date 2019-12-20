@@ -64,7 +64,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
 
 void CommCompPatterns::Stats() {
   std::ofstream of(mtxname + "-" + std::to_string(npart) + "-" +
-                   std::to_string(nlevels));
+                   std::to_string(nlevels) + ".txt");
 
   size_t sum = 0;
   for (const auto &buffer : bufs) {
