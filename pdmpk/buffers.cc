@@ -152,3 +152,5 @@ void Buffers::DumpMbufTxt(const int rank) {
   std::ofstream file(name + "-dresult" + std::to_string(rank) + ".txt");
   Utils::DumpTxt("mbuf", mbuf, file);
 }
+
+void Buffers::DbgCheck() {}

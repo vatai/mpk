@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
   assert(argc == 2);
   Buffers buf(npart, argv[1]);
   buf.Load(rank);
+  buf.DbgCheck();
   buf.Exec();
 
   buf.DumpMbufTxt(rank);

@@ -32,26 +32,37 @@ public:
   ///
   /// @param name The string which is appended to create output files.
   Buffers(const idx_t &npart, const std::string &name);
+
   /// Code executed before each phase for a single buffer.
   void PhaseInit();
+
   /// Code executed after each phase for a single buffer.
   void PhaseFinalize(const int phase);
 
   /// Execute the computations and communication for all phases.
   void Exec();
+
   /// Execute the computation for one phase.
   void DoComp(int phase);
+
   /// Execute the communication for one phase.
   void DoComm(int phase);
+
   /// Store @ref Buffers to disk which should be loaded using @ref
   /// Buffers::Load.
   void Dump(const int rank);
+
   /// Load @ref Buffers from disk saved using @ref Buffers::Dump.
   void Load(const int rank);
+
   /// Store @ref Buffers to disk in `.txt` format.
   void DumpTxt(const int rank);
+
   /// Store @ref Buffers::mbuf to disk in `.txt` format.
   void DumpMbufTxt(const int rank);
+
+  /// Check @ref Buffer invariants.
+  void DbgCheck();
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
