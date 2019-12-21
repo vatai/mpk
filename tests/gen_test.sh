@@ -17,9 +17,9 @@ NLEVEL=${4:-4} # $4 or defaults to 4.
 
 # Create input matrix if it doesn't exist.
 mkdir -p "$MATRICES_DIR"
-MATRIX="$MATRICES_DIR/m5p${SIZE}.loop.mtx"
+MATRIX="$MATRICES_DIR/${TYPE}${SIZE}.loop.mtx"
 if [ ! -f "$MATRIX" ]; then
-    SIZE_ITER=${SIZE} TYPE_ITER=m5p ${SCRIPTS_DIR}/gen_matrices.sh ${MATRICES_DIR}
+    SIZE_ITER=${SIZE} TYPE_ITER=$TYPE ${SCRIPTS_DIR}/gen_matrices.sh ${MATRICES_DIR}
 fi
 
 # Run test.
