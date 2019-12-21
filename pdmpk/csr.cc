@@ -47,11 +47,13 @@ void CSR::MtxCheckBanner(std::ifstream &file) {
     throw std::logic_error("Incorrect mtx banner!");
 
   tmp >> word;
-  coordinate = (word == std::string("coordinate"));
+  if (word != "coordinate")
+    throw std::logic_error("Not coordinate (sparse) matrix!");
 
   tmp >> word;
-  if (word != std::string("real"))
-    throw std::logic_error("Not real matrix!");
+  pattern = (word == std::string("pattern"));
+  if (not pattern and word != std::string("real"))
+    throw std::logic_error("Not real or pattern matrix!");
 
   tmp >> word;
   symmetric = (word == std::string("symmetric"));
@@ -102,7 +104,7 @@ void CSR::MtxFillVectors(std::ifstream &file) {
     col.insert(std::end(col), std::begin(Js[i]), std::end(Js[i]));
     val.insert(std::end(val), std::begin(vs[i]), std::end(vs[i]));
   }
-  if (coordinate) {
+  if (pattern) {
     for (int i = 0; i < n; i++) {
       double v = 1. / (ptr[i + 1] - ptr[i]);
       for (int t = ptr[i]; t < ptr[i + 1]; t++) {

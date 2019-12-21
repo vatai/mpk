@@ -42,7 +42,7 @@ public:
 
 private:
   bool symmetric;
-  bool coordinate;
+  bool pattern;
   void MtxCheckBanner(std::ifstream &file);
   void MtxFillSize(std::ifstream &file);
   void MtxFillVectors(std::ifstream &file);
