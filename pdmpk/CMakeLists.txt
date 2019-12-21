@@ -118,3 +118,7 @@ target_link_libraries(pdmpk_exec MPI::MPI_CXX buffers)
 
 add_executable(pdmpk_test pdmpk_test.cc)
 target_link_libraries(pdmpk_test args csr results)
+
+set(TESTS_DIR "${CMAKE_SOURCE_DIR}/../tests")
+
+add_test(NAME m5p4-4-4 COMMAND "${TESTS_DIR}/m5p4-4-4.sh")
