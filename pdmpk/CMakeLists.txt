@@ -132,3 +132,13 @@ include(CTest)
 add_test(NAME m5p_4_4_4  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 4 4 4)
 add_test(NAME m5p_4_4_10 COMMAND "${TESTS_DIR}/gen_test.sh" m5p 4 4 10)
 add_test(NAME m5p_5_4_4  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 5 4 4)
+
+add_test(NAME m5p_10_4_10  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 10 4 10)
+add_test(NAME m5p_10_4_20  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 10 4 20)
+add_test(NAME m5p_100_4_10  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 100 4 10)
+add_test(NAME m5p_100_4_20  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 100 4 20)
+
+add_test(NAME m5p_10_8_10  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 10 8 10)
+add_test(NAME m5p_10_8_20  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 10 8 20)
+add_test(NAME m5p_100_8_10  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 100 8 10)
+add_test(NAME m5p_100_8_20  COMMAND "${TESTS_DIR}/gen_test.sh" m5p 100 8 20)
