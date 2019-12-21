@@ -2,8 +2,8 @@
 #
 # -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_DEBUG_CSR_VALS
 
-cmake_minimum_required (VERSION 3.12)
-project (PDMPK VERSION 0.9)
+cmake_minimum_required (VERSION 3.12..3.16)
+project (PDMPK VERSION 0.9 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 17)
 
 enable_testing()
