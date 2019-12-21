@@ -16,7 +16,8 @@ CSR::CSR(const std::string &fname) {
 
 std::vector<double> CSR::SpMV(const std::vector<double> &vec) const {
   std::vector<double> result(vec.size());
-  for (size_t i = 0; i < ptr.size(); i++) {
+  auto const n = ptr.size() - 1;
+  for (size_t i = 0; i < n; i++) {
     double tmp = 0.0;
     for (int t = ptr[i]; t < ptr[i + 1]; t++) {
       tmp += val[t] * vec[col[t]];
