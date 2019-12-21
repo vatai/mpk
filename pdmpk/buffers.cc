@@ -153,4 +153,27 @@ void Buffers::DumpMbufTxt(const int rank) {
   Utils::DumpTxt("mbuf", mbuf, file);
 }
 
-void Buffers::DbgCheck() {}
+void Buffers::DbgCheck() {
+  // mpi_bufs !!!!!
+  // mpi_bufs.init_idcs; // !!!
+  // mpi_bufs.sbuf_idcs; // !!!
+  // mpi_bufs.npart;
+  // mpi_bufs.rdispls;
+  // mpi_bufs.recvcounts;
+  // mpi_bufs.sdispls;
+  // mpi_bufs.sendcounts;
+  // max_sbuf_size
+
+  // mcsr !!!!!
+  // mcsr.mcol; // !!!
+  // mcsr.mptr; // !!!
+  // mbuf_idx
+  // results_mbuf_idx
+  // results
+
+  // dbg_idx??
+
+  // name
+  // mbuf
+  // sbuf
+}
