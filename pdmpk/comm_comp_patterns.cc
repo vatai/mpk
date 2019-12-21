@@ -91,7 +91,7 @@ void CommCompPatterns::OptimizePartitionLabels(size_t min_level) {
       }
     }
   }
-  // FindLabelPermutation();
+  FindLabelPermutation();
   comm_table.clear();
 }
 
