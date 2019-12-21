@@ -15,16 +15,18 @@ FILE_OR_URL=$1
 OUTPUT=${2:-.}
 
 function download_untar () {
-    wget -c $1 -O - | tar -xz -C $OUTPUT
+    local URL=$1
+    MATRIX=$(basename ${URL} | sed 's/\.tar\.gz$//')
+    # Download if doesn't exist.
+    mkdir -p $OUTPUT
+    [ -e $OUTPUT/$MATRIX ] || wget -c ${URL} -O - | tar -xz -C $OUTPUT
 }
 
 # If $1 is a file.
 if [ -f "$FILE_OR_URL" ]; then
     FILE="$FILE_OR_URL"
     cat "${FILE}" | while read LINE; do
-        MATRIX=$(basename $LINE | sed 's/\.tar\.gz$//')
-        # Download if doesn't exist.
-        [ -e $OUTPUT/$MATRIX ] || download_untar $LINE
+        download_untar $LINE
     done
 else
     download_untar $FILE_OR_URL
