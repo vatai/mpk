@@ -7,6 +7,7 @@ cmake_minimum_required (VERSION 3.12)
 
 ### Setup projectname ###
 project (PDMPK VERSION 0.9)
+set(CMAKE_CXX_STANDARD 17)
 
 enable_testing()
 
@@ -94,7 +95,6 @@ enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 
-set(CMAKE_CXX_STANDARD 17)
 # METIS
 find_library(METIS metis)
 
