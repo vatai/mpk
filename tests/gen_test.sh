@@ -3,9 +3,9 @@
 # Author: Emil VATAI <emil.vatai@gmail.com>
 # Date: 2019-12-21
 
-### Run a single test for generated matrices. The parameters are SIZE
-### of the mesh, NPART number of processes/partitions and NLEVEL
-### number of levels calculated by MPK.
+### Run a single test for generated matrices. The parameters are TYPE
+### and SIZE of the mesh, NPART number of processes/partitions and
+### NLEVEL number of levels calculated by MPK.
 
 SCRIPTS_DIR=${SCRIPTS_DIR:=$(dirname $0)/../scripts}
 MATRICES_DIR=${MATRICES_DIR:=$(dirname $0)/../matrices}
