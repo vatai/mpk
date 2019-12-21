@@ -8,41 +8,78 @@
 ///
 /// # Building using CMake
 ///
-/// In the root directory (`./pdmpk/` contains `CMakeLists.txt`).
+/// In the root directory of the repository is `.`
 ///
-/// @code
-/// mkdir _Debug
-/// cmake -S pdmpk/ -B _Debug -DCMAKE_BUILD_TYPE=Debug
-/// cmake --build _Debug
-/// @endcode
+/// In the simplest case:
 ///
-/// @code
-/// cmake -S pdmpk -B build               \
-///    -DMPI_C_COMPILER=/usr/bin/mpiCC    \
-///    -DMPI_CXX_COMPILER=/usr/bin/mpic++
-/// @endcode
+///     mkdir build
+///     cmake -S pdmpk/ -B build
+///     cmake --build build # or cd build; cmake --build .
+///
+/// Other examples of setting up build configurations:
+///
+/// Setup a debug build. In a similar way one can also make a release build.
+///
+///     mkdir Debug
+///     cmake -S pdmpk/ -B Debug -DCMAKE_BUILD_TYPE=Debug
+///     cmake --build Debug
+///
+/// Specify custom MPI compilers.
+///
+///     cmake -S pdmpk -B build               \
+///        -DMPI_C_COMPILER=/usr/bin/mpiCC    \
+///        -DMPI_CXX_COMPILER=/usr/bin/mpic++
+///
+/// These values can subsequently be modified in the `CMakeCache.txt`
+/// file in the build directory.
 ///
 /// # Usage
 ///
 /// ## Generating mtx files
 ///
 /// Assuming `gen2` and `gen2mtx` are compiled in `../mpk2/` (these
-/// should probably rewritten in C++).
+/// should probably rewritten in C++) the `scripts/gen_matrices.sh`
+/// can generate matrices of different types and sizes by setting the
+/// `SIZE_ITER` and `TYPE_ITER` variable.
 ///
-/// @code
-/// ../mpk2/gen2 m5p 4 m5p4
-/// ../mpk2/gen2mtx m5p4.loop.g0
-/// @endcode
+///     mkdir matrices
+///     cd matrices
+///     # Generate matrices using default settings
+///     ../scripts/gen_matrices.sh
+///     # Generate matrices of size 4 5 6
+///     SIZE_ITER="4 5 6" ../scripts/gen_matrices.sh
+///     # Generate matrices of type "m7p" and "t5p" of size 100
+///     TYPE_ITER="m7p t5p" SIZE_TYPE="100" ../scripts/gen_matrices.sh
 ///
 /// ## Running the programs
 ///
-/// @code
-/// ./pdmpk_prep m5p4.loop.mtx 4 4 # second 4 is nlevels
-/// mpirun -n 4 ./pdmpk_exec
-/// @endcode
+/// To run the program by hand do something like this:
+///
+///     ./pdmpk_prep m5p4.loop.mtx 4 4 # second 4 is nlevels
+///     mpirun -n 4 ./pdmpk_exec m5p4.loop.mtx
 ///
 /// `orterun` is OpenMPI version of `mpirun` if it is in conflict with
 /// Intel's `mpirun`.
+///
+/// ## Using scripts
+///
+/// The `scripts/batch_proc.sh` script runs the above 3 command one
+/// the matrices given as parameters.  The script executes the program
+/// with different number of processes and levels.  This behaviour can
+/// be modified by setting the `NLEVEL_ITER` and `NPART_ITER`
+/// variables.  The script should be executed from the build directory
+/// (where the executables are located).
+///
+/// To run the program on `m5p` matrices of all sizes in the
+/// `../matrices` directory do the following:
+///
+///     ../script/batch_proc.sh ../matrices/m5p*.loop.mtx
+///
+/// To run the program on `..matrices/xenon2.mtx` with number of
+/// levels 10 and 20 and number of processes 8 do:
+///
+///     NLEVEL_ITER="10 20" NPART_ITER="8" ../scripts/batch_proc.sh \
+///     ../matrices/xenon2.mtx
 ///
 /// @see @ref pdmpk_prep @see @ref pdmpk_exec @see @ref pdmpk_test
 ///
