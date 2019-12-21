@@ -149,7 +149,7 @@ void Buffers::DumpTxt(const int rank) {
 }
 
 void Buffers::DumpMbufTxt(const int rank) {
-  std::ofstream file(name + "-dresult" + std::to_string(rank) + ".txt");
+  std::ofstream file(name + "-mbuf" + std::to_string(rank) + ".txt");
   Utils::DumpTxt("mbuf", mbuf, file);
 }
 
