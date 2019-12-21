@@ -22,8 +22,12 @@ function list_matrices() {
             echo $NAME
         done
     done
-    read -n 1 -p "Press any key to continue"
-    echo
+    # Pause if in an interactive shell.
+    if [[ $- == *i* ]]; then
+        read -n 1 -p "Press any key to continue"
+        echo
+    fi
+
 }
 
 function gen_matrix() {
