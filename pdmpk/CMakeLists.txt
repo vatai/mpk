@@ -6,8 +6,6 @@ cmake_minimum_required (VERSION 3.12..3.16)
 project (PDMPK VERSION 0.9 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 17)
 
-enable_testing()
-
 ### Doxygen ###
 # From: https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 # first we can indicate the documentation build as an option and set it to ON by default
@@ -96,19 +94,28 @@ find_library(METIS metis)
 find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
-add_library(args args.h args.cc)
-add_library(csr csr.h csr.cc)
-add_library(mcsr mcsr.h mcsr.cc)
-add_library(mpi_buffers mpi_buffers.h mpi_buffers.cc)
-add_library(pdmpk_buffers pdmpk_buffers.h pdmpk_buffers.cc)
-add_library(lapjv lapjv.h lapjv.c)
-add_library(results results.h results.cc)
+add_library(args OBJECT args.h args.cc)
+add_library(csr OBJECT csr.h csr.cc)
+add_library(mcsr OBJECT mcsr.h mcsr.cc)
+add_library(mpi_buffers OBJECT mpi_buffers.h mpi_buffers.cc)
+add_library(pdmpk_buffers OBJECT pdmpk_buffers.h pdmpk_buffers.cc)
+add_library(lapjv OBJECT lapjv.h lapjv.c)
+add_library(results OBJECT results.h results.cc)
 
-add_library(buffers buffers.h buffers.cc)
-target_link_libraries(buffers mpi_buffers results mcsr MPI::MPI_CXX)
+add_library(buffers OBJECT buffers.h buffers.cc)
+target_link_libraries(buffers
+  $<TARGET_OBJECTS:mpi_buffers>
+  $<TARGET_OBJECTS:results>
+  $<TARGET_OBJECTS:mcsr>
+  MPI::MPI_CXX)
 
-add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc)
-target_link_libraries(comm_comp_patterns buffers csr pdmpk_buffers lapjv ${METIS})
+add_library(comm_comp_patterns OBJECT comm_comp_patterns.h comm_comp_patterns.cc)
+target_link_libraries(comm_comp_patterns
+  buffers
+  $<TARGET_OBJECTS:csr>
+  $<TARGET_OBJECTS:pdmpk_buffers>
+  $<TARGET_OBJECTS:lapjv>
+  ${METIS})
 
 add_executable(pdmpk_prep pdmpk_prep.cc)
 target_link_libraries(pdmpk_prep args comm_comp_patterns buffers)
@@ -121,6 +128,7 @@ target_link_libraries(pdmpk_test args csr results)
 
 set(TESTS_DIR "${CMAKE_SOURCE_DIR}/../tests")
 
+include(CTest)
 add_test(NAME m5p_4_4_4  COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 4 4 4)
 add_test(NAME m5p_4_4_10 COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 4 4 10)
 add_test(NAME m5p_5_4_4  COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 5 4 4)
