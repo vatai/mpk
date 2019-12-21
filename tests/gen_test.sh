@@ -19,7 +19,7 @@ NLEVEL=${4:-4} # $4 or defaults to 4.
 mkdir -p "$MATRICES_DIR"
 MATRIX="$MATRICES_DIR/${TYPE}${SIZE}.loop.mtx"
 if [ ! -f "$MATRIX" ]; then
-    SIZE_ITER=${SIZE} TYPE_ITER=$TYPE ${SCRIPTS_DIR}/gen_matrices.sh ${MATRICES_DIR}
+    SIZE_ITER=${SIZE} TYPE_ITER=${TYPE} ${SCRIPTS_DIR}/gen_matrices.sh ${MATRICES_DIR}
 fi
 
 # Run test.
