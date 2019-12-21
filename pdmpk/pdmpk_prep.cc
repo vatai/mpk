@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
   comm_comp_patterns.Stats();
 
   for (int i = 0; i < args.npart; i++) {
+    comm_comp_patterns.bufs[i].DbgCheck();
     comm_comp_patterns.bufs[i].Dump(i);
     comm_comp_patterns.bufs[i].DumpTxt(i);
   }
