@@ -3,6 +3,7 @@
 SCRIPTS_DIR=${SCRIPTS_DIR:=$(dirname $0)/../scripts}
 MATRICES_DIR=${MATRICES_DIR:=$(dirname $0)/../matrices}
 
+mkdir -p "$MATRICES_DIR"
 MATRIX="$MATRICES_DIR/m5p4.loop.mtx"
 
 if [ ! -f "$MATRIX" ]; then

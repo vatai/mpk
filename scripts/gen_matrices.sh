@@ -5,7 +5,7 @@
 
 ### Script to generate matrices.
 ###
-### @param $1 Output directory.
+### @param $1 Output directory. The directory should exist.
 
 # Optional input variables
 TYPE_ITER=${TYPE_ITER:="m5p m9p"}
