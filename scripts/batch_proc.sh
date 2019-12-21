@@ -18,7 +18,7 @@ function single_run() {
     local PREP=$PREFIX/pdmpk_prep
     local EXEC=$PREFIX/pdmpk_exec
     local TEST=$PREFIX/pdmpk_test
-    echo Processing $MATRIX
+    echo $0: Processing $MATRIX with $NPART partitions upto level $NLEVEL
     $PREP $MATRIX $NPART $NLEVEL
     $MPIRUN -n $NPART $EXEC $MATRIX
     # $TEST $MATRIX $NPART $NLEVEL
