@@ -122,3 +122,5 @@ target_link_libraries(pdmpk_test args csr results)
 set(TESTS_DIR "${CMAKE_SOURCE_DIR}/../tests")
 
 add_test(NAME m5p_4_4_4  COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 4 4 4)
+add_test(NAME m5p_4_4_10 COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 4 4 10)
+add_test(NAME m5p_5_4_4  COMMAND "${TESTS_DIR}/m5p_test.sh" m5p 5 4 4)

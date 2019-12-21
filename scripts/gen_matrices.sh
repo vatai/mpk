@@ -27,7 +27,6 @@ function list_matrices() {
         read -n 1 -p "Press any key to continue"
         echo
     fi
-
 }
 
 function gen_matrix() {
