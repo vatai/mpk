@@ -102,36 +102,25 @@ find_package(MPI REQUIRED)
 
 # add_definitions(-D_DEBUG_CSR_VALS)
 
-add_executable (pdmpk_prep
-  args.cc
-  pdmpk_prep.cc
-  comm_comp_patterns.cc
-  csr.cc
-  buffers.cc
-  mpi_buffers.cc
-  mcsr.cc
-  pdmpk_buffers.cc
-  results.cc
-  lapjv.c
-  )
+add_library(args args.h args.cc)
+add_library(csr csr.h csr.cc)
+add_library(mcsr mcsr.h mcsr.cc)
+add_library(mpi_buffers mpi_buffers.h mpi_buffers.cc)
+add_library(pdmpk_buffers pdmpk_buffers.h pdmpk_buffers.cc)
+add_library(lapjv lapjv.h lapjv.c)
+add_library(results results.h results.cc)
 
-target_link_libraries(pdmpk_prep "${METIS}" MPI::MPI_CXX)
+add_library(buffers buffers.h buffers.cc)
+target_link_libraries(buffers mpi_buffers results mcsr MPI::MPI_CXX)
 
-add_executable (pdmpk_exec
-  pdmpk_exec.cc
-  buffers.cc
-  mpi_buffers.cc
-  mcsr.cc
-  results.cc
-  )
+add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc)
+target_link_libraries(comm_comp_patterns buffers csr pdmpk_buffers lapjv ${METIS})
 
-target_link_libraries(pdmpk_exec "${METIS}" MPI::MPI_CXX)
+add_executable(pdmpk_prep pdmpk_prep.cc)
+target_link_libraries(pdmpk_prep args comm_comp_patterns buffers)
 
-add_executable (pdmpk_test
-  pdmpk_test.cc
-  args.cc
-  csr.cc
-  results.cc
-  )
+add_executable(pdmpk_exec pdmpk_exec.cc)
+target_link_libraries(pdmpk_exec MPI::MPI_CXX buffers)
 
-# target_link_libraries(pdmpk_test "${METIS}" MPI::MPI_CXX)
+add_executable(pdmpk_test pdmpk_test.cc)
+target_link_libraries(pdmpk_test args csr results)
