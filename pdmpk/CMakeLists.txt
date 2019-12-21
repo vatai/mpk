@@ -5,6 +5,9 @@
 # CMakeLists.txt
 cmake_minimum_required (VERSION 3.12)
 
+### Setup projectname ###
+project (PDMPK VERSION 0.9)
+
 ### Doxygen ###
 # From: https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 # first we can indicate the documentation build as an option and set it to ON by default
@@ -39,7 +42,6 @@ endif (DOXYGEN_FOUND AND BUILD_DOC)
 
 ### GOOGLETEST ###
 ## See googletest github/homepage (installationg).
-
 # # Download and unpack googletest at configure time
 # configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
 # execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -71,9 +73,6 @@ endif (DOXYGEN_FOUND AND BUILD_DOC)
 # if (CMAKE_VERSION VERSION_LESS 2.8.11)
 #   include_directories("${gtest_SOURCE_DIR}/include")
 # endif()
-
-### Setup projectname ###
-project (PDMPK VERSION 0.9)
 
 ### Add compiler options ###
 include(CheckCXXCompilerFlag)
