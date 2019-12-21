@@ -2,10 +2,7 @@
 #
 # -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_DEBUG_CSR_VALS
 
-# CMakeLists.txt
 cmake_minimum_required (VERSION 3.12)
-
-### Setup projectname ###
 project (PDMPK VERSION 0.9)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -95,14 +92,9 @@ enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 
-# METIS
 find_library(METIS metis)
-
-# MPI
 find_package(MPI REQUIRED)
 # message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
-
-# add_definitions(-D_DEBUG_CSR_VALS)
 
 add_library(args args.h args.cc)
 add_library(csr csr.h csr.cc)
