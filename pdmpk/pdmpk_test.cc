@@ -48,9 +48,10 @@ int main(int argc, char *argv[]) {
     if (max < diff)
       max = diff;
   }
-  std::cout << "pdmpk_test: Maximum absolute error: " << max << std::endl;
-  std::cout << "pdmpk_test: Maximum absolute is zero: "
-            << (max == 0.0 ? "true" : "false") << std::endl;
-  std::cout << "pdmpk_test: for " << argv[1] << " finished" << std::endl;
+  std::cout << argv[0] << ": Maximum absolute error: " << max << std::endl;
+  std::cout << argv[0]
+            << ": Maximum absolute is zero: " << (max == 0.0 ? "true" : "false")
+            << std::endl;
+  std::cout << argv[0] << ": for " << argv[1] << " finished" << std::endl;
   return 0;
 }

@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   buf.results.DumpTxt(rank);
 
   MPI_Finalize();
-  std::cout << "pdmpk_exec: process " << rank << " for " << argv[1]
+  std::cout << argv[0] << ": process " << rank << " for " << argv[1]
             << " finished" << std::endl;
   return 0;
 }
