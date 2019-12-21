@@ -21,7 +21,7 @@ function single_run() {
     echo $0: Processing $MATRIX with $NPART partitions upto level $NLEVEL
     $PREP $MATRIX $NPART $NLEVEL
     $MPIRUN -n $NPART $EXEC $MATRIX
-    # $TEST $MATRIX $NPART $NLEVEL
+    $TEST $MATRIX $NPART $NLEVEL
 }
 
 function proc_matrix() {
