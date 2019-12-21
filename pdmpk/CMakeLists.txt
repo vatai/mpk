@@ -8,6 +8,8 @@ cmake_minimum_required (VERSION 3.12)
 ### Setup projectname ###
 project (PDMPK VERSION 0.9)
 
+enable_testing()
+
 ### Doxygen ###
 # From: https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 # first we can indicate the documentation build as an option and set it to ON by default
