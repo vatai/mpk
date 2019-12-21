@@ -61,7 +61,7 @@ public:
   /// Store @ref Buffers::mbuf to disk in `.txt` format.
   void DumpMbufTxt(const int rank);
 
-  /// Check @ref Buffer invariants.
+  /// Check @ref Buffers invariants.
   void DbgCheck();
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
