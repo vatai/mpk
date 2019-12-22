@@ -54,7 +54,7 @@ void PDMPKBuffers::UpdateWeights() {
     for (int j = csr.ptr[i]; j < csr.ptr[i + 1]; j++) {
       int lj = levels[csr.col[j]];
       double w = li + lj - 2 * min;
-      w = 1e+6 / (w + 1);
+      w = 1e+4 / (w + 1);
       if (w < 1.0)
         weights[j] = 1;
       else
