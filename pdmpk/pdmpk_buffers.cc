@@ -2,9 +2,11 @@
 // Date: 2019-10-21
 
 #include <algorithm>
+#include <cassert>
 #include <iomanip>
 
 #include "pdmpk_buffers.h"
+#include "typedefs.h"
 
 #define SMALL_N 4
 
@@ -15,12 +17,21 @@ PDMPKBuffers::PDMPKBuffers(const CSR &csr)
       weights(csr.nnz),         //
       csr{csr} {}
 
-level_t PDMPKBuffers::MinLevel() {
+level_t PDMPKBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));
 }
 
+bool PDMPKBuffers::IsFinished(const level_t &nlevels) const {
+  for (const auto &level : levels) {
+    assert(level <= nlevels);
+    if (level != nlevels)
+      return false;
+  }
+  return true;
+}
+
 bool PDMPKBuffers::CanAdd(const idx_t idx, const level_t lbelow,
-                          const idx_t t) {
+                          const idx_t t) const {
   const idx_t j = csr.col[t];
   const bool needed = not partials[t];
   const bool same_part = partitions[idx] == partitions[j];

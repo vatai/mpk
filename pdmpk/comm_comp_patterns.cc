@@ -36,13 +36,15 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   }
   // Process phase = 0 and keep processing next higher phases
   // till the time last phase showed any update
-  bool was_active_phase = ProcPhase(0);
-  while (was_active_phase) {
+  ProcPhase(0);
+  bool is_finished = pdmpk_bufs.IsFinished(nlevels);
+  while (not is_finished) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
-    was_active_phase = ProcPhase(min_level);
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished(nlevels);
     // Check out FinalizePhase!!!
   }
   // nphase + 1 since last phase didn't do any update of levels
@@ -154,12 +156,11 @@ void CommCompPatterns::FindLabelPermutation() {
   }
 }
 
-bool CommCompPatterns::ProcPhase(size_t min_level) {
+void CommCompPatterns::ProcPhase(size_t min_level) {
   InitPhase();
   // `was_active_level` is true, if there was progress made at a
   // level. If no progress is made, the next level is processed.
   bool was_active_level = true;
-  bool retval = false; // used by was_active_phase
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < nlevels;
@@ -174,13 +175,11 @@ bool CommCompPatterns::ProcPhase(size_t min_level) {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (ProcVertex(idx, lbelow)) {
           was_active_level = true;
-          retval = true;
         }
       }
     }
   }
   FinalizePhase();
-  return retval;
 }
 
 void CommCompPatterns::InitPhase() {

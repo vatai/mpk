@@ -13,8 +13,9 @@ class PDMPKBuffers {
 public:
   PDMPKBuffers(const CSR &csr);
 
-  level_t MinLevel();
-  bool CanAdd(const idx_t idx, const level_t lbelow, const idx_t t);
+  level_t MinLevel() const;
+  bool IsFinished(const level_t &nlevels) const;
+  bool CanAdd(const idx_t idx, const level_t lbelow, const idx_t t) const;
   void IncLevel(const idx_t idx);
   void UpdateWeights();
 

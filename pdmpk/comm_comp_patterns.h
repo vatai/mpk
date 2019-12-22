@@ -99,8 +99,9 @@ private:
 
   /// Code executed before each phase.
   void InitPhase();
+
   /// Generate one phase.
-  bool ProcPhase(size_t min_level);
+  void ProcPhase(size_t min_level);
 
   /// Process one vertex.
   ///
