@@ -106,22 +106,16 @@ add_library(buffers buffers.h buffers.cc
   $<TARGET_OBJECTS:mpi_buffers>
   $<TARGET_OBJECTS:results>
   $<TARGET_OBJECTS:mcsr>)
-target_link_libraries(buffers
-  MPI::MPI_CXX)
+target_link_libraries(buffers MPI::MPI_CXX)
 
 add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:pdmpk_buffers>
   $<TARGET_OBJECTS:lapjv>)
-target_link_libraries(comm_comp_patterns
-  buffers
-  ${METIS})
+target_link_libraries(comm_comp_patterns buffers ${METIS})
 
-add_executable(pdmpk_prep pdmpk_prep.cc
-  $<TARGET_OBJECTS:args>)
-target_link_libraries(pdmpk_prep
-  comm_comp_patterns
-  buffers)
+add_executable(pdmpk_prep pdmpk_prep.cc $<TARGET_OBJECTS:args>)
+target_link_libraries(pdmpk_prep comm_comp_patterns)
 
 add_executable(pdmpk_exec pdmpk_exec.cc)
 target_link_libraries(pdmpk_exec buffers MPI::MPI_CXX)
