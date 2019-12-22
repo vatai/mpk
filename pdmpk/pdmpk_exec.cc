@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
   // - continue
   // if (rank == 3) {
   //   int i = 1;
-  //   printf("PID %d ready for attach\n", getpid());
-  //   fflush(stdout);
+  //   std::cout << "PID " << getpid() << " ready for attach" << std::endl;
   //   while (0 == i)
   //     sleep(5);
   // }
