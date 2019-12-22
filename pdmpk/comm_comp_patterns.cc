@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -38,7 +39,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // till the time last phase showed any update
   ProcPhase(0);
   bool is_finished = pdmpk_bufs.IsFinished(nlevels);
-  while (not is_finished) {
+  while (not is_finished and phase < nlevels) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     const auto min_level = pdmpk_bufs.MinLevel();
@@ -46,6 +47,11 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished(nlevels);
     // Check out FinalizePhase!!!
+  }
+  if (phase == nlevels and not pdmpk_bufs.IsFinished(nlevels)) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
