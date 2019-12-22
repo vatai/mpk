@@ -110,11 +110,11 @@ target_link_libraries(buffers
   MPI::MPI_CXX)
 
 add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc
-  $<TARGET_OBJECTS:buffers>
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:pdmpk_buffers>
   $<TARGET_OBJECTS:lapjv>)
 target_link_libraries(comm_comp_patterns
+  buffers
   ${METIS})
 
 add_executable(pdmpk_prep pdmpk_prep.cc
