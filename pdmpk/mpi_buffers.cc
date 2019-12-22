@@ -6,9 +6,9 @@
 #include "mpi_buffers.h"
 #include "utils.hpp"
 
-MPIBuffers::MPIBuffers(const idx_t npart) : npart{npart} {}
+MPIBuffers::MPIBuffers(const idx_t &npart) : npart{npart} {}
 
-void MPIBuffers::FillDispls(int phase) {
+void MPIBuffers::FillDispls(const int &phase) {
   size_t offset = npart * phase;
   auto scount = sendcounts.data() + offset;
   auto rcount = recvcounts.data() + offset;
@@ -22,12 +22,12 @@ void MPIBuffers::FillDispls(int phase) {
   }
 }
 
-size_t MPIBuffers::SbufSize(int phase) const {
+size_t MPIBuffers::SbufSize(const int &phase) const {
   size_t idx = npart * phase + npart - 1;
   return sendcounts[idx] + sdispls[idx];
 }
 
-size_t MPIBuffers::RbufSize(int phase) const {
+size_t MPIBuffers::RbufSize(const int &phase) const {
   size_t idx = npart * phase + npart - 1;
   return recvcounts[idx] + rdispls[idx];
 }

@@ -14,14 +14,16 @@
 /// communication for each partition.
 class MPIBuffers {
 public:
-  MPIBuffers(const idx_t npart);
+  MPIBuffers(const idx_t &npart);
+
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
   /// count buffers (`sendcount` and `recvcount`).
-  void FillDispls(int phase);
+  void FillDispls(const int &phase);
+
   /// Get `rbuf` size from `recvcount` and `rdispls`.
-  size_t SbufSize(int phase) const;
+  size_t SbufSize(const int &phase) const;
   /// Get `sbuf` size form `sendcount` and `sdispls`.
-  size_t RbufSize(int phase) const;
+  size_t RbufSize(const int &phase) const;
   /// Allocate {send,recv}counts and {s,r}displs.
   void AllocMpiBufs();
   /// Dump the contents to a binary `fstream`.
