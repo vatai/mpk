@@ -27,7 +27,7 @@ std::vector<double> CSR::SpMV(const std::vector<double> &vec) const {
   return result;
 }
 
-void CSR::MPK(const int nlevels, std::vector<double> &vec) const {
+void CSR::MPK(const int &nlevels, std::vector<double> &vec) const {
   for (int i = 0; i < nlevels; i++)
     vec = SpMV(vec);
 }
