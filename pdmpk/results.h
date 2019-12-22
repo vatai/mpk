@@ -11,9 +11,9 @@ public:
   Results(const std::string &name);
   void FillVal(const std::vector<idx_t> &idx, const std::vector<double> &mbuf);
   void FillResults(std::vector<double> *results);
-  void Dump(const int rank);
-  void Load(const int rank);
-  void DumpTxt(const int rank);
+  void Dump(const int &rank);
+  void Load(const int &rank);
+  void DumpTxt(const int &rank);
   void SaveIndex(const int &idx);
 
 private:

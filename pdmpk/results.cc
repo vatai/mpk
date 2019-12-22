@@ -27,21 +27,21 @@ void Results::FillResults(std::vector<double> *results) {
   }
 }
 
-void Results::Dump(const int rank) {
+void Results::Dump(const int &rank) {
   std::ofstream file(name + "-" + kFname + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
   Utils::DumpVec(vect_idx, file);
   Utils::DumpVec(val, file);
 }
 
-void Results::Load(const int rank) {
+void Results::Load(const int &rank) {
   std::ifstream file(name + "-" + kFname + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
   Utils::LoadVec(vect_idx, file);
   Utils::LoadVec(val, file);
 }
 
-void Results::DumpTxt(const int rank) {
+void Results::DumpTxt(const int &rank) {
   std::ofstream file(name + "-" + kFname + std::to_string(rank) + ".txt");
   Utils::DumpTxt("result_val", val, file);
 }
