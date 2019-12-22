@@ -20,6 +20,8 @@
 ///
 /// Body of `pdmpk_test` page.
 
+const double kEpsilon = 1e-12;
+
 /// Test the results of @ref pdmpk_exec. The arguments are the same as
 /// for @ref pdmpk_prep.c::main
 int main(int argc, char *argv[]) {
@@ -53,5 +55,5 @@ int main(int argc, char *argv[]) {
             << ": Maximum absolute is zero: " << (max == 0.0 ? "true" : "false")
             << std::endl;
   std::cout << argv[0] << ": for " << argv[1] << " finished" << std::endl;
-  return 0;
+  return max < kEpsilon ? 0 : 1;
 }
