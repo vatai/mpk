@@ -30,7 +30,7 @@ void Buffers::PhaseInit() {
   mbuf.phase_begin.push_back(mbuf_idx);
 }
 
-void Buffers::PhaseFinalize(const int phase) {
+void Buffers::PhaseFinalize(const int &phase) {
   // Fill displacement buffers from count buffers.
   mpi_bufs.FillDispls(phase);
   const auto rbuf_size = mpi_bufs.RbufSize(phase);
@@ -47,7 +47,7 @@ void Buffers::PhaseFinalize(const int phase) {
   mbuf_idx += rbuf_size;
 }
 
-void Buffers::DoComp(int phase) {
+void Buffers::DoComp(const int &phase) {
   auto mcount = mcsr.mptr.phase_begin[phase + 1] - //
                 mcsr.mptr.phase_begin[phase];
   auto cur_mbuf = mbuf.get_ptr(phase);
@@ -69,7 +69,7 @@ void Buffers::DoComp(int phase) {
   }
 }
 
-void Buffers::DoComm(int phase) {
+void Buffers::DoComm(const int &phase) {
   const auto scount = mpi_bufs.SbufSize(phase);
 
   // fill_sbuf()
@@ -109,7 +109,7 @@ void Buffers::Exec() {
   results.FillVal(results_mbuf_idx, mbuf);
 }
 
-void Buffers::Dump(const int rank) {
+void Buffers::Dump(const int &rank) {
   std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
                      std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
@@ -122,7 +122,7 @@ void Buffers::Dump(const int rank) {
   mcsr.DumpToOFS(file);
 }
 
-void Buffers::Load(const int rank) {
+void Buffers::Load(const int &rank) {
   std::ifstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
                      std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
@@ -135,7 +135,7 @@ void Buffers::Load(const int rank) {
   mcsr.LoadFromIFS(file);
 }
 
-void Buffers::DumpTxt(const int rank) {
+void Buffers::DumpTxt(const int &rank) {
   std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".txt");
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
@@ -149,7 +149,7 @@ void Buffers::DumpTxt(const int rank) {
   mcsr.DumpToTxt(file);
 }
 
-void Buffers::DumpMbufTxt(const int rank) {
+void Buffers::DumpMbufTxt(const int &rank) {
   std::ofstream file(name + "-mbuf" + std::to_string(rank) + ".txt");
   Utils::DumpTxt("mbuf", mbuf, file);
 }
