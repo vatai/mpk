@@ -52,14 +52,14 @@ void MPIBuffers::DumpToOFS(std::ofstream &ofs) {
 }
 
 void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
-  Utils::LoadVec(sendcounts, ifs);
-  Utils::LoadVec(sdispls, ifs);
-  Utils::LoadVec(recvcounts, ifs);
-  Utils::LoadVec(rdispls, ifs);
-  Utils::LoadVec(sbuf_idcs, ifs);
-  Utils::LoadVec(sbuf_idcs.phase_begin, ifs);
-  Utils::LoadVec(init_idcs, ifs);
-  Utils::LoadVec(init_idcs.phase_begin, ifs);
+  Utils::LoadVec(ifs, &sendcounts);
+  Utils::LoadVec(ifs, &sdispls);
+  Utils::LoadVec(ifs, &recvcounts);
+  Utils::LoadVec(ifs, &rdispls);
+  Utils::LoadVec(ifs, &sbuf_idcs);
+  Utils::LoadVec(ifs, &sbuf_idcs.phase_begin);
+  Utils::LoadVec(ifs, &init_idcs);
+  Utils::LoadVec(ifs, &init_idcs.phase_begin);
 }
 
 void MPIBuffers::DumpToTxt(std::ofstream &ofs) {

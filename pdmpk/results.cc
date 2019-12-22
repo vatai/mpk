@@ -37,8 +37,8 @@ void Results::Dump(const int &rank) {
 void Results::Load(const int &rank) {
   std::ifstream file(name + "-" + kFname + std::to_string(rank) + ".bin",
                      std::ios_base::binary);
-  Utils::LoadVec(vect_idx, file);
-  Utils::LoadVec(val, file);
+  Utils::LoadVec(file, &vect_idx);
+  Utils::LoadVec(file, &val);
 }
 
 void Results::DumpTxt(const int &rank) {

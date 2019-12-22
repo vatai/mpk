@@ -22,15 +22,15 @@ void DumpVec(const std::vector<T> &vec, std::ofstream &ofs) {
 }
 
 template <typename T> //
-void LoadVec(std::vector<T> &vec, std::istream &is) {
-  auto size = vec.size();
+void LoadVec(std::istream &is, std::vector<T> *vec) {
+  auto size = vec->size();
   is.read((char *)&size, sizeof(size));
-  vec.resize(size);
-  is.read((char *)vec.data(), sizeof(T) * size);
+  vec->resize(size);
+  is.read((char *)vec->data(), sizeof(T) * size);
 }
 
 template <typename T> //
-void DumpTxt(const char *name, std::vector<T> &vec, std::ofstream &ofs) {
+void DumpTxt(const char *name, const std::vector<T> &vec, std::ofstream &ofs) {
   ofs << name << ": ";
   for (const auto v : vec) {
     ofs << v << ", ";

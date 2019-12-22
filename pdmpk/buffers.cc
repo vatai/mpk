@@ -127,8 +127,8 @@ void Buffers::Load(const int &rank) {
                      std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
-  Utils::LoadVec(mbuf.phase_begin, file);
-  Utils::LoadVec(results_mbuf_idx, file);
+  Utils::LoadVec(file, &mbuf.phase_begin);
+  Utils::LoadVec(file, &results_mbuf_idx);
   // Utils::LoadVec(results.vect_idx, file);
   results.Load(rank);
   mpi_bufs.LoadFromIFS(file);

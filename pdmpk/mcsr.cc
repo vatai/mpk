@@ -19,10 +19,10 @@ void MCSR::DumpToOFS(std::ofstream &ofs) {
 }
 
 void MCSR::LoadFromIFS(std::ifstream &ifs) {
-  Utils::LoadVec(mptr, ifs);
-  Utils::LoadVec(mptr.phase_begin, ifs);
-  Utils::LoadVec(mcol, ifs);
-  Utils::LoadVec(mval, ifs);
+  Utils::LoadVec(ifs, &mptr);
+  Utils::LoadVec(ifs, &mptr.phase_begin);
+  Utils::LoadVec(ifs, &mcol);
+  Utils::LoadVec(ifs, &mval);
 }
 
 void MCSR::DumpToTxt(std::ofstream &ofs) {
