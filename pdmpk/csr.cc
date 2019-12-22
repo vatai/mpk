@@ -58,6 +58,8 @@ void CSR::MtxCheckBanner(std::ifstream &file) {
 
   tmp >> word;
   symmetric = (word == std::string("symmetric"));
+  if (not symmetric and word != std::string("general"))
+    throw std::logic_error("Not general or symmetric matrix!");
 }
 
 void CSR::MtxFillSize(std::ifstream &file) {
@@ -88,13 +90,17 @@ void CSR::MtxFillVectors(std::ifstream &file) {
       std::stringstream ss(line);
       double val;
       int i, j;
-      ss >> i >> j >> val;
+      ss >> i >> j;
+      if (not pattern)
+        ss >> val;
+      else
+        val = 1.0;
       i--;
       j--;
       ptr[i + 1]++;
       Js[i].push_back(j);
       vs[i].push_back(val);
-      if (symmetric) {
+      if (symmetric and i != j) {
         Js[j].push_back(i);
         vs[j].push_back(val);
       }
