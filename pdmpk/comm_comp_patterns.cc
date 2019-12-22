@@ -39,7 +39,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // till the time last phase showed any update
   ProcPhase(0);
   bool is_finished = pdmpk_bufs.IsFinished(nlevels);
-  while (not is_finished and phase < nlevels) {
+  while (not is_finished and phase < npart * nlevels) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
     const auto min_level = pdmpk_bufs.MinLevel();
