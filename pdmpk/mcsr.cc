@@ -5,7 +5,7 @@
 #include "utils.hpp"
 #include <fstream>
 
-size_t MCSR::MptrSize(const int phase) const {
+size_t MCSR::MptrSize(const int &phase) const {
   return mptr.phase_begin[phase + 1] - mptr.phase_begin[phase];
 }
 

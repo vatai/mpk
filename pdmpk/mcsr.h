@@ -14,7 +14,7 @@
 class MCSR {
 public:
   /// Return the size of an mptr buffer.
-  size_t MptrSize(const int phase) const;
+  size_t MptrSize(const int &phase) const;
 
   /// Inserts the size of `mcol` at the end `mptr` vector.
   void NextMcolIdxToMptr();
