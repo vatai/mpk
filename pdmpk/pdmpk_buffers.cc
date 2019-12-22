@@ -30,8 +30,8 @@ bool PDMPKBuffers::IsFinished(const level_t &nlevels) const {
   return true;
 }
 
-bool PDMPKBuffers::CanAdd(const idx_t idx, const level_t lbelow,
-                          const idx_t t) const {
+bool PDMPKBuffers::CanAdd(const idx_t &idx, const level_t &lbelow,
+                          const idx_t &t) const {
   const idx_t j = csr.col[t];
   const bool needed = not partials[t];
   const bool same_part = partitions[idx] == partitions[j];
@@ -39,7 +39,7 @@ bool PDMPKBuffers::CanAdd(const idx_t idx, const level_t lbelow,
   return needed and same_part and computed;
 }
 
-void PDMPKBuffers::IncLevel(const idx_t idx) {
+void PDMPKBuffers::IncLevel(const idx_t &idx) {
   if (PartialIsFull(idx)) {
     levels[idx]++;
     PartialReset(idx);
@@ -63,7 +63,7 @@ void PDMPKBuffers::UpdateWeights() {
   }
 }
 
-bool PDMPKBuffers::PartialIsFull(const idx_t idx) const {
+bool PDMPKBuffers::PartialIsFull(const idx_t &idx) const {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (not partials[t])
       return false;
@@ -71,7 +71,7 @@ bool PDMPKBuffers::PartialIsFull(const idx_t idx) const {
   return true;
 }
 
-bool PDMPKBuffers::PartialIsEmpty(const idx_t idx) const {
+bool PDMPKBuffers::PartialIsEmpty(const idx_t &idx) const {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (partials[t])
       return false;
@@ -79,23 +79,25 @@ bool PDMPKBuffers::PartialIsEmpty(const idx_t idx) const {
   return true;
 }
 
-void PDMPKBuffers::PartialReset(const idx_t idx) {
+void PDMPKBuffers::PartialReset(const idx_t &idx) {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     partials[t] = false;
   }
 }
 
-void PDMPKBuffers::MetisPartition(idx_t npart) {
+void PDMPKBuffers::MetisPartition(const idx_t &npart) {
   idx_t n = csr.n;
+  idx_t np = npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
   idx_t retval, nconstr = 1;
-  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, NULL, &npart, NULL,
-                      NULL, NULL, &retval, partitions.data());
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, NULL, &np, NULL, NULL,
+                      NULL, &retval, partitions.data());
 }
 
-void PDMPKBuffers::MetisPartitionWithWeights(idx_t npart) {
+void PDMPKBuffers::MetisPartitionWithWeights(const idx_t &npart) {
   idx_t n = csr.n;
+  idx_t np = npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
   idx_t retval, nconstr = 1;
@@ -103,8 +105,8 @@ void PDMPKBuffers::MetisPartitionWithWeights(idx_t npart) {
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000;
   opt[METIS_OPTION_CONTIG] = 0;
-  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(),
-                      &npart, NULL, NULL, opt, &retval, partitions.data());
+  METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(), &np,
+                      NULL, NULL, opt, &retval, partitions.data());
 }
 
 void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {
@@ -146,7 +148,7 @@ void PDMPKBuffers::DebugPrintPartitions(std::ostream &os) {
   os << std::endl;
 }
 
-void PDMPKBuffers::DebugPrintReport(std::ostream &os, const int phase) {
+void PDMPKBuffers::DebugPrintReport(std::ostream &os, const int &phase) {
   os << std::endl << "Phase: " << phase;
   DebugPrintPartitions(std::cout);
   DebugPrintLevels(std::cout);

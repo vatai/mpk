@@ -15,23 +15,23 @@ public:
 
   level_t MinLevel() const;
   bool IsFinished(const level_t &nlevels) const;
-  bool CanAdd(const idx_t idx, const level_t lbelow, const idx_t t) const;
-  void IncLevel(const idx_t idx);
+  bool CanAdd(const idx_t &idx, const level_t &lbelow, const idx_t &t) const;
+  void IncLevel(const idx_t &idx);
   void UpdateWeights();
 
-  bool PartialIsFull(const idx_t idx) const;
-  bool PartialIsEmpty(const idx_t idx) const;
-  void PartialReset(const idx_t idx);
+  bool PartialIsFull(const idx_t &idx) const;
+  bool PartialIsEmpty(const idx_t &idx) const;
+  void PartialReset(const idx_t &idx);
   /// Since all the vertices are initially at level = 0,
   /// partition is done without any weights input.
   /// METIS_PartGraphKway outputs by updating partitions.data()
-  void MetisPartition(idx_t npart);
-  void MetisPartitionWithWeights(idx_t npart);
+  void MetisPartition(const idx_t &npart);
+  void MetisPartitionWithWeights(const idx_t &npart);
 
   void DebugPrintLevels(std::ostream &os);
   void DebugPrintPartials(std::ostream &os);
   void DebugPrintPartitions(std::ostream &os);
-  void DebugPrintReport(std::ostream &os, const int phase);
+  void DebugPrintReport(std::ostream &os, const int &phase);
 
   /// `partials` stores the availibility of adjacent vertex's
   /// value to our target vertex(True if available)
