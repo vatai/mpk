@@ -19,8 +19,8 @@
 #include "typedefs.h"
 
 CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
-                                   const idx_t npart,          //
-                                   const level_t nlevels)      //
+                                   const idx_t &npart,         //
+                                   const level_t &nlevels)     //
     : bufs(npart, Buffers(npart, mtxname)),                    //
       csr{mtxname},                                            //
       npart{npart},                                            //
@@ -84,7 +84,7 @@ void CommCompPatterns::Stats() {
   of << sum << " " << phase << std::endl;
 }
 
-void CommCompPatterns::OptimizePartitionLabels(size_t min_level) {
+void CommCompPatterns::OptimizePartitionLabels(const size_t &min_level) {
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
@@ -104,7 +104,7 @@ void CommCompPatterns::OptimizePartitionLabels(size_t min_level) {
   comm_table.clear();
 }
 
-bool CommCompPatterns::OptimizeVertex(const idx_t idx, const level_t lbelow) {
+bool CommCompPatterns::OptimizeVertex(const idx_t &idx, const level_t &lbelow) {
   bool retval = false;
   const auto tgt_part = pdmpk_count.partitions[idx];
   bool send_partial = not pdmpk_count.PartialIsEmpty(idx);
@@ -163,7 +163,7 @@ void CommCompPatterns::FindLabelPermutation() {
   }
 }
 
-void CommCompPatterns::ProcPhase(size_t min_level) {
+void CommCompPatterns::ProcPhase(const size_t &min_level) {
   InitPhase();
   // `was_active_level` is true, if there was progress made at a
   // level. If no progress is made, the next level is processed.
@@ -195,7 +195,7 @@ void CommCompPatterns::InitPhase() {
   }
 }
 
-bool CommCompPatterns::ProcVertex(const idx_t idx, const level_t lbelow) {
+bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
   bool retval = false;
   const auto cur_part = pdmpk_bufs.partitions[idx];
   bool send_partial = not pdmpk_bufs.PartialIsEmpty(idx);
@@ -218,7 +218,7 @@ bool CommCompPatterns::ProcVertex(const idx_t idx, const level_t lbelow) {
   return retval;
 }
 
-void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
+void CommCompPatterns::AddToInit(const idx_t &idx, const idx_t &level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
@@ -233,9 +233,9 @@ void CommCompPatterns::AddToInit(const idx_t idx, const idx_t level) {
   }
 }
 
-void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
-                                    const level_t lbelow, //
-                                    const idx_t t) {
+void CommCompPatterns::ProcAdjacent(const idx_t &idx,      //
+                                    const level_t &lbelow, //
+                                    const idx_t &t) {
   /// @todo(utsav): Remove debug code
   pdmpk_bufs.partials[t] = true;
 
@@ -257,8 +257,8 @@ void CommCompPatterns::ProcAdjacent(const idx_t idx,      //
   }
 }
 
-void CommCompPatterns::FinalizeVertex(const idx_lvl_t idx_lvl,
-                                      const idx_t part) {
+void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
+                                      const idx_t &part) {
   store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
   bufs[part].mbuf_idx++;
 }
@@ -299,7 +299,7 @@ void CommCompPatterns::FinalizePhase() {
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
-                                             const size_t size) {
+                                             const size_t &size) {
   const auto src = src_tgt_part.first;
   const auto tgt = src_tgt_part.second;
   bufs[tgt].mpi_bufs.recvcounts[phase * npart + src] += size;
@@ -334,11 +334,11 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   }
 }
 
-idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t src_tgt) const {
+idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.first].mpi_bufs.sdispls[phase * npart + src_tgt.second];
 }
 
-idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t src_tgt) const {
+idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
 }
 

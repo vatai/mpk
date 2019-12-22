@@ -28,8 +28,8 @@ public:
   ///
   /// @param nlevels @see nlevels
   CommCompPatterns(const std::string &mtxname, //
-                   const idx_t npart,          //
-                   const level_t nlevels);
+                   const idx_t &npart,         //
+                   const level_t &nlevels);
   /// Print the statistics of communication.
   void Stats();
 
@@ -72,9 +72,9 @@ private:
     idx_t src_mbuf_idx; ///< The index in `mbuf` (in @ref Buffers) where the
                         /// data can be found, obtained from @ref store_part
     CommType type;      ///< The type of communication @see CommType
-    friend bool operator<(const SrcType &l, const SrcType &r) {
-      return std::tie(l.src_mbuf_idx, l.type) <
-             std::tie(r.src_mbuf_idx, r.type);
+    friend bool operator<(const SrcType &lhs, const SrcType &rhs) {
+      return std::tie(lhs.src_mbuf_idx, lhs.type) <
+             std::tie(rhs.src_mbuf_idx, rhs.type);
     }
   };
 
@@ -93,22 +93,22 @@ private:
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
   CommTable comm_table;
 
-  void OptimizePartitionLabels(size_t min_level);
-  bool OptimizeVertex(const idx_t idx, const level_t lbelow);
+  void OptimizePartitionLabels(const size_t &min_level);
+  bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
   void FindLabelPermutation();
 
   /// Code executed before each phase.
   void InitPhase();
 
   /// Generate one phase.
-  void ProcPhase(size_t min_level);
+  void ProcPhase(const size_t &min_level);
 
   /// Process one vertex.
   ///
   /// @param idx The index of the vertex being processed.
   ///
   /// @param lbelow The current level of the vertex.
-  bool ProcVertex(const idx_t idx, const level_t lbelow);
+  bool ProcVertex(const idx_t &idx, const level_t &lbelow);
 
   /// Register a partial vertex.
   ///
@@ -116,7 +116,7 @@ private:
   ///
   /// @param level the level which the vertex tries to achieve
   /// (i.e. `lbelow + 1`).
-  void AddToInit(const idx_t idx, const idx_t level);
+  void AddToInit(const idx_t &idx, const idx_t &level);
 
   /// Process adjacent vertex.
   ///
@@ -125,7 +125,7 @@ private:
   /// @param lbelow The level of the vertex at `idx`.
   ///
   /// @param t The index of the adjacent vertex in @ref Buffers::mbuf.
-  void ProcAdjacent(const idx_t idx, const level_t lbelow, const idx_t t);
+  void ProcAdjacent(const idx_t &idx, const level_t &lbelow, const idx_t &t);
 
   /// Clean up after processing a vertex
   ///
@@ -133,7 +133,7 @@ private:
   ///
   /// @param part the partition where the vertex can be found can be
   /// found.
-  void FinalizeVertex(const idx_lvl_t idx_lvl, const idx_t part);
+  void FinalizeVertex(const idx_lvl_t &idx_lvl, const idx_t &part);
 
   /// Code executed after each phase.
   void FinalizePhase();
@@ -145,7 +145,7 @@ private:
   ///
   /// @param size The size of the by which the given entry should be
   /// increased.
-  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t size);
+  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t &size);
 
   /// Process one element/iterator of @ref CommDict. The key of a
   /// CommDict determines the source and target partitions, the @ref
@@ -161,11 +161,11 @@ private:
 
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
-  idx_t SrcSendBase(const sidx_tidx_t src_tgt) const;
+  idx_t SrcSendBase(const sidx_tidx_t &src_tgt) const;
 
   /// Return the base (0th index) of the subinterval of receive buffer
   /// in the target buffer.
-  idx_t TgtRecvBase(const sidx_tidx_t src_tgt) const;
+  idx_t TgtRecvBase(const sidx_tidx_t &src_tgt) const;
 
   /// Name of the graph (usually the mtx filename without the
   /// extension).
