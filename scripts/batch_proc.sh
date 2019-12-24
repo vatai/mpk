@@ -9,7 +9,7 @@
 NLEVEL_ITER=${NLEVEL_ITER:="10"}
 NPART_ITER=${NPART_ITER:="4"}
 PREFIX=${PREFIX:=.}
-MPIRUN=${MPIRUN:=mpirun}
+MPIRUN=${MPIRUN:=mpirun --oversubscribe}
 
 function single_run() {
     local MATRIX=$1
