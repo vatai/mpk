@@ -30,6 +30,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
       mtxname{mtxname},                                        //
       phase{0} {
   pdmpk_bufs.MetisPartition(npart);
+  partition_list.push_back(pdmpk_bufs.partitions);
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
@@ -43,6 +44,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   while (not is_finished and phase < max_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
+    partition_list.push_back(pdmpk_bufs.partitions);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
