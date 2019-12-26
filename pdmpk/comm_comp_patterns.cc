@@ -41,7 +41,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // till the time last phase showed any update
   ProcPhase(0);
   bool is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
-  const auto max_phase = npart * sub_nlevels;
+  auto max_phase = npart * sub_nlevels;
   while (not is_finished and phase < max_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
@@ -52,6 +52,21 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
     // Check out FinalizePhase!!!
   }
+  sub_nlevels += sub_nlevels;
+  max_phase = npart * sub_nlevels;
+  is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
+
+  while (not is_finished and phase < max_phase) {
+    phase++;
+    pdmpk_bufs.partitions = partition_list.back();
+    partition_list.pop_back();
+    const auto min_level = pdmpk_bufs.MinLevel();
+    OptimizePartitionLabels(min_level);
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
+    // Check out FinalizePhase!!!
+  }
+
   if (phase == nlevels and not pdmpk_bufs.IsFinished(nlevels)) {
     std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
               << ": Couldn't finish (probably got stuck)." << std::endl;

@@ -45,7 +45,7 @@ private:
   /// Number of levels the algorithm aims to achieve.
   const level_t nlevels;
   /// Number of levels the algorithm aims to achieve(in half mirror).
-  const level_t sub_nlevels;
+  level_t sub_nlevels;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
