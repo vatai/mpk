@@ -93,6 +93,9 @@ private:
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
   CommTable comm_table;
 
+  /// Store history of partition to mirror
+  std::vector<std::vector<idx_t> > partition_list;
+
   void OptimizePartitionLabels(const size_t &min_level);
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
   void FindLabelPermutation();
