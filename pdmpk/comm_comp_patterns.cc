@@ -49,7 +49,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     is_finished = pdmpk_bufs.IsFinished(nlevels);
     // Check out FinalizePhase!!!
   }
-  if (phase == nlevels and not pdmpk_bufs.IsFinished(nlevels)) {
+  if (not is_finished) {
     std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
               << ": Couldn't finish (probably got stuck)." << std::endl;
     exit(1);
