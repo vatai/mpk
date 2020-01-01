@@ -40,6 +40,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // Process phase = 0 and keep processing next higher phases
   // till the time last phase showed any update
   ProcPhase(0);
+  level_diff_list.push_back(pdmpk_bufs.levels);
   bool is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
   auto max_phase = npart * sub_nlevels;
   while (not is_finished and phase < max_phase) {
@@ -49,7 +50,10 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     partition_list.push_back(pdmpk_bufs.partitions);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
+    std::vector<level_t> prev_level = pdmpk_bufs.levels;
     ProcPhase(min_level);
+    std::vector<level_t> lvl_diff = FindLevelDiff(prev_level);
+    level_diff_list.push_back(lvl_diff);
     is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
     // Check out FinalizePhase!!!
   }
@@ -320,6 +324,13 @@ void CommCompPatterns::FinalizePhase() {
 #ifndef NDEBUG
   DbgMbufChecks();
 #endif
+}
+std::vector<level_t> CommCompPatterns::FindLevelDiff(std::vector<level_t> prev_level) {
+  std::vector<level_t> diff_vector(pdmpk_bufs.levels.size());
+  for (int i = 0; i < pdmpk_bufs.levels.size(); ++i) {
+    diff_vector[i] = pdmpk_bufs.levels[i] - prev_level[i];
+  }
+  return diff_vector;
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
