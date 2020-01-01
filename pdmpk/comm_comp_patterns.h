@@ -146,7 +146,7 @@ private:
   void FinalizePhase();
 
   /// Method to return differences in levels
-  std::vector<level_t> FindLevelDiff(std::vector<level_t> prev_level);
+  std::vector<level_t> FindLevelDiff(const std::vector<level_t>& prev_level);
 
   /// Update the send count on the source partition, and the receive
   /// count on the target partition.

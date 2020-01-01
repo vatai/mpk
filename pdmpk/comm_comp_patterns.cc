@@ -325,7 +325,7 @@ void CommCompPatterns::FinalizePhase() {
   DbgMbufChecks();
 #endif
 }
-std::vector<level_t> CommCompPatterns::FindLevelDiff(std::vector<level_t> prev_level) {
+std::vector<level_t> CommCompPatterns::FindLevelDiff(const std::vector<level_t>& prev_level) {
   std::vector<level_t> diff_vector(pdmpk_bufs.levels.size());
   for (int i = 0; i < pdmpk_bufs.levels.size(); ++i) {
     diff_vector[i] = pdmpk_bufs.levels[i] - prev_level[i];
