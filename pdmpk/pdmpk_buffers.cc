@@ -8,7 +8,7 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-#define SMALL_N 4
+#define SMALL_N 10
 
 PDMPKBuffers::PDMPKBuffers(const CSR &csr)
     : partials(csr.nnz, false), //
