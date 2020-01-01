@@ -97,6 +97,8 @@ private:
 
   /// Store history of partition to mirror
   std::vector<std::vector<idx_t> > partition_list;
+  /// Store history of parttition differences to be used in mirroring
+  std::vector<std::vector<level_t> > level_diff_list;
 
   void OptimizePartitionLabels(const size_t &min_level);
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
