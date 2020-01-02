@@ -23,7 +23,7 @@
 /// - `argv[3]` is the number of levels which needs to be achieved.
 int main(int argc, char *argv[]) {
   const Args args(argc, argv);
-  CommCompPatterns comm_comp_patterns(args.mtxname, args.npart, args.nlevels);
+  CommCompPatterns comm_comp_patterns(args);
 
   comm_comp_patterns.Stats();
 
