@@ -39,7 +39,9 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   }
   // Process phase = 0 and keep processing next higher phases
   // till the time last phase showed any update
-  ProcPhase(0);
+  std::vector<level_t> max_allowed_level(csr.n);
+  std::fill(max_allowed_level.begin(), max_allowed_level.end(), nlevels);
+  ProcPhase(0, max_allowed_level);
   level_diff_list.push_back(pdmpk_bufs.levels);
   bool is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
   auto max_phase = npart * sub_nlevels;
@@ -51,7 +53,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
     std::vector<level_t> prev_level = pdmpk_bufs.levels;
-    ProcPhase(min_level);
+    ProcPhase(min_level, max_allowed_level);
     std::vector<level_t> lvl_diff = FindLevelDiff(prev_level);
     level_diff_list.push_back(lvl_diff);
     is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
@@ -72,7 +74,10 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     pdmpk_bufs.DebugPrintReport(std::cout, phase);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
-    ProcPhase(min_level);
+    max_allowed_level = pdmpk_bufs.levels;
+    AddLevelDiff(max_allowed_level);
+    level_diff_list.pop_back();
+    ProcPhase(min_level, max_allowed_level);
     is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
     // Check out FinalizePhase!!!
   }
@@ -191,7 +196,7 @@ void CommCompPatterns::FindLabelPermutation() {
   }
 }
 
-void CommCompPatterns::ProcPhase(const size_t &min_level) {
+void CommCompPatterns::ProcPhase(const size_t &min_level, const std::vector<level_t>& max_allowed_level) {
   InitPhase();
   // `was_active_level` is true, if there was progress made at a
   // level. If no progress is made, the next level is processed.
@@ -207,7 +212,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
     // have level >0, because then, the first round would leave
     // `was_active` as false, and would terminate prematurely.
     for (int idx = 0; idx < csr.n; idx++) {
-      if (pdmpk_bufs.levels[idx] == lbelow) {
+      if (pdmpk_bufs.levels[idx] == lbelow && pdmpk_bufs.levels[idx] <= max_allowed_level[idx]) {
         if (ProcVertex(idx, lbelow)) {
           was_active_level = true;
         }
@@ -333,6 +338,11 @@ std::vector<level_t> CommCompPatterns::FindLevelDiff(const std::vector<level_t>&
   return diff_vector;
 }
 
+void CommCompPatterns::AddLevelDiff(std::vector<level_t>& max_allowed_level) {
+  for (int i = 0; i < pdmpk_bufs.levels.size(); ++i) {
+    max_allowed_level[i] += level_diff_list.back()[i];
+  }
+}
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
                                              const size_t &size) {
   const auto src = src_tgt_part.first;

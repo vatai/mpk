@@ -108,7 +108,7 @@ private:
   void InitPhase();
 
   /// Generate one phase.
-  void ProcPhase(const size_t &min_level);
+  void ProcPhase(const size_t &min_level, const std::vector<level_t>& max_allowed_level);
 
   /// Process one vertex.
   ///
@@ -147,7 +147,7 @@ private:
 
   /// Method to return differences in levels
   std::vector<level_t> FindLevelDiff(const std::vector<level_t>& prev_level);
-
+  void AddLevelDiff(std::vector<level_t>& max_allowed_level);
   /// Update the send count on the source partition, and the receive
   /// count on the target partition.
   ///
