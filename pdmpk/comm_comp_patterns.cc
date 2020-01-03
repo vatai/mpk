@@ -45,6 +45,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   while (not is_finished and phase < max_phase) {
     phase++;
     pdmpk_bufs.MetisPartitionWithWeights(npart);
+    pdmpk_bufs.DebugPrintReport(std::cout, phase);
     partition_list.push_back(pdmpk_bufs.partitions);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
@@ -58,8 +59,13 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
 
   while (not is_finished and phase < max_phase) {
     phase++;
+    pdmpk_bufs.MetisPartitionWithWeights(npart);
+    std::cout << "Below is the partition given by Metis" << std::endl;
+    pdmpk_bufs.DebugPrintReport(std::cout, phase);
     pdmpk_bufs.partitions = partition_list.back();
     partition_list.pop_back();
+    std::cout << "Below is the partition given by Metis" << std::endl;
+    pdmpk_bufs.DebugPrintReport(std::cout, phase);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
