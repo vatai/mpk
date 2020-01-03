@@ -93,12 +93,6 @@ void Buffers::DoComm(const int &phase) {
 void Buffers::Exec() {
   const auto nphases = mbuf.phase_begin.size();
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
-  mbuf.resize(mbuf_idx, 0);
-  sbuf.resize(max_sbuf_size);
-
-  // Load vector!
-  for (size_t i = 0; i < mbuf.phase_begin[0]; i++)
-    mbuf[i] = 1.0;
 
   DoComp(0);
   for (size_t phase = 1; phase < nphases; phase++) {
@@ -107,6 +101,12 @@ void Buffers::Exec() {
   }
 
   results.FillVal(results_mbuf_idx, mbuf);
+}
+
+void Buffers::LoadInput() {
+  // Load vector!
+  for (size_t i = 0; i < mbuf.phase_begin[0]; i++)
+    mbuf[i] = 1.0;
 }
 
 void Buffers::Dump(const int &rank) {
@@ -126,7 +126,11 @@ void Buffers::Load(const int &rank) {
   std::ifstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
                      std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
+  sbuf.resize(max_sbuf_size);
+
   file.read((char *)&mbuf_idx, sizeof(mbuf_idx));
+  mbuf.resize(mbuf_idx, 0);
+
   Utils::LoadVec(file, &mbuf.phase_begin);
   Utils::LoadVec(file, &results_mbuf_idx);
   // Utils::LoadVec(results.vect_idx, file);

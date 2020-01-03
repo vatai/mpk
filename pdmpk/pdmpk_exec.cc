@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
   Buffers buf(npart, argv[1]);
   buf.Load(rank);
   buf.DbgCheck();
+  buf.LoadInput();
   buf.Exec();
 
   buf.DumpMbufTxt(rank);
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]) {
   buf.results.DumpTxt(rank);
 
   MPI_Finalize();
+
   std::cout << argv[0] << ": process " << rank << " for " << argv[1]
             << " finished" << std::endl;
   return 0;

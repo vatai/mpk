@@ -42,6 +42,9 @@ public:
   /// Execute the computations and communication for all phases.
   void Exec();
 
+  /// Load the values of the input vector based on the
+  void LoadInput();
+
   /// Execute the computation for one phase.
   void DoComp(const int &phase);
 
