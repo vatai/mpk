@@ -316,14 +316,14 @@ static int lapjv_auginner(struct mat *m, struct assign *a, struct dual *d,
 }
 
 static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
-                          struct col *col, struct free *fr) {
+                          struct col *col, struct free *free) {
   const int n = m->n;
-  const int f_size = fr->size;
-  int *d_arr = (int *)malloc(n * sizeof(*d_arr));
-  int *pred = (int *)malloc(n * sizeof(*pred));
+  const int f_size = free->size;
+  int d_arr[n];
+  int pred[n];
   // For every free ertex.
-  for (fr->size = 0; fr->size < f_size; fr->size++) {
-    int i1 = fr->data[fr->size];
+  for (free->size = 0; free->size < f_size; free->size++) {
+    int i1 = free->data[free->size];
     int min;
     col->low = 0;
     col->up = 0;
@@ -348,8 +348,6 @@ static void lapjv_augment(struct mat *m, struct assign *a, struct dual *d,
       a->col_at[i] = k;
     } while (i != i1);
   }
-  free(pred);
-  free(d_arr);
 }
 
 static int lapjv_finalize(struct mat *m, struct assign *a, struct dual *d) {
