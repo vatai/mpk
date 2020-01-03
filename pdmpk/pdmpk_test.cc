@@ -22,6 +22,20 @@
 
 const double kEpsilon = 1e-09;
 
+double Cos(const std::vector<double> &v1, const std::vector<double> &v2) {
+  const auto n = v1.size();
+  assert(n == v2.size());
+  double sum = 0.0;
+  double n1 = 0.0;
+  double n2 = 0.0;
+  for (size_t i = 0; i < n; i++) {
+    sum += v1[i] * v2[i];
+    n1 += v1[i] * v1[i];
+    n2 += v2[i] * v2[i];
+  }
+  return (sum * sum) / (n1 * n2);
+}
+
 /// Test the results of @ref pdmpk_exec. The arguments are the same as
 /// for @ref pdmpk_prep.c::main
 int main(int argc, char *argv[]) {
@@ -50,10 +64,13 @@ int main(int argc, char *argv[]) {
     if (max < diff)
       max = diff;
   }
+  const auto cos = Cos(loadResult, goldResult);
   std::cout << argv[0] << ": Maximum absolute error: " << max << std::endl;
   std::cout << argv[0]
             << ": Maximum absolute is zero: " << (max == 0.0 ? "true" : "false")
             << std::endl;
   std::cout << argv[0] << ": for " << argv[1] << " finished" << std::endl;
-  return max < kEpsilon ? 0 : 1;
+  std::cout << argv[0] << ": Cos(): " << cos << std::endl;
+  // return max < kEpsilon ? 0 : 1;
+  return !(1 - kEpsilon < cos and cos < 1 + kEpsilon);
 }
