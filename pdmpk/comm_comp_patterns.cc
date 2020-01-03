@@ -24,7 +24,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     : bufs(npart, Buffers(npart, mtxname)),                    //
       csr{mtxname},                                            //
       npart{npart},                                            //
-      nlevels{nlevels}, sub_nlevels{nlevels / 2},              //
+      nlevels{nlevels},                                        //
       pdmpk_bufs{csr},                                         //
       pdmpk_count{csr},                                        //
       mtxname{mtxname},                                        //
@@ -39,31 +39,21 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   // Process phase = 0 and keep processing next higher phases
   // till the time last phase showed any update
   ProcPhase(0);
-  bool is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
-  auto max_phase = npart * sub_nlevels;
+  bool is_finished = pdmpk_bufs.IsFinished(nlevels);
+  auto max_phase = npart * nlevels;
   while (not is_finished and phase < max_phase) {
     phase++;
-    pdmpk_bufs.MetisPartitionWithWeights(npart);
-    partition_list.push_back(pdmpk_bufs.partitions);
     const auto min_level = pdmpk_bufs.MinLevel();
+    if (min_level <= nlevels / 2) {
+      pdmpk_bufs.MetisPartitionWithWeights(npart);
+      partition_list.push_back(pdmpk_bufs.partitions);
+    } else {
+      pdmpk_bufs.partitions = partition_list.back();
+      partition_list.pop_back();
+    }
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
-    // Check out FinalizePhase!!!
-  }
-  sub_nlevels += sub_nlevels;
-  max_phase = npart * sub_nlevels;
-  is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
-
-  while (not is_finished and phase < max_phase) {
-    phase++;
-    pdmpk_bufs.partitions = partition_list.back();
-    partition_list.pop_back();
-    const auto min_level = pdmpk_bufs.MinLevel();
-    OptimizePartitionLabels(min_level);
-    ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
-    // Check out FinalizePhase!!!
+    is_finished = pdmpk_bufs.IsFinished(nlevels);
   }
 
   if (not is_finished) {
@@ -187,7 +177,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
   bool was_active_level = true;
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
-  for (int lbelow = min_level; was_active_level and lbelow < sub_nlevels;
+  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
        lbelow++) {
     was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level

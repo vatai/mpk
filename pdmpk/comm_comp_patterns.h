@@ -44,8 +44,6 @@ private:
   const idx_t npart;
   /// Number of levels the algorithm aims to achieve.
   const level_t nlevels;
-  /// Number of levels the algorithm aims to achieve(in half mirror).
-  level_t sub_nlevels;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
@@ -96,7 +94,7 @@ private:
   CommTable comm_table;
 
   /// Store history of partition to mirror
-  std::vector<std::vector<idx_t> > partition_list;
+  std::vector<std::vector<idx_t>> partition_list;
 
   void OptimizePartitionLabels(const size_t &min_level);
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
