@@ -8,7 +8,7 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-#define SMALL_N 4
+#define SMALL_N 10
 
 PDMPKBuffers::PDMPKBuffers(const CSR &csr)
     : partials(csr.nnz, false), //
@@ -103,7 +103,7 @@ void PDMPKBuffers::MetisPartitionWithWeights(const idx_t &npart) {
   idx_t retval, nconstr = 1;
   idx_t opt[METIS_NOPTIONS];
   METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1000;
+  opt[METIS_OPTION_UFACTOR] = 1e+9;
   opt[METIS_OPTION_CONTIG] = 0;
   METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(), &np,
                       NULL, NULL, opt, &retval, partitions.data());

@@ -24,8 +24,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     : bufs(npart, Buffers(npart, mtxname)),                    //
       csr{mtxname},                                            //
       npart{npart},                                            //
-      nlevels{nlevels},
-      sub_nlevels{nlevels/2},                                        //
+      nlevels{nlevels}, sub_nlevels{nlevels / 2},              //
       pdmpk_bufs{csr},                                         //
       pdmpk_count{csr},                                        //
       mtxname{mtxname},                                        //
@@ -67,7 +66,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     // Check out FinalizePhase!!!
   }
 
-  if (phase == nlevels and not pdmpk_bufs.IsFinished(nlevels)) {
+  if (not is_finished) {
     std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
               << ": Couldn't finish (probably got stuck)." << std::endl;
     exit(1);

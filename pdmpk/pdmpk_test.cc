@@ -20,7 +20,7 @@
 ///
 /// Body of `pdmpk_test` page.
 
-const double kEpsilon = 1e-12;
+const double kEpsilon = 1e-09;
 
 /// Test the results of @ref pdmpk_exec. The arguments are the same as
 /// for @ref pdmpk_prep.c::main
