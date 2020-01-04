@@ -61,6 +61,8 @@ private:
   /// @see StorePart
   StorePart store_part;
 
+  void PrintVector(const auto& vector);
+
   /// The type of communication recorded in @ref CommDict @see
   /// comm_dict
   enum CommType {

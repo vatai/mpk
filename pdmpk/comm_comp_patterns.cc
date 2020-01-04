@@ -52,7 +52,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     partition_list.push_back(pdmpk_bufs.partitions);
     const auto min_level = pdmpk_bufs.MinLevel();
     OptimizePartitionLabels(min_level);
-    std::vector<level_t> prev_level = pdmpk_bufs.levels;
+    const auto prev_level = pdmpk_bufs.levels;
     ProcPhase(min_level, max_allowed_level);
     std::vector<level_t> lvl_diff = FindLevelDiff(prev_level);
     level_diff_list.push_back(lvl_diff);
@@ -77,6 +77,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     max_allowed_level = pdmpk_bufs.levels;
     AddLevelDiff(max_allowed_level);
     level_diff_list.pop_back();
+    PrintVector(max_allowed_level);
     ProcPhase(min_level, max_allowed_level);
     is_finished = pdmpk_bufs.IsFinished(sub_nlevels);
     // Check out FinalizePhase!!!
@@ -377,6 +378,14 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
     idx++;
   }
+}
+
+void CommCompPatterns::PrintVector(const auto& vector) {
+  std::cout << "\n" << std::endl;
+  for (int i = 0; i < vector.size(); ++i) {
+    std::cout << vector[i] << " ";
+  }
+  std::cout << "\n" << std::endl;
 }
 
 idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
