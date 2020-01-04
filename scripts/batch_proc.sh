@@ -10,7 +10,7 @@ NLEVEL_ITER=${NLEVEL_ITER:="10"}
 NPART_ITER=${NPART_ITER:="4"}
 PREFIX=${PREFIX:=.}
 MPIRUN=${MPIRUN:=mpirun --oversubscribe}
-$MPIRUN >/dev/null 2>&1 || MPIRUN=mpirun
+$MPIRUN 2>&1 | grep "unrecognized argument oversubscribe" >/dev/null && MPIRUN=mpirun
 
 function single_run() {
     local MATRIX=$1
