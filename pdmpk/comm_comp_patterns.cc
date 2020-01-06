@@ -213,7 +213,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level, const std::vector<leve
     // have level >0, because then, the first round would leave
     // `was_active` as false, and would terminate prematurely.
     for (int idx = 0; idx < csr.n; idx++) {
-      if (pdmpk_bufs.levels[idx] == lbelow && pdmpk_bufs.levels[idx] <= max_allowed_level[idx]) {
+      if (pdmpk_bufs.levels[idx] == lbelow && pdmpk_bufs.levels[idx] < max_allowed_level[idx]) {
         if (ProcVertex(idx, lbelow)) {
           was_active_level = true;
         }
