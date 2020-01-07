@@ -1,0 +1,125 @@
+vatai@ulp-at59 ~/code/mpk/build (git)-[pdmpk-cleanup] % git log -1 --oneline                                                                     -- INSERT --
+46bcbcd (HEAD -> pdmpk-cleanup, origin/pdmpk-cleanup) Fix --oversubscribe in batch_proc.sh
+vatai@ulp-at59 ~/code/mpk/build (git)-[pdmpk-cleanup] % ctest                                                                                    -- INSERT --
+Test project /home/vatai/code/mpk/build
+      Start  1: m5p_4_4_4
+ 1/35 Test  #1: m5p_4_4_4 ........................   Passed    0.38 sec
+      Start  2: m5p_4_4_10
+ 2/35 Test  #2: m5p_4_4_10 .......................   Passed    0.47 sec
+      Start  3: m5p_5_4_4
+ 3/35 Test  #3: m5p_5_4_4 ........................   Passed    0.34 sec
+      Start  4: m5p_10_4_10
+ 4/35 Test  #4: m5p_10_4_10 ......................   Passed    0.45 sec
+      Start  5: m5p_10_4_20
+ 5/35 Test  #5: m5p_10_4_20 ......................   Passed    0.42 sec
+      Start  6: m5p_100_4_10
+ 6/35 Test  #6: m5p_100_4_10 .....................   Passed    0.57 sec
+      Start  7: m5p_100_4_20
+ 7/35 Test  #7: m5p_100_4_20 .....................   Passed    0.80 sec
+      Start  8: m5p_10_8_10
+ 8/35 Test  #8: m5p_10_8_10 ......................   Passed    0.34 sec
+      Start  9: m5p_10_8_20
+ 9/35 Test  #9: m5p_10_8_20 ......................   Passed    0.43 sec
+      Start 10: m5p_100_8_10
+10/35 Test #10: m5p_100_8_10 .....................   Passed    0.58 sec
+      Start 11: m5p_100_8_20
+11/35 Test #11: m5p_100_8_20 .....................   Passed    0.80 sec
+      Start 12: m9p_10_4_10
+12/35 Test #12: m9p_10_4_10 ......................   Passed    0.32 sec
+      Start 13: m9p_10_4_20
+13/35 Test #13: m9p_10_4_20 ......................   Passed    0.33 sec
+      Start 14: m9p_100_4_10
+14/35 Test #14: m9p_100_4_10 .....................   Passed    0.74 sec
+      Start 15: m9p_100_4_20
+15/35 Test #15: m9p_100_4_20 .....................   Passed    1.10 sec
+      Start 16: m9p_10_8_10
+16/35 Test #16: m9p_10_8_10 ......................   Passed    0.34 sec
+      Start 17: m9p_10_8_20
+17/35 Test #17: m9p_10_8_20 ......................   Passed    0.43 sec
+      Start 18: m9p_100_8_10
+18/35 Test #18: m9p_100_8_10 .....................   Passed    0.79 sec
+      Start 19: m9p_100_8_20
+19/35 Test #19: m9p_100_8_20 .....................   Passed    1.18 sec
+      Start 20: bmw7st_1_4_10
+20/35 Test #20: bmw7st_1_4_10 ....................***Failed   22.41 sec
+      Start 21: bmw7st_1_4_20
+21/35 Test #21: bmw7st_1_4_20 ....................***Failed   26.21 sec
+      Start 22: bmw7st_1_8_10
+22/35 Test #22: bmw7st_1_8_10 ....................***Failed   35.36 sec
+      Start 23: bmw7st_1_8_20
+23/35 Test #23: bmw7st_1_8_20 ....................***Failed   50.47 sec
+      Start 24: cfd2_4_10
+24/35 Test #24: cfd2_4_10 ........................   Passed   16.36 sec
+      Start 25: cfd2_4_20
+25/35 Test #25: cfd2_4_20 ........................   Passed   28.03 sec
+      Start 26: cfd2_8_10
+26/35 Test #26: cfd2_8_10 ........................***Failed   19.01 sec
+      Start 27: cfd2_8_20
+27/35 Test #27: cfd2_8_20 ........................***Failed    7.10 sec
+      Start 28: gearbox_4_10
+28/35 Test #28: gearbox_4_10 .....................***Failed   20.96 sec
+      Start 29: gearbox_4_20
+29/35 Test #29: gearbox_4_20 .....................***Failed   32.47 sec
+      Start 30: gearbox_8_10
+30/35 Test #30: gearbox_8_10 .....................***Failed   40.09 sec
+      Start 31: gearbox_8_20
+31/35 Test #31: gearbox_8_20 .....................***Failed   56.96 sec
+      Start 32: xenon2_4_10
+32/35 Test #32: xenon2_4_10 ......................***Failed   30.09 sec
+      Start 33: xenon2_4_20
+33/35 Test #33: xenon2_4_20 ......................***Failed   53.87 sec
+      Start 34: xenon2_8_10
+34/35 Test #34: xenon2_8_10 ......................***Failed   31.27 sec
+      Start 35: xenon2_8_20
+35/35 Test #35: xenon2_8_20 ......................***Failed   55.15 sec
+
+60% tests passed, 14 tests failed out of 35
+
+Total Test time (real) = 536.64 sec
+
+The following tests FAILED:
+	 20 - bmw7st_1_4_10 (Failed)
+	 21 - bmw7st_1_4_20 (Failed)
+	 22 - bmw7st_1_8_10 (Failed)
+	 23 - bmw7st_1_8_20 (Failed)
+	 26 - cfd2_8_10 (Failed)
+	 27 - cfd2_8_20 (Failed)
+	 28 - gearbox_4_10 (Failed)
+	 29 - gearbox_4_20 (Failed)
+	 30 - gearbox_8_10 (Failed)
+	 31 - gearbox_8_20 (Failed)
+	 32 - xenon2_4_10 (Failed)
+	 33 - xenon2_4_20 (Failed)
+	 34 - xenon2_8_10 (Failed)
+	 35 - xenon2_8_20 (Failed)
+Errors while running CTest
+ctest  519.89s user 35.77s system 103% cpu 8:56.65 total
+
+
+### forgot to clean
+### get_stats.sh
+cfd2/cfd2.mtx-4-10.stats.txt: 212011 24
+cfd2/cfd2.mtx-4-20.stats.txt: 180035 37
+m5p100.loop.mtx-4-10.stats.txt: 0 1
+m5p100.loop.mtx-4-20.stats.txt: 9250 3
+m5p100.loop.mtx-8-10.stats.txt: 0 1
+m5p100.loop.mtx-8-20.stats.txt: 15046 2
+m5p10.loop.mtx-4-10.stats.txt: 150 4
+m5p10.loop.mtx-4-20.stats.txt: 150 5
+m5p10.loop.mtx-8-10.stats.txt: 176 4
+m5p10.loop.mtx-8-20.stats.txt: 176 6
+m5p4.loop.mtx-4-10.stats.txt: 0 1
+m5p4.loop.mtx-4-4.stats.txt: 0 1
+m5p5.loop.mtx-4-4.stats.txt: 0 1
+m9p100.loop.mtx-4-10.stats.txt: 0 1
+m9p100.loop.mtx-4-20.stats.txt: 10486 3
+m9p100.loop.mtx-8-10.stats.txt: 12050 2
+m9p100.loop.mtx-8-20.stats.txt: 0 1
+m9p10.loop.mtx-4-10.stats.txt: 0 1
+m9p10.loop.mtx-4-20.stats.txt: 0 1
+m9p10.loop.mtx-8-10.stats.txt: 0 1
+m9p10.loop.mtx-8-20.stats.txt: 0 1
+xenon2/xenon2.mtx-4-10.stats.txt: 0 1
+xenon2/xenon2.mtx-4-20.stats.txt: 0 1
+xenon2/xenon2.mtx-8-10.stats.txt: 0 1
+xenon2/xenon2.mtx-8-20.stats.txt: 0 1

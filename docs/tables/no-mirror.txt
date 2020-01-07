@@ -1,0 +1,129 @@
+### commit 842d1cf (+ removed --oversubscribe)
+
+vatai@ulp-at59 ~/code/mpk/build (git)-[remotes/origin/HEAD] % ctest
+Test project /home/vatai/code/mpk/build
+      Start  1: m5p_4_4_4
+ 1/35 Test  #1: m5p_4_4_4 ........................   Passed    0.34 sec
+      Start  2: m5p_4_4_10
+ 2/35 Test  #2: m5p_4_4_10 .......................   Passed    0.32 sec
+      Start  3: m5p_5_4_4
+ 3/35 Test  #3: m5p_5_4_4 ........................   Passed    0.31 sec
+      Start  4: m5p_10_4_10
+ 4/35 Test  #4: m5p_10_4_10 ......................   Passed    0.31 sec
+      Start  5: m5p_10_4_20
+ 5/35 Test  #5: m5p_10_4_20 ......................   Passed    0.32 sec
+      Start  6: m5p_100_4_10
+ 6/35 Test  #6: m5p_100_4_10 .....................   Passed    0.56 sec
+      Start  7: m5p_100_4_20
+ 7/35 Test  #7: m5p_100_4_20 .....................   Passed    0.75 sec
+      Start  8: m5p_10_8_10
+ 8/35 Test  #8: m5p_10_8_10 ......................   Passed    0.35 sec
+      Start  9: m5p_10_8_20
+ 9/35 Test  #9: m5p_10_8_20 ......................   Passed    0.41 sec
+      Start 10: m5p_100_8_10
+10/35 Test #10: m5p_100_8_10 .....................   Passed    0.58 sec
+      Start 11: m5p_100_8_20
+11/35 Test #11: m5p_100_8_20 .....................   Passed    0.77 sec
+      Start 12: m9p_10_4_10
+12/35 Test #12: m9p_10_4_10 ......................   Passed    0.31 sec
+      Start 13: m9p_10_4_20
+13/35 Test #13: m9p_10_4_20 ......................***Failed    0.32 sec
+      Start 14: m9p_100_4_10
+14/35 Test #14: m9p_100_4_10 .....................   Passed    0.72 sec
+      Start 15: m9p_100_4_20
+15/35 Test #15: m9p_100_4_20 .....................***Failed    1.08 sec
+      Start 16: m9p_10_8_10
+16/35 Test #16: m9p_10_8_10 ......................***Failed    0.26 sec
+      Start 17: m9p_10_8_20
+17/35 Test #17: m9p_10_8_20 ......................***Failed    0.36 sec
+      Start 18: m9p_100_8_10
+18/35 Test #18: m9p_100_8_10 .....................   Passed    0.81 sec
+      Start 19: m9p_100_8_20
+19/35 Test #19: m9p_100_8_20 .....................***Failed    1.16 sec
+      Start 20: bmw7st_1_4_10
+20/35 Test #20: bmw7st_1_4_10 ....................***Failed   31.34 sec
+      Start 21: bmw7st_1_4_20
+21/35 Test #21: bmw7st_1_4_20 ....................***Failed   56.62 sec
+      Start 22: bmw7st_1_8_10
+22/35 Test #22: bmw7st_1_8_10 ....................***Failed   93.19 sec
+      Start 23: bmw7st_1_8_20
+23/35 Test #23: bmw7st_1_8_20 ....................***Failed  164.80 sec
+      Start 24: cfd2_4_10
+24/35 Test #24: cfd2_4_10 ........................***Failed    9.31 sec
+      Start 25: cfd2_4_20
+25/35 Test #25: cfd2_4_20 ........................***Failed   11.31 sec
+      Start 26: cfd2_8_10
+26/35 Test #26: cfd2_8_10 ........................***Failed   11.44 sec
+      Start 27: cfd2_8_20
+27/35 Test #27: cfd2_8_20 ........................***Failed   28.09 sec
+      Start 28: gearbox_4_10
+28/35 Test #28: gearbox_4_10 .....................***Failed   42.37 sec
+      Start 29: gearbox_4_20
+29/35 Test #29: gearbox_4_20 .....................***Failed   65.92 sec
+      Start 30: gearbox_8_10
+30/35 Test #30: gearbox_8_10 .....................***Failed   91.07 sec
+      Start 31: gearbox_8_20
+31/35 Test #31: gearbox_8_20 .....................***Failed  173.96 sec
+      Start 32: xenon2_4_10
+32/35 Test #32: xenon2_4_10 ......................***Failed   32.38 sec
+      Start 33: xenon2_4_20
+33/35 Test #33: xenon2_4_20 ......................   Passed   63.53 sec
+      Start 34: xenon2_8_10
+34/35 Test #34: xenon2_8_10 ......................***Failed   30.57 sec
+      Start 35: xenon2_8_20
+35/35 Test #35: xenon2_8_20 ......................   Passed   60.25 sec
+
+46% tests passed, 19 tests failed out of 35
+
+Total Test time (real) = 976.21 sec
+
+The following tests FAILED:
+	 13 - m9p_10_4_20 (Failed)
+	 15 - m9p_100_4_20 (Failed)
+	 16 - m9p_10_8_10 (Failed)
+	 17 - m9p_10_8_20 (Failed)
+	 19 - m9p_100_8_20 (Failed)
+	 20 - bmw7st_1_4_10 (Failed)
+	 21 - bmw7st_1_4_20 (Failed)
+	 22 - bmw7st_1_8_10 (Failed)
+	 23 - bmw7st_1_8_20 (Failed)
+	 24 - cfd2_4_10 (Failed)
+	 25 - cfd2_4_20 (Failed)
+	 26 - cfd2_8_10 (Failed)
+	 27 - cfd2_8_20 (Failed)
+	 28 - gearbox_4_10 (Failed)
+	 29 - gearbox_4_20 (Failed)
+	 30 - gearbox_8_10 (Failed)
+	 31 - gearbox_8_20 (Failed)
+	 32 - xenon2_4_10 (Failed)
+	 34 - xenon2_8_10 (Failed)
+Errors while running CTest
+ctest  929.60s user 38.37s system 99% cpu 16:16.22 total
+
+
+### STATS FILES
+### cfd2/cfd2.mtx-4-10.stats.txt: 212011 24
+### cfd2/cfd2.mtx-4-20.stats.txt: 180035 37
+### m5p10.loop.mtx-4-20.stats.txt: 763 12
+### m9p10.loop.mtx-8-10.stats.txt: 0 1
+### m9p10.loop.mtx-8-20.stats.txt: 0 1
+### m9p100.loop.mtx-4-20.stats.txt: 12575 3
+### m9p100.loop.mtx-8-20.stats.txt: 23224 5
+### xenon2/xenon2.mtx-4-10.stats.txt: 133548 3
+### xenon2/xenon2.mtx-8-10.stats.txt: 275828 7
+m5p10.loop.mtx-4-10.stats.txt: 399 7
+m5p10.loop.mtx-8-10.stats.txt: 966 14
+m5p10.loop.mtx-8-20.stats.txt: 1872 25
+m5p100.loop.mtx-4-10.stats.txt: 4349 3
+m5p100.loop.mtx-4-20.stats.txt: 9630 3
+m5p100.loop.mtx-8-10.stats.txt: 9923 3
+m5p100.loop.mtx-8-20.stats.txt: 17570 4
+m5p4.loop.mtx-4-10.stats.txt: 131 16
+m5p4.loop.mtx-4-4.stats.txt: 62 7
+m5p5.loop.mtx-4-4.stats.txt: 91 7
+m9p10.loop.mtx-4-10.stats.txt: 502 9
+m9p10.loop.mtx-4-20.stats.txt: 1072 18
+m9p100.loop.mtx-4-10.stats.txt: 5102 2
+m9p100.loop.mtx-8-10.stats.txt: 11407 4
+xenon2/xenon2.mtx-4-20.stats.txt: 323372 7
+xenon2/xenon2.mtx-8-20.stats.txt: 632779 9
