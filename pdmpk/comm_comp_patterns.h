@@ -96,6 +96,9 @@ private:
   /// Store history of partition to mirror
   std::vector<std::vector<idx_t>> partition_list;
 
+  /// Process all phases, possibly with mirroring.
+  void ProcAllPhases();
+
   void OptimizePartitionLabels(const size_t &min_level);
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
   void FindLabelPermutation();

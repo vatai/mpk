@@ -27,8 +27,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
       nlevels{nlevels},                                        //
       pdmpk_bufs{csr},                                         //
       pdmpk_count{csr},                                        //
-      mtxname{mtxname},                                        //
-      phase{0} {
+      mtxname{mtxname} {
   pdmpk_bufs.MetisPartition(npart);
   partition_list.push_back(pdmpk_bufs.partitions);
   // Distribute all the vertices to their initial partitions
@@ -36,31 +35,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
-  // Process phase = 0 and keep processing next higher phases
-  // till the time last phase showed any update
-  ProcPhase(0);
-  bool is_finished = pdmpk_bufs.IsFinished(nlevels);
-  auto max_phase = npart * nlevels;
-  while (not is_finished and phase < max_phase) {
-    phase++;
-    const auto min_level = pdmpk_bufs.MinLevel();
-    if (min_level <= nlevels / 2) {
-      pdmpk_bufs.MetisPartitionWithWeights(npart);
-      partition_list.push_back(pdmpk_bufs.partitions);
-    } else {
-      pdmpk_bufs.partitions = partition_list.back();
-      partition_list.pop_back();
-    }
-    OptimizePartitionLabels(min_level);
-    ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished(nlevels);
-  }
-
-  if (not is_finished) {
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
-              << ": Couldn't finish (probably got stuck)." << std::endl;
-    exit(1);
-  }
+  ProcAllPhases();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
@@ -89,6 +64,32 @@ void CommCompPatterns::Stats() {
     }
   }
   of << sum << " " << phase << std::endl;
+}
+
+void CommCompPatterns::ProcAllPhases() {
+  phase = 0;
+  ProcPhase(phase);
+  bool is_finished = pdmpk_bufs.IsFinished(nlevels);
+  auto max_phase = npart * nlevels;
+  while (not is_finished and phase < max_phase) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    if (min_level <= nlevels / 2) {
+      pdmpk_bufs.MetisPartitionWithWeights(npart);
+      partition_list.push_back(pdmpk_bufs.partitions);
+    } else {
+      pdmpk_bufs.partitions = partition_list.back();
+      partition_list.pop_back();
+    }
+    OptimizePartitionLabels(min_level);
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished(nlevels);
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
 }
 
 void CommCompPatterns::OptimizePartitionLabels(const size_t &min_level) {
