@@ -70,11 +70,11 @@ void CommCompPatterns::ProcAllPhases() {
   phase = 0;
   ProcPhase(phase);
   bool is_finished = pdmpk_bufs.IsFinished(nlevels);
-  auto max_phase = npart * nlevels;
+  auto max_phase = npart * nlevels * nlevels;
   while (not is_finished and phase < max_phase) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
-    if (min_level <= nlevels / 2) {
+    if (min_level < nlevels / 2) {
       pdmpk_bufs.MetisPartitionWithWeights(npart);
       partition_list.push_back(pdmpk_bufs.partitions);
     } else {
