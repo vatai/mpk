@@ -12,6 +12,7 @@
 
 #include <metis.h>
 
+#include "args.h"
 #include "buffers.h"
 #include "csr.h"
 #include "pdmpk_buffers.h"
@@ -22,14 +23,9 @@ class CommCompPatterns {
 public:
   /// Construct and fill all the buffers in a CommCompPatterns object.
   ///
-  /// @param mtxname The filename of the mtx file.
-  ///
-  /// @param npart @see npart
-  ///
-  /// @param nlevels @see nlevels
-  CommCompPatterns(const std::string &mtxname, //
-                   const idx_t &npart,         //
-                   const level_t &nlevels);
+  /// @param [in] args arguments passed to the executable.
+  CommCompPatterns(const Args &args);
+
   /// Print the statistics of communication.
   void Stats();
 
@@ -38,12 +34,11 @@ public:
   std::vector<Buffers> bufs;
 
 private:
+  ///
+  const Args &args;
+
   /// The graph/matrix being processed.
   const CSR csr;
-  /// Number of partition/processes.
-  const idx_t npart;
-  /// Number of levels the algorithm aims to achieve.
-  const level_t nlevels;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
@@ -172,10 +167,6 @@ private:
   /// Return the base (0th index) of the subinterval of receive buffer
   /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t &src_tgt) const;
-
-  /// Name of the graph (usually the mtx filename without the
-  /// extension).
-  const std::string mtxname;
 
   /// The current phase set at the beginning of each phase.
   int phase;

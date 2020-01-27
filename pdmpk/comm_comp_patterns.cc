@@ -18,17 +18,14 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
-                                   const idx_t &npart,         //
-                                   const level_t &nlevels)     //
-    : bufs(npart, Buffers(npart, mtxname)),                    //
-      csr{mtxname},                                            //
-      npart{npart},                                            //
-      nlevels{nlevels},                                        //
-      pdmpk_bufs{csr},                                         //
-      pdmpk_count{csr},                                        //
-      mtxname{mtxname} {
-  pdmpk_bufs.MetisPartition(npart);
+CommCompPatterns::CommCompPatterns(const Args &args)
+    : bufs(args.npart, Buffers(args.npart, args.mtxname)), //
+      args{args},                                          //
+      csr{args.mtxname},                                   //
+      pdmpk_bufs{csr},                                     //
+      pdmpk_count{csr},                                    //
+      phase{0} {
+  pdmpk_bufs.MetisPartition(args.npart);
   partition_list.push_back(pdmpk_bufs.partitions);
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
@@ -44,7 +41,7 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
   }
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
-    const auto &pair = store_part.at({i, nlevels});
+    const auto &pair = store_part.at({i, args.nlevels});
     bufs[pair.first].results.SaveIndex(i);
     bufs[pair.first].results_mbuf_idx.push_back(pair.second);
   }
@@ -54,8 +51,8 @@ CommCompPatterns::CommCompPatterns(const std::string &mtxname, //
 }
 
 void CommCompPatterns::Stats() {
-  std::ofstream of(mtxname + "-" + std::to_string(npart) + "-" +
-                   std::to_string(nlevels) + ".stats.txt");
+  std::ofstream of(args.mtxname + "-" + std::to_string(args.npart) + "-" +
+                   std::to_string(args.nlevels) + ".stats.txt");
 
   size_t sum = 0;
   for (const auto &buffer : bufs) {
@@ -69,13 +66,13 @@ void CommCompPatterns::Stats() {
 void CommCompPatterns::ProcAllPhases() {
   phase = 0;
   ProcPhase(phase);
-  bool is_finished = pdmpk_bufs.IsFinished(nlevels);
-  auto max_phase = npart * nlevels * nlevels;
+  bool is_finished = pdmpk_bufs.IsFinished(args.nlevels);
+  auto max_phase = args.npart * args.nlevels * args.nlevels;
   while (not is_finished and phase < max_phase) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
-    if (min_level < nlevels / 2) {
-      pdmpk_bufs.MetisPartitionWithWeights(npart);
+    if (min_level < args.nlevels / 2) {
+      pdmpk_bufs.MetisPartitionWithWeights(args.npart);
       partition_list.push_back(pdmpk_bufs.partitions);
     } else {
       pdmpk_bufs.partitions = partition_list.back();
@@ -83,7 +80,7 @@ void CommCompPatterns::ProcAllPhases() {
     }
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished(nlevels);
+    is_finished = pdmpk_bufs.IsFinished(args.nlevels);
   }
   if (not is_finished) {
     std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
@@ -97,7 +94,7 @@ void CommCompPatterns::OptimizePartitionLabels(const size_t &min_level) {
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
   bool was_active_level = true;
-  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
+  for (int lbelow = min_level; was_active_level and lbelow < args.nlevels;
        lbelow++) {
     was_active_level = false;
     for (int idx = 0; idx < csr.n; idx++) {
@@ -143,9 +140,9 @@ bool CommCompPatterns::OptimizeVertex(const idx_t &idx, const level_t &lbelow) {
 
 void CommCompPatterns::FindLabelPermutation() {
   std::vector<int> comm_sums;
-  comm_sums.reserve(npart * npart);
-  for (auto s = 0; s < npart; s++) {
-    for (auto t = 0; t < npart; t++) {
+  comm_sums.reserve(args.npart * args.npart);
+  for (auto s = 0; s < args.npart; s++) {
+    for (auto t = 0; t < args.npart; t++) {
       comm_sums.push_back(comm_table[{s, t}].size());
     }
   }
@@ -154,7 +151,7 @@ void CommCompPatterns::FindLabelPermutation() {
     elem = elem - min_sum;
   }
 
-  std::vector<int> permutation(npart);
+  std::vector<int> permutation(args.npart);
   // The following permutations break ```$ ./pdmpk_prep mp4p4 4 4```
   // std::vector<std::vector<int>> pperms{
   //     {3, 0, 2, 1}, {1, 2, 3, 0}, {1, 0, 3, 2}, {0, 2, 3, 1},
@@ -162,12 +159,12 @@ void CommCompPatterns::FindLabelPermutation() {
   // };
   // permutation = pperms[phase - 1];
 
-  lapjv(comm_sums.data(), (int)npart, permutation.data());
+  lapjv(comm_sums.data(), (int)args.npart, permutation.data());
 
   for (auto &part : pdmpk_bufs.partitions) {
-    assert(0 <= part and part < npart);
+    assert(0 <= part and part < args.npart);
     part = permutation[part];
-    assert(0 <= part and part < npart);
+    assert(0 <= part and part < args.npart);
   }
 }
 
@@ -178,7 +175,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
   bool was_active_level = true;
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
-  for (int lbelow = min_level; was_active_level and lbelow < nlevels;
+  for (int lbelow = min_level; was_active_level and lbelow < args.nlevels;
        lbelow++) {
     was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
@@ -310,8 +307,8 @@ void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
                                              const size_t &size) {
   const auto src = src_tgt_part.first;
   const auto tgt = src_tgt_part.second;
-  bufs[tgt].mpi_bufs.recvcounts[phase * npart + src] += size;
-  bufs[src].mpi_bufs.sendcounts[phase * npart + tgt] += size;
+  bufs[tgt].mpi_bufs.recvcounts[phase * args.npart + src] += size;
+  bufs[src].mpi_bufs.sendcounts[phase * args.npart + tgt] += size;
 }
 
 void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
@@ -343,11 +340,13 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
 }
 
 idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
-  return bufs[src_tgt.first].mpi_bufs.sdispls[phase * npart + src_tgt.second];
+  return bufs[src_tgt.first]
+      .mpi_bufs.sdispls[phase * args.npart + src_tgt.second];
 }
 
 idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
-  return bufs[src_tgt.second].mpi_bufs.rdispls[phase * npart + src_tgt.first];
+  return bufs[src_tgt.second]
+      .mpi_bufs.rdispls[phase * args.npart + src_tgt.first];
 }
 
 #ifndef NDEBUG
@@ -355,7 +354,7 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
 void CommCompPatterns::DbgAsserts() const {
   /// Check all vertices reach `nlevels`.
   for (auto level : pdmpk_bufs.levels) {
-    assert(level == nlevels);
+    assert(level == args.nlevels);
   }
   /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
   for (auto b : bufs) {
