@@ -1,2 +1,3 @@
 * Diamond matrix powers kernel
-  The code discussed in the paper submitted to HPC Asia 2020 can be found under the folder file:mpk2.
+  The code discussed in the paper submitted to HPC Asia 2020 can be
+  found under the folder [[mpk2][mpk2]].
