@@ -21,7 +21,7 @@ function single_run() {
     local TEST=$PREFIX/pdmpk_test
     echo $0: Processing $MATRIX with $NPART partitions upto level $NLEVEL
     $PREP $MATRIX $NPART $NLEVEL || exit 1
-    $MPIRUN -n $NPART $EXEC $MATRIX || exit 2
+    $MPIRUN -n $NPART $EXEC $MATRIX $NPART $NLEVEL || exit 2
     $TEST $MATRIX $NPART $NLEVEL || exit 3
 }
 

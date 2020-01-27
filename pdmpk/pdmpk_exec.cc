@@ -9,6 +9,7 @@
 #include <string>
 #include <unistd.h>
 
+#include "args.h"
 #include "buffers.h"
 #include "utils.hpp"
 
@@ -36,8 +37,8 @@ int main(int argc, char *argv[]) {
   //     sleep(5);
   // }
 
-  assert(argc == 2);
-  Buffers buf(npart, argv[1]);
+  const Args args(argc, argv);
+  Buffers buf(args);
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();

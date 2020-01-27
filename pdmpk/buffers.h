@@ -15,6 +15,7 @@
 
 #include <metis.h>
 
+#include "args.h"
 #include "mcsr.h"
 #include "mpi_buffers.h"
 #include "phased_vector.hpp"
@@ -27,11 +28,8 @@ class Buffers {
 public:
   /// Only constructor for @ref Buffers.
   ///
-  /// @param npart Number of
-  /// partition/processes (used by @ref MPIBuffers).
-  ///
-  /// @param name The string which is appended to create output files.
-  Buffers(const idx_t &npart, const std::string &name);
+  /// @param args Arguments passed to the program.
+  Buffers(const Args &args);
 
   /// Code executed before each phase for a single buffer.
   void PhaseInit();
@@ -112,12 +110,10 @@ public:
   /// the partitions (store ind Buffers).
   Results results;
 
-  /// @see CommCompPatterns::mtxname
-  const std::string name;
-
   /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx;
 
 private:
+  const Args &args;
   Buffers();
 };

@@ -17,9 +17,12 @@
 
 const std::string kFname{"bufs"};
 
-Buffers::Buffers(const idx_t &npart, const std::string &name)
-    : mpi_bufs{npart}, max_sbuf_size{0}, mbuf_idx{0},
-      results(name), name{name} {}
+Buffers::Buffers(const Args &args)
+    : mpi_bufs{args.npart},  //
+      max_sbuf_size{0},      //
+      mbuf_idx{0},           //
+      results(args.mtxname), //
+      args{args} {}
 
 void Buffers::PhaseInit() {
   mpi_bufs.AllocMpiBufs();
@@ -110,7 +113,8 @@ void Buffers::LoadInput() {
 }
 
 void Buffers::Dump(const int &rank) {
-  std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
+  std::ofstream file(args.mtxname + "-" + kFname + "-" + std::to_string(rank) +
+                         ".bin",
                      std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
@@ -123,7 +127,8 @@ void Buffers::Dump(const int &rank) {
 }
 
 void Buffers::Load(const int &rank) {
-  std::ifstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".bin",
+  std::ifstream file(args.mtxname + "-" + kFname + "-" + std::to_string(rank) +
+                         ".bin",
                      std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   sbuf.resize(max_sbuf_size);
@@ -140,7 +145,8 @@ void Buffers::Load(const int &rank) {
 }
 
 void Buffers::DumpTxt(const int &rank) {
-  std::ofstream file(name + "-" + kFname + "-" + std::to_string(rank) + ".txt");
+  std::ofstream file(args.mtxname + "-" + kFname + "-" + std::to_string(rank) +
+                     ".txt");
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
@@ -154,7 +160,7 @@ void Buffers::DumpTxt(const int &rank) {
 }
 
 void Buffers::DumpMbufTxt(const int &rank) {
-  std::ofstream file(name + "-mbuf" + std::to_string(rank) + ".txt");
+  std::ofstream file(args.mtxname + "-mbuf" + std::to_string(rank) + ".txt");
   Utils::DumpTxt("mbuf", mbuf, file);
 }
 

@@ -19,11 +19,11 @@
 #include "typedefs.h"
 
 CommCompPatterns::CommCompPatterns(const Args &args)
-    : bufs(args.npart, Buffers(args.npart, args.mtxname)), //
-      args{args},                                          //
-      csr{args.mtxname},                                   //
-      pdmpk_bufs{csr},                                     //
-      pdmpk_count{csr},                                    //
+    : bufs(args.npart, Buffers(args)), //
+      args{args},                      //
+      csr{args.mtxname},               //
+      pdmpk_bufs{csr},                 //
+      pdmpk_count{csr},                //
       phase{0} {
   pdmpk_bufs.MetisPartition(args.npart);
   partition_list.push_back(pdmpk_bufs.partitions);
