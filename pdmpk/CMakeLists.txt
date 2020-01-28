@@ -28,10 +28,11 @@ target_link_libraries(pdmpk_prep comm_comp_patterns)
 
 add_executable(pdmpk_exec pdmpk_exec.cc
   $<TARGET_OBJECTS:args>)
-target_link_libraries(pdmpk_exec buffers MPI::MPI_CXX)
+target_link_libraries(pdmpk_exec buffers MPI::MPI_CXX ${METIS})
 
 add_executable(pdmpk_test pdmpk_test.cc
   $<TARGET_OBJECTS:args>
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:results>)
 
+target_link_libraries(pdmpk_test ${METIS})

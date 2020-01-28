@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
+#include <metis.h>
 
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
@@ -102,12 +103,9 @@ void PDMPKBuffers::MetisPartitionWithWeights(const idx_t &npart) {
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
   idx_t retval, nconstr = 1;
-  idx_t opt[METIS_NOPTIONS];
-  METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1e+9;
-  opt[METIS_OPTION_CONTIG] = 0;
   METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(), &np,
-                      NULL, NULL, opt, &retval, partitions.data());
+                      NULL, NULL, const_cast<idx_t *>(args.opt), &retval,
+                      partitions.data());
 }
 
 void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {

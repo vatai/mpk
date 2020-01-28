@@ -1,6 +1,7 @@
 #pragma once
 
 /// Class converting `argc` and `argv` into C++ types.
+#include <metis.h>
 #include <string>
 
 struct Args {
@@ -8,4 +9,5 @@ struct Args {
   std::string mtxname;
   int npart;
   int nlevels;
+  idx_t opt[METIS_NOPTIONS];
 };
