@@ -31,6 +31,10 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
         throw std::logic_error("Input file doesn't end with mtx");
       break;
     case 'p':
+      if (npart) {
+        throw std::logic_error("Using --npart (or -p) is "
+                               "not allowed when using MPI.");
+      }
       npart = std::stoi(optarg);
       break;
     case 'l':
