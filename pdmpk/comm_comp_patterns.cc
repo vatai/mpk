@@ -22,8 +22,8 @@ CommCompPatterns::CommCompPatterns(const Args &args)
     : bufs(args.npart, Buffers(args.npart, args.mtxname)), //
       args{args},                                          //
       csr{args.mtxname},                                   //
-      pdmpk_bufs{csr},                                     //
-      pdmpk_count{csr},                                    //
+      pdmpk_bufs{args, csr},                               //
+      pdmpk_count{args, csr},                              //
       phase{0} {
   pdmpk_bufs.MetisPartition(args.npart);
   partition_list.push_back(pdmpk_bufs.partitions);

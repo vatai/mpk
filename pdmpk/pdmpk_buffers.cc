@@ -10,12 +10,13 @@
 
 #define SMALL_N 10
 
-PDMPKBuffers::PDMPKBuffers(const CSR &csr)
+PDMPKBuffers::PDMPKBuffers(const Args &args, const CSR &csr)
     : partials(csr.nnz, false), //
       partitions(csr.n),        //
       levels(csr.n, 0),         //
       weights(csr.nnz),         //
-      csr{csr} {}
+      csr{csr},                 //
+      args{args} {}
 
 level_t PDMPKBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));

@@ -6,12 +6,13 @@
 #include <metis.h>
 #include <vector>
 
+#include "args.h"
 #include "csr.h"
 #include "typedefs.h"
 
 class PDMPKBuffers {
 public:
-  PDMPKBuffers(const CSR &csr);
+  PDMPKBuffers(const Args &args, const CSR &csr);
 
   level_t MinLevel() const;
   bool IsFinished(const level_t &nlevels) const;
@@ -44,5 +45,6 @@ public:
 private:
   std::vector<idx_t> weights;
   const CSR &csr;
+  const Args &args;
   PDMPKBuffers();
 };
