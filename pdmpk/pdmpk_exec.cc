@@ -9,6 +9,7 @@
 #include <string>
 #include <unistd.h>
 
+#include "args.h"
 #include "buffers.h"
 #include "utils.hpp"
 
@@ -22,6 +23,8 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &npart);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  const Args args(argc, argv);
+  assert(npart == args.npart);
 
   // MPI debuging:
   // - start with: $ gdb pdmpk_exec PID
@@ -36,8 +39,7 @@ int main(int argc, char *argv[]) {
   //     sleep(5);
   // }
 
-  assert(argc == 2);
-  Buffers buf(npart, argv[1]);
+  Buffers buf(args.npart, args.mtxname);
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();
@@ -50,7 +52,7 @@ int main(int argc, char *argv[]) {
 
   MPI_Finalize();
 
-  std::cout << argv[0] << ": process " << rank << " for " << argv[1]
+  std::cout << argv[0] << ": process " << rank << " for " << args.mtxname
             << " finished" << std::endl;
   return 0;
 }

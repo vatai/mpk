@@ -20,9 +20,9 @@ function single_run() {
     local EXEC=$PREFIX/pdmpk_exec
     local TEST=$PREFIX/pdmpk_test
     echo $0: Processing $MATRIX with $NPART partitions upto level $NLEVEL
-    $PREP $MATRIX $NPART $NLEVEL || exit 1
-    $MPIRUN -n $NPART $EXEC $MATRIX || exit 2
-    $TEST $MATRIX $NPART $NLEVEL || exit 3
+    $PREP --matrix $MATRIX --npart $NPART --nlevel $NLEVEL || exit 1
+    $MPIRUN -n $NPART $EXEC --matrix $MATRIX --nlevel $NLEVEL || exit 2
+    $TEST --matrix $MATRIX --npart $NPART --nlevel $NLEVEL || exit 3
 }
 
 function proc_matrix() {

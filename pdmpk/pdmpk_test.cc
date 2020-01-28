@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
   std::cout << argv[0]
             << ": Maximum absolute is zero: " << (max == 0.0 ? "true" : "false")
             << std::endl;
-  std::cout << argv[0] << ": for " << argv[1] << " finished" << std::endl;
+  std::cout << argv[0] << ": for " << args.mtxname << " finished" << std::endl;
   std::cout << argv[0] << ": Cos(): " << cos << std::endl;
   // return max < kEpsilon ? 0 : 1;
   return !(1 - kEpsilon < cos and cos < 1 + kEpsilon);

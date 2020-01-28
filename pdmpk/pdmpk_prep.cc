@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     comm_comp_patterns.bufs[i].DumpTxt(i);
   }
 
-  std::cout << argv[0] << ": for " << argv[1] << " finished" << std::endl;
+  std::cout << argv[0] << ": for " << args.mtxname << " finished" << std::endl;
 
   return 0;
 }
