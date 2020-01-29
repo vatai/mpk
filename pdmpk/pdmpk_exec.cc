@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   //     sleep(5);
   // }
 
-  Buffers buf(args.npart, args.mtxname);
+  Buffers buf(args);
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();
