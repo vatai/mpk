@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   // Get finalResult.
   std::vector<double> loadResult(csr.n);
   for (auto i = 0; i < args.npart; i++) {
-    Results results(args.mtxname);
+    Results results(args);
     results.Load(i);
     results.FillResults(&loadResult);
   }

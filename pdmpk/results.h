@@ -6,9 +6,12 @@
 #include <metis.h>
 #include <string>
 #include <vector>
+
+#include "args.h"
+
 class Results {
 public:
-  Results(const std::string &name);
+  Results(const Args &args);
   void FillVal(const std::vector<idx_t> &idx, const std::vector<double> &mbuf);
   void FillResults(std::vector<double> *results);
   void Dump(const int &rank);
@@ -17,7 +20,8 @@ public:
   void SaveIndex(const int &idx);
 
 private:
-  std::string name;
+  const Args args;
   std::vector<idx_t> vect_idx;
   std::vector<double> val;
+  std::string Filename(const int &rank, const std::string &ext) const;
 };

@@ -18,10 +18,10 @@
 const std::string kFname{"bufs"};
 
 Buffers::Buffers(const Args &args)
-    : mpi_bufs{args.npart},  //
-      max_sbuf_size{0},      //
-      mbuf_idx{0},           //
-      results(args.mtxname), //
+    : mpi_bufs{args.npart}, //
+      max_sbuf_size{0},     //
+      mbuf_idx{0},          //
+      results(args),        //
       args{args} {}
 
 void Buffers::PhaseInit() {
