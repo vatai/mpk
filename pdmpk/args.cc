@@ -26,6 +26,9 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
   opt[METIS_OPTION_UFACTOR] = 1e+9;
   opt[METIS_OPTION_CONTIG] = 0;
 
+  if (const char *ompi_npart = std::getenv("PMI_SIZE")) {
+    npart = std::stoi(ompi_npart);
+  };
   if (const char *ompi_npart = std::getenv("OMPI_COMM_WORLD_SIZE")) {
     npart = std::stoi(ompi_npart);
   };
