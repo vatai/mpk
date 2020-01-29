@@ -55,11 +55,16 @@ void CommCompPatterns::Stats() const {
                    std::to_string(args.nlevels) + ".stats.txt");
 
   size_t sum = 0;
+  size_t ssum = 0;
   for (const auto &buffer : bufs) {
     for (int i = 0; i < phase; i++) {
       sum += buffer.mpi_bufs.RbufSize(i);
+      ssum += buffer.mpi_bufs.SbufSize(i);
     }
   }
+  std::cout << "Rbuf sum: " << sum << ", "
+            << "Sbuf sum: " << ssum << ", "
+            << "Phase (num of): " << phase << std::endl;
   of << sum << " " << phase << std::endl;
 }
 
