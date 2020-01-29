@@ -50,7 +50,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
 #endif
 }
 
-void CommCompPatterns::Stats() {
+void CommCompPatterns::Stats() const {
   std::ofstream of(args.mtxname + "-" + std::to_string(args.npart) + "-" +
                    std::to_string(args.nlevels) + ".stats.txt");
 

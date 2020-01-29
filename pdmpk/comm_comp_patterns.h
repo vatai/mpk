@@ -27,7 +27,7 @@ public:
   CommCompPatterns(const Args &args);
 
   /// Print the statistics of communication.
-  void Stats();
+  void Stats() const;
 
   /// `bufs[part]` contains all the buffers such as `mcsr` and MPI
   /// buffers for each partition `part`.
