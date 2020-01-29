@@ -116,4 +116,5 @@ public:
 private:
   const Args &args;
   Buffers();
+  std::string Filename(const int &rank, const std::string &ext) const;
 };
