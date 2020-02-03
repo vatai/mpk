@@ -76,10 +76,19 @@ void CommCompPatterns::ProcAllPhases() {
   while (not is_finished and phase < max_phase) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
+    std::cout << "min_level: " << min_level << std::endl;
     if (min_level < args.nlevels / 2) {
+      for (auto i = 0; i < csr.n; i++)
+        std::cout << pdmpk_bufs.partitions[i] << ", ";
+      std::cout << std::endl;
+      std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights(args.npart);
+      for (auto i = 0; i < csr.n; i++)
+        std::cout << pdmpk_bufs.partitions[i] << ", ";
+      std::cout << std::endl;
       partition_list.push_back(pdmpk_bufs.partitions);
     } else {
+      std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_list.back();
       partition_list.pop_back();
     }
