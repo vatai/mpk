@@ -32,6 +32,8 @@ CommCompPatterns::CommCompPatterns(const Args &args)
     auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
+  phase = 0;
+  ProcPhase(phase);
   ProcAllPhases();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
@@ -69,8 +71,6 @@ void CommCompPatterns::Stats() const {
 }
 
 void CommCompPatterns::ProcAllPhases() {
-  phase = 0;
-  ProcPhase(phase);
   bool is_finished = pdmpk_bufs.IsFinished(args.nlevels);
   auto max_phase = args.npart * args.nlevels * args.nlevels;
   while (not is_finished and phase < max_phase) {
