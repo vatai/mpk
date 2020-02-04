@@ -18,7 +18,7 @@ public:
   bool IsFinished() const;
   bool CanAdd(const idx_t &idx, const level_t &lbelow, const idx_t &t) const;
   void IncLevel(const idx_t &idx);
-  void UpdateWeights();
+  void UpdateWeights(const level_t &min);
 
   bool PartialIsFull(const idx_t &idx) const;
   bool PartialIsEmpty(const idx_t &idx) const;

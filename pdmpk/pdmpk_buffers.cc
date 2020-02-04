@@ -49,9 +49,7 @@ void PDMPKBuffers::IncLevel(const idx_t &idx) {
   }
 }
 
-void PDMPKBuffers::UpdateWeights() {
-  level_t min = *std::min_element(begin(levels), end(levels));
-
+void PDMPKBuffers::UpdateWeights(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     int li = levels[i];
     for (int j = csr.ptr[i]; j < csr.ptr[i + 1]; j++) {

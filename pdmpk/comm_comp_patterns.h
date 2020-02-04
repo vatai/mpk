@@ -137,7 +137,7 @@ private:
   void FinalizeVertex(const idx_lvl_t &idx_lvl, const idx_t &part);
 
   /// Code executed after each phase.
-  void FinalizePhase();
+  void FinalizePhase(const level_t &min_level);
 
   /// Update the send count on the source partition, and the receive
   /// count on the target partition.

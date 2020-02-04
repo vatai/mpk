@@ -205,7 +205,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
       }
     }
   }
-  FinalizePhase();
+  FinalizePhase(min_level);
 }
 
 void CommCompPatterns::InitPhase() {
@@ -282,7 +282,7 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
   bufs[part].mbuf_idx++;
 }
 
-void CommCompPatterns::FinalizePhase() {
+void CommCompPatterns::FinalizePhase(const level_t &min_level) {
   // Fill sendcount and recvcount.
   for (const auto &iter : comm_dict) // CHECK
     UpdateMPICountBuffers(iter.first, iter.second.size());
@@ -300,7 +300,7 @@ void CommCompPatterns::FinalizePhase() {
 
   comm_dict.clear();
 
-  pdmpk_bufs.UpdateWeights();
+  pdmpk_bufs.UpdateWeights(min_level);
   // pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
   // Sort `init_idcs`.
