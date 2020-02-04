@@ -73,7 +73,7 @@ void CommCompPatterns::Stats() const {
 void CommCompPatterns::ProcAllPhases() {
   bool is_finished = pdmpk_bufs.IsFinished();
   auto max_phase = args.npart * args.nlevels * args.nlevels;
-  while (not is_finished and phase < max_phase) {
+  while (not is_finished and phase < max_phase and not partition_list.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     std::cout << "min_level: " << min_level << std::endl;
