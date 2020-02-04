@@ -23,16 +23,17 @@ level_t PDMPKBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));
 }
 
-bool PDMPKBuffers::IsFinished(const level_t &nlevels) const {
+bool PDMPKBuffers::IsFinished() const {
   for (const auto &level : levels) {
-    assert(level <= nlevels);
-    if (level != nlevels)
+    assert(level <= args.nlevels);
+    if (level != args.nlevels)
       return false;
   }
   return true;
 }
 
-bool PDMPKBuffers::CanAdd(const idx_t &idx, const level_t &lbelow,
+bool PDMPKBuffers::CanAdd(const idx_t &idx,      //
+                          const level_t &lbelow, //
                           const idx_t &t) const {
   const idx_t j = csr.col[t];
   const bool needed = not partials[t];
@@ -87,9 +88,9 @@ void PDMPKBuffers::PartialReset(const idx_t &idx) {
   }
 }
 
-void PDMPKBuffers::MetisPartition(const idx_t &npart) {
+void PDMPKBuffers::MetisPartition() {
   idx_t n = csr.n;
-  idx_t np = npart;
+  idx_t np = args.npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
   idx_t retval, nconstr = 1;
@@ -97,9 +98,9 @@ void PDMPKBuffers::MetisPartition(const idx_t &npart) {
                       NULL, &retval, partitions.data());
 }
 
-void PDMPKBuffers::MetisPartitionWithWeights(const idx_t &npart) {
+void PDMPKBuffers::MetisPartitionWithWeights() {
   idx_t n = csr.n;
-  idx_t np = npart;
+  idx_t np = args.npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
   idx_t *col = (idx_t *)csr.col.data();
   idx_t retval, nconstr = 1;

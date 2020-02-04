@@ -15,7 +15,7 @@ public:
   PDMPKBuffers(const Args &args, const CSR &csr);
 
   level_t MinLevel() const;
-  bool IsFinished(const level_t &nlevels) const;
+  bool IsFinished() const;
   bool CanAdd(const idx_t &idx, const level_t &lbelow, const idx_t &t) const;
   void IncLevel(const idx_t &idx);
   void UpdateWeights();
@@ -26,8 +26,8 @@ public:
   /// Since all the vertices are initially at level = 0,
   /// partition is done without any weights input.
   /// METIS_PartGraphKway outputs by updating partitions.data()
-  void MetisPartition(const idx_t &npart);
-  void MetisPartitionWithWeights(const idx_t &npart);
+  void MetisPartition();
+  void MetisPartitionWithWeights();
 
   void DebugPrintLevels(std::ostream &os);
   void DebugPrintPartials(std::ostream &os);
