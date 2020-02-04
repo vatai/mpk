@@ -23,7 +23,7 @@
 Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
 
   METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1e+9;
+  opt[METIS_OPTION_UFACTOR] = 1000;
   opt[METIS_OPTION_CONTIG] = 0;
 
   if (const char *ompi_npart = std::getenv("PMI_SIZE")) {
