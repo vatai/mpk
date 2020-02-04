@@ -52,14 +52,16 @@ void PDMPKBuffers::IncLevel(const idx_t &idx) {
 void PDMPKBuffers::UpdateWeights(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     int li = levels[i];
-    for (int j = csr.ptr[i]; j < csr.ptr[i + 1]; j++) {
-      int lj = levels[csr.col[j]];
-      double w = li + lj - 2 * min;
-      w = 1e+4 / (w + 1);
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      const auto j = csr.col[t];
+      const int lj = levels[j];
+      const double eps = PartialCompleted(i) + PartialCompleted(j);
+      const double denom = li + lj - 2 * min + 0.5 * eps;
+      const double w = 1.0e+4 / (denom + 1.0);
       if (w < 1.0)
-        weights[j] = 1;
+        weights[t] = 1;
       else
-        weights[j] = w;
+        weights[t] = w;
     }
   }
 }
@@ -84,6 +86,16 @@ void PDMPKBuffers::PartialReset(const idx_t &idx) {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     partials[t] = false;
   }
+}
+
+double PDMPKBuffers::PartialCompleted(const idx_t &idx) const {
+  const double all = csr.ptr[idx + 1] - csr.ptr[idx];
+  int count = 0;
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (partials[t])
+      count++;
+  }
+  return double(count) / all;
 }
 
 void PDMPKBuffers::MetisPartition() {
