@@ -88,8 +88,8 @@ private:
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
   CommTable comm_table;
 
-  /// Store history of partition to mirror
-  std::vector<std::vector<idx_t>> partition_list;
+  /// Stack of partitions for partition mirroring.
+  std::vector<std::vector<idx_t>> partition_history;
 
   /// Process all phases, possibly with mirroring.
   void ProcAllPhases();

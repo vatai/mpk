@@ -26,7 +26,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       pdmpk_count{args, csr},          //
       phase{0} {
   pdmpk_bufs.MetisPartition();
-  partition_list.push_back(pdmpk_bufs.partitions);
+  partition_history.push_back(pdmpk_bufs.partitions);
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
@@ -73,7 +73,8 @@ void CommCompPatterns::Stats() const {
 void CommCompPatterns::ProcAllPhases() {
   bool is_finished = pdmpk_bufs.IsFinished();
   auto max_phase = args.npart * args.nlevel * args.nlevel;
-  while (not is_finished and phase < max_phase and not partition_list.empty()) {
+  while (not is_finished and phase < max_phase and
+         not partition_history.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     std::cout << "Phase: " << phase << ", "
@@ -81,11 +82,11 @@ void CommCompPatterns::ProcAllPhases() {
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
-      partition_list.push_back(pdmpk_bufs.partitions);
+      partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
-      pdmpk_bufs.partitions = partition_list.back();
-      partition_list.pop_back();
+      pdmpk_bufs.partitions = partition_history.back();
+      partition_history.pop_back();
     }
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
