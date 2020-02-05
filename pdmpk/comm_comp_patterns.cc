@@ -337,10 +337,13 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   for (const auto &map_iter : src_type_mapto_tgt_index_set) {
     const auto src_idx = tgt_recv_baseidx + idx;
     for (const auto &tgt_idx : map_iter.second) {
-      if (map_iter.first.type == kMcol) {
+      switch (map_iter.first.type) {
+      case kMcol:
         tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
-      } else {
+        break;
+      case kInitIdcs:
         tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+        break;
       }
     }
 
