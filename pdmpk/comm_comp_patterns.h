@@ -47,6 +47,15 @@ private:
   /// "Shadow" copy of `pdmpk_bufs` used for optimization.
   PDMPKBuffers pdmpk_count;
 
+  /// (source, target) pair.
+  typedef std::pair<idx_t, idx_t> src_tgt_t;
+
+  /// (partition, source index) pair.
+  typedef std::pair<idx_t, idx_t> part_sidx_t;
+
+  /// (index, level) pair.
+  typedef std::pair<idx_t, level_t> idx_lvl_t;
+
   /// Map (vector index, level) pair to the (partition, mbuf index)
   /// pair where it can be found.
   typedef std::map<idx_lvl_t, part_sidx_t> StorePart;
