@@ -48,5 +48,5 @@ void Results::SaveIndex(const int &idx) { vect_idx.push_back(idx); }
 
 std::string Results::Filename(const int &rank, const std::string &ext) const {
   return args.mtxname + "-" + kFname + "-" + std::to_string(args.npart) + "-" +
-         std::to_string(args.nlevels) + "-" + std::to_string(rank) + "." + ext;
+         std::to_string(args.nlevel) + "-" + std::to_string(rank) + "." + ext;
 }

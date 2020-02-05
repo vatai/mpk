@@ -8,6 +8,6 @@ struct Args {
   Args(int &argc, char *argv[]);
   std::string mtxname;
   int npart;
-  int nlevels;
+  int nlevel;
   idx_t opt[METIS_NOPTIONS];
 };

@@ -43,7 +43,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
-    const auto &pair = store_part.at({i, args.nlevels});
+    const auto &pair = store_part.at({i, args.nlevel});
     bufs[pair.first].results.SaveIndex(i);
     bufs[pair.first].results_mbuf_idx.push_back(pair.second);
   }
@@ -54,7 +54,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
 
 void CommCompPatterns::Stats() const {
   std::ofstream of(args.mtxname + "-" + std::to_string(args.npart) + "-" +
-                   std::to_string(args.nlevels) + ".stats.txt");
+                   std::to_string(args.nlevel) + ".stats.txt");
 
   size_t sum = 0;
   size_t ssum = 0;
@@ -72,13 +72,13 @@ void CommCompPatterns::Stats() const {
 
 void CommCompPatterns::ProcAllPhases() {
   bool is_finished = pdmpk_bufs.IsFinished();
-  auto max_phase = args.npart * args.nlevels * args.nlevels;
+  auto max_phase = args.npart * args.nlevel * args.nlevel;
   while (not is_finished and phase < max_phase and not partition_list.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     std::cout << "Phase: " << phase << ", "
               << "min_level: " << min_level << std::endl;
-    if (min_level < args.nlevels / 2) {
+    if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_list.push_back(pdmpk_bufs.partitions);
@@ -103,7 +103,7 @@ void CommCompPatterns::OptimizePartitionLabels(const size_t &min_level) {
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
   bool was_active_level = true;
-  for (int lbelow = min_level; was_active_level and lbelow < args.nlevels;
+  for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
     was_active_level = false;
     for (int idx = 0; idx < csr.n; idx++) {
@@ -184,7 +184,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
   bool was_active_level = true;
   // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
   // vertices col[t] from level=lbelow.
-  for (int lbelow = min_level; was_active_level and lbelow < args.nlevels;
+  for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
     was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
@@ -363,7 +363,7 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
 void CommCompPatterns::DbgAsserts() const {
   /// Check all vertices reach `nlevels`.
   for (auto level : pdmpk_bufs.levels) {
-    assert(level == args.nlevels);
+    assert(level == args.nlevel);
   }
   /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
   for (auto b : bufs) {

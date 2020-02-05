@@ -25,8 +25,8 @@ level_t PDMPKBuffers::MinLevel() const {
 
 bool PDMPKBuffers::IsFinished() const {
   for (const auto &level : levels) {
-    assert(level <= args.nlevels);
-    if (level != args.nlevels)
+    assert(level <= args.nlevel);
+    if (level != args.nlevel)
       return false;
   }
   return true;

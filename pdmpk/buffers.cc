@@ -186,5 +186,5 @@ void Buffers::DbgCheck() {
 
 std::string Buffers::Filename(const int &rank, const std::string &ext) const {
   return args.mtxname + "-mbuf-" + std::to_string(args.npart) + "-" +
-         std::to_string(args.nlevels) + "-" + std::to_string(rank) + "." + ext;
+         std::to_string(args.nlevel) + "-" + std::to_string(rank) + "." + ext;
 }

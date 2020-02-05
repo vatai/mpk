@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   std::vector<double> goldResult(csr.n);
   for (auto &v : goldResult)
     v = 1.0;
-  csr.MPK(args.nlevels, goldResult);
+  csr.MPK(args.nlevel, goldResult);
 
   // Get finalResult.
   std::vector<double> loadResult(csr.n);

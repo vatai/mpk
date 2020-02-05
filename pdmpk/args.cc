@@ -20,7 +20,7 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
+Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
 
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 5000; // originally 1000
@@ -89,7 +89,7 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
       npart = std::stoi(optarg);
       break;
     case 'l': // --nlevel
-      nlevels = std::stoi(optarg);
+      nlevel = std::stoi(optarg);
       break;
     case 't': // --PTYPE
       IF_OPTION_VALUE(PTYPE, RB)
@@ -168,7 +168,7 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevels(0) {
   if (npart == 0) {
     throw std::logic_error("Number of partitions not provided (use --npart)");
   }
-  if (nlevels == 0) {
+  if (nlevel == 0) {
     throw std::logic_error("Number of levels not provided (use --nlevel)");
   }
 }
