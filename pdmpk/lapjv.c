@@ -17,9 +17,10 @@ void check_alloc(void *ptr) {
   }
 }
 
+/// Dense matrix to store the problem.
 struct mat {
-  int *data;
-  int n;
+  int *data; ///< Data stored in row major order.
+  int n;     ///< Size of a row/col of the matrix.
 };
 
 // struct mat //
@@ -43,9 +44,10 @@ int elem(struct mat *m, int i, int j) { return m->data[i * m->n + j]; }
 
 // struct assign //
 
+/// Assignment of rows and columns (a representation of the solution).
 struct assign {
-  int *col_at;
-  int *row_at;
+  int *col_at; ///< Column assigned to rows (x in the paper).
+  int *row_at; ///< Row assigned to columns (y in the paper).
 };
 
 struct assign *new_assign(const int n) {
@@ -66,9 +68,10 @@ void del_assign(struct assign *a) {
 
 // struct dual //
 
+/// Dual problem.
 struct dual {
-  int *row;
-  int *col;
+  int *row; ///< Row variable of the dual.
+  int *col; ///< Column variable of the dual.
 };
 
 struct dual *new_dual(const int n) {
@@ -89,9 +92,10 @@ void del_dual(struct dual *dual) {
 
 // struct free //
 
+/// Unassigned rows.
 struct free {
-  int *data;
-  int size;
+  int *data; ///< Data (allocated npart elements).
+  int size;  ///< Actual size.
 };
 
 struct free *new_free(const int n) {
@@ -115,10 +119,12 @@ void insert(struct free *f, const int val) {
 
 // struct col //
 
+/// Array of columns: scanned are `data[0..low-1]`; labeled and
+/// unscanned `data[low..up-1]`; unlabeled `data[up..npart-1]`.
 struct col {
-  int *data;
-  int low;
-  int up;
+  int *data; ///< The actual data.
+  int low;   ///< Low boundary.
+  int up;    ///< Up boundary.
 };
 
 struct col *new_col(const int n) {

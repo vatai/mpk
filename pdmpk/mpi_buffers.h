@@ -14,6 +14,9 @@
 /// communication for each partition.
 class MPIBuffers {
 public:
+  /// Constructor.
+  ///
+  /// @param npart number of partitions.
   MPIBuffers(const idx_t &npart);
 
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
@@ -33,21 +36,23 @@ public:
   /// Dump to a txt file.
   void DumpToTxt(std::ofstream &ofs);
 
-  /// - MPI (one for each phase):
-  ///   - `sendcount` and `recvcount`
-  ///   - `sdispls` and `rdispls`
-  std::vector<int> sendcounts;
-  std::vector<int> recvcounts;
-  std::vector<int> sdispls;
-  std::vector<int> rdispls;
-  /// `mbuf` indices, which need to be copied to the send buffer.
+  std::vector<int> sendcounts; ///< MPI send count array.
+  std::vector<int> recvcounts; ///< MPI recieve count array.
+  std::vector<int> sdispls; ///< MPI send displcaement array.
+  std::vector<int> rdispls; ///< MPI recieve displacement array.
+
+  /// Indices into @ref Buffers::mbuf which need to be copied to the
+  /// send buffer.
   phased_vector<idx_t> sbuf_idcs;
-  /// `mbuf` source-target pairs, to initialise mbuf elements.
+
+  /// Source-target index pairs into @ref Buffers::mbuf, to initialise
+  /// mbuf elements.
   phased_vector<sidx_tidx_t> init_idcs;
 
-  /// @todo(vatai): It would be nice to "remove" this.
-  const idx_t npart;
+  const idx_t npart; ///< Number of partitions/processors.
 
+  /// @todo(vatai): It would be nice to remove `npart` from
+  /// `MPIBuffers`.
 private:
   MPIBuffers();
 };

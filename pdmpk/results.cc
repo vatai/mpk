@@ -11,10 +11,10 @@ const std::string kFname{"fresults"};
 
 Results::Results(const Args &args) : args{args} {}
 
-void Results::FillVal(const std::vector<idx_t> &idx,
+void Results::FillVal(const std::vector<idx_t> &idcs,
                       const std::vector<double> &mbuf) {
   val.clear();
-  for (const auto i : idx) {
+  for (const auto i : idcs) {
     val.push_back(mbuf[i]);
   }
 }
@@ -26,6 +26,8 @@ void Results::FillResults(std::vector<double> *results) {
     (*results)[idx] = val[i];
   }
 }
+
+void Results::SaveIndex(const int &idx) { vect_idx.push_back(idx); }
 
 void Results::Dump(const int &rank) {
   std::ofstream file(Filename(rank, "bin"), std::ios_base::binary);
@@ -43,8 +45,6 @@ void Results::DumpTxt(const int &rank) {
   std::ofstream file(Filename(rank, "txt"));
   Utils::DumpTxt("result_val", val, file);
 }
-
-void Results::SaveIndex(const int &idx) { vect_idx.push_back(idx); }
 
 std::string Results::Filename(const int &rank, const std::string &ext) const {
   return args.mtxname + "-" + kFname + "-" + std::to_string(args.npart) + "-" +

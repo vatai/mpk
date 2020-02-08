@@ -48,9 +48,22 @@ public:
   std::vector<double> val;
 
 private:
-  bool symmetric;
-  bool pattern;
+  bool symmetric; ///< True if the matrix read is symmetric.
+  bool pattern;   ///< True if the matrix doesn't have values (only nnz
+                  /// pattern).
+  /// Verify the header (first line) of the `.mtx` file, and set the
+  /// proper variables such as @ref symmetric or @ref pattern.
+  ///
+  /// @param file Opened input file stream of the `.mtx` file.
   void MtxCheckBanner(std::ifstream &file);
+  /// Allocate the @ref ptr, @ref col and @ref val vectors.
+  ///
+  /// @param file Opened input file stream of the `.mtx` file,
+  /// processed by @ref MtxCheckBanner.
   void MtxFillSize(std::ifstream &file);
+  /// Fill the @ref ptr, @ref col and @ref val vectors from `file`.
+  ///
+  /// @param file Opened input file stream of the `.mtx` file,
+  /// processed by @ref MtxFillSize.
   void MtxFillVectors(std::ifstream &file);
 };

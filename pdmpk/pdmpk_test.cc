@@ -20,8 +20,15 @@
 ///
 /// Body of `pdmpk_test` page.
 
+/// "Infinitesimaly" small value, under which we consider two floats
+/// equal.
 const double kEpsilon = 1e-09;
 
+/// Calculate the cosine of vectors `v1` and `v2`.
+///
+/// @param v1 First vecotor `v1`.
+///
+/// @param v2 Second vector `v2`.
 double Cos(const std::vector<double> &v1, const std::vector<double> &v2) {
   const auto n = v1.size();
   assert(n == v2.size());

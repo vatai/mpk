@@ -34,7 +34,7 @@ public:
   std::vector<Buffers> bufs;
 
 private:
-  ///
+  /// Processed arguments provided to the main program.
   const Args &args;
 
   /// The graph/matrix being processed.
@@ -76,6 +76,7 @@ private:
     idx_t src_mbuf_idx; ///< The index in `mbuf` (in @ref Buffers) where the
                         /// data can be found, obtained from @ref store_part
     CommType type;      ///< The type of communication @see CommType
+    /// Lexical ordering.
     friend bool operator<(const SrcType &lhs, const SrcType &rhs) {
       return std::tie(lhs.src_mbuf_idx, lhs.type) <
              std::tie(rhs.src_mbuf_idx, rhs.type);
@@ -90,12 +91,12 @@ private:
   /// In each phase, collect the communication as a map from (source,
   /// target) pairs to a @ref Backpatch.
   typedef std::map<src_tgt_t, Backpatch> CommDict;
+  CommDict comm_dict; ///< @see CommDict.
 
-  /// @see CommDict
-  CommDict comm_dict;
-
+  /// Communication table used by @ref
+  /// CommCompPatterns::OptimizePartitionLabels.
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
-  CommTable comm_table;
+  CommTable comm_table; ///< @see CommTable.
 
   /// Stack of partitions for partition mirroring.
   std::vector<std::vector<idx_t>> partition_history;
@@ -103,8 +104,22 @@ private:
   /// Process all phases, possibly with mirroring.
   void ProcAllPhases();
 
+  /// Optimize partitions label assignment using 
+  /// @ref CommCompPatterns::OptimizePartitionLabels, @ref
+  /// CommCompPatterns::OptimizeVertex and @ref
+  /// CommCompPatterns::FindLabelPermutation.  This essentially
+  /// simulates @ref CommCompPatterns::ProcPhase
+  ///
+  /// @param min_level Minimum level in the current phase.
   void OptimizePartitionLabels(const size_t &min_level);
+  /// Called in @ref CommCompPatterns::OptimizePartitionLabels.
+  ///
+  /// @param idx The index of the vertex processed.
+  ///
+  /// @param lbelow The level below the current vertex's level
+  /// `level[idx]-1`.
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
+  /// Called in @ref CommCompPatterns::OptimizePartitionLabels.
   void FindLabelPermutation();
 
   /// Code executed before each phase.

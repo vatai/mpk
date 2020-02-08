@@ -3,8 +3,8 @@
 
 /// @brief The buffers collected on a single partition.
 ///
-/// @details `Buffers` contains the MPI buffers, the modified CSP
-/// buffers and `mbuf` and `ibuF`.
+/// @details @ref Buffers contains the MPI buffers, the modified CSR
+/// buffers @ref Buffers::mcsr, @ref Buffers::mbuf and ibuf.
 
 #pragma once
 
@@ -79,9 +79,10 @@ public:
   /// execution/computation.
   MCSR mcsr;
 
-  /// The index (in `mbuf`) where "the next" vertex will be stored.
-  /// `mbuf_idx` is updated in the `pdmpk_prep` program, and used to
-  /// allocate `mbuf` in the `pdmpk_exec` program.
+  /// The index (in `mbuf`) where "the next" vertex will be stored
+  /// (basically corresponding to the the size of `mbuf`).  `mbuf_idx`
+  /// is updated in the `pdmpk_prep` program, and used to allocate
+  /// `mbuf` in the `pdmpk_exec` program.
   idx_t mbuf_idx;
 
   /// The buffer which stores the results of the computation
@@ -111,10 +112,16 @@ public:
   Results results;
 
   /// @todo(vatai): Delete this.
-  std::vector<size_t> dbg_idx;
+  std::vector<size_t> dbg_idx; ///< Debug data.
 
 private:
-  const Args &args;
-  Buffers();
+  const Args &args; ///< Arguments passed to the main program.
+  Buffers(); ///< Disabled default constructor.
+  /// Generate filename based on @ref Args the the parameters
+  ///
+  /// @param rank The MPI rank correspanding to the @ref Buffers.
+  ///
+  /// @param ext The extention that should be appended to the end of
+  /// the filename.
   std::string Filename(const int &rank, const std::string &ext) const;
 };

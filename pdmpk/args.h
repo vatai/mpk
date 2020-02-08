@@ -5,9 +5,11 @@
 #include <string>
 
 struct Args {
-  Args(int &argc, char *argv[]);
-  std::string mtxname;
-  int npart;
-  int nlevel;
-  idx_t opt[METIS_NOPTIONS];
+  Args(int &argc, char *argv[]); ///< Constructor which processes
+                                 /// command line arguments.
+  std::string mtxname;           ///< Path to the `.mtx` file.
+  int npart;  ///< Number of partitions (world size) obtained from
+              /// environment variable or command line parameter.
+  int nlevel; ///< Target number of level.
+  idx_t opt[METIS_NOPTIONS]; ///< Metis options.
 };

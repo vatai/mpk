@@ -12,14 +12,14 @@
 extern "C" {
 #endif
 
-/// Input: `sums` points to an array of `npart * npart` number of
-/// integers.  The value at `sums[i * npart + j]` is the number of
-/// communication from old partition `i` to new partition `j`.
+/// Implement the algorithm described in this paper:
+/// https://link.springer.com/article/10.1007%2FBF02278710
 ///
-/// Output: `perm`, pointer to an array of `npart` integers, which are
-/// filled with the values `0, 1, ... npart-1` (i.e.  a permuation)
-/// which results in the trace of `sums` (as a matrix) being maximal,
-/// i.e. resulting in optimal communication.
+/// @param[in] sums Problem as an `npart` by `npart` matrix (row major).
+///
+/// @param[in] npart Size of the problem.
+///
+/// @param[out] perm Result in the form of a permutation.
 void lapjv(int *sums, int npart, int *perm);
 
 #ifdef __cplusplus

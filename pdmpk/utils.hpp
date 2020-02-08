@@ -9,11 +9,13 @@
 
 namespace Utils {
 template <typename T1, typename T2>
+/// Print pairs to output stream.
 std::ostream &operator<<(std::ostream &os, const std::pair<T1, T2> &pair) {
   os << "(" << pair.first << "," << pair.second << ")";
   return os;
 }
 
+/// Dump/save vector to file stream, @see LoadVec.
 template <typename T>
 void DumpVec(const std::vector<T> &vec, std::ofstream &ofs) {
   const auto size = vec.size();
@@ -21,6 +23,7 @@ void DumpVec(const std::vector<T> &vec, std::ofstream &ofs) {
   ofs.write((char *)vec.data(), sizeof(T) * size);
 }
 
+/// Load vector froum file stream, @see DumpVec.
 template <typename T> //
 void LoadVec(std::istream &is, std::vector<T> *vec) {
   auto size = vec->size();
@@ -29,6 +32,7 @@ void LoadVec(std::istream &is, std::vector<T> *vec) {
   is.read((char *)vec->data(), sizeof(T) * size);
 }
 
+/// Dump/save vector to file stream as text.
 template <typename T> //
 void DumpTxt(const char *name, const std::vector<T> &vec, std::ofstream &ofs) {
   ofs << name << ": ";
