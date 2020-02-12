@@ -205,21 +205,14 @@ void CommCompPatterns::FindLabelPermutation() {
       comm_sums.push_back(comm_table[{s, t}].size());
     }
   }
-  const auto min_sum = *std::min(std::begin(comm_sums), std::end(comm_sums));
+  const auto min_sum = *std::min_element(std::begin(comm_sums), //
+                                         std::end(comm_sums));
   for (auto &elem : comm_sums) {
     elem = elem - min_sum;
   }
 
   std::vector<int> permutation(args.npart);
-  // The following permutations break ```$ ./pdmpk_prep mp4p4 4 4```
-  // std::vector<std::vector<int>> pperms{
-  //     {3, 0, 2, 1}, {1, 2, 3, 0}, {1, 0, 3, 2}, {0, 2, 3, 1},
-  //     {1, 2, 3, 0}, {2, 3, 1, 0}, {3, 2, 1, 0}, {1, 2, 3, 0},
-  // };
-  // permutation = pperms[phase - 1];
-
   lapjv(comm_sums.data(), (int)args.npart, permutation.data());
-
   for (auto &part : pdmpk_bufs.partitions) {
     assert(0 <= part and part < args.npart);
     part = permutation[part];
