@@ -34,7 +34,9 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  ProcAllPhasesNoMirror();
+  // ProcAllPhasesNoMirror();
+  ProcAllPhasesMinAboveHalf();
+  // ProcAllPhasesCyclePartitions();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
