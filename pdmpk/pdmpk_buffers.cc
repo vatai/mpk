@@ -73,8 +73,8 @@ void PDMPKBuffers::UpdateWeights(const level_t &min) {
       const auto j = csr.col[t];
       const int lj = levels[j];
       const double eps = PartialCompleted(i) + PartialCompleted(j);
-      const double denom = li + lj - 2 * min + 0.5 * eps;
-      const double w = 1.0e+4 / (denom + 1.0);
+      const double denom = li + lj - 2 * min + 0.5 * eps + 1.0;
+      const double w = 1.0e+4 / (denom * denom);
       if (w < 1.0)
         weights[t] = 1;
       else
