@@ -34,7 +34,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  ProcAllPhasesCyclePartitions();
+  ProcAllPhasesNoMirror();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
@@ -68,6 +68,31 @@ void CommCompPatterns::Stats() const {
             << "Sbuf sum: " << ssum << ", "
             << "Phase (num of): " << phase << std::endl;
   of << sum << " " << phase << std::endl;
+}
+
+void CommCompPatterns::ProcAllPhasesNoMirror() {
+  bool is_finished = pdmpk_bufs.IsFinished();
+  size_t old_level_sum = 0;
+  while (not is_finished) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    const auto level_sum = pdmpk_bufs.ExactLevelSum();
+    std::cout << "Phase: " << phase << ", "
+              << "ExactLevelSum(): " << level_sum << std::endl;
+    if (old_level_sum == level_sum)
+      break;
+    old_level_sum = level_sum;
+    pdmpk_bufs.MetisPartitionWithWeights();
+    partition_history.push_back(pdmpk_bufs.partitions);
+    OptimizePartitionLabels(min_level);
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished();
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
 }
 
 void CommCompPatterns::ProcAllPhasesMinAboveHalf() {

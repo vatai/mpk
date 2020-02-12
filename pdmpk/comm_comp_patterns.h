@@ -101,6 +101,9 @@ private:
   /// Stack of partitions for partition mirroring.
   std::vector<std::vector<idx_t>> partition_history;
 
+  /// Process all phases: without any mirroring.
+  void ProcAllPhasesNoMirror();
+
   /// Process all phases: mirror after min_level is above the half.
   void ProcAllPhasesMinAboveHalf();
 
