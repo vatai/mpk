@@ -20,7 +20,7 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
+Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0), cycle(2) {
 
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 5000; // originally 1000
@@ -61,6 +61,7 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
       {"PFACTOR", required_argument, 0, 'P'},
       {"UFACTOR", required_argument, 0, 'u'},
       // ---
+      {"cycle", required_argument, 0, 'Y'},
       {0, 0, 0, 0} // last element must be all 0s
   };
   int option_index = 0;
@@ -70,7 +71,8 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
                          "m:n:l:t:o:"
                          "y:i:r:s:p:"
                          "b:e:d:c:h:"
-                         "g:C:R:P:u:",
+                         "g:C:R:P:u:"
+                         "Y:",
                          long_options, &option_index);
     if (c == -1)
       break;
@@ -154,6 +156,10 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
       break;
     case 'u':
       opt[METIS_OPTION_UFACTOR] = std::stoi(optarg);
+      break;
+    // ---- "Y:" ----
+    case 'Y':
+      cycle = std::stoi(optarg);
       break;
       // ----  ----
 

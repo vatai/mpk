@@ -105,7 +105,7 @@ private:
   void ProcAllPhasesMinAboveHalf();
 
   /// Process all phases: use two partitions.
-  void ProcAllPhasesTwoPartitions();
+  void ProcAllPhasesCyclePartitions();
 
   /// Optimize partitions label assignment using
   /// @ref CommCompPatterns::OptimizePartitionLabels, @ref

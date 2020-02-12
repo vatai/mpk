@@ -34,7 +34,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  ProcAllPhasesTwoPartitions();
+  ProcAllPhasesCyclePartitions();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
@@ -98,7 +98,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesTwoPartitions() {
+void CommCompPatterns::ProcAllPhasesCyclePartitions() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished) {
     phase++;
@@ -106,11 +106,11 @@ void CommCompPatterns::ProcAllPhasesTwoPartitions() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     std::cout << "Phase: " << phase << ", "
               << "ExactLevelSum(): " << level_sum << std::endl;
-    if (phase < 2) {
+    if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
-      pdmpk_bufs.partitions = partition_history[phase % 2];
+      pdmpk_bufs.partitions = partition_history[phase % args.cycle];
     }
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
