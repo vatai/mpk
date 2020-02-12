@@ -78,7 +78,7 @@ void CommCompPatterns::ProcAllPhases() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     std::cout << "Phase: " << phase << ", "
-              << "min_level: " << min_level << std::endl;
+              << "ExactLevelSum(): " << pdmpk_bufs.ExactLevelSum() << std::endl;
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();

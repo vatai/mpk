@@ -24,6 +24,10 @@ public:
   ///
   /// @returns Minumum of @ref PDMPKBuffers::levels.
   level_t MinLevel() const;
+  /// Find the exact sum of levels including partial results.
+  ///
+  /// @returns Sum of @ref PDMPKBuffers::levels + partials.
+  size_t ExactLevelSum() const;
   /// Checks if all the algorithm is finished.
   ///
   /// @returns True iff all levels reached @ref Args::nlevel.
@@ -103,4 +107,10 @@ private:
   const CSR &csr;             ///< Matrix/graph @see CSR.
   const Args &args;           ///< Arguments passed to the main program.
   PDMPKBuffers();             ///< Disabled default constructor.
+  /// The exact level of vertex (including partial results).
+  ///
+  /// @param idx Index of the vertex.
+  ///
+  /// @returns |Adj(idx)| * levels[idx] + sum(partials[idx]).
+  size_t ExactLevel(idx_t idx) const;
 };

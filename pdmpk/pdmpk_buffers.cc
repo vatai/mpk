@@ -23,6 +23,23 @@ level_t PDMPKBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));
 }
 
+size_t PDMPKBuffers::ExactLevel(idx_t idx) const {
+  size_t lvl = levels[idx] * (csr.ptr[idx + 1] - csr.ptr[idx]);
+  for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    if (partials[t])
+      lvl++;
+  }
+  return lvl;
+}
+
+size_t PDMPKBuffers::ExactLevelSum() const {
+  size_t sum = 0;
+  for (idx_t i = 0; i < csr.n; i++) {
+    sum += ExactLevel(i);
+  }
+  return sum;
+}
+
 bool PDMPKBuffers::IsFinished() const {
   for (const auto &level : levels) {
     assert(level <= args.nlevel);
