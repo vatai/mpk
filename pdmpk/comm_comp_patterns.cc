@@ -72,8 +72,7 @@ void CommCompPatterns::Stats() const {
 
 void CommCompPatterns::ProcAllPhases() {
   bool is_finished = pdmpk_bufs.IsFinished();
-  auto max_phase = args.npart * args.nlevel * args.nlevel;
-  while (not is_finished and phase < max_phase and
+  while (not is_finished and
          not partition_history.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
