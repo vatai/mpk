@@ -202,6 +202,9 @@ private:
   int phase;
 
 #ifndef NDEBUG
+  //// @todo(vatai): Remove debug DbgPhaseSummary().
+  void DbgPhaseSummary(const level_t &min_level,
+                       const level_t &level_sum) const;
   /// @todo(vatai): Remove debug DbgAsserts().
   void DbgAsserts() const;
   /// @todo(vatai): Remove debug DbgMbufChecks().
