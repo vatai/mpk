@@ -406,7 +406,7 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
 #ifndef NDEBUG
 
 void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
-                                       const level_t &level_sum) const {
+                                       const size_t &level_sum) const {
   const auto count = std::count(std::begin(pdmpk_bufs.levels),
                                 std::end(pdmpk_bufs.levels), min_level);
   std::cout << "Phase: " << phase << ", "
