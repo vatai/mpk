@@ -34,7 +34,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  ProcAllPhases();
+  ProcAllPhasesTwoPartitions();
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
@@ -70,7 +70,7 @@ void CommCompPatterns::Stats() const {
   of << sum << " " << phase << std::endl;
 }
 
-void CommCompPatterns::ProcAllPhases() {
+void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
     phase++;
@@ -86,6 +86,31 @@ void CommCompPatterns::ProcAllPhases() {
       std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_history.back();
       partition_history.pop_back();
+    }
+    OptimizePartitionLabels(min_level);
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished();
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
+}
+
+void CommCompPatterns::ProcAllPhasesTwoPartitions() {
+  bool is_finished = pdmpk_bufs.IsFinished();
+  while (not is_finished) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    const auto level_sum = pdmpk_bufs.ExactLevelSum();
+    std::cout << "Phase: " << phase << ", "
+              << "ExactLevelSum(): " << level_sum << std::endl;
+    if (phase < 2) {
+      pdmpk_bufs.MetisPartitionWithWeights();
+      partition_history.push_back(pdmpk_bufs.partitions);
+    } else {
+      pdmpk_bufs.partitions = partition_history[phase % 2];
     }
     OptimizePartitionLabels(min_level);
     ProcPhase(min_level);

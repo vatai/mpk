@@ -101,10 +101,13 @@ private:
   /// Stack of partitions for partition mirroring.
   std::vector<std::vector<idx_t>> partition_history;
 
-  /// Process all phases, possibly with mirroring.
-  void ProcAllPhases();
+  /// Process all phases: mirror after min_level is above the half.
+  void ProcAllPhasesMinAboveHalf();
 
-  /// Optimize partitions label assignment using 
+  /// Process all phases: use two partitions.
+  void ProcAllPhasesTwoPartitions();
+
+  /// Optimize partitions label assignment using
   /// @ref CommCompPatterns::OptimizePartitionLabels, @ref
   /// CommCompPatterns::OptimizeVertex and @ref
   /// CommCompPatterns::FindLabelPermutation.  This essentially
