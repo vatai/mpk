@@ -66,14 +66,21 @@ void PDMPKBuffers::IncLevel(const idx_t &idx) {
   }
 }
 
-void PDMPKBuffers::UpdateWeights(const level_t &min) {
+void PDMPKBuffers::UpdateWeights(const level_t &min_level) {
+  const auto max_level = *std::max_element(std::begin(levels), //
+                                           std::end(levels));
+  const auto total_diff = (max_level - min_level) * csr.n;
+
   for (int i = 0; i < csr.n; i++) {
-    const double vi = double(levels[i] - min) + PartialCompleted(i);
+    const double vi = (double)(levels[i] - min_level) + PartialCompleted(i);
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
-      const double vj = double(levels[j] - min) + PartialCompleted(j);
+      const double vj = (double)(levels[j] - min_level) + PartialCompleted(j);
+
+      // Metis minimises the edgecut.
+      const double diff = (vi - vj) * (vi - vj);
       const double denom = vi * vi + vj * vj + 1.0;
-      const double w = 1.0e+4 / denom;
+      const double w = diff + total_diff / denom;
       if (w < 1.0)
         weights[t] = 1;
       else
