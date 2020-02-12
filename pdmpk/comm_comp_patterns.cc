@@ -77,9 +77,7 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    std::cout << "Phase: " << phase << ", "
-              << "ExactLevelSum(): " << level_sum << "; "
-              << "min_level: " << min_level << std::endl;
+    DbgPhaseSummary(min_level, level_sum);
     if (old_level_sum == level_sum)
       break;
     old_level_sum = level_sum;
@@ -102,8 +100,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    std::cout << "Phase: " << phase << ", "
-              << "ExactLevelSum(): " << level_sum << std::endl;
+    DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -130,8 +127,7 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    std::cout << "Phase: " << phase << ", "
-              << "ExactLevelSum(): " << level_sum << std::endl;
+    DbgPhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_history.push_back(pdmpk_bufs.partitions);
@@ -406,6 +402,16 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
 }
 
 #ifndef NDEBUG
+
+void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
+                                       const level_t &level_sum) const {
+  const auto count = std::count(std::begin(pdmpk_bufs.levels),
+                                std::end(pdmpk_bufs.levels), min_level);
+  std::cout << "Phase: " << phase << ", "
+            << "ExactLevelSum(): " << level_sum << "; "
+            << "min_level: " << min_level << ", "
+            << "count: " << count << std::endl;
+}
 
 void CommCompPatterns::DbgAsserts() const {
   /// Check all vertices reach `nlevels`.
