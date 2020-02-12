@@ -78,7 +78,8 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     std::cout << "Phase: " << phase << ", "
-              << "ExactLevelSum(): " << level_sum << std::endl;
+              << "ExactLevelSum(): " << level_sum << "; "
+              << "min_level: " << min_level << std::endl;
     if (old_level_sum == level_sum)
       break;
     old_level_sum = level_sum;
