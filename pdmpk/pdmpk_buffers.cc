@@ -68,13 +68,12 @@ void PDMPKBuffers::IncLevel(const idx_t &idx) {
 
 void PDMPKBuffers::UpdateWeights(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
-    int li = levels[i];
+    const double vi = double(levels[i] - min) + PartialCompleted(i);
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
-      const int lj = levels[j];
-      const double eps = PartialCompleted(i) + PartialCompleted(j);
-      const double denom = li + lj - 2 * min + 0.5 * eps + 1.0;
-      const double w = 1.0e+4 / (denom * denom);
+      const double vj = double(levels[j] - min) + PartialCompleted(j);
+      const double denom = vi * vi + vj * vj + 1.0;
+      const double w = 1.0e+4 / denom;
       if (w < 1.0)
         weights[t] = 1;
       else
