@@ -101,6 +101,14 @@ private:
   /// Stack of partitions for partition mirroring.
   std::vector<std::vector<idx_t>> partition_history;
 
+  /// Code executed at the end of the constructor.  This method
+  ///
+  /// - finalizes @ref MCSR::mptr and @ref MPIBuffers::init_idcs so
+  /// their processing can be more convenient;
+  ///
+  /// - gathers information on how to collect the results.
+  void Epilogue();
+
   /// Process all phases: without any mirroring.
   void ProcAllPhasesNoMirror();
 

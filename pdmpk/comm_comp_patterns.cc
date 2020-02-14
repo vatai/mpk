@@ -39,6 +39,14 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   // ProcAllPhasesMinAboveHalf();
   ProcAllPhasesMinAboveZero();
   // ProcAllPhasesCyclePartitions();
+
+  Epilogue();
+#ifndef NDEBUG
+  DbgAsserts();
+#endif
+}
+
+void CommCompPatterns::Epilogue() {
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
@@ -51,9 +59,6 @@ CommCompPatterns::CommCompPatterns(const Args &args)
     bufs[pair.first].results.SaveIndex(i);
     bufs[pair.first].results_mbuf_idx.push_back(pair.second);
   }
-#ifndef NDEBUG
-  DbgAsserts();
-#endif
 }
 
 void CommCompPatterns::Stats() const {
