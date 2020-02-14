@@ -410,16 +410,18 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &map_iter : src_type_mapto_tgt_index_set) {
-    const auto src_idx = tgt_recv_baseidx + idx;
-    for (const auto &tgt_idx : map_iter.second) {
-      switch (map_iter.first.type) {
-      case kMcol:
-        tgt_buf.mcsr.mcol[tgt_idx] = tgt_recv_baseidx + idx;
-        break;
-      case kInitIdcs:
-        tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
-        break;
+    const auto src_idx = tgt_recv_baseidx + idx; // rbuf index
+    switch (map_iter.first.type) {
+    case kMcol:
+      for (const auto &tgt_idx : map_iter.second) {
+        tgt_buf.mcsr.mcol[tgt_idx] = src_idx;
       }
+      break;
+    case kInitIdcs:
+      for (const auto &tgt_idx : map_iter.second) {
+        tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+      }
+      break;
     }
 
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
