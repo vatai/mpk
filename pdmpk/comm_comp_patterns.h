@@ -214,6 +214,10 @@ private:
 
 #ifndef NDEBUG
   //// @todo(vatai): Remove debug DbgPhaseSummary().
+  ///
+  /// @param min_level Minimum of levels.
+  ///
+  /// @param level_sum Exact sum of "levels".
   void DbgPhaseSummary(const level_t &min_level, const size_t &level_sum) const;
   /// @todo(vatai): Remove debug DbgAsserts().
   void DbgAsserts() const;
