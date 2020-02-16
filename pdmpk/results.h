@@ -57,11 +57,4 @@ private:
   std::vector<idx_t> original_idcs;
   /// `values[i]` is the value at `originals_idcs[i]` of the final result.
   std::vector<double> values;
-
-  /// Generate a filename from `args`, `rank` and `ext`.
-  ///
-  /// @param rank MPI rank of the buffer.
-  ///
-  /// @param ext File extension appended to the filename.
-  std::string Filename(const int &rank, const std::string &ext) const;
 };

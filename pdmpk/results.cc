@@ -32,23 +32,20 @@ void Results::SaveIndex(const idx_t &idx, const idx_t &mbuf_idx) {
 }
 
 void Results::Dump(const int &rank) {
-  std::ofstream file(Filename(rank, "bin"), std::ios_base::binary);
+  std::ofstream file(args.Filename(rank, Args::kBinResult),
+                     std::ios_base::binary);
   Utils::DumpVec(original_idcs, file);
   Utils::DumpVec(values, file);
 }
 
 void Results::Load(const int &rank) {
-  std::ifstream file(Filename(rank, "bin"), std::ios_base::binary);
+  std::ifstream file(args.Filename(rank, Args::kBinResult),
+                     std::ios_base::binary);
   Utils::LoadVec(file, &original_idcs);
   Utils::LoadVec(file, &values);
 }
 
 void Results::DumpTxt(const int &rank) {
-  std::ofstream file(Filename(rank, "txt"));
+  std::ofstream file(args.Filename(rank, Args::kTxtResult));
   Utils::DumpTxt("result_values", values, file);
-}
-
-std::string Results::Filename(const int &rank, const std::string &ext) const {
-  return args.mtxname + "-" + kFname + "-" + std::to_string(args.npart) + "-" +
-         std::to_string(args.nlevel) + "-" + std::to_string(rank) + "." + ext;
 }

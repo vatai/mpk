@@ -113,11 +113,4 @@ public:
 private:
   const Args &args; ///< Arguments passed to the main program.
   Buffers();        ///< Disabled default constructor.
-  /// Generate filename based on @ref Args the the parameters
-  ///
-  /// @param rank The MPI rank correspanding to the @ref Buffers.
-  ///
-  /// @param ext The extention that should be appended to the end of
-  /// the filename.
-  std::string Filename(const int &rank, const std::string &ext) const;
 };

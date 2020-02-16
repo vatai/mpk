@@ -2,6 +2,7 @@
 // Author: Utsav SINGHAL <utsavsinghal5@gmail.com>
 // Date: 2019-09-17
 
+#include "args.h"
 #include "metis.h"
 #include <algorithm>
 #include <cassert>
@@ -61,8 +62,7 @@ void CommCompPatterns::Epilogue() {
 }
 
 void CommCompPatterns::Stats() const {
-  std::ofstream of(args.mtxname + "-" + std::to_string(args.npart) + "-" +
-                   std::to_string(args.nlevel) + ".stats.txt");
+  std::ofstream of(args.Filename(0, Args::kStatusFileName));
 
   size_t sum = 0;
   size_t ssum = 0;
