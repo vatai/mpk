@@ -166,8 +166,9 @@ private:
   ///
   /// @param lbelow The level of the vertex at `idx`.
   ///
-  /// @param t The index of the adjacent vertex in @ref Buffers::mbuf.
-  void ProcAdjacent(const idx_t &idx, const level_t &lbelow, const idx_t &t);
+  /// @param col_idx The index of the adjacent vertex in @ref CSR::col.
+  void ProcAdjacent(const idx_t &idx, const level_t &lbelow,
+                    const idx_t &col_idx);
 
   /// Clean up after processing a vertex
   ///

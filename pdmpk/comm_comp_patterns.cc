@@ -324,16 +324,16 @@ void CommCompPatterns::AddToInit(const idx_t &idx, const idx_t &level) {
 
 void CommCompPatterns::ProcAdjacent(const idx_t &idx,      //
                                     const level_t &lbelow, //
-                                    const idx_t &t) {
+                                    const idx_t &col_idx) {
   /// @todo(utsav): Remove debug code
-  pdmpk_bufs.partials[t] = true;
+  pdmpk_bufs.partials[col_idx] = true;
 
-  const auto j = csr.col[t]; // Matrix column index.
+  const auto j = csr.col[col_idx]; // Matrix column index.
   const auto cur_part = pdmpk_bufs.partitions[idx];
   const auto src_part_idx = store_part.at({j, lbelow});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
-  bufs[cur_part].mcsr.mval.push_back(csr.val[t]);
+  bufs[cur_part].mcsr.mval.push_back(csr.val[col_idx]);
   bufs[cur_part].dbg_idx.push_back(idx);
   if (cur_part == src_part) {
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
