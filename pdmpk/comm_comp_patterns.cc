@@ -55,9 +55,9 @@ void CommCompPatterns::Epilogue() {
   }
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
-    const auto &pair = store_part.at({i, args.nlevel});
-    bufs[pair.first].results.SaveIndex(i);
-    bufs[pair.first].results_mbuf_idx.push_back(pair.second);
+    const auto &[part, mbuf_idx] = store_part.at({i, args.nlevel});
+    bufs[part].results.SaveIndex(i);
+    bufs[part].results_mbuf_idx.push_back(mbuf_idx);
   }
 }
 
