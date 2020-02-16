@@ -337,7 +337,6 @@ void CommCompPatterns::ProcAdjacent(const idx_t &idx,      //
   bufs[cur_part].mcsr.mval.push_back(csr.val[t]);
   bufs[cur_part].dbg_idx.push_back(idx);
   if (cur_part == src_part) {
-    // 199 // from store part
     bufs[cur_part].mcsr.mcol.push_back(src_idx);
   } else {
     // Record communication.
@@ -354,17 +353,13 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
 }
 
 void CommCompPatterns::FinalizePhase(const level_t &min_level) {
-  // Fill sendcount and recvcount.
+  // Fill sendcount and recv count.
   for (const auto &iter : comm_dict) // CHECK
     UpdateMPICountBuffers(iter.first, iter.second.size());
 
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
 
-  // Update `mcol` and fill `sbuf_idcs` from `comm_dict`.
-  // (In case of type = kMcol)
-  // Fill `ibuf` and the remainder of `sbuf`.
-  // (In case of type = kInitIdcs)
   for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
        iter++)
     ProcCommDict(iter);
