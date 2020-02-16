@@ -3,13 +3,12 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <iomanip>
 #include <metis.h>
 
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
-
-#define SMALL_N 10
 
 PDMPKBuffers::PDMPKBuffers(const Args &args, const CSR &csr)
     : partials(csr.nnz, false), //
@@ -137,9 +136,10 @@ void PDMPKBuffers::MetisPartitionWithWeights() {
 }
 
 void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {
+  const int n = sqrt(csr.n);
   const int width = 4;
   for (int i = 0; i < csr.n; i++) {
-    if (i % SMALL_N == 0)
+    if (i % n == 0)
       os << std::endl;
     os << std::setw(width) << levels[i] << ", ";
   }
@@ -147,6 +147,7 @@ void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {
 }
 
 void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
+  const int n = sqrt(csr.n);
   int max = 0;
   for (int i = 0; i < csr.n; i++) {
     const idx_t d = csr.ptr[i + 1] - csr.ptr[i];
@@ -154,7 +155,7 @@ void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
       max = d;
   }
   for (int i = 0; i < csr.n; i++) {
-    if (i % SMALL_N == 0)
+    if (i % n == 0)
       os << std::endl;
     const idx_t d = csr.ptr[i + 1] - csr.ptr[i];
     for (int j = 0; j < max - d; j++)
@@ -167,8 +168,9 @@ void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
 }
 
 void PDMPKBuffers::DebugPrintPartitions(std::ostream &os) {
+  const int n = sqrt(csr.n);
   for (int i = 0; i < csr.n; i++) {
-    if (i % SMALL_N == 0)
+    if (i % n == 0)
       os << std::endl;
     os << partitions[i] << ", ";
   }
