@@ -11,39 +11,41 @@ const std::string kFname{"fresults"};
 
 Results::Results(const Args &args) : args{args} {}
 
-void Results::FillVal(const std::vector<idx_t> &idcs,
-                      const std::vector<double> &mbuf) {
-  val.clear();
-  for (const auto i : idcs) {
-    val.push_back(mbuf[i]);
+void Results::FillVal(const std::vector<double> &mbuf) {
+  values.clear();
+  for (const auto mbuf_idx : mbuf_idcs) {
+    values.push_back(mbuf[mbuf_idx]);
   }
 }
 
 void Results::FillResults(std::vector<double> *results) {
-  const size_t size = val.size();
+  const size_t size = values.size();
   for (size_t i = 0; i < size; i++) {
-    auto idx = vect_idx[i];
-    (*results)[idx] = val[i];
+    auto idx = original_idcs[i];
+    (*results)[idx] = values[i];
   }
 }
 
-void Results::SaveIndex(const int &idx) { vect_idx.push_back(idx); }
+void Results::SaveIndex(const idx_t &idx, const idx_t &mbuf_idx) {
+  original_idcs.push_back(idx);
+  mbuf_idcs.push_back(mbuf_idx);
+}
 
 void Results::Dump(const int &rank) {
   std::ofstream file(Filename(rank, "bin"), std::ios_base::binary);
-  Utils::DumpVec(vect_idx, file);
-  Utils::DumpVec(val, file);
+  Utils::DumpVec(original_idcs, file);
+  Utils::DumpVec(values, file);
 }
 
 void Results::Load(const int &rank) {
   std::ifstream file(Filename(rank, "bin"), std::ios_base::binary);
-  Utils::LoadVec(file, &vect_idx);
-  Utils::LoadVec(file, &val);
+  Utils::LoadVec(file, &original_idcs);
+  Utils::LoadVec(file, &values);
 }
 
 void Results::DumpTxt(const int &rank) {
   std::ofstream file(Filename(rank, "txt"));
-  Utils::DumpTxt("result_val", val, file);
+  Utils::DumpTxt("result_values", values, file);
 }
 
 std::string Results::Filename(const int &rank, const std::string &ext) const {

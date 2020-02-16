@@ -103,7 +103,7 @@ void Buffers::Exec() {
     DoComp(phase);
   }
 
-  results.FillVal(results_mbuf_idx, mbuf);
+  results.FillVal(mbuf);
 }
 
 void Buffers::LoadInput() {
@@ -117,8 +117,7 @@ void Buffers::Dump(const int &rank) {
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
-  Utils::DumpVec(results_mbuf_idx, file);
-  // Utils::DumpVec(results.vect_idx, file);
+  Utils::DumpVec(results.mbuf_idcs, file);
   results.Dump(rank);
   mpi_bufs.DumpToOFS(file);
   mcsr.DumpToOFS(file);
@@ -133,8 +132,7 @@ void Buffers::Load(const int &rank) {
   mbuf.resize(mbuf_idx, 0);
 
   Utils::LoadVec(file, &mbuf.phase_begin);
-  Utils::LoadVec(file, &results_mbuf_idx);
-  // Utils::LoadVec(results.vect_idx, file);
+  Utils::LoadVec(file, &results.mbuf_idcs);
   results.Load(rank);
   mpi_bufs.LoadFromIFS(file);
   mcsr.LoadFromIFS(file);
@@ -146,8 +144,7 @@ void Buffers::DumpTxt(const int &rank) {
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
-  Utils::DumpTxt("result_mbuf_idx", results_mbuf_idx, file);
-  // Utils::DumpTxt("result_vect_idx", results.vect_idx, file);
+  Utils::DumpTxt("result.mbuf_idcs", results.mbuf_idcs, file);
   results.DumpTxt(rank);
   Utils::DumpTxt("dbg_idx", dbg_idx, file);
   mpi_bufs.DumpToTxt(file);

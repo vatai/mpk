@@ -103,10 +103,6 @@ public:
   /// `mbuf.begin[phase] + mpi_bufs.rbuf_size(phase)` is not violated.
   phased_vector<double> mbuf;
 
-  /// Holds the (vector index, `mbuf` index) pairs where the vertices
-  /// at level `nlevel` can be found in the given partition.
-  std::vector<idx_t> results_mbuf_idx;
-
   /// Information needed to reconstruct the result from the output of
   /// the partitions (store ind Buffers).
   Results results;
@@ -116,7 +112,7 @@ public:
 
 private:
   const Args &args; ///< Arguments passed to the main program.
-  Buffers(); ///< Disabled default constructor.
+  Buffers();        ///< Disabled default constructor.
   /// Generate filename based on @ref Args the the parameters
   ///
   /// @param rank The MPI rank correspanding to the @ref Buffers.

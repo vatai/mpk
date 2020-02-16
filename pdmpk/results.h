@@ -17,21 +17,21 @@ public:
   ///
   /// @param args Arguments from the command-line.
   Results(const Args &args);
-  /// Fill the `val[]` array: val[i] = mbuf[idcs[i]].
-  ///
-  /// @param idcs Indices of `mbuf` which need to be put into @ref Results::val.
+  /// Fill the @ref values array: vales[i] = mbuf[mbuf_idcs[i]].
   ///
   /// @param mbuf A buffer of source values.
-  void FillVal(const std::vector<idx_t> &idcs, const std::vector<double> &mbuf);
+  void FillVal(const std::vector<double> &mbuf);
   /// Fill `results[vect_idx[i]] = val[i]`.  Used in `pdmpk_test`.
   ///
   /// @param[out] results Array of length @ref CSR.n which will be
   /// filled.
   void FillResults(std::vector<double> *results);
-  /// Save index in `vect_idx`.
+  /// Save original index - `mbuf` index pair.
   ///
-  /// @param idx Index saved in `vect_idx`.
-  void SaveIndex(const int &idx);
+  /// @param idx Original index saved.
+  ///
+  /// @param mbuf_idx `mbuf` index.
+  void SaveIndex(const idx_t &idx, const idx_t &mbuf_idx);
   /// Save the results.
   ///
   /// @param rank MPI rank.
@@ -45,11 +45,19 @@ public:
   /// @param rank MPI rank.
   void DumpTxt(const int &rank);
 
+  /// Holds the `mbuf` index where the vertices at level `nlevel` can
+  /// be found in the given partition. This member is public and
+  /// serialised by @ref Buffers.
+  std::vector<idx_t> mbuf_idcs;
+
 private:
-  const Args args;             ///< Arguments from the command-line.
-  std::vector<idx_t> vect_idx; ///< `vect_idx[i]` is the index of `val[i]`.
-  std::vector<double> val;     ///< `val[i]` is the value at
-                               ///`vect_idx[i]` of the final result.
+  /// Arguments from the command-line.
+  const Args args;
+  /// `original_idcs[i]` is the index of `values[i]`.
+  std::vector<idx_t> original_idcs;
+  /// `values[i]` is the value at `originals_idcs[i]` of the final result.
+  std::vector<double> values;
+
   /// Generate a filename from `args`, `rank` and `ext`.
   ///
   /// @param rank MPI rank of the buffer.
