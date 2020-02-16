@@ -23,9 +23,9 @@
 Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0), cycle(2) {
 
   METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 5000; // originally 1000
+  opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
   opt[METIS_OPTION_CONTIG] = 0;
-  opt[METIS_OPTION_MINCONN] = 1;
+  // opt[METIS_OPTION_MINCONN] = 1;
 
   if (const char *ompi_npart = std::getenv("PMI_SIZE")) {
     npart = std::stoi(ompi_npart);
