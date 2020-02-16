@@ -348,8 +348,9 @@ void CommCompPatterns::ProcAdjacent(const idx_t &idx,      //
 
 void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
                                       const idx_t &part) {
-  store_part[idx_lvl] = {part, bufs[part].mbuf_idx};
-  bufs[part].mbuf_idx++;
+  auto &mbuf_idx = bufs[part].mbuf_idx;
+  store_part[idx_lvl] = {part, mbuf_idx};
+  mbuf_idx++;
 }
 
 void CommCompPatterns::FinalizePhase(const level_t &min_level) {
@@ -392,7 +393,7 @@ void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
 }
 
 void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
-  auto &src_tgt = iter->first;
+  const auto &src_tgt = iter->first;
   auto &src_mpi_buf = bufs[src_tgt.first].mpi_bufs;
   auto &tgt_buf = bufs[src_tgt.second];
   const auto &src_type_mapto_tgt_index_set = iter->second;
