@@ -66,9 +66,10 @@ private:
   /// The type of communication recorded in @ref CommDict @see
   /// comm_dict
   enum CommType {
-    kMcol,    ///< Full vertex (needs update `mcol` in @ref MCSR)
-    kInitIdcs ///< Partial/initialization value (needs update
-              ///`init_idcs` in @ref Buffers)
+    kMcol,     ///< Full vertex (needs update `mcol` in @ref MCSR)
+    kInitIdcs, ///< Partial/initialization value (needs update
+               ///`init_idcs` in @ref Buffers)
+    kFinished  ///< Finished vertex
   };
 
   /// A structure describing the data needed to be communicated.

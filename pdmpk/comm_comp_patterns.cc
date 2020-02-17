@@ -348,6 +348,19 @@ void CommCompPatterns::ProcAdjacent(const idx_t &idx,      //
 void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
                                       const idx_t &part) {
   auto &mbuf_idx = bufs[part].mbuf_idx;
+  const auto idx = idx_lvl.first;
+  if (not partition_history.empty()) {
+    const auto tgt_part = partition_history[0][idx];
+    if (pdmpk_bufs.levels[idx] == args.nlevel and part != tgt_part) {
+      assert(pdmpk_bufs.PartialIsEmpty(idx));
+      assert(args.nlevel == idx_lvl.second);
+      std::cout << "kFinished: phase: " << phase << std::endl;
+      std::cout << "comm_dict[{" << part << ", " << tgt_part << "}][{"
+                << mbuf_idx << ", " << kFinished << "}].insert(" << idx << ");"
+                << std::endl;
+      comm_dict[{part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+    }
+  }
   store_part[idx_lvl] = {part, mbuf_idx};
   mbuf_idx++;
 }
@@ -412,11 +425,18 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
         tgt_buf.mcsr.mcol[tgt_idx] = src_idx;
       }
       break;
-    case kInitIdcs:
-      for (const auto &tgt_idx : map_iter.second) {
-        tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
-      }
-      break;
+    case kInitIdcs: {
+      assert(map_iter.second.size() == 1);
+      const auto tgt_idx = *map_iter.second.begin();
+      tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    } break;
+    case kFinished: {
+      assert(map_iter.second.size() == 1);
+      const auto idx = *map_iter.second.begin(); // original idx
+      assert(not partition_history.empty());
+      const auto part = partition_history[0][idx];
+      store_part[{idx, args.nlevel}] = {part, src_idx};
+    } break;
     }
 
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
