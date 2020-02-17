@@ -15,6 +15,7 @@
 #include "args.h"
 #include "buffers.h"
 #include "csr.h"
+#include "debugger.h"
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
@@ -213,17 +214,5 @@ private:
 
   /// The current phase set at the beginning of each phase.
   int phase;
-
-#ifndef NDEBUG
-  //// @todo(vatai): Remove debug DbgPhaseSummary().
-  ///
-  /// @param min_level Minimum of levels.
-  ///
-  /// @param level_sum Exact sum of "levels".
-  void DbgPhaseSummary(const level_t &min_level, const size_t &level_sum) const;
-  /// @todo(vatai): Remove debug DbgAsserts().
-  void DbgAsserts() const;
-  /// @todo(vatai): Remove debug DbgMbufChecks().
-  void DbgMbufChecks();
-#endif
+  friend class Debugger;
 };

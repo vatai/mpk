@@ -3,6 +3,7 @@
 // Date: 2019-09-17
 
 #include "args.h"
+#include "debugger.h"
 #include "metis.h"
 #include <algorithm>
 #include <cassert>
@@ -43,7 +44,8 @@ CommCompPatterns::CommCompPatterns(const Args &args)
 
   Epilogue();
 #ifndef NDEBUG
-  DbgAsserts();
+  Debugger debugger(this);
+  debugger.DbgAsserts();
 #endif
 }
 
@@ -85,7 +87,10 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
+#ifndef NDEBUG
+    Debugger debugger(this);
+    debugger.DbgPhaseSummary(min_level, level_sum);
+#endif
     if (old_level_sum == level_sum)
       break;
     old_level_sum = level_sum;
@@ -108,7 +113,8 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
+    Debugger debugger(this);
+    debugger.DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -135,7 +141,8 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
+    Debugger debugger(this);
+    debugger.DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -162,7 +169,8 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
+    Debugger debugger(this);
+    debugger.DbgPhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_history.push_back(pdmpk_bufs.partitions);
@@ -380,7 +388,7 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
   comm_dict.clear();
 
   pdmpk_bufs.UpdateWeights(min_level);
-  // pdmpk_bufs.DebugPrintReport(std::cout, phase);
+  pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
@@ -391,9 +399,9 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
                 return a.second < b.second;
               });
   }
-#ifndef NDEBUG
-  DbgMbufChecks();
-#endif
+
+  Debugger debugger(this);
+  debugger.DbgMbufChecks();
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
@@ -453,67 +461,3 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.second]
       .mpi_bufs.rdispls[phase * args.npart + src_tgt.first];
 }
-
-#ifndef NDEBUG
-
-void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
-                                       const size_t &level_sum) const {
-  const auto count = std::count(std::begin(pdmpk_bufs.levels),
-                                std::end(pdmpk_bufs.levels), min_level);
-  std::cout << "Phase: " << phase << ", "
-            << "ExactLevelSum(): " << level_sum << "; "
-            << "min_level: " << min_level << ", "
-            << "count: " << count << std::endl;
-}
-
-void CommCompPatterns::DbgAsserts() const {
-  /// Check all vertices reach `nlevels`.
-  for (auto level : pdmpk_bufs.levels) {
-    assert(level == args.nlevel);
-  }
-  /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
-  for (auto b : bufs) {
-    for (auto phase = 1; phase < this->phase; phase++) {
-      auto mbd = b.mbuf.phase_begin[phase] - b.mbuf.phase_begin[phase - 1];
-      auto mpd = b.mcsr.mptr.phase_begin[phase] //
-                 - b.mcsr.mptr.phase_begin[phase - 1];
-      auto rbs = b.mpi_bufs.RbufSize(phase - 1);
-      if (mbd != mpd + rbs) {
-        std::cout << "phase: " << phase << ", "
-                  << "mbd: " << mbd << ", "
-                  << "mpd: " << mpd << ", "
-                  << "rbs: " << rbs << std::endl;
-      }
-      assert(mbd == mpd + rbs);
-    }
-  }
-}
-
-void CommCompPatterns::DbgMbufChecks() {
-  // Check nothing goes over mbufIdx.
-  for (auto buffer : bufs) {
-    auto mbuf_idx = buffer.mbuf_idx;
-    // Check init_idcs.
-    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[phase];
-         i < buffer.mpi_bufs.init_idcs.size(); i++) {
-      auto pair = buffer.mpi_bufs.init_idcs[i];
-      if (pair.first >= mbuf_idx) {
-        std::cout << pair.first << ", " << mbuf_idx << std::endl;
-      }
-      assert(pair.first < mbuf_idx);
-      assert(pair.second < mbuf_idx);
-    }
-    // Check sbuf_idcs.
-    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[phase];
-         i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
-      auto value = buffer.mpi_bufs.sbuf_idcs[i];
-      assert(value < mbuf_idx);
-    }
-    // Check mcol.
-    for (auto value : buffer.mcsr.mcol) {
-      assert(value < mbuf_idx);
-    }
-  }
-}
-
-#endif
