@@ -153,7 +153,11 @@ void Buffers::DumpTxt(const int &rank) {
 
 void Buffers::DumpMbufTxt(const int &rank) {
   std::ofstream file(args.Filename(rank, Args::kTxtMbuf));
+
+  Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
   Utils::DumpTxt("mbuf", mbuf, file);
+
+  mpi_bufs.DumpToTxt(file);
 }
 
 void Buffers::DbgCheck() {
