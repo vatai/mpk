@@ -10,6 +10,7 @@ add_library(mpi_buffers OBJECT mpi_buffers.h mpi_buffers.cc)
 add_library(pdmpk_buffers OBJECT pdmpk_buffers.h pdmpk_buffers.cc)
 add_library(lapjv OBJECT lapjv.h lapjv.c)
 add_library(results OBJECT results.h results.cc)
+add_library(debugger OBJECT debugger.h debugger.cc)
 
 add_library(buffers buffers.h buffers.cc
   $<TARGET_OBJECTS:mpi_buffers>
@@ -20,7 +21,8 @@ target_link_libraries(buffers MPI::MPI_CXX)
 add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:pdmpk_buffers>
-  $<TARGET_OBJECTS:lapjv>)
+  $<TARGET_OBJECTS:lapjv>
+  $<TARGET_OBJECTS:debugger>)
 target_link_libraries(comm_comp_patterns buffers ${METIS})
 
 add_executable(pdmpk_prep pdmpk_prep.cc $<TARGET_OBJECTS:args>)
