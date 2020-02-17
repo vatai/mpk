@@ -45,7 +45,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   Epilogue();
 #ifndef NDEBUG
   Debugger debugger(this);
-  debugger.DbgAsserts();
+  debugger.Asserts();
 #endif
 }
 
@@ -89,7 +89,7 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
 #ifndef NDEBUG
     Debugger debugger(this);
-    debugger.DbgPhaseSummary(min_level, level_sum);
+    debugger.PhaseSummary(min_level, level_sum);
 #endif
     if (old_level_sum == level_sum)
       break;
@@ -114,7 +114,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     Debugger debugger(this);
-    debugger.DbgPhaseSummary(min_level, level_sum);
+    debugger.PhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -142,7 +142,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     Debugger debugger(this);
-    debugger.DbgPhaseSummary(min_level, level_sum);
+    debugger.PhaseSummary(min_level, level_sum);
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -170,7 +170,7 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     Debugger debugger(this);
-    debugger.DbgPhaseSummary(min_level, level_sum);
+    debugger.PhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_history.push_back(pdmpk_bufs.partitions);
@@ -401,7 +401,7 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
   }
 
   Debugger debugger(this);
-  debugger.DbgMbufChecks();
+  debugger.MbufChecks();
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,

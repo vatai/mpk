@@ -9,8 +9,8 @@
 
 Debugger::Debugger(const CommCompPatterns *const ccp) : ccp{ccp} {}
 
-void Debugger::DbgPhaseSummary(const level_t &min_level,
-                               const size_t &level_sum) const {
+void Debugger::PhaseSummary(const level_t &min_level,
+                            const size_t &level_sum) const {
   const auto count = std::count(std::begin(ccp->pdmpk_bufs.levels),
                                 std::end(ccp->pdmpk_bufs.levels), min_level);
   std::cout << "Phase: " << ccp->phase << ", "
@@ -19,7 +19,7 @@ void Debugger::DbgPhaseSummary(const level_t &min_level,
             << "count: " << count << std::endl;
 }
 
-void Debugger::DbgAsserts() const {
+void Debugger::Asserts() const {
   /// Check all vertices reach `nlevels`.
   for (auto level : ccp->pdmpk_bufs.levels) {
     assert(level == ccp->args.nlevel);
@@ -42,7 +42,7 @@ void Debugger::DbgAsserts() const {
   }
 }
 
-void Debugger::DbgMbufChecks() {
+void Debugger::MbufChecks() {
   // Check nothing goes over mbufIdx.
   for (auto buffer : ccp->bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
