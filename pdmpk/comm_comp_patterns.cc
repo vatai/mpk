@@ -113,8 +113,10 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
+#ifndef NDEBUG
     Debugger debugger(this);
     debugger.PhaseSummary(min_level, level_sum);
+#endif
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -141,8 +143,10 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
+#ifndef NDEBUG
     Debugger debugger(this);
     debugger.PhaseSummary(min_level, level_sum);
+#endif
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
@@ -169,8 +173,10 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
+#ifndef NDEBUG
     Debugger debugger(this);
     debugger.PhaseSummary(min_level, level_sum);
+#endif
     if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
       partition_history.push_back(pdmpk_bufs.partitions);
@@ -400,8 +406,10 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
               });
   }
 
+#ifndef NDEBUG
   Debugger debugger(this);
   debugger.MbufChecks();
+#endif
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
