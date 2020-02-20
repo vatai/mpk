@@ -90,8 +90,8 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
       break;
     old_level_sum = level_sum;
     pdmpk_bufs.MetisPartitionWithWeights();
-    partition_history.push_back(pdmpk_bufs.partitions);
     OptimizePartitionLabels(min_level);
+    partition_history.push_back(pdmpk_bufs.partitions);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
   }
@@ -112,13 +112,13 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
+      OptimizePartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_history.back();
       partition_history.pop_back();
     }
-    OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
   }
@@ -139,13 +139,13 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       pdmpk_bufs.MetisPartitionWithWeights();
+      OptimizePartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
       const auto hist_idx = phase % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
-    OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
   }
@@ -165,11 +165,11 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     DbgPhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
       pdmpk_bufs.MetisPartitionWithWeights();
+      OptimizePartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       pdmpk_bufs.partitions = partition_history[phase % args.cycle];
     }
-    OptimizePartitionLabels(min_level);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
   }
