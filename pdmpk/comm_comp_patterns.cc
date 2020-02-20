@@ -434,29 +434,26 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
                                 - tgt_buf.mcsr.mptr.phase_begin[phase] //
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
-  for (const auto &map_iter : src_type_mapto_tgt_index_set) {
+  for (const auto &[src_info, update_idcs] : src_type_mapto_tgt_index_set) {
     const auto src_idx = tgt_recv_baseidx + idx; // rbuf index
-    switch (map_iter.first.type) {
-    case kMcol:
-      for (const auto &tgt_idx : map_iter.second) {
+    const auto &type = src_info.type;
+    if (type == kMcol) {
+      for (const auto &tgt_idx : update_idcs) {
         tgt_buf.mcsr.mcol[tgt_idx] = src_idx;
       }
-      break;
-    case kInitIdcs: {
-      assert(map_iter.second.size() == 1);
-      const auto tgt_idx = *map_iter.second.begin();
+    } else if (type == kInitIdcs) {
+      assert(update_idcs.size() == 1);
+      const auto tgt_idx = *update_idcs.begin();
       tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
-    } break;
-    case kFinished: {
-      assert(map_iter.second.size() == 1);
-      const auto idx = *map_iter.second.begin(); // original idx
+    } else if (type == kFinished) {
+      assert(update_idcs.size() == 1);
       assert(not partition_history.empty());
+      const auto idx = *update_idcs.begin(); // original idx
       const auto part = partition_history[0][idx];
       store_part[{idx, args.nlevel}] = {part, src_idx};
-    } break;
     }
 
-    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
+    src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = src_info.src_mbuf_idx;
     idx++;
   }
 }
