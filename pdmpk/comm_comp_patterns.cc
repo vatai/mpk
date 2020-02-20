@@ -363,19 +363,18 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
                                       const idx_t &part) {
   auto &mbuf_idx = bufs[part].mbuf_idx;
   const auto idx = idx_lvl.first;
-  if (not partition_history.empty()) {
-    const auto tgt_part = partition_history[0][idx];
-    if (pdmpk_bufs.levels[idx] == args.nlevel and part != tgt_part) {
-      assert(pdmpk_bufs.PartialIsEmpty(idx));
-      assert(args.nlevel == idx_lvl.second);
-      std::cout << "kFinished: phase: " << phase << std::endl;
-      std::cout << "comm_dict[{" << part << ", " << tgt_part << "}][{"
-                << mbuf_idx << ", " << kFinished << "}].insert(" << idx << ");"
-                << std::endl;
-      comm_dict[{part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
-    }
+  // if (not partition_history.empty()) {
+  const auto tgt_part = partition_history[0][idx];
+  if (pdmpk_bufs.levels[idx] == args.nlevel and part != tgt_part) {
+    assert(pdmpk_bufs.PartialIsEmpty(idx));
+    assert(args.nlevel == idx_lvl.second);
+    std::cout << "kFinished: phase: " << phase << ": "
+              << "comm_dict[{" << part << ", " << tgt_part << "}][{" << mbuf_idx
+              << ", " << kFinished << "}].insert(" << idx << ");" << std::endl;
+    comm_dict[{part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+  } else {
+    store_part[idx_lvl] = {part, mbuf_idx};
   }
-  store_part[idx_lvl] = {part, mbuf_idx};
   mbuf_idx++;
 }
 
