@@ -52,7 +52,7 @@ void CommCompPatterns::Epilogue() {
   if (partition_history.size() > 0) {
     phase++;
     InitPhase();
-    FinalizePhase(args.nlevel);
+    FinalizePhase();
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
@@ -183,6 +183,8 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
 }
 
 void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
+  // pdmpk_bufs.DebugPrintReport(std::cout, phase);
+  pdmpk_bufs.UpdateWeights(min_level);
   pdmpk_bufs.MetisPartitionWithWeights();
 
   pdmpk_count.partitions = pdmpk_bufs.partitions;
@@ -279,7 +281,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
       }
     }
   }
-  FinalizePhase(min_level);
+  FinalizePhase();
 }
 
 void CommCompPatterns::InitPhase() {
@@ -369,7 +371,7 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
   mbuf_idx++;
 }
 
-void CommCompPatterns::FinalizePhase(const level_t &min_level) {
+void CommCompPatterns::FinalizePhase() {
   // Fill sendcount and recv count.
   for (const auto &iter : comm_dict) // CHECK
     UpdateMPICountBuffers(iter.first, iter.second.size());
@@ -382,9 +384,6 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
     ProcCommDict(iter);
 
   comm_dict.clear();
-
-  pdmpk_bufs.UpdateWeights(min_level);
-  // pdmpk_bufs.DebugPrintReport(std::cout, phase);
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
