@@ -47,5 +47,6 @@ void Results::Load(const int &rank) {
 
 void Results::DumpTxt(const int &rank) {
   std::ofstream file(args.Filename(rank, Args::kTxtResult));
-  Utils::DumpTxt("result_values", values, file);
+  Utils::DumpTxt("orig_i", original_idcs, file);
+  Utils::DumpTxt("values", values, file);
 }
