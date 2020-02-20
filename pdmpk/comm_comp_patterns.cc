@@ -95,8 +95,7 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
     if (old_level_sum == level_sum)
       break;
     old_level_sum = level_sum;
-    pdmpk_bufs.MetisPartitionWithWeights();
-    OptimizePartitionLabels(min_level);
+    NewPartitionLabels(min_level);
     partition_history.push_back(pdmpk_bufs.partitions);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
@@ -117,8 +116,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
-      pdmpk_bufs.MetisPartitionWithWeights();
-      OptimizePartitionLabels(min_level);
+      NewPartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
@@ -144,8 +142,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
-      pdmpk_bufs.MetisPartitionWithWeights();
-      OptimizePartitionLabels(min_level);
+      NewPartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
@@ -170,8 +167,7 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
-      pdmpk_bufs.MetisPartitionWithWeights();
-      OptimizePartitionLabels(min_level);
+      NewPartitionLabels(min_level);
       partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       pdmpk_bufs.partitions = partition_history[phase % args.cycle];
@@ -186,7 +182,9 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
   }
 }
 
-void CommCompPatterns::OptimizePartitionLabels(const size_t &min_level) {
+void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
+  pdmpk_bufs.MetisPartitionWithWeights();
+
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;

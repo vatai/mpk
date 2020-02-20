@@ -95,7 +95,7 @@ private:
   CommDict comm_dict; ///< @see CommDict.
 
   /// Communication table used by @ref
-  /// CommCompPatterns::OptimizePartitionLabels.
+  /// CommCompPatterns::NewPartitionLabels.
   typedef std::map<src_tgt_t, std::set<idx_t>> CommTable;
   CommTable comm_table; ///< @see CommTable.
 
@@ -125,22 +125,21 @@ private:
   /// Process all phases: use two partitions.
   void ProcAllPhasesCyclePartitions();
 
-  /// Optimize partitions label assignment using
-  /// @ref CommCompPatterns::OptimizePartitionLabels, @ref
+  /// Generate and optimize partition label assignment using @ref
+  /// PDMPKBuffers::MetisPartitionWithWeights @ref
   /// CommCompPatterns::OptimizeVertex and @ref
-  /// CommCompPatterns::FindLabelPermutation.  This essentially
-  /// simulates @ref CommCompPatterns::ProcPhase
+  /// CommCompPatterns::FindLabelPermutation.
   ///
   /// @param min_level Minimum level in the current phase.
-  void OptimizePartitionLabels(const size_t &min_level);
-  /// Called in @ref CommCompPatterns::OptimizePartitionLabels.
+  void NewPartitionLabels(const size_t &min_level);
+  /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
   /// @param idx The index of the vertex processed.
   ///
   /// @param lbelow The level below the current vertex's level
   /// `level[idx]-1`.
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
-  /// Called in @ref CommCompPatterns::OptimizePartitionLabels.
+  /// Called in @ref CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
   /// Code executed before each phase.
