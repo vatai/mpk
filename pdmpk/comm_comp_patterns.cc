@@ -47,6 +47,13 @@ CommCompPatterns::CommCompPatterns(const Args &args)
 }
 
 void CommCompPatterns::Epilogue() {
+  // Send vertices calculated in the last phase back home by
+  // simulating an "empty" phase.
+  if (partition_history.size() > 0) {
+    phase++;
+    InitPhase();
+    FinalizePhase(args.nlevel);
+  }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
     buffer.mcsr.mptr.rec_phase_begin();
