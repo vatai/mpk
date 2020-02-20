@@ -29,6 +29,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       phase{0} {
   pdmpk_bufs.MetisPartition();
   partition_history.push_back(pdmpk_bufs.partitions);
+  first_partition = pdmpk_bufs.partitions;
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
@@ -282,6 +283,19 @@ void CommCompPatterns::InitPhase() {
   for (auto &buffer : bufs) {
     buffer.PhaseInit();
   }
+
+  for (idx_t idx = 0; idx < csr.n; idx++) {
+    if (pdmpk_bufs.levels[idx] == args.nlevel) {
+      const auto &iter = store_part.find({idx, args.nlevel});
+      if (iter != store_part.end()) {
+        const auto &tgt_part = first_partition[idx];
+        const auto &[src_part, mbuf_idx] = iter->second;
+        if (src_part != tgt_part) {
+          comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+        }
+      }
+    }
+  }
 }
 
 bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
@@ -412,11 +426,17 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
         tgt_buf.mcsr.mcol[tgt_idx] = src_idx;
       }
       break;
-    case kInitIdcs:
-      for (const auto &tgt_idx : map_iter.second) {
-        tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
-      }
-      break;
+    case kInitIdcs: {
+      assert(map_iter.second.size() == 1);
+      const auto tgt_idx = *map_iter.second.begin();
+      tgt_buf.mpi_bufs.init_idcs.push_back({src_idx, tgt_idx});
+    } break;
+    case kFinished: {
+      assert(map_iter.second.size() == 1);
+      const auto idx = *map_iter.second.begin(); // original idx
+      const auto part = iter->first.second;
+      store_part[{idx, args.nlevel}] = {part, src_idx};
+    } break;
     }
 
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
