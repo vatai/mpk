@@ -489,7 +489,7 @@ void CommCompPatterns::DbgAsserts() const {
   }
 }
 
-void CommCompPatterns::DbgMbufChecks() {
+void CommCompPatterns::DbgMbufChecks() const {
   // Check nothing goes over mbufIdx.
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbuf_idx;

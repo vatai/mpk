@@ -227,6 +227,6 @@ private:
   /// @todo(vatai): Remove debug DbgAsserts().
   void DbgAsserts() const;
   /// @todo(vatai): Remove debug DbgMbufChecks().
-  void DbgMbufChecks();
+  void DbgMbufChecks() const;
 #endif
 };
