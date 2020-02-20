@@ -49,10 +49,15 @@ CommCompPatterns::CommCompPatterns(const Args &args)
 void CommCompPatterns::Epilogue() {
   // Send vertices calculated in the last phase back home by
   // simulating an "empty" phase.
-  if (partition_history.size() > 0) {
-    phase++;
-    InitPhase();
-    FinalizePhase();
+  for (idx_t idx = 0; idx < csr.n; idx++) {
+    const auto &home_part = first_partition[idx];
+    const auto &eff_part = store_part.at({idx, args.nlevel}).first;
+    if (home_part != eff_part) {
+      phase++;
+      InitPhase();
+      FinalizePhase();
+      break;
+    }
   }
   // nphase + 1 since last phase didn't do any update of levels
   for (auto &buffer : bufs) {
