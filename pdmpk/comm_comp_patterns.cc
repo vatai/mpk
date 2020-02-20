@@ -96,7 +96,6 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
       break;
     old_level_sum = level_sum;
     NewPartitionLabels(min_level);
-    partition_history.push_back(pdmpk_bufs.partitions);
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();
   }
@@ -117,7 +116,6 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
     if (min_level < args.nlevel / 2) {
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
-      partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_history.back();
@@ -143,7 +141,6 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
     if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
-      partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       std::cout << "Second branch" << std::endl;
       const auto hist_idx = phase % partition_history.size();
@@ -168,7 +165,6 @@ void CommCompPatterns::ProcAllPhasesCyclePartitions() {
     DbgPhaseSummary(min_level, level_sum);
     if (phase < args.cycle) {
       NewPartitionLabels(min_level);
-      partition_history.push_back(pdmpk_bufs.partitions);
     } else {
       pdmpk_bufs.partitions = partition_history[phase % args.cycle];
     }
@@ -204,6 +200,7 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   }
   FindLabelPermutation();
   comm_table.clear();
+  partition_history.push_back(pdmpk_bufs.partitions);
 }
 
 bool CommCompPatterns::OptimizeVertex(const idx_t &idx, const level_t &lbelow) {
