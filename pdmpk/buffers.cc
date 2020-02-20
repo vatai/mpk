@@ -95,6 +95,8 @@ void Buffers::DoComm(const int &phase) {
 
 void Buffers::Exec() {
   const auto nphases = mbuf.phase_begin.size();
+  // mcsr.mptr has one more "phase_begin"s because there is one added
+  // in the Epilogue() to make processing the same.
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
 
   DoComp(0);
