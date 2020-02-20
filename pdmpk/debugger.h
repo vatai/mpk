@@ -25,7 +25,7 @@ public:
   /// @todo(vatai): Remove debug DbgAsserts().
   void Asserts() const;
   /// @todo(vatai): Remove debug DbgMbufChecks().
-  void MbufChecks();
+  void MbufChecks() const;
 
 private:
   /// Reference to @ref CommCompPatterns which we intend to debug.

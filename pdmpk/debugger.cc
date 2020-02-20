@@ -42,7 +42,7 @@ void Debugger::Asserts() const {
   }
 }
 
-void Debugger::MbufChecks() {
+void Debugger::MbufChecks() const {
   // Check nothing goes over mbufIdx.
   for (auto buffer : ccp->bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
