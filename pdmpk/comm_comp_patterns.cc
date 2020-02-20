@@ -37,8 +37,8 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   phase = 0;
   ProcPhase(phase);
   // ProcAllPhasesNoMirror();
-  // ProcAllPhasesMinAboveHalf();
-  ProcAllPhasesMinAboveZero();
+  ProcAllPhasesMinAboveHalf();
+  // ProcAllPhasesMinAboveZero();
   // ProcAllPhasesCyclePartitions();
 
   Epilogue();
