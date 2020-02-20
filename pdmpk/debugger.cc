@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <ostream>
+#include <vector>
 
 #include "comm_comp_patterns.h"
 #include "debugger.h"
@@ -66,5 +68,33 @@ void Debugger::MbufChecks() const {
     for (auto value : buffer.mcsr.mcol) {
       assert(value < mbuf_idx);
     }
+  }
+}
+
+void Debugger::StorePart() const {
+  // Init `bufs` which will be printed.
+  std::vector<std::vector<CommCompPatterns::idx_lvl_t>> bufs(ccp->args.npart);
+  for (idx_t i = 0; i < ccp->args.npart; i++) {
+    const auto &size = ccp->bufs[i].mbuf_idx;
+    bufs[i].resize(size, {-1, 0});
+  }
+
+  // Fill `bufs` from `store_part`.
+  for (const auto &iter : ccp->store_part) {
+    const auto &[part, mbuf_idx] = iter.second;
+    bufs[part][mbuf_idx] = iter.first; // idx, lvl
+  }
+
+  // Print `bufs`.
+  for (idx_t i = 0; i < ccp->args.npart; i++) {
+    const auto &buf = bufs[i];
+    std::cout << "Bufs[" << i << "]: ";
+    for (const auto &[idx, lvl] : buf) {
+      if (idx >= 0) {
+        std::cout << "(" << idx << ";" << lvl << ")";
+      }
+      std::cout << ", ";
+    }
+    std::cout << std::endl;
   }
 }

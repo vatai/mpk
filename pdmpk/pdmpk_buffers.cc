@@ -160,9 +160,27 @@ void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
     const idx_t d = csr.ptr[i + 1] - csr.ptr[i];
     for (int j = 0; j < max - d; j++)
       os << "_";
-    for (int j = csr.ptr[i]; j < csr.ptr[i + 1]; j++)
-      os << (partials[j] ? "*" : "O");
-    os << " ";
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      // os << (partials[j] ? "*" : "O");
+      if (partials[t]) {
+        const auto &j = csr.col[t];
+        if (j == i - n)
+          os << "u";
+        else if (j == i - 1)
+          os << "l";
+        else if (j == i)
+          os << "c";
+        else if (j == i + 1)
+          os << "r";
+        else if (j == i + n)
+          os << "d";
+        else
+          os << "*";
+      } else {
+        os << "O";
+      }
+    }
+    os << ", ";
   }
   os << std::endl;
 }

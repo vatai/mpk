@@ -409,6 +409,7 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
 #ifndef NDEBUG
   Debugger debugger(this);
   debugger.MbufChecks();
+  debugger.StorePart();
 #endif
 }
 

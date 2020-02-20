@@ -27,6 +27,9 @@ public:
   /// @todo(vatai): Remove debug DbgMbufChecks().
   void MbufChecks() const;
 
+  /// Print store partition information.
+  void StorePart() const;
+
 private:
   /// Reference to @ref CommCompPatterns which we intend to debug.
   const CommCompPatterns *const ccp;
