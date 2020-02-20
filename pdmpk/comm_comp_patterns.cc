@@ -43,9 +43,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   // ProcAllPhasesCyclePartitions();
 
   Epilogue();
-#ifndef NDEBUG
   DbgAsserts();
-#endif
 }
 
 void CommCompPatterns::Epilogue() {
@@ -392,9 +390,7 @@ void CommCompPatterns::FinalizePhase(const level_t &min_level) {
                 return a.second < b.second;
               });
   }
-#ifndef NDEBUG
   DbgMbufChecks();
-#endif
 }
 
 void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
@@ -454,19 +450,20 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
       .mpi_bufs.rdispls[phase * args.npart + src_tgt.first];
 }
 
-#ifndef NDEBUG
-
 void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
                                        const size_t &level_sum) const {
+#ifndef NDEBUG
   const auto count = std::count(std::begin(pdmpk_bufs.levels),
                                 std::end(pdmpk_bufs.levels), min_level);
   std::cout << "Phase: " << phase << ", "
             << "ExactLevelSum(): " << level_sum << "; "
             << "min_level: " << min_level << ", "
             << "count: " << count << std::endl;
+#endif
 }
 
 void CommCompPatterns::DbgAsserts() const {
+#ifndef NDEBUG
   /// Check all vertices reach `nlevels`.
   for (auto level : pdmpk_bufs.levels) {
     assert(level == args.nlevel);
@@ -487,9 +484,11 @@ void CommCompPatterns::DbgAsserts() const {
       assert(mbd == mpd + rbs);
     }
   }
+#endif
 }
 
 void CommCompPatterns::DbgMbufChecks() const {
+#ifndef NDEBUG
   // Check nothing goes over mbufIdx.
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
@@ -514,6 +513,5 @@ void CommCompPatterns::DbgMbufChecks() const {
       assert(value < mbuf_idx);
     }
   }
-}
-
 #endif
+}

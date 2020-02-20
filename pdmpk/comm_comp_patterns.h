@@ -217,7 +217,6 @@ private:
   /// The current phase set at the beginning of each phase.
   int phase;
 
-#ifndef NDEBUG
   //// @todo(vatai): Remove debug DbgPhaseSummary().
   ///
   /// @param min_level Minimum of levels.
@@ -228,5 +227,4 @@ private:
   void DbgAsserts() const;
   /// @todo(vatai): Remove debug DbgMbufChecks().
   void DbgMbufChecks() const;
-#endif
 };
