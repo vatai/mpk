@@ -93,6 +93,13 @@ void Buffers::DoComm(const int &phase) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
+void Buffers::SendHome() {
+  const auto size = home_idcs.size();
+  for (size_t i = 0; i < size; i++) {
+    mbuf[i] = mbuf[home_idcs[i]];
+  }
+}
+
 void Buffers::Exec() {
   const auto nphases = mbuf.phase_begin.size();
   // mcsr.mptr has one more "phase_begin"s because there is one added

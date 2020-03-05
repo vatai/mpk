@@ -49,6 +49,11 @@ public:
   /// Execute the communication for one phase.
   void DoComm(const int &phase);
 
+  /// Send calculated vertices "home", where the corresponding input
+  /// vector values were in the initial phase (so calling exec again
+  /// would continue calculating further powers).
+  void SendHome();
+
   /// Store @ref Buffers to disk which should be loaded using @ref
   /// Buffers::Load.
   void Dump(const int &rank);
@@ -106,6 +111,11 @@ public:
   /// Information needed to reconstruct the result from the output of
   /// the partitions (store ind Buffers).
   Results results;
+
+  /// Indices from the last phase which where the corresponding value
+  /// appears in the first phase.  This values should be the same
+  /// because all vertices are "sent home".
+  std::vector<idx_t> home_idcs;
 
   /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx; ///< Debug data.
