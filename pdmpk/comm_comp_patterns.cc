@@ -29,7 +29,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       phase{0} {
   pdmpk_bufs.MetisPartition();
   partition_history.push_back(pdmpk_bufs.partitions);
-  first_partition = pdmpk_bufs.partitions;
+  home_partition = pdmpk_bufs.partitions;
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     auto part = pdmpk_bufs.partitions[idx];
@@ -50,7 +50,7 @@ void CommCompPatterns::Epilogue() {
   // Send vertices calculated in the last phase back home by
   // simulating an "empty" phase.
   for (idx_t idx = 0; idx < csr.n; idx++) {
-    const auto &home_part = first_partition[idx];
+    const auto &home_part = home_partition[idx];
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
       phase++;
@@ -295,7 +295,7 @@ void CommCompPatterns::InitPhase() {
     if (pdmpk_bufs.levels[idx] == args.nlevel) {
       const auto &iter = store_part.find({idx, args.nlevel});
       if (iter != store_part.end()) {
-        const auto &tgt_part = first_partition[idx];
+        const auto &tgt_part = home_partition[idx];
         const auto &[src_part, mbuf_idx] = iter->second;
         if (src_part != tgt_part) {
           comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
