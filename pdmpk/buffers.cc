@@ -104,8 +104,6 @@ void Buffers::Exec() {
     DoComm(phase);
     DoComp(phase);
   }
-
-  results.FillVal(mbuf);
 }
 
 void Buffers::LoadInput() {

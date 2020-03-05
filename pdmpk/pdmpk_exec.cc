@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
 
   buf.DumpMbufTxt(rank);
 
+  buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);
   buf.results.DumpTxt(rank);
 
