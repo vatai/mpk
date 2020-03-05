@@ -124,6 +124,7 @@ void Buffers::Dump(const int &rank) {
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
+  Utils::DumpVec(home_idcs, file);
   Utils::DumpVec(results.mbuf_idcs, file);
   results.Dump(rank);
   mpi_bufs.DumpToOFS(file);
@@ -139,6 +140,7 @@ void Buffers::Load(const int &rank) {
   mbuf.resize(mbuf_idx, 0);
 
   Utils::LoadVec(file, &mbuf.phase_begin);
+  Utils::LoadVec(file, &home_idcs);
   Utils::LoadVec(file, &results.mbuf_idcs);
   results.Load(rank);
   mpi_bufs.LoadFromIFS(file);
@@ -151,6 +153,7 @@ void Buffers::DumpTxt(const int &rank) {
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
+  Utils::DumpTxt("home_idcs", home_idcs, file);
   Utils::DumpTxt("result.mbuf_idcs", results.mbuf_idcs, file);
   results.DumpTxt(rank);
   Utils::DumpTxt("dbg_idx", dbg_idx, file);
