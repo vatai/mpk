@@ -32,7 +32,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   home_partition = pdmpk_bufs.partitions;
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
-    auto part = pdmpk_bufs.partitions[idx];
+    const auto part = pdmpk_bufs.partitions[idx];
     FinalizeVertex({idx, 0}, part);
   }
   phase = 0;
