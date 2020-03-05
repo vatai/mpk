@@ -33,6 +33,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   // Distribute all the vertices to their initial partitions
   for (int idx = 0; idx < csr.n; idx++) {
     const auto part = pdmpk_bufs.partitions[idx];
+    bufs[part].home_idcs.push_back(0);
     FinalizeVertex({idx, 0}, part);
   }
   phase = 0;
@@ -68,6 +69,9 @@ void CommCompPatterns::Epilogue() {
   // fill `result_idx`
   for (int i = 0; i < csr.n; i++) {
     const auto &[part, mbuf_idx] = store_part.at({i, args.nlevel});
+    const auto &[part0, mbuf_idx0] = store_part.at({i, 0});
+    assert(part == part0);
+    bufs[part].home_idcs[mbuf_idx0] = mbuf_idx;
     bufs[part].results.SaveIndex(i, mbuf_idx);
   }
 }

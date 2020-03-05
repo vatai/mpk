@@ -111,6 +111,7 @@ void Buffers::Exec() {
     DoComm(phase);
     DoComp(phase);
   }
+  SendHome();
 }
 
 void Buffers::LoadInput() {
