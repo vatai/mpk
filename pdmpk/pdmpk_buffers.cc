@@ -69,10 +69,9 @@ void PDMPKBuffers::UpdateWeights(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
-      if (partials[t]) {
-        weights[t] = 1;
-      } else {
-        weights[t] = (args.nlevel - levels[j] + min) + 1;
+      const auto m = levels[i] < levels[j] ? levels[i] : levels[j];
+      weights[t] = (args.nlevel - m + min) + 1;
+      if (not partials[t]) {
         weights[t] *= weights[t];
       }
     }
