@@ -161,28 +161,6 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesCyclePartitions() {
-  bool is_finished = pdmpk_bufs.IsFinished();
-  while (not is_finished) {
-    phase++;
-    const auto min_level = pdmpk_bufs.MinLevel();
-    const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
-    if (phase < args.cycle) {
-      NewPartitionLabels(min_level);
-    } else {
-      pdmpk_bufs.partitions = partition_history[phase % args.cycle];
-    }
-    ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished();
-  }
-  if (not is_finished) {
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
-              << ": Couldn't finish (probably got stuck)." << std::endl;
-    exit(1);
-  }
-}
-
 void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   // pdmpk_bufs.DebugPrintReport(std::cout, phase);
   pdmpk_bufs.UpdateWeights(min_level);

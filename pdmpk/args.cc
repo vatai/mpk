@@ -20,7 +20,7 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0), cycle(2) {
+Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
 
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
@@ -156,10 +156,6 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0), cycle(2) {
       break;
     case 'u':
       opt[METIS_OPTION_UFACTOR] = std::stoi(optarg);
-      break;
-    // ---- "Y:" ----
-    case 'Y':
-      cycle = std::stoi(optarg);
       break;
       // ----  ----
 

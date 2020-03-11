@@ -43,10 +43,6 @@ struct Args {
   /// Target number of level.
   int nlevel;
 
-  /// Number of cycles for @ref
-  /// CommCompPatterns::ProcAllPhasesCyclePartitions.
-  int cycle;
-
   /// Metis options.
   idx_t opt[METIS_NOPTIONS];
 };
