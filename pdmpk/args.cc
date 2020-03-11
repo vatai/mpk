@@ -38,47 +38,46 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
       {"matrix", required_argument, 0, 'm'},
       {"npart", required_argument, 0, 'n'},
       {"nlevel", required_argument, 0, 'l'},
+      {"mirror", required_argument, 0, 'M'},
+      {"weight", required_argument, 0, 'w'},
       // Metis options.
       {"PTYPE", required_argument, 0, 't'},
       {"OBJTYPE", required_argument, 0, 'o'},
-      // ---
       {"CTYPE", required_argument, 0, 'y'},
       {"IPTYPE", required_argument, 0, 'i'},
       {"RTYPE", required_argument, 0, 'r'},
+      // ---
       {"NCUTS", required_argument, 0, 's'},
       {"NSEPS", required_argument, 0, 'p'},
-      // ---
       {"NUMBERING", required_argument, 0, 'b'},
       {"NITER", required_argument, 0, 'e'},
       {"SEED", required_argument, 0, 'd'},
+      // ---
       {"MINCONN", required_argument, 0, 'c'},
       {"NO2HOP", required_argument, 0, 'h'},
-      // ---
       {"CONTIG", required_argument, 0, 'g'},
       {"COMPRESS", required_argument, 0, 'C'},
       {"CCORDER", required_argument, 0, 'R'},
-      {"CCORDER", required_argument, 0, 'R'},
+      // ---
       {"PFACTOR", required_argument, 0, 'P'},
       {"UFACTOR", required_argument, 0, 'u'},
-      // ---
-      {"cycle", required_argument, 0, 'Y'},
       {0, 0, 0, 0} // last element must be all 0s
   };
   int option_index = 0;
 
   while (1) {
     char c = getopt_long(argc, argv,
-                         "m:n:l:t:o:"
-                         "y:i:r:s:p:"
-                         "b:e:d:c:h:"
-                         "g:C:R:P:u:"
-                         "Y:",
+                         "m:n:l:M:w:"
+                         "t:o:y:i:r:"
+                         "s:p:b:e:d:"
+                         "c:h:g:C:R:"
+                         "P:u:",
                          long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
-      // ---- "m:n:l:t:o:" ----
+      // ---- "m:n:l:M:w:" ----
     case 'm': // --matrix
       mtxname = optarg;
       if (std::string(".mtx") != std::string(mtxname.end() - 4, mtxname.end()))
@@ -94,6 +93,13 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
     case 'l': // --nlevel
       nlevel = std::stoi(optarg);
       break;
+    case 'M':
+      mirror_method = std::stoi(optarg);
+      break;
+    case 'w':
+      weight_update_method = std::stoi(optarg);
+      break;
+      // ---- "t:o:y:i:r:" ----
     case 't': // --PTYPE
       IF_OPTION_VALUE(PTYPE, RB)
       IF_OPTION_VALUE(PTYPE, KWAY)
@@ -102,7 +108,6 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
       IF_OPTION_VALUE(OBJTYPE, CUT)
       IF_OPTION_VALUE(OBJTYPE, VOL)
       ELSE_THROW(OBJTYPE, "CUT, VOL")
-      // ---- "y:i:r:s:p:" ----
     case 'y': // --CTYPE
       IF_OPTION_VALUE(CTYPE, RM)
       IF_OPTION_VALUE(CTYPE, SHEM)
@@ -119,13 +124,13 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
       IF_OPTION_VALUE(RTYPE, SEP2SIDED)
       IF_OPTION_VALUE(RTYPE, SEP1SIDED)
       ELSE_THROW(RTYPE, "FM, GREEDY, SEP2SIDED, SEP1SIDED")
+      // ---- "s:p:b:e:d:" ----
     case 's':
       opt[METIS_OPTION_NCUTS] = std::stoi(optarg);
       break;
     case 'p':
       opt[METIS_OPTION_NSEPS] = std::stoi(optarg);
       break;
-      // ---- "b:e:d:c:h:" ----
     case 'b':
       opt[METIS_OPTION_NUMBERING] = std::stoi(optarg);
       break;
@@ -135,13 +140,13 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
     case 'd':
       opt[METIS_OPTION_SEED] = std::stoi(optarg);
       break;
+      // ---- "c:h:g:C:R:" ----
     case 'c':
       opt[METIS_OPTION_MINCONN] = std::stoi(optarg);
       break;
     case 'h':
       opt[METIS_OPTION_NO2HOP] = std::stoi(optarg);
       break;
-    // ---- "g:C:R:P:u:" ----
     case 'g':
       opt[METIS_OPTION_CONTIG] = std::stoi(optarg);
       break;
@@ -151,6 +156,7 @@ Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
     case 'R':
       opt[METIS_OPTION_CCORDER] = std::stoi(optarg);
       break;
+    // ---- "P:u:", ----
     case 'P':
       opt[METIS_OPTION_PFACTOR] = std::stoi(optarg);
       break;

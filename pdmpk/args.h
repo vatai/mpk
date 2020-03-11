@@ -43,6 +43,12 @@ struct Args {
   /// Target number of level.
   int nlevel;
 
+  /// Index to select the mirror method.
+  int mirror_method;
+
+  /// Index to select the weight update method.
+  int weight_update_method;
+
   /// Metis options.
   idx_t opt[METIS_NOPTIONS];
 };
