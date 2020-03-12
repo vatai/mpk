@@ -20,6 +20,5 @@ if [ ! -f "$MATRIX" ]; then
 fi
 
 # Run test.
-MATRIX=$(basename $URL | sed 's/\.tar\.gz$//')
-NLEVEL_ITER=$NLEVEL NPART_ITER=$NPART \
-           $SCRIPTS_DIR/batch_proc.sh $MATRICES_DIR/$MATRIX/$MATRIX.mtx
+MATRIX=$MATRICES_DIR/$(basename $URL | sed 's/\.tar\.gz$//')/$MATRIX.mtx
+$SCRIPTS_DIR/prep_exec_test.sh $MATRIX $NPART $NLEVEL

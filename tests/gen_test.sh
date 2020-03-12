@@ -23,4 +23,4 @@ if [ ! -f "$MATRIX" ]; then
 fi
 
 # Run test.
-NLEVEL_ITER=$NLEVEL NPART_ITER=$NPART $SCRIPTS_DIR/batch_proc.sh $MATRIX
+$SCRIPTS_DIR/prep_exec_test.sh $MATRIX $NPART $NLEVEL
