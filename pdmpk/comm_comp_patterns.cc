@@ -38,10 +38,13 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  // ProcAllPhasesNoMirror();
-  // ProcAllPhasesMinAboveHalf();
-  ProcAllPhasesMinAboveZero();
-  // ProcAllPhasesCyclePartitions();
+  if (args.mirror_method == 0) {
+    ProcAllPhasesNoMirror();
+  } else if (args.mirror_method == 1) {
+    ProcAllPhasesMinAboveHalf();
+  } else if (args.mirror_method == 2) {
+    ProcAllPhasesMinAboveZero();
+  }
 
   Epilogue();
   DbgAsserts();
@@ -154,28 +157,6 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
       std::cout << "Second branch" << std::endl;
       const auto hist_idx = phase % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
-    }
-    ProcPhase(min_level);
-    is_finished = pdmpk_bufs.IsFinished();
-  }
-  if (not is_finished) {
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
-              << ": Couldn't finish (probably got stuck)." << std::endl;
-    exit(1);
-  }
-}
-
-void CommCompPatterns::ProcAllPhasesCyclePartitions() {
-  bool is_finished = pdmpk_bufs.IsFinished();
-  while (not is_finished) {
-    phase++;
-    const auto min_level = pdmpk_bufs.MinLevel();
-    const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
-    if (phase < args.cycle) {
-      NewPartitionLabels(min_level);
-    } else {
-      pdmpk_bufs.partitions = partition_history[phase % args.cycle];
     }
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();

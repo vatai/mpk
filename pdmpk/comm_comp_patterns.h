@@ -122,9 +122,6 @@ private:
   /// Process all phases: mirror after min_level is above 0.
   void ProcAllPhasesMinAboveZero();
 
-  /// Process all phases: use two partitions.
-  void ProcAllPhasesCyclePartitions();
-
   /// Generate and optimize partition label assignment using @ref
   /// PDMPKBuffers::MetisPartitionWithWeights @ref
   /// CommCompPatterns::OptimizeVertex and @ref
