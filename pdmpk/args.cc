@@ -20,7 +20,8 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[]) : npart{0}, nlevel(0) {
+Args::Args(int &argc, char *argv[])
+    : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0} {
 
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000

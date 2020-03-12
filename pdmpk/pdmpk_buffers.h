@@ -24,14 +24,17 @@ public:
   ///
   /// @returns Minumum of @ref PDMPKBuffers::levels.
   level_t MinLevel() const;
+
   /// Find the exact sum of levels including partial results.
   ///
   /// @returns Sum of @ref PDMPKBuffers::levels + partials.
   size_t ExactLevelSum() const;
+
   /// Checks if all the algorithm is finished.
   ///
   /// @returns True iff all levels reached @ref Args::nlevel.
   bool IsFinished() const;
+
   /// Check if an adjacent vertex can be added.
   ///
   /// @param idx Index of the vertex processed.
@@ -42,11 +45,14 @@ public:
   ///
   /// @param t `col` index of the adjacent vertex.
   bool CanAdd(const idx_t &idx, const level_t &lbelow, const idx_t &t) const;
+
   /// Increase level of a vertex if it is needed.
   ///
   /// @param idx Index of the vertex modified.
   void IncLevel(const idx_t &idx);
-  /// Update the edge weights based on the levels.
+
+  /// Update the edge weights based on the levels by calling the
+  /// selected method @see Args.
   ///
   /// @param min Minimum of levels in the current phase.
   void UpdateWeights(const level_t &min);
@@ -102,15 +108,39 @@ public:
   std::vector<level_t> levels;
 
 private:
-  std::vector<idx_t> weights; ///< Edge weights used for partitioning
-                              /// by Metis.
-  const CSR &csr;             ///< Matrix/graph @see CSR.
-  const Args &args;           ///< Arguments passed to the main program.
-  PDMPKBuffers();             ///< Disabled default constructor.
+  /// Edge weights used for partitioning  by Metis.
+  std::vector<idx_t> weights;
+
+  /// Matrix/graph @see CSR.
+  const CSR &csr;
+
+  /// Arguments passed to the main program.
+  const Args &args;
+
+  /// Weights update member function pointer type.
+  typedef void (PDMPKBuffers::*UpdateWeightsFunc)(const level_t &);
+
+  /// Registry of update functions. @see
+  /// PDMPKBuffers::UpdateWeightsFunc.
+  const std::vector<UpdateWeightsFunc> update_func_registry;
+
+  /// Pointer to the default UpdateWeights function. @see
+  /// PDMPKBuffers::UpdateWeightsFunc.
+  const UpdateWeightsFunc update_weights_func;
+
+  /// Disabled default constructor.
+  PDMPKBuffers();
+
   /// The exact level of vertex (including partial results).
   ///
   /// @param idx Index of the vertex.
   ///
   /// @returns |Adj(idx)| * levels[idx] + sum(partials[idx]).
   size_t ExactLevel(idx_t idx) const;
+
+  /// @todo(vatai): Describe this method. @see PDMPKBuffers::UpdateWeights.
+  /// @see PDMPKBuffers::UpdateWeightsFunc.
+  ///
+  /// @param min Minimum of levels in the current phase.
+  void UpdateWeightsSimple(const level_t &min);
 };

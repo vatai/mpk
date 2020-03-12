@@ -37,10 +37,13 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  // ProcAllPhasesNoMirror();
-  // ProcAllPhasesMinAboveHalf();
-  ProcAllPhasesMinAboveZero();
-  // ProcAllPhasesCyclePartitions();
+  if (args.mirror_method == 0) {
+    ProcAllPhasesNoMirror();
+  } else if (args.mirror_method == 1) {
+    ProcAllPhasesMinAboveHalf();
+  } else if (args.mirror_method == 2) {
+    ProcAllPhasesMinAboveZero();
+  }
 
   Epilogue();
   DbgAsserts();

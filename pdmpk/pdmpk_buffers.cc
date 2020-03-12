@@ -11,12 +11,14 @@
 #include "typedefs.h"
 
 PDMPKBuffers::PDMPKBuffers(const Args &args, const CSR &csr)
-    : partials(csr.nnz, false), //
-      partitions(csr.n),        //
-      levels(csr.n, 0),         //
-      weights(csr.nnz),         //
-      csr{csr},                 //
-      args{args} {}
+    : partials(csr.nnz, false),                                 //
+      partitions(csr.n),                                        //
+      levels(csr.n, 0),                                         //
+      weights(csr.nnz),                                         //
+      csr{csr},                                                 //
+      args{args},                                               //
+      update_func_registry{&PDMPKBuffers::UpdateWeightsSimple}, //
+      update_weights_func{update_func_registry[args.weight_update_method]} {}
 
 level_t PDMPKBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));
@@ -66,6 +68,12 @@ void PDMPKBuffers::IncLevel(const idx_t &idx) {
 }
 
 void PDMPKBuffers::UpdateWeights(const level_t &min) {
+  // std::invoke(update_weights_func, this);
+  assert(update_weights_func == update_func_registry[0]);
+  (this->*PDMPKBuffers::update_weights_func)(min);
+}
+
+void PDMPKBuffers::UpdateWeightsSimple(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
@@ -73,6 +81,8 @@ void PDMPKBuffers::UpdateWeights(const level_t &min) {
       weights[t] = (args.nlevel - m + min) + 1;
       if (not partials[t]) {
         weights[t] *= weights[t];
+      } else {
+        weights[t] = 1;
       }
     }
   }
