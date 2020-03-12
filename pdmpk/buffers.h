@@ -72,7 +72,7 @@ public:
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
-  MPIBuffers mpi_bufs;
+  MpiBuffers mpi_bufs;
 
   /// The largest send buffer size needed in all phases.
   size_t max_sbuf_size;

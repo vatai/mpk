@@ -6,9 +6,9 @@
 #include "mpi_buffers.h"
 #include "utils.hpp"
 
-MPIBuffers::MPIBuffers(const idx_t &npart) : npart{npart} {}
+MpiBuffers::MpiBuffers(const idx_t &npart) : npart{npart} {}
 
-void MPIBuffers::FillDispls(const int &phase) {
+void MpiBuffers::FillDispls(const int &phase) {
   size_t offset = npart * phase;
   auto scount = sendcounts.data() + offset;
   auto rcount = recvcounts.data() + offset;
@@ -22,17 +22,17 @@ void MPIBuffers::FillDispls(const int &phase) {
   }
 }
 
-size_t MPIBuffers::SbufSize(const int &phase) const {
+size_t MpiBuffers::SbufSize(const int &phase) const {
   size_t idx = npart * phase + npart - 1;
   return sendcounts[idx] + sdispls[idx];
 }
 
-size_t MPIBuffers::RbufSize(const int &phase) const {
+size_t MpiBuffers::RbufSize(const int &phase) const {
   size_t idx = npart * phase + npart - 1;
   return recvcounts[idx] + rdispls[idx];
 }
 
-void MPIBuffers::AllocMpiBufs() {
+void MpiBuffers::AllocMpiBufs() {
   const auto size = recvcounts.size() + npart;
   recvcounts.resize(size);
   sendcounts.resize(size);
@@ -40,7 +40,7 @@ void MPIBuffers::AllocMpiBufs() {
   sdispls.resize(size);
 }
 
-void MPIBuffers::DumpToOFS(std::ofstream &ofs) {
+void MpiBuffers::DumpToOFS(std::ofstream &ofs) {
   Utils::DumpVec(sendcounts, ofs);
   Utils::DumpVec(sdispls, ofs);
   Utils::DumpVec(recvcounts, ofs);
@@ -51,7 +51,7 @@ void MPIBuffers::DumpToOFS(std::ofstream &ofs) {
   Utils::DumpVec(init_idcs.phase_begin, ofs);
 }
 
-void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
+void MpiBuffers::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &sendcounts);
   Utils::LoadVec(ifs, &sdispls);
   Utils::LoadVec(ifs, &recvcounts);
@@ -62,7 +62,7 @@ void MPIBuffers::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &init_idcs.phase_begin);
 }
 
-void MPIBuffers::DumpToTxt(std::ofstream &ofs) {
+void MpiBuffers::DumpToTxt(std::ofstream &ofs) {
   Utils::DumpTxt("sendcounts", sendcounts, ofs);
   Utils::DumpTxt("sdispls   ", sdispls, ofs);
   Utils::DumpTxt("recvcounts", recvcounts, ofs);

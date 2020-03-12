@@ -12,12 +12,12 @@
 
 /// MPI buffers, containing information/patterns how to perform the
 /// communication for each partition.
-class MPIBuffers {
+class MpiBuffers {
 public:
   /// Constructor.
   ///
   /// @param npart number of partitions.
-  MPIBuffers(const idx_t &npart);
+  MpiBuffers(const idx_t &npart);
 
   /// Fill displacement buffers (`sdispls` and `rdispls`) from the
   /// count buffers (`sendcount` and `recvcount`).
@@ -38,8 +38,8 @@ public:
 
   std::vector<int> sendcounts; ///< MPI send count array.
   std::vector<int> recvcounts; ///< MPI recieve count array.
-  std::vector<int> sdispls; ///< MPI send displcaement array.
-  std::vector<int> rdispls; ///< MPI recieve displacement array.
+  std::vector<int> sdispls;    ///< MPI send displcaement array.
+  std::vector<int> rdispls;    ///< MPI recieve displacement array.
 
   /// Indices into @ref Buffers::mbuf which need to be copied to the
   /// send buffer.
@@ -52,7 +52,7 @@ public:
   const idx_t npart; ///< Number of partitions/processors.
 
   /// @todo(vatai): It would be nice to remove `npart` from
-  /// `MPIBuffers`.
+  /// `MpiBuffers`.
 private:
-  MPIBuffers();
+  MpiBuffers();
 };
