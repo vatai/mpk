@@ -11,7 +11,7 @@
 
 /// Modified CSR, containing information/patterns how to perform the
 /// computations for each partition.
-class MCSR {
+class Mcsr {
 public:
   /// Return the size of an mptr buffer.
   size_t MptrSize(const int &phase) const;

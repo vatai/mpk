@@ -5,27 +5,27 @@
 #include "utils.hpp"
 #include <fstream>
 
-size_t MCSR::MptrSize(const int &phase) const {
+size_t Mcsr::MptrSize(const int &phase) const {
   return mptr.phase_begin[phase + 1] - mptr.phase_begin[phase];
 }
 
-void MCSR::NextMcolIdxToMptr() { mptr.push_back(mcol.size()); }
+void Mcsr::NextMcolIdxToMptr() { mptr.push_back(mcol.size()); }
 
-void MCSR::DumpToOFS(std::ofstream &ofs) {
+void Mcsr::DumpToOFS(std::ofstream &ofs) {
   Utils::DumpVec(mptr, ofs);
   Utils::DumpVec(mptr.phase_begin, ofs);
   Utils::DumpVec(mcol, ofs);
   Utils::DumpVec(mval, ofs);
 }
 
-void MCSR::LoadFromIFS(std::ifstream &ifs) {
+void Mcsr::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &mptr);
   Utils::LoadVec(ifs, &mptr.phase_begin);
   Utils::LoadVec(ifs, &mcol);
   Utils::LoadVec(ifs, &mval);
 }
 
-void MCSR::DumpToTxt(std::ofstream &ofs) {
+void Mcsr::DumpToTxt(std::ofstream &ofs) {
   Utils::DumpTxt("mptr", mptr, ofs);
   Utils::DumpTxt("mptr.phase_begin", mptr.phase_begin, ofs);
   Utils::DumpTxt("mcol", mcol, ofs);

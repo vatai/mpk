@@ -23,7 +23,7 @@ public:
   void FillVal(const std::vector<double> &mbuf);
   /// Fill `results[vect_idx[i]] = val[i]`.  Used in `pdmpk_test`.
   ///
-  /// @param[out] results Array of length @ref CSR.n which will be
+  /// @param[out] results Array of length @ref Csr.n which will be
   /// filled.
   void FillResults(std::vector<double> *results);
   /// Save original index - `mbuf` index pair.

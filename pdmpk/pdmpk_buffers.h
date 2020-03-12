@@ -18,7 +18,7 @@ public:
   /// @param args Arguments passed to the main program.
   ///
   /// @param csr Matrix/graph read from @ref Args::mtxname.
-  PdmpkBuffers(const Args &args, const CSR &csr);
+  PdmpkBuffers(const Args &args, const Csr &csr);
 
   /// Find the minimum of levels.
   ///
@@ -111,8 +111,8 @@ private:
   /// Edge weights used for partitioning  by Metis.
   std::vector<idx_t> weights;
 
-  /// Matrix/graph @see CSR.
-  const CSR &csr;
+  /// Matrix/graph @see Csr.
+  const Csr &csr;
 
   /// Arguments passed to the main program.
   const Args &args;

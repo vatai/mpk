@@ -9,12 +9,12 @@
 
 #include <metis.h>
 
-class CSR {
+class Csr {
 public:
   /// Construct a matrix by reading it from a file.
   ///
   /// @param fname The name of an `.mtx` file.
-  CSR(const std::string &fname);
+  Csr(const std::string &fname);
 
   /// Execute an SpMV operation on the given vector and the value
   /// represented by @ref ptr, @ref col and @ref val.
@@ -38,13 +38,13 @@ public:
   /// Number of non-zero entries.
   idx_t nnz;
 
-  /// The usual `ptr` array of the CSR representation.
+  /// The usual `ptr` array of the Csr representation.
   std::vector<idx_t> ptr;
 
-  /// The usual `col` array of the CSR representation.
+  /// The usual `col` array of the Csr representation.
   std::vector<idx_t> col;
 
-  /// The usual `val` array of the CSR representation.
+  /// The usual `val` array of the Csr representation.
   std::vector<double> val;
 
 private:

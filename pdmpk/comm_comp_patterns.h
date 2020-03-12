@@ -38,7 +38,7 @@ private:
   const Args &args;
 
   /// The graph/matrix being processed.
-  const CSR csr;
+  const Csr csr;
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
@@ -66,7 +66,7 @@ private:
   /// The type of communication recorded in @ref CommDict @see
   /// comm_dict
   enum CommType {
-    kMcol,     ///< Full vertex (needs update `mcol` in @ref MCSR)
+    kMcol,     ///< Full vertex (needs update `mcol` in @ref Mcsr)
     kInitIdcs, ///< Partial/initialization value (needs update
                ///`init_idcs` in @ref Buffers)
     kFinished  ///< Finished vertex
@@ -107,7 +107,7 @@ private:
 
   /// Code executed at the end of the constructor.  This method
   ///
-  /// - finalizes @ref MCSR::mptr and @ref MPIBuffers::init_idcs so
+  /// - finalizes @ref Mcsr::mptr and @ref MPIBuffers::init_idcs so
   /// their processing can be more convenient;
   ///
   /// - gathers information on how to collect the results.
@@ -166,7 +166,7 @@ private:
   ///
   /// @param lbelow The level of the vertex at `idx`.
   ///
-  /// @param col_idx The index of the adjacent vertex in @ref CSR::col.
+  /// @param col_idx The index of the adjacent vertex in @ref Csr::col.
   void ProcAdjacent(const idx_t &idx, const level_t &lbelow,
                     const idx_t &col_idx);
 
@@ -195,7 +195,7 @@ private:
   /// Backpatch determines what needs to be done. The @ref
   /// SrcType::src_mbuf_idx in the index added to @ref Buffers::sbuf,
   /// the @ref SrcType::type determines which what needs to be updated
-  /// (@ref MCSR::mcol for @ref kMcol, @ref MPIBuffers::init_idcs for
+  /// (@ref Mcsr::mcol for @ref kMcol, @ref MPIBuffers::init_idcs for
   /// @ref kInitIdcs), and the set mapped to by the backpatch contains
   /// all the indices which need to be updated.
   ///

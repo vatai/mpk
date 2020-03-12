@@ -82,7 +82,7 @@ public:
 
   /// (Modified) CSR, which will be used for the
   /// execution/computation.
-  MCSR mcsr;
+  Mcsr mcsr;
 
   /// The index (in `mbuf`) where "the next" vertex will be stored
   /// (basically corresponding to the the size of `mbuf`).  `mbuf_idx`

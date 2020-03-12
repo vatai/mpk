@@ -47,7 +47,7 @@ double Cos(const std::vector<double> &v1, const std::vector<double> &v2) {
 /// for @ref pdmpk_prep.c::main
 int main(int argc, char *argv[]) {
   const Args args(argc, argv);
-  CSR csr(args.mtxname);
+  Csr csr(args.mtxname);
 
   // Calculate "gold" result.
   std::vector<double> goldResult(csr.n);

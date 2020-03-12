@@ -10,7 +10,7 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-PdmpkBuffers::PdmpkBuffers(const Args &args, const CSR &csr)
+PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
     : partials(csr.nnz, false), //
       partitions(csr.n),        //
       levels(csr.n, 0),         //

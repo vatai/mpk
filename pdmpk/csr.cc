@@ -6,7 +6,7 @@
 
 #include "csr.h"
 
-CSR::CSR(const std::string &fname) {
+Csr::Csr(const std::string &fname) {
   std::ifstream file{fname};
 
   MtxCheckBanner(file);
@@ -14,7 +14,7 @@ CSR::CSR(const std::string &fname) {
   MtxFillVectors(file);
 }
 
-std::vector<double> CSR::SpMV(const std::vector<double> &vec) const {
+std::vector<double> Csr::SpMV(const std::vector<double> &vec) const {
   std::vector<double> result(vec.size());
   auto const n = ptr.size() - 1;
   for (size_t i = 0; i < n; i++) {
@@ -27,12 +27,12 @@ std::vector<double> CSR::SpMV(const std::vector<double> &vec) const {
   return result;
 }
 
-void CSR::MPK(const int &nlevels, std::vector<double> &vec) const {
+void Csr::MPK(const int &nlevels, std::vector<double> &vec) const {
   for (int i = 0; i < nlevels; i++)
     vec = SpMV(vec);
 }
 
-void CSR::MtxCheckBanner(std::ifstream &file) {
+void Csr::MtxCheckBanner(std::ifstream &file) {
   std::string banner;
   std::getline(file, banner);
   std::stringstream tmp;
@@ -62,7 +62,7 @@ void CSR::MtxCheckBanner(std::ifstream &file) {
     throw std::logic_error("Not general or symmetric matrix!");
 }
 
-void CSR::MtxFillSize(std::ifstream &file) {
+void Csr::MtxFillSize(std::ifstream &file) {
   std::string line;
   std::stringstream ss;
   std::getline(file, line);
@@ -81,7 +81,7 @@ void CSR::MtxFillSize(std::ifstream &file) {
   val.reserve(nnz);
 }
 
-void CSR::MtxFillVectors(std::ifstream &file) {
+void Csr::MtxFillVectors(std::ifstream &file) {
   std::string line;
   std::vector<std::vector<idx_t>> Js(this->n);
   std::vector<std::vector<double>> vs(this->n);
