@@ -138,8 +138,15 @@ private:
   /// @returns |Adj(idx)| * levels[idx] + sum(partials[idx]).
   size_t ExactLevel(idx_t idx) const;
 
-  /// @todo(vatai): Describe this method. @see PDMPKBuffers::UpdateWeights.
-  /// @see PDMPKBuffers::UpdateWeightsFunc.
+  /// The original weight update function `1/(li + lj - 2*min + 1)`,
+  /// where `li = levels[i]` and `lj = levels[j]`. @see
+  /// PDMPKBuffers::UpdateWeightsFunc.
+  ///
+  /// @param min Minimum of levels in the current phase.
+  void UpdateWeightsOriginal(const level_t &min);
+
+  /// The weight update function, which uses the partials.  @see
+  /// PDMPKBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
   void UpdateWeightsSimple(const level_t &min);
