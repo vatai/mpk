@@ -10,22 +10,25 @@
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
 
-PDMPKBuffers::PDMPKBuffers(const Args &args, const CSR &csr)
+PdmpkBuffers::PdmpkBuffers(const Args &args, const CSR &csr)
     : partials(csr.nnz, false), //
       partitions(csr.n),        //
       levels(csr.n, 0),         //
       weights(csr.nnz),         //
       csr{csr},                 //
       args{args},               //
-      update_func_registry{&PDMPKBuffers::UpdateWeightsOriginal,
-                           &PDMPKBuffers::UpdateWeightsSimple},
-      update_weights_func{update_func_registry[args.weight_update_method]} {}
+      update_func_registry{&PdmpkBuffers::UpdateWeightsOriginal,
+                           &PdmpkBuffers::UpdateWeightsSimple},
+      update_weights_func{update_func_registry[args.weight_update_method]} {
+  const size_t idx = args.weight_update_method;
+  assert(idx < update_func_registry.size());
+}
 
-level_t PDMPKBuffers::MinLevel() const {
+level_t PdmpkBuffers::MinLevel() const {
   return *std::min_element(begin(levels), end(levels));
 }
 
-size_t PDMPKBuffers::ExactLevel(idx_t idx) const {
+size_t PdmpkBuffers::ExactLevel(idx_t idx) const {
   size_t lvl = levels[idx] * (csr.ptr[idx + 1] - csr.ptr[idx]);
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (partials[t])
@@ -34,7 +37,7 @@ size_t PDMPKBuffers::ExactLevel(idx_t idx) const {
   return lvl;
 }
 
-size_t PDMPKBuffers::ExactLevelSum() const {
+size_t PdmpkBuffers::ExactLevelSum() const {
   size_t sum = 0;
   for (idx_t i = 0; i < csr.n; i++) {
     sum += ExactLevel(i);
@@ -42,7 +45,7 @@ size_t PDMPKBuffers::ExactLevelSum() const {
   return sum;
 }
 
-bool PDMPKBuffers::IsFinished() const {
+bool PdmpkBuffers::IsFinished() const {
   for (const auto &level : levels) {
     assert(level <= args.nlevel);
     if (level != args.nlevel)
@@ -51,7 +54,7 @@ bool PDMPKBuffers::IsFinished() const {
   return true;
 }
 
-bool PDMPKBuffers::CanAdd(const idx_t &idx,      //
+bool PdmpkBuffers::CanAdd(const idx_t &idx,      //
                           const level_t &lbelow, //
                           const idx_t &t) const {
   const idx_t j = csr.col[t];
@@ -61,21 +64,21 @@ bool PDMPKBuffers::CanAdd(const idx_t &idx,      //
   return needed and same_part and computed;
 }
 
-void PDMPKBuffers::IncLevel(const idx_t &idx) {
+void PdmpkBuffers::IncLevel(const idx_t &idx) {
   if (PartialIsFull(idx)) {
     levels[idx]++;
     PartialReset(idx);
   }
 }
 
-void PDMPKBuffers::UpdateWeights(const level_t &min) {
+void PdmpkBuffers::UpdateWeights(const level_t &min) {
   // std::invoke(update_weights_func, this);
   assert(update_weights_func ==
          update_func_registry[args.weight_update_method]);
-  (this->*PDMPKBuffers::update_weights_func)(min);
+  (this->*PdmpkBuffers::update_weights_func)(min);
 }
 
-void PDMPKBuffers::UpdateWeightsOriginal(const level_t &min) {
+void PdmpkBuffers::UpdateWeightsOriginal(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     int li = levels[i];
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
@@ -92,7 +95,7 @@ void PDMPKBuffers::UpdateWeightsOriginal(const level_t &min) {
   }
 }
 
-void PDMPKBuffers::UpdateWeightsSimple(const level_t &min) {
+void PdmpkBuffers::UpdateWeightsSimple(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
@@ -107,7 +110,7 @@ void PDMPKBuffers::UpdateWeightsSimple(const level_t &min) {
   }
 }
 
-bool PDMPKBuffers::PartialIsFull(const idx_t &idx) const {
+bool PdmpkBuffers::PartialIsFull(const idx_t &idx) const {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (not partials[t])
       return false;
@@ -115,7 +118,7 @@ bool PDMPKBuffers::PartialIsFull(const idx_t &idx) const {
   return true;
 }
 
-bool PDMPKBuffers::PartialIsEmpty(const idx_t &idx) const {
+bool PdmpkBuffers::PartialIsEmpty(const idx_t &idx) const {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (partials[t])
       return false;
@@ -123,13 +126,13 @@ bool PDMPKBuffers::PartialIsEmpty(const idx_t &idx) const {
   return true;
 }
 
-void PDMPKBuffers::PartialReset(const idx_t &idx) {
+void PdmpkBuffers::PartialReset(const idx_t &idx) {
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     partials[t] = false;
   }
 }
 
-double PDMPKBuffers::PartialCompleted(const idx_t &idx) const {
+double PdmpkBuffers::PartialCompleted(const idx_t &idx) const {
   const double all = csr.ptr[idx + 1] - csr.ptr[idx];
   int count = 0;
   for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
@@ -139,7 +142,7 @@ double PDMPKBuffers::PartialCompleted(const idx_t &idx) const {
   return double(count) / all;
 }
 
-void PDMPKBuffers::MetisPartition() {
+void PdmpkBuffers::MetisPartition() {
   idx_t n = csr.n;
   idx_t np = args.npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
@@ -149,7 +152,7 @@ void PDMPKBuffers::MetisPartition() {
                       NULL, &retval, partitions.data());
 }
 
-void PDMPKBuffers::MetisPartitionWithWeights() {
+void PdmpkBuffers::MetisPartitionWithWeights() {
   idx_t n = csr.n;
   idx_t np = args.npart;
   idx_t *ptr = (idx_t *)csr.ptr.data();
@@ -160,7 +163,7 @@ void PDMPKBuffers::MetisPartitionWithWeights() {
                       partitions.data());
 }
 
-void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {
+void PdmpkBuffers::DebugPrintLevels(std::ostream &os) {
   const int n = sqrt(csr.n);
   const int width = 4;
   for (int i = 0; i < csr.n; i++) {
@@ -171,7 +174,7 @@ void PDMPKBuffers::DebugPrintLevels(std::ostream &os) {
   os << std::endl;
 }
 
-void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
+void PdmpkBuffers::DebugPrintPartials(std::ostream &os) {
   const int n = sqrt(csr.n);
   int max = 0;
   for (int i = 0; i < csr.n; i++) {
@@ -192,7 +195,7 @@ void PDMPKBuffers::DebugPrintPartials(std::ostream &os) {
   os << std::endl;
 }
 
-void PDMPKBuffers::DebugPrintPartitions(std::ostream &os) {
+void PdmpkBuffers::DebugPrintPartitions(std::ostream &os) {
   const int n = sqrt(csr.n);
   for (int i = 0; i < csr.n; i++) {
     if (i % n == 0)
@@ -202,7 +205,7 @@ void PDMPKBuffers::DebugPrintPartitions(std::ostream &os) {
   os << std::endl;
 }
 
-void PDMPKBuffers::DebugPrintReport(std::ostream &os, const int &phase) {
+void PdmpkBuffers::DebugPrintReport(std::ostream &os, const int &phase) {
   os << std::endl << "Phase: " << phase;
   DebugPrintPartitions(std::cout);
   DebugPrintLevels(std::cout);

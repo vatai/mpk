@@ -42,10 +42,10 @@ private:
 
   /// All MPK buffers such as levels, weights, partitions, and
   /// partials.
-  PDMPKBuffers pdmpk_bufs;
+  PdmpkBuffers pdmpk_bufs;
 
   /// "Shadow" copy of `pdmpk_bufs` used for optimization.
-  PDMPKBuffers pdmpk_count;
+  PdmpkBuffers pdmpk_count;
 
   /// (source, target) pair.
   typedef std::pair<idx_t, idx_t> src_tgt_t;
@@ -123,7 +123,7 @@ private:
   void ProcAllPhasesMinAboveZero();
 
   /// Generate and optimize partition label assignment using @ref
-  /// PDMPKBuffers::MetisPartitionWithWeights @ref
+  /// PdmpkBuffers::MetisPartitionWithWeights @ref
   /// CommCompPatterns::OptimizeVertex and @ref
   /// CommCompPatterns::FindLabelPermutation.
   ///

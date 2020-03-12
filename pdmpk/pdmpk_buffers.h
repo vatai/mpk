@@ -11,23 +11,23 @@
 #include "typedefs.h"
 
 /// Buffers specific to the PDMPK algorithm.
-class PDMPKBuffers {
+class PdmpkBuffers {
 public:
   /// Constructor.
   ///
   /// @param args Arguments passed to the main program.
   ///
   /// @param csr Matrix/graph read from @ref Args::mtxname.
-  PDMPKBuffers(const Args &args, const CSR &csr);
+  PdmpkBuffers(const Args &args, const CSR &csr);
 
   /// Find the minimum of levels.
   ///
-  /// @returns Minumum of @ref PDMPKBuffers::levels.
+  /// @returns Minumum of @ref PdmpkBuffers::levels.
   level_t MinLevel() const;
 
   /// Find the exact sum of levels including partial results.
   ///
-  /// @returns Sum of @ref PDMPKBuffers::levels + partials.
+  /// @returns Sum of @ref PdmpkBuffers::levels + partials.
   size_t ExactLevelSum() const;
 
   /// Checks if all the algorithm is finished.
@@ -58,14 +58,14 @@ public:
   void UpdateWeights(const level_t &min);
 
   /// Check if a vertex is one above the level as specified by @ref
-  /// PDMPKBuffers::levels, that is, when the level can be increased.
+  /// PdmpkBuffers::levels, that is, when the level can be increased.
   ///
   /// @param idx The index of the vertex investigated.
   ///
   /// @return True iff all partial bits of vertex `idx` are 1.
   bool PartialIsFull(const idx_t &idx) const;
   /// Check if a vertex is at the level as specified by @ref
-  /// PDMPKBuffers::levels.
+  /// PdmpkBuffers::levels.
   ///
   /// @param idx The index of the vertex investigated.
   ///
@@ -87,7 +87,7 @@ public:
   /// METIS_PartGraphKway outputs by updating partitions.data()
   void MetisPartition();
   /// Repartition the graph/matrix into partitions using @ref
-  /// PDMPKBuffers::weights.
+  /// PdmpkBuffers::weights.
   void MetisPartitionWithWeights();
 
   /// Function called in @ref DebugPrintReport.
@@ -118,18 +118,18 @@ private:
   const Args &args;
 
   /// Weights update member function pointer type.
-  typedef void (PDMPKBuffers::*UpdateWeightsFunc)(const level_t &);
+  typedef void (PdmpkBuffers::*UpdateWeightsFunc)(const level_t &);
 
   /// Registry of update functions. @see
-  /// PDMPKBuffers::UpdateWeightsFunc.
+  /// PdmpkBuffers::UpdateWeightsFunc.
   const std::vector<UpdateWeightsFunc> update_func_registry;
 
   /// Pointer to the default UpdateWeights function. @see
-  /// PDMPKBuffers::UpdateWeightsFunc.
+  /// PdmpkBuffers::UpdateWeightsFunc.
   const UpdateWeightsFunc update_weights_func;
 
   /// Disabled default constructor.
-  PDMPKBuffers();
+  PdmpkBuffers();
 
   /// The exact level of vertex (including partial results).
   ///
@@ -140,13 +140,13 @@ private:
 
   /// The original weight update function `1/(li + lj - 2*min + 1)`,
   /// where `li = levels[i]` and `lj = levels[j]`. @see
-  /// PDMPKBuffers::UpdateWeightsFunc.
+  /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
   void UpdateWeightsOriginal(const level_t &min);
 
   /// The weight update function, which uses the partials.  @see
-  /// PDMPKBuffers::UpdateWeightsFunc.
+  /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
   void UpdateWeightsSimple(const level_t &min);
