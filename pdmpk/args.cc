@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <metis.h>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -22,7 +23,7 @@
 
 Args::Args(int &argc, char *argv[])
     : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0} {
-
+  METIS_SetDefaultOptions(default_opt);
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
   opt[METIS_OPTION_CONTIG] = 0;
@@ -183,37 +184,19 @@ Args::Args(int &argc, char *argv[])
   }
 }
 
-std::string Args::Filename(const int &rank, const FileType &filetype) const {
-  std::string ext;
-  switch (filetype) {
-  case kBinBuffer:
-    ext = "-" + std::to_string(rank) + ".buf.bin";
-    break;
-  case kBinResult:
-    ext = "-" + std::to_string(rank) + ".results.bin";
-    break;
-  case kTxtBuffer:
-    ext = "-" + std::to_string(rank) + ".buf.txt";
-    break;
-  case kTxtResult:
-    ext = "-" + std::to_string(rank) + ".result.txt";
-    break;
-  case kTxtMbuf:
-    ext = "-" + std::to_string(rank) + ".mbuf.txt";
-    break;
-  case kStatusFileName:
-    ext = "-status.txt";
-    break;
-  case kStatusContents:
-    ext = "";
-    break;
-  };
-  return Summary(true) + ext;
-}
-
-std::string Args::Summary(const bool fullpath) const {
-  std::string name = mtxname;
-  if (not fullpath)
-    name.erase(0, name.find_last_of("/"));
-  return name + std::to_string(npart) + "-" + std::to_string(nlevel);
+std::string Args::Filename(const std::string &suffix, const int &rank) const {
+  std::stringstream ss;
+  ss << mtxname << "-np" << npart << "-nl" << nlevel << "-mm" << mirror_method
+     << "-wm" << weight_update_method;
+  if (rank > -1) {
+    ss << "-r" << std::to_string(rank);
+  }
+  for (size_t k = 0; k < METIS_NOPTIONS; k++) {
+    if (opt[k] != default_opt[k]) {
+      ss << "-k" << k << "v" << opt[k];
+    }
+  }
+  ss << "-b" << GIT_BRANCH << "-c" << GIT_COMMIT_HASH;
+  ss << "." << suffix;
+  return ss.str();
 }

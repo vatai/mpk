@@ -107,7 +107,7 @@ private:
 
   /// Code executed at the end of the constructor.  This method
   ///
-  /// - finalizes @ref Mcsr::mptr and @ref MPIBuffers::init_idcs so
+  /// - finalizes @ref Mcsr::mptr and @ref MpiBuffers::init_idcs so
   /// their processing can be more convenient;
   ///
   /// - gathers information on how to collect the results.
@@ -195,7 +195,7 @@ private:
   /// Backpatch determines what needs to be done. The @ref
   /// SrcType::src_mbuf_idx in the index added to @ref Buffers::sbuf,
   /// the @ref SrcType::type determines which what needs to be updated
-  /// (@ref Mcsr::mcol for @ref kMcol, @ref MPIBuffers::init_idcs for
+  /// (@ref Mcsr::mcol for @ref kMcol, @ref MpiBuffers::init_idcs for
   /// @ref kInitIdcs), and the set mapped to by the backpatch contains
   /// all the indices which need to be updated.
   ///

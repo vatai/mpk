@@ -121,7 +121,7 @@ void Buffers::LoadInput() {
 }
 
 void Buffers::Dump(const int &rank) {
-  std::ofstream file(args.Filename(rank, Args::kBinBuffer), std::ios::binary);
+  std::ofstream file(args.Filename("buf.bin", rank), std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
@@ -133,7 +133,7 @@ void Buffers::Dump(const int &rank) {
 }
 
 void Buffers::Load(const int &rank) {
-  std::ifstream file(args.Filename(rank, Args::kBinBuffer), std::ios::binary);
+  std::ifstream file(args.Filename("buf.bin", rank), std::ios::binary);
   file.read((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   sbuf.resize(max_sbuf_size);
 
@@ -149,7 +149,7 @@ void Buffers::Load(const int &rank) {
 }
 
 void Buffers::DumpTxt(const int &rank) {
-  std::ofstream file(args.Filename(rank, Args::kTxtBuffer));
+  std::ofstream file(args.Filename("buf.txt", rank));
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
   file << "mbuf_idx: " << mbuf_idx << std::endl;
@@ -163,7 +163,7 @@ void Buffers::DumpTxt(const int &rank) {
 }
 
 void Buffers::DumpMbufTxt(const int &rank) {
-  std::ofstream file(args.Filename(rank, Args::kTxtMbuf));
+  std::ofstream file(args.Filename("mbuf.txt", rank));
 
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
   Utils::DumpTxt("mbuf", mbuf, file);

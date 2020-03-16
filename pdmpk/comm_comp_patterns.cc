@@ -80,7 +80,7 @@ void CommCompPatterns::Epilogue() {
 }
 
 void CommCompPatterns::Stats() const {
-  std::ofstream of(args.Filename(0, Args::kStatusFileName));
+  std::ofstream of(args.Filename("status.txt"));
 
   size_t sum = 0;
   size_t ssum = 0;
