@@ -30,6 +30,9 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       mirror_func_registry{&CommCompPatterns::ProcAllPhasesNoMirror,
                            &CommCompPatterns::ProcAllPhasesMinAboveHalf,
                            &CommCompPatterns::ProcAllPhasesMinAboveZero} {
+  const size_t idx = args.mirror_method;
+  assert(idx < mirror_func_registry.size());
+
   pdmpk_bufs.MetisPartition();
   partition_history.push_back(pdmpk_bufs.partitions);
   home_partition = pdmpk_bufs.partitions;
