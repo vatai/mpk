@@ -129,6 +129,7 @@ private:
   ///
   /// @param min_level Minimum level in the current phase.
   void NewPartitionLabels(const size_t &min_level);
+
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
   /// @param idx The index of the vertex processed.
@@ -136,6 +137,7 @@ private:
   /// @param lbelow The level below the current vertex's level
   /// `level[idx]-1`.
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
+
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
@@ -219,8 +221,16 @@ private:
   ///
   /// @param level_sum Exact sum of "levels".
   void DbgPhaseSummary(const level_t &min_level, const size_t &level_sum) const;
+
   /// @todo(vatai): Remove debug DbgAsserts().
   void DbgAsserts() const;
+
   /// @todo(vatai): Remove debug DbgMbufChecks().
   void DbgMbufChecks() const;
+
+  /// Mirror member function pointer type.
+  typedef void (CommCompPatterns::*MirrorFunc)();
+
+  /// Registry of mirror functions. @see CommCompPatterns::MirrorFunc.
+  const std::vector<MirrorFunc> mirror_func_registry;
 };

@@ -26,7 +26,10 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       csr{args.mtxname},               //
       pdmpk_bufs{args, csr},           //
       pdmpk_count{args, csr},          //
-      phase{0} {
+      phase{0},                        //
+      mirror_func_registry{&CommCompPatterns::ProcAllPhasesNoMirror,
+                           &CommCompPatterns::ProcAllPhasesMinAboveHalf,
+                           &CommCompPatterns::ProcAllPhasesMinAboveZero} {
   pdmpk_bufs.MetisPartition();
   partition_history.push_back(pdmpk_bufs.partitions);
   home_partition = pdmpk_bufs.partitions;
@@ -38,13 +41,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   phase = 0;
   ProcPhase(phase);
-  if (args.mirror_method == 0) {
-    ProcAllPhasesNoMirror();
-  } else if (args.mirror_method == 1) {
-    ProcAllPhasesMinAboveHalf();
-  } else if (args.mirror_method == 2) {
-    ProcAllPhasesMinAboveZero();
-  }
+  (this->*mirror_func_registry[args.mirror_method])();
 
   Epilogue();
   DbgAsserts();
