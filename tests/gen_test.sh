@@ -14,6 +14,8 @@ TYPE=${1:-m5p} # $1 or defaults to m5p.
 SIZE=${2:-4}   # $2 or defaults to 4.
 NPART=${3:-4}  # $3 or defaults to 4.
 NLEVEL=${4:-4} # $4 or defaults to 4.
+MIRROR=${5:-0} # $5 or defaults to 0.
+UPDATE=${6:-0} # $6 or defaults to 0.
 
 # Create input matrix if it doesn't exist.
 mkdir -p "$MATRICES_DIR"
@@ -23,4 +25,4 @@ if [ ! -f "$MATRIX" ]; then
 fi
 
 # Run test.
-$SCRIPTS_DIR/prep_exec_test.sh $MATRIX $NPART $NLEVEL
+$SCRIPTS_DIR/prep_exec_test.sh $MATRIX $NPART $NLEVEL $MIRROR $UPDATE
