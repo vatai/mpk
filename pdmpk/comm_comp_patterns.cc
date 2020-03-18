@@ -120,12 +120,16 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
 
 void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
   bool is_finished = pdmpk_bufs.IsFinished();
+  size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
+      if (old_level_sum == level_sum)
+        break;
+      old_level_sum = level_sum;
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
@@ -145,12 +149,16 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
 
 void CommCompPatterns::ProcAllPhasesMinAboveZero() {
   bool is_finished = pdmpk_bufs.IsFinished();
+  size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
     phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
+      if (old_level_sum == level_sum)
+        break;
+      old_level_sum = level_sum;
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
