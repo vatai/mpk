@@ -60,4 +60,6 @@ enable_cxx_compiler_flag_if_supported("-pedantic")
 
 add_subdirectory(pdmpk)
 add_subdirectory(docs)
+enable_testing()
+include(CTest)
 add_subdirectory(tests)
