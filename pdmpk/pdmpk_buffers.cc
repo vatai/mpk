@@ -20,8 +20,7 @@ PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
       update_func_registry{&PdmpkBuffers::UpdateWeightsOriginal,
                            &PdmpkBuffers::UpdateWeightsSimple},
       update_weights_func{update_func_registry[args.weight_update_method]} {
-  const size_t idx = args.weight_update_method;
-  assert(idx < update_func_registry.size());
+  assert(args.weight_update_method < update_func_registry.size());
 }
 
 level_t PdmpkBuffers::MinLevel() const {

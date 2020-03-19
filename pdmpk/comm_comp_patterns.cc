@@ -32,8 +32,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
                            &CommCompPatterns::ProcAllPhasesMinAboveZero,
                            &CommCompPatterns::ProcAllPhasesMinAboveHalfMod,
                            &CommCompPatterns::ProcAllPhasesMinAboveZeroMod} {
-  const size_t idx = args.mirror_method;
-  assert(idx < mirror_func_registry.size());
+  assert(args.mirror_method < mirror_func_registry.size());
 
   pdmpk_bufs.MetisPartition();
   partition_history.push_back(pdmpk_bufs.partitions);
