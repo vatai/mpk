@@ -29,7 +29,9 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       phase{0},                        //
       mirror_func_registry{&CommCompPatterns::ProcAllPhasesNoMirror,
                            &CommCompPatterns::ProcAllPhasesMinAboveHalf,
-                           &CommCompPatterns::ProcAllPhasesMinAboveZero} {
+                           &CommCompPatterns::ProcAllPhasesMinAboveZero,
+                           &CommCompPatterns::ProcAllPhasesMinAboveHalfMod,
+                           &CommCompPatterns::ProcAllPhasesMinAboveZeroMod} {
   const size_t idx = args.mirror_method;
   assert(idx < mirror_func_registry.size());
 
@@ -159,6 +161,56 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
       if (old_level_sum == level_sum)
         break;
       old_level_sum = level_sum;
+      std::cout << "First branch" << std::endl;
+      NewPartitionLabels(min_level);
+    } else {
+      std::cout << "Second branch" << std::endl;
+      const auto hist_idx = phase % partition_history.size();
+      pdmpk_bufs.partitions = partition_history[hist_idx];
+    }
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished();
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
+}
+
+void CommCompPatterns::ProcAllPhasesMinAboveHalfMod() {
+  bool is_finished = pdmpk_bufs.IsFinished();
+  while (not is_finished and not partition_history.empty()) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    const auto level_sum = pdmpk_bufs.ExactLevelSum();
+    DbgPhaseSummary(min_level, level_sum);
+    if (min_level < args.nlevel / 2) {
+      std::cout << "First branch" << std::endl;
+      NewPartitionLabels(min_level);
+    } else {
+      std::cout << "Second branch" << std::endl;
+      pdmpk_bufs.partitions = partition_history.back();
+      partition_history.pop_back();
+    }
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished();
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
+}
+
+void CommCompPatterns::ProcAllPhasesMinAboveZeroMod() {
+  bool is_finished = pdmpk_bufs.IsFinished();
+  while (not is_finished and not partition_history.empty()) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    const auto level_sum = pdmpk_bufs.ExactLevelSum();
+    DbgPhaseSummary(min_level, level_sum);
+    if (min_level == 0) {
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {

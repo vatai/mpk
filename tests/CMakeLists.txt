@@ -5,7 +5,7 @@ add_test(NAME m5p_5_4_4  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh" m5p 5
 foreach(size 10 100)
   foreach(npart 4 8)
     foreach(nlevel 10 20)
-      foreach(mirror 0 1 2)
+      foreach(mirror 0 1 2 3 4)
         foreach(weight 0 1)
       add_test(NAME m5p_${size}_${npart}_${nlevel}_m${mirror}w${weight}
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh m5p ${size} ${npart} ${nlevel} ${mirror} ${weight})

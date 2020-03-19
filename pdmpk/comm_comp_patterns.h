@@ -122,6 +122,13 @@ private:
   /// Process all phases: mirror after min_level is above 0.
   void ProcAllPhasesMinAboveZero();
 
+  /// Process all phases: mirror after min_level is above the half (no
+  /// breaking).
+  void ProcAllPhasesMinAboveHalfMod();
+
+  /// Process all phases: mirror after min_level is above 0 (no breaking).
+  void ProcAllPhasesMinAboveZeroMod();
+
   /// Generate and optimize partition label assignment using @ref
   /// PdmpkBuffers::MetisPartitionWithWeights @ref
   /// CommCompPatterns::OptimizeVertex and @ref
