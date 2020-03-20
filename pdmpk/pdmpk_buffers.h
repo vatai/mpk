@@ -143,11 +143,11 @@ private:
   /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
-  void UpdateWeightsOriginal(const level_t &min);
+  void UpdateWeights0(const level_t &min);
 
   /// The weight update function, which uses the partials.  @see
   /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
-  void UpdateWeightsSimple(const level_t &min);
+  void UpdateWeights1(const level_t &min);
 };

@@ -17,8 +17,8 @@ PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
       weights(csr.nnz),         //
       csr{csr},                 //
       args{args},               //
-      update_func_registry{&PdmpkBuffers::UpdateWeightsOriginal,
-                           &PdmpkBuffers::UpdateWeightsSimple},
+      update_func_registry{&PdmpkBuffers::UpdateWeights0,
+                           &PdmpkBuffers::UpdateWeights1},
       update_weights_func{update_func_registry[args.weight_update_method]} {
   assert(args.weight_update_method < update_func_registry.size());
 }
@@ -77,7 +77,7 @@ void PdmpkBuffers::UpdateWeights(const level_t &min) {
   (this->*update_weights_func)(min);
 }
 
-void PdmpkBuffers::UpdateWeightsOriginal(const level_t &min) {
+void PdmpkBuffers::UpdateWeights0(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     int li = levels[i];
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
@@ -94,7 +94,7 @@ void PdmpkBuffers::UpdateWeightsOriginal(const level_t &min) {
   }
 }
 
-void PdmpkBuffers::UpdateWeightsSimple(const level_t &min) {
+void PdmpkBuffers::UpdateWeights1(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
