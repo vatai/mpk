@@ -230,11 +230,14 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   // pdmpk_bufs.DebugPrintReport(std::cout, phase);
   pdmpk_bufs.UpdateWeights(min_level);
   pdmpk_bufs.MetisPartitionWithWeights();
+
   for (int idx = 0; idx < csr.n; idx++) {
     if (pdmpk_bufs.levels[idx] == min_level) {
       for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
         const auto j = csr.col[t];
-        pdmpk_bufs.partitions[j] = pdmpk_bufs.partitions[idx];
+        if (pdmpk_bufs.partials[t] == false) {
+          pdmpk_bufs.partitions[j] = pdmpk_bufs.partitions[idx];
+        }
       }
     }
   }
