@@ -27,11 +27,10 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       pdmpk_bufs{args, csr},           //
       pdmpk_count{args, csr},          //
       phase{0},                        //
-      mirror_func_registry{&CommCompPatterns::ProcAllPhasesNoMirror,
-                           &CommCompPatterns::ProcAllPhasesMinAboveHalf,
-                           &CommCompPatterns::ProcAllPhasesMinAboveZero,
-                           &CommCompPatterns::ProcAllPhasesMinAboveHalfMod,
-                           &CommCompPatterns::ProcAllPhasesMinAboveZeroMod} {
+      mirror_func_registry{
+          &CommCompPatterns::ProcAllPhases0, &CommCompPatterns::ProcAllPhases1,
+          &CommCompPatterns::ProcAllPhases2, &CommCompPatterns::ProcAllPhases3,
+          &CommCompPatterns::ProcAllPhases4} {
   assert(args.mirror_method < mirror_func_registry.size());
 
   pdmpk_bufs.MetisPartition();
@@ -97,7 +96,7 @@ void CommCompPatterns::Stats() const {
   of << sum << " " << phase << std::endl;
 }
 
-void CommCompPatterns::ProcAllPhasesNoMirror() {
+void CommCompPatterns::ProcAllPhases0() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished) {
@@ -119,7 +118,7 @@ void CommCompPatterns::ProcAllPhasesNoMirror() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
+void CommCompPatterns::ProcAllPhases1() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
@@ -148,7 +147,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalf() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesMinAboveZero() {
+void CommCompPatterns::ProcAllPhases2() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
@@ -177,7 +176,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveZero() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesMinAboveHalfMod() {
+void CommCompPatterns::ProcAllPhases3() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
     phase++;
@@ -202,7 +201,7 @@ void CommCompPatterns::ProcAllPhasesMinAboveHalfMod() {
   }
 }
 
-void CommCompPatterns::ProcAllPhasesMinAboveZeroMod() {
+void CommCompPatterns::ProcAllPhases4() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
     phase++;

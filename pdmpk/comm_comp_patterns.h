@@ -114,20 +114,22 @@ private:
   void Epilogue();
 
   /// Process all phases: without any mirroring.
-  void ProcAllPhasesNoMirror();
+  void ProcAllPhases0();
 
-  /// Process all phases: mirror after min_level is above the half.
-  void ProcAllPhasesMinAboveHalf();
+  /// Process all phases: mirror after `min_level` is above
+  /// `nlevel/2`.
+  void ProcAllPhases1();
 
-  /// Process all phases: mirror after min_level is above 0.
-  void ProcAllPhasesMinAboveZero();
+  /// Process all phases: mirror after `min_level` is above 0.
+  void ProcAllPhases2();
 
-  /// Process all phases: mirror after min_level is above the half (no
-  /// breaking).
-  void ProcAllPhasesMinAboveHalfMod();
+  /// Process all phases: mirror after `min_level` is above `nlevel/2`
+  /// (no `level_sum` check).
+  void ProcAllPhases3();
 
-  /// Process all phases: mirror after min_level is above 0 (no breaking).
-  void ProcAllPhasesMinAboveZeroMod();
+  /// Process all phases: mirror after `min_level` is above 0 (no
+  /// `level_sum` check).
+  void ProcAllPhases4();
 
   /// Generate and optimize partition label assignment using @ref
   /// PdmpkBuffers::MetisPartitionWithWeights @ref
