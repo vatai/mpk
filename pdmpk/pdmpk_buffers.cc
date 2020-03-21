@@ -162,6 +162,15 @@ void PdmpkBuffers::MetisPartitionWithWeights() {
                       partitions.data());
 }
 
+void PdmpkBuffers::MetisFixVertex(idx_t idx) {
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    const auto j = csr.col[t];
+    if (partials[t] == false) {
+      partitions[j] = partitions[idx];
+    }
+  }
+}
+
 void PdmpkBuffers::DebugPrintLevels(std::ostream &os) {
   const int n = sqrt(csr.n);
   const int width = 4;

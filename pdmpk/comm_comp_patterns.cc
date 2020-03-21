@@ -233,12 +233,7 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
 
   for (int idx = 0; idx < csr.n; idx++) {
     if (pdmpk_bufs.levels[idx] == min_level) {
-      for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
-        const auto j = csr.col[t];
-        if (pdmpk_bufs.partials[t] == false) {
-          pdmpk_bufs.partitions[j] = pdmpk_bufs.partitions[idx];
-        }
-      }
+      pdmpk_bufs.MetisFixVertex(idx);
     }
   }
 
