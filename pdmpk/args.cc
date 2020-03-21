@@ -196,7 +196,7 @@ std::string Args::Filename(const std::string &suffix, const int &rank) const {
       ss << "-k" << k << "v" << opt[k];
     }
   }
-  ss << "-b" << GIT_BRANCH << "-c" << GIT_COMMIT_HASH;
+  ss << "-" << GIT_BRANCH << "-" << GIT_COMMIT_HASH;
   ss << "." << suffix;
   return ss.str();
 }

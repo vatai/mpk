@@ -10,6 +10,7 @@ execute_process(
   OUTPUT_VARIABLE GIT_BRANCH
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
+add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
@@ -18,8 +19,18 @@ execute_process(
   OUTPUT_VARIABLE GIT_COMMIT_HASH
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
+
+# Check if the branch is dirty
+execute_process(
+  COMMAND "git status > /dev/null 2&>1"
+  RESULT_VARIABLE GIT_DIRTY_WD
+  )
+
+if(GIT_DIRTY_WD)
 add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
-add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
+else()
+add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}-dirty\"")
+endif()
 
 add_library(args OBJECT args.h args.cc)
 
