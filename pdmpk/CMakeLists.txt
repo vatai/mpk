@@ -22,11 +22,11 @@ execute_process(
 
 # Check if the branch is dirty
 execute_process(
-  COMMAND "git status > /dev/null 2&>1"
-  RESULT_VARIABLE GIT_DIRTY_WD
+  COMMAND "git diff --quiet"
+  RESULT_VARIABLE GIT_CLEAN_WD
   )
 
-if(GIT_DIRTY_WD)
+if(GIT_CLEAN_WD)
 add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
 else()
 add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}-dirty\"")
