@@ -20,13 +20,13 @@ public:
   void NextMcolIdxToMptr();
 
   /// Dump the contents to a binary `fstream`.
-  void DumpToOFS(std::ofstream &ofs);
+  void DumpToOFS(std::ofstream &ofs) const;
 
   /// Load the contents from a binary `fstream`.
   void LoadFromIFS(std::ifstream &ifs);
 
   /// Dump to a txt file.
-  void DumpToTxt(std::ofstream &ofs);
+  void DumpToTxt(std::ofstream &ofs) const;
 
   /// The modified `ptr` array @see CSR::ptr.
   phased_vector<idx_t> mptr;

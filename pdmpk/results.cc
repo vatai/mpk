@@ -31,7 +31,7 @@ void Results::SaveIndex(const idx_t &idx, const idx_t &mbuf_idx) {
   mbuf_idcs.push_back(mbuf_idx);
 }
 
-void Results::Dump(const int &rank) {
+void Results::Dump(const int &rank) const {
   std::ofstream file(args.Filename("results.bin", rank), std::ios_base::binary);
   Utils::DumpVec(original_idcs, file);
   Utils::DumpVec(values, file);
@@ -43,7 +43,7 @@ void Results::Load(const int &rank) {
   Utils::LoadVec(file, &values);
 }
 
-void Results::DumpTxt(const int &rank) {
+void Results::DumpTxt(const int &rank) const {
   std::ofstream file(args.Filename("results.txt", rank));
   Utils::DumpTxt("orig_i", original_idcs, file);
   Utils::DumpTxt("values", values, file);

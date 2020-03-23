@@ -40,7 +40,7 @@ void MpiBuffers::AllocMpiBufs() {
   sdispls.resize(size);
 }
 
-void MpiBuffers::DumpToOFS(std::ofstream &ofs) {
+void MpiBuffers::DumpToOFS(std::ofstream &ofs) const {
   Utils::DumpVec(sendcounts, ofs);
   Utils::DumpVec(sdispls, ofs);
   Utils::DumpVec(recvcounts, ofs);
@@ -62,7 +62,7 @@ void MpiBuffers::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &init_idcs.phase_begin);
 }
 
-void MpiBuffers::DumpToTxt(std::ofstream &ofs) {
+void MpiBuffers::DumpToTxt(std::ofstream &ofs) const {
   Utils::DumpTxt("sendcounts", sendcounts, ofs);
   Utils::DumpTxt("sdispls   ", sdispls, ofs);
   Utils::DumpTxt("recvcounts", recvcounts, ofs);

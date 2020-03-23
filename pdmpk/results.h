@@ -35,7 +35,7 @@ public:
   /// Save the results.
   ///
   /// @param rank MPI rank.
-  void Dump(const int &rank);
+  void Dump(const int &rank) const;
   /// Load the results.
   ///
   /// @param rank MPI rank.
@@ -43,7 +43,7 @@ public:
   /// Save the results as text.
   ///
   /// @param rank MPI rank.
-  void DumpTxt(const int &rank);
+  void DumpTxt(const int &rank) const;
 
   /// Holds the `mbuf` index where the vertices at level `nlevel` can
   /// be found in the given partition. This member is public and

@@ -120,7 +120,7 @@ void Buffers::LoadInput() {
     mbuf[i] = 1.0;
 }
 
-void Buffers::Dump(const int &rank) {
+void Buffers::Dump(const int &rank) const {
   std::ofstream file(args.Filename("buf.bin", rank), std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
@@ -148,7 +148,7 @@ void Buffers::Load(const int &rank) {
   mcsr.LoadFromIFS(file);
 }
 
-void Buffers::DumpTxt(const int &rank) {
+void Buffers::DumpTxt(const int &rank) const {
   std::ofstream file(args.Filename("buf.txt", rank));
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
@@ -162,7 +162,7 @@ void Buffers::DumpTxt(const int &rank) {
   mcsr.DumpToTxt(file);
 }
 
-void Buffers::DumpMbufTxt(const int &rank) {
+void Buffers::DumpMbufTxt(const int &rank) const {
   std::ofstream file(args.Filename("mbuf.txt", rank));
 
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
@@ -171,7 +171,7 @@ void Buffers::DumpMbufTxt(const int &rank) {
   mpi_bufs.DumpToTxt(file);
 }
 
-void Buffers::DbgCheck() {
+void Buffers::DbgCheck() const {
   // mpi_bufs !!!!!
   // mpi_bufs.init_idcs; // !!!
   // mpi_bufs.sbuf_idcs; // !!!
