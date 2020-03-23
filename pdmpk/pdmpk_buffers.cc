@@ -71,7 +71,6 @@ void PdmpkBuffers::IncLevel(const idx_t &idx) {
 }
 
 void PdmpkBuffers::UpdateWeights(const level_t &min) {
-  // std::invoke(update_weights_func, this);
   assert(update_weights_func ==
          update_func_registry[args.weight_update_method]);
   (this->*update_weights_func)(min);
