@@ -9,9 +9,9 @@
 #include <cassert>
 #include <iostream>
 
-#include "args.h"
-#include "comm_comp_patterns.h"
-#include "typedefs.h"
+#include "../pdmpk/args.h"
+#include "../pdmpk/comm_comp_patterns.h"
+#include "../pdmpk/typedefs.h"
 
 /// Prepare @ref Buffers using pdMPK and save them to disk.
 ///

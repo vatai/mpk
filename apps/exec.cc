@@ -9,9 +9,9 @@
 #include <string>
 #include <unistd.h>
 
-#include "args.h"
-#include "buffers.h"
-#include "utils.hpp"
+#include "../pdmpk/args.h"
+#include "../pdmpk/buffers.h"
+#include "../pdmpk/utils.hpp"
 
 /// @page pdmpk_exec pdmpk_exec
 ///

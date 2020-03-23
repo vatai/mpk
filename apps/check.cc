@@ -10,15 +10,15 @@
 #include <unistd.h>
 #include <vector>
 
-#include "args.h"
-#include "buffers.h"
-#include "csr.h"
-#include "results.h"
-#include "utils.hpp"
+#include "../pdmpk/args.h"
+#include "../pdmpk/buffers.h"
+#include "../pdmpk/csr.h"
+#include "../pdmpk/results.h"
+#include "../pdmpk/utils.hpp"
 
-/// @page pdmpk_test pdmpk_test
+/// @page pdmpk_check pdmpk_check
 ///
-/// Body of `pdmpk_test` page.
+/// Body of `pdmpk_check` page.
 
 /// "Infinitesimaly" small value, under which we consider two floats
 /// equal.
@@ -44,7 +44,7 @@ double Cos(const std::vector<double> &v1, const std::vector<double> &v2) {
 }
 
 /// Test the results of @ref pdmpk_exec. The arguments are the same as
-/// for @ref pdmpk_prep.c::main
+/// for @ref prep.c::main
 int main(int argc, char *argv[]) {
   const Args args(argc, argv);
   Csr csr(args.mtxname);
