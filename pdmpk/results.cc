@@ -1,11 +1,13 @@
 // Author: Emil VATAI <emil.vatai@gmail.com>
 // Date: 2019-12-01
 
-#include "results.h"
-#include "utils.hpp"
+#include <cstdio>
 #include <fstream>
 #include <ios>
 #include <string>
+
+#include "results.h"
+#include "utils.hpp"
 
 const std::string kFname{"fresults"};
 
@@ -47,4 +49,11 @@ void Results::DumpTxt(const int &rank) const {
   std::ofstream file(args.Filename("results.txt", rank));
   Utils::DumpTxt("orig_i", original_idcs, file);
   Utils::DumpTxt("values", values, file);
+}
+
+void Results::CleanUp(const int &rank) const {
+  if (not args.keepfiles) {
+    std::remove(args.Filename("results.bin", rank).c_str());
+    std::remove(args.Filename("results.txt", rank).c_str());
+  }
 }

@@ -45,6 +45,11 @@ public:
   /// @param rank MPI rank.
   void DumpTxt(const int &rank) const;
 
+  /// Delete created files
+  ///
+  /// @param rank MPI rank.
+  void CleanUp(const int &rank) const;
+
   /// Holds the `mbuf` index where the vertices at level `nlevel` can
   /// be found in the given partition. This member is public and
   /// serialised by @ref Buffers.

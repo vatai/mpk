@@ -38,4 +38,7 @@ struct Args {
 
   /// Metis default options used to determine which options were set.
   idx_t default_opt[METIS_NOPTIONS];
+
+  /// If true keep files = don't cleanup flag.
+  bool keepfiles;
 };

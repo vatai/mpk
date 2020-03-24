@@ -22,7 +22,8 @@
   break;
 
 Args::Args(int &argc, char *argv[])
-    : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0} {
+    : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0},
+      keepfiles(false) {
   METIS_SetDefaultOptions(default_opt);
   METIS_SetDefaultOptions(opt);
   opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
@@ -63,6 +64,8 @@ Args::Args(int &argc, char *argv[])
       // ---
       {"PFACTOR", required_argument, 0, 'P'},
       {"UFACTOR", required_argument, 0, 'u'},
+      // others
+      {"keepfiles", required_argument, 0, 'K'},
       {0, 0, 0, 0} // last element must be all 0s
   };
   int option_index = 0;
@@ -73,7 +76,8 @@ Args::Args(int &argc, char *argv[])
                          "t:o:y:i:r:"
                          "s:p:b:e:d:"
                          "c:h:g:C:R:"
-                         "P:u:",
+                         "P:u:"
+                         "K",
                          long_options, &option_index);
     if (c == -1)
       break;
@@ -165,8 +169,10 @@ Args::Args(int &argc, char *argv[])
     case 'u':
       opt[METIS_OPTION_UFACTOR] = std::stoi(optarg);
       break;
-      // ----  ----
-
+    // ---- other ----
+    case 'K':
+      keepfiles = true;
+      break;
     case '?':
       exit(1);
     default:

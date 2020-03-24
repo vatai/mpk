@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
   for (auto i = 0; i < args.npart; i++) {
     Results results(args);
     results.Load(i);
+    results.CleanUp(i);
     results.FillResults(&loadResult);
   }
 

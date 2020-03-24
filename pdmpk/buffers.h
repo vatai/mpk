@@ -56,19 +56,32 @@ public:
 
   /// Store @ref Buffers to disk which should be loaded using @ref
   /// Buffers::Load.
+  ///
+  /// @param rank MPI rank.
   void Dump(const int &rank) const;
 
   /// Load @ref Buffers from disk saved using @ref Buffers::Dump.
+  ///
+  /// @param rank MPI rank.
   void Load(const int &rank);
 
   /// Store @ref Buffers to disk in `.txt` format.
+  ///
+  /// @param rank MPI rank.
   void DumpTxt(const int &rank) const;
 
   /// Store @ref Buffers::mbuf to disk in `.txt` format.
+  ///
+  /// @param rank MPI rank.
   void DumpMbufTxt(const int &rank) const;
 
   /// Check @ref Buffers invariants.
   void DbgCheck() const;
+
+  /// Delete created files
+  ///
+  /// @param rank MPI rank.
+  void CleanUp(const int &rank) const;
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.

@@ -45,11 +45,10 @@ int main(int argc, char *argv[]) {
   buf.LoadInput();
   buf.Exec();
 
-  buf.DumpMbufTxt(rank);
-
   buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);
   buf.results.DumpTxt(rank);
+  buf.CleanUp(rank);
 
   MPI_Finalize();
 

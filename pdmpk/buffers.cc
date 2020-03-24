@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <metis.h>
@@ -194,4 +195,12 @@ void Buffers::DbgCheck() const {
   // name
   // mbuf
   // sbuf
+}
+
+void Buffers::CleanUp(const int &rank) const {
+  if (not args.keepfiles) {
+    std::remove(args.Filename("buf.bin", rank).c_str());
+    std::remove(args.Filename("buf.txt", rank).c_str());
+    std::remove(args.Filename("mbuf.txt", rank).c_str());
+  }
 }
