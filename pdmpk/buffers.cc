@@ -62,6 +62,7 @@ void Buffers::DoComp(const int &phase) {
     double tmp = 0.0;
     const auto &pair = mpi_bufs.init_idcs[init_idx];
     if (mpi_bufs.init_idcs.size() > 0 and
+        init_idx < mpi_bufs.init_idcs.phase_begin[phase + 1] and
         mbuf.phase_begin[phase] + mi == (size_t)pair.second) {
       tmp = mbuf[pair.first];
       init_idx++;
