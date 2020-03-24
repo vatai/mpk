@@ -27,14 +27,14 @@ int main(int argc, char *argv[]) {
   assert(npart == args.npart);
 
   // MPI debuging:
-  // - start with: $ gdb pdmpk_exec PID
+  // - start with: $ gdb ./exec PID
   // - up # go up in the stack
   // - up # two times
   // - set var i = 1
   // - continue
   // if (rank == 3) {
-  //   int i = 1;
   //   std::cout << "PID " << getpid() << " ready for attach" << std::endl;
+  //   int i = 0;
   //   while (0 == i)
   //     sleep(5);
   // }
