@@ -22,14 +22,14 @@ execute_process(
 
 # Check if the branch is dirty
 execute_process(
-  COMMAND "git diff --quiet"
-  RESULT_VARIABLE GIT_CLEAN_WD
+  COMMAND git diff --quiet
+  RESULT_VARIABLE GIT_DIRTY_WD
   )
 
-if(GIT_CLEAN_WD)
-add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
+if(GIT_DIRTY_WD)
+  add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}-dirty\"")
 else()
-add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}-dirty\"")
+  add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
 endif()
 
 add_library(args OBJECT args.h args.cc)
