@@ -14,12 +14,15 @@
 #include <nlohmann/json.hpp>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include "buffers.h"
 #include "comm_comp_patterns.h"
 #include "lapjv.h"
 #include "pdmpk_buffers.h"
 #include "typedefs.h"
+
+using json = nlohmann::json;
 
 CommCompPatterns::CommCompPatterns(const Args &args)
     : bufs(args.npart, Buffers(args)), //
@@ -81,22 +84,81 @@ void CommCompPatterns::Epilogue() {
 }
 
 void CommCompPatterns::Stats() const {
-  size_t rsum = 0;
-  size_t ssum = 0;
-  for (const auto &buffer : bufs) {
-    for (int i = 0; i < phase; i++) {
-      rsum += buffer.mpi_bufs.RbufSize(i);
-      ssum += buffer.mpi_bufs.SbufSize(i);
-    }
-  }
-
-  nlohmann::json stats;
-  stats["rbuf sum"] = rsum;
-  stats["sbuf sum"] = ssum;
-  stats["num phases"] = phase;
+  json stats;
+  stats["args"] = args.ToJson();
+  stats["num_phases"] = phase;
+  stats["comm_summary"] = StatsCommSummary();
+  stats["comp_summary"] = StatsCompSummary();
 
   std::ofstream of(args.Filename("status.json"));
   of << stats.dump() << std::endl;
+}
+
+json CommCompPatterns::StatsCommSummary() const {
+  const double count = bufs.size() * phase;
+  size_t rsum = 0;
+  size_t ssum = 0;
+  size_t min = bufs[0].mpi_bufs.RbufSize(0);
+  size_t max = bufs[0].mpi_bufs.RbufSize(0);
+  for (const auto &buffer : bufs) {
+    for (int i = 0; i < phase; i++) {
+      const auto rs = buffer.mpi_bufs.RbufSize(i);
+      rsum += rs;
+      ssum += buffer.mpi_bufs.SbufSize(i);
+      min = min > rs ? rs : min;
+      max = max < rs ? rs : max;
+    }
+  }
+  assert(rsum == ssum);
+
+  json j;
+  j["comm_sum"] = rsum;
+  j["comm_average"] = double(rsum) / count;
+  j["comm_min"] = min;
+  j["comm_max"] = max;
+  return j;
+}
+
+json CommCompPatterns::StatsCompSummary() const {
+  size_t mptr_sum = 0;
+  size_t mcol_sum = 0;
+  size_t init_sum = 0;
+  size_t mptr_min = bufs[0].mcsr.mptr.size();
+  size_t mcol_min = bufs[0].mcsr.mcol.size();
+  size_t init_min = bufs[0].mpi_bufs.init_idcs.size();
+  size_t mptr_max = bufs[0].mcsr.mptr.size();
+  size_t mcol_max = bufs[0].mcsr.mcol.size();
+  size_t init_max = bufs[0].mpi_bufs.init_idcs.size();
+  for (const auto &buffer : bufs) {
+    const size_t mptr_size = buffer.mcsr.mptr.size();
+    const size_t mcol_size = buffer.mcsr.mcol.size();
+    const size_t init_size = buffer.mpi_bufs.init_idcs.size();
+    mptr_sum += mptr_size;
+    mcol_sum += mcol_size;
+    init_sum += init_size;
+    mptr_min = mptr_min > mptr_size ? mptr_size : mptr_min;
+    mcol_min = mcol_min > mcol_size ? mcol_size : mcol_min;
+    init_min = init_min > init_size ? init_size : init_min;
+    mptr_max = mptr_max < mptr_size ? mptr_size : mptr_max;
+    mcol_max = mcol_max < mcol_size ? mcol_size : mcol_max;
+    init_max = init_max < init_size ? init_size : init_max;
+  }
+
+  json j;
+  j["mptr_sum"] = mptr_sum;
+  j["mcol_sum"] = mcol_sum;
+  j["init_sum"] = init_sum;
+  j["mptr_avg"] = double(mptr_sum) / double(bufs.size());
+  j["mcol_avg"] = double(mcol_sum) / double(bufs.size());
+  j["init_avg"] = double(init_sum) / double(bufs.size());
+  j["mptr_min"] = mptr_min;
+  j["mcol_min"] = mcol_min;
+  j["init_min"] = init_min;
+  j["mptr_max"] = mptr_max;
+  j["mcol_max"] = mcol_max;
+  j["init_max"] = init_max;
+
+  return j;
 }
 
 void CommCompPatterns::ProcAllPhases0() {

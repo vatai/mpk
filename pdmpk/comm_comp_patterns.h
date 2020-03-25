@@ -7,10 +7,10 @@
 #pragma once
 
 #include <map>
+#include <metis.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
-
-#include <metis.h>
 
 #include "args.h"
 #include "buffers.h"
@@ -112,6 +112,23 @@ private:
   ///
   /// - gathers information on how to collect the results.
   void Epilogue();
+
+  /// Construct a Json object describing the minimum, maximum, average
+  /// and sum of communication.
+  ///
+  /// @returns Json object describing the communication summary.
+  json StatsCommSummary() const;
+
+  /// Construct a Json object describing the
+  ///
+  /// @returns Json object describing the computation summary.
+  json StatsCompSummary() const;
+
+  /// Calculate the sum data communicated between all partitions in
+  /// all phases.
+  ///
+  /// @returns Total sum data communicated.
+  size_t StatsCommSum() const;
 
   /// Process all phases: without any mirroring.
   void ProcAllPhases0();
