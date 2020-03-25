@@ -2,6 +2,7 @@
 
 /// Class converting `argc` and `argv` into C++ types.
 #include <metis.h>
+#include <nlohmann/json.hpp>
 #include <string>
 
 struct Args {
@@ -19,6 +20,11 @@ struct Args {
   /// @returns The string containing relevant data from the `Args`
   /// object (and the MPI rank optionally).
   std::string Filename(const std::string &suffix, const int &rank = -1) const;
+
+  /// Convert the `Args` to a JSON format.
+  ///
+  /// @returns Relevant data from `Args` in JSON format.
+  nlohmann::json ToJson() const;
 
   /// Path to the `.mtx` file.
   std::string mtxname;

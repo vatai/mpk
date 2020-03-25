@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <metis.h>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -211,4 +212,23 @@ std::string Args::Filename(const std::string &suffix, const int &rank) const {
   ss << "-" << GIT_BRANCH << "-" << GIT_COMMIT_HASH;
   ss << "." << suffix;
   return ss.str();
+}
+
+nlohmann::json Args::ToJson() const {
+  nlohmann::json j;
+  std::string name = mtxname;
+  name.erase(0, name.find_last_of('/') + 1);
+  j["matrix"] = name;
+  j["npart"] = npart;
+  j["nlevel"] = nlevel;
+  j["mirror_method"] = mirror_method;
+  j["weight_update_method"] = weight_update_method;
+  std::map<idx_t, idx_t> active_ops;
+  for (size_t k = 0; k < METIS_NOPTIONS; k++) {
+    if (default_opt[k] != opt[k]) {
+      active_ops[k] = opt[k];
+    }
+  }
+  j["metis_opts"] = active_ops;
+  return j;
 }
