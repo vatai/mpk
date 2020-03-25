@@ -2,7 +2,6 @@
 #include <getopt.h>
 #include <iostream>
 #include <metis.h>
-#include <nlohmann/json.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -214,8 +213,8 @@ std::string Args::Filename(const std::string &suffix, const int &rank) const {
   return ss.str();
 }
 
-nlohmann::json Args::ToJson() const {
-  nlohmann::json j;
+json Args::ToJson() const {
+  json j;
   std::string name = mtxname;
   name.erase(0, name.find_last_of('/') + 1);
   j["matrix"] = name;

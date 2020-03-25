@@ -1,10 +1,12 @@
 #pragma once
 
-/// Class converting `argc` and `argv` into C++ types.
 #include <metis.h>
 #include <nlohmann/json.hpp>
 #include <string>
 
+using json = nlohmann::json;
+
+/// Class converting `argc` and `argv` into C++ types.
 struct Args {
   /// Constructor which processes
   /// command line arguments.
@@ -24,7 +26,7 @@ struct Args {
   /// Convert the `Args` to a JSON format.
   ///
   /// @returns Relevant data from `Args` in JSON format.
-  nlohmann::json ToJson() const;
+  json ToJson() const;
 
   /// Path to the `.mtx` file.
   std::string mtxname;
