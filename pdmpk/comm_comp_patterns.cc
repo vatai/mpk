@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <nlohmann/json.hpp>
 #include <ostream>
 #include <string>
 
@@ -80,20 +81,22 @@ void CommCompPatterns::Epilogue() {
 }
 
 void CommCompPatterns::Stats() const {
-  std::ofstream of(args.Filename("status.txt"));
-
-  size_t sum = 0;
+  size_t rsum = 0;
   size_t ssum = 0;
   for (const auto &buffer : bufs) {
     for (int i = 0; i < phase; i++) {
-      sum += buffer.mpi_bufs.RbufSize(i);
+      rsum += buffer.mpi_bufs.RbufSize(i);
       ssum += buffer.mpi_bufs.SbufSize(i);
     }
   }
-  std::cout << "Rbuf sum: " << sum << ", "
-            << "Sbuf sum: " << ssum << ", "
-            << "Phase (num of): " << phase << std::endl;
-  of << sum << " " << phase << std::endl;
+
+  nlohmann::json stats;
+  stats["rbuf sum"] = rsum;
+  stats["sbuf sum"] = ssum;
+  stats["num phases"] = phase;
+
+  std::ofstream of(args.Filename("status.json"));
+  of << stats.dump() << std::endl;
 }
 
 void CommCompPatterns::ProcAllPhases0() {
