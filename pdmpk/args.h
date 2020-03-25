@@ -7,7 +7,7 @@
 struct Args {
   /// Constructor which processes
   /// command line arguments.
-  Args(int &argc, char *argv[]);
+  Args(int argc, char *argv[]);
 
   /// Generate filename based on arguments.
   ///
@@ -15,6 +15,9 @@ struct Args {
   ///
   /// @param rank MPI rank of the buffer or -1 if no buffer rank needs to be
   /// appended.
+  ///
+  /// @returns The string containing relevant data from the `Args`
+  /// object (and the MPI rank optionally).
   std::string Filename(const std::string &suffix, const int &rank = -1) const;
 
   /// Path to the `.mtx` file.
@@ -41,4 +44,11 @@ struct Args {
 
   /// If true keep files = don't cleanup flag.
   bool keepfiles;
+
+private:
+  /// Gets relevant args from environment variables.
+  void GetEnvArgs();
+
+  /// Read args using `getopt()`.
+  void ReadArgs(int argc, char *argv[]);
 };

@@ -21,7 +21,7 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[])
+Args::Args(int argc, char *argv[])
     : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0},
       keepfiles(false) {
   METIS_SetDefaultOptions(default_opt);
@@ -29,14 +29,20 @@ Args::Args(int &argc, char *argv[])
   opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
   opt[METIS_OPTION_CONTIG] = 0;
   // opt[METIS_OPTION_MINCONN] = 1;
+  GetEnvArgs();
+  ReadArgs(argc, argv);
+}
 
+void Args::GetEnvArgs() {
   if (const char *ompi_npart = std::getenv("PMI_SIZE")) {
     npart = std::stoi(ompi_npart);
   };
   if (const char *ompi_npart = std::getenv("OMPI_COMM_WORLD_SIZE")) {
     npart = std::stoi(ompi_npart);
   };
+}
 
+void Args::ReadArgs(int argc, char *argv[]) {
   struct option long_options[] = {
       {"matrix", required_argument, 0, 'm'},
       {"npart", required_argument, 0, 'n'},
