@@ -145,18 +145,18 @@ json CommCompPatterns::StatsCompSummary() const {
   }
 
   json j;
-  j["mptr_sum"] = mptr_sum;
-  j["mcol_sum"] = mcol_sum;
-  j["init_sum"] = init_sum;
-  j["mptr_avg"] = double(mptr_sum) / double(bufs.size());
-  j["mcol_avg"] = double(mcol_sum) / double(bufs.size());
-  j["init_avg"] = double(init_sum) / double(bufs.size());
-  j["mptr_min"] = mptr_min;
-  j["mcol_min"] = mcol_min;
-  j["init_min"] = init_min;
-  j["mptr_max"] = mptr_max;
-  j["mcol_max"] = mcol_max;
-  j["init_max"] = init_max;
+  j["mptr_sum(w)"] = mptr_sum;
+  j["mcol_sum(r)"] = mcol_sum;
+  j["init_sum(r)"] = init_sum;
+  j["mptr_avg(w)"] = double(mptr_sum) / double(bufs.size());
+  j["mcol_avg(r)"] = double(mcol_sum) / double(bufs.size());
+  j["init_avg(r)"] = double(init_sum) / double(bufs.size());
+  j["mptr_min(w)"] = mptr_min;
+  j["mcol_min(r)"] = mcol_min;
+  j["init_min(r)"] = init_min;
+  j["mptr_max(w)"] = mptr_max;
+  j["mcol_max(r)"] = mcol_max;
+  j["init_max(r)"] = init_max;
 
   return j;
 }
