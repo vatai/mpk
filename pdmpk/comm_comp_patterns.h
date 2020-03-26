@@ -125,11 +125,6 @@ private:
   /// @returns Json object describing the computation summary.
   json StatsCompSummary() const;
 
-  /// Calculate the sum data communicated between all partitions in
-  /// all phases.
-  ///
-  /// @returns Total sum data communicated.
-  size_t StatsCommSum() const;
 
   /// Process all phases: without any mirroring.
   void ProcAllPhases0();
