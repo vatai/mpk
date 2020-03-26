@@ -119,7 +119,8 @@ private:
   /// @returns Json object describing the communication summary.
   json StatsCommSummary() const;
 
-  /// Construct a Json object describing the
+  /// Construct a Json object describing the minimum, maximum, average and sum
+  /// of computation.
   ///
   /// @returns Json object describing the computation summary.
   json StatsCompSummary() const;
