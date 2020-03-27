@@ -125,6 +125,12 @@ private:
   /// @returns Json object describing the computation summary.
   json StatsCompSummary() const;
 
+  /// Construct a Json object describing the minimum, maximum, average
+  /// and sum of "differences".  Differences are differences of
+  /// computation in one phase between partitions. The idea is that if
+  /// one partition has more computation than the other (in a single
+  /// phase) that is a bad thing, and we'd like to measure that.
+  json StatsDiffSummary() const;
 
   /// Process all phases: without any mirroring.
   void ProcAllPhases0();

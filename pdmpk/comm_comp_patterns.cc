@@ -89,6 +89,7 @@ void CommCompPatterns::Stats() const {
   stats["num_phases"] = phase;
   stats["comm_summary"] = StatsCommSummary();
   stats["comp_summary"] = StatsCompSummary();
+  stats["diff_summary"] = StatsDiffSummary();
 
   std::ofstream of(args.Filename("status.json"));
   of << stats.dump() << std::endl;
@@ -130,7 +131,7 @@ json CommCompPatterns::StatsCompSummary() const {
   size_t mcol_max = bufs[0].mcsr.mcol.size();
   size_t init_max = bufs[0].mpi_bufs.init_idcs.size();
   for (const auto &buffer : bufs) {
-    const size_t mptr_size = buffer.mcsr.mptr.size();
+    const size_t mptr_size = buffer.mcsr.mptr.size() - 1;
     const size_t mcol_size = buffer.mcsr.mcol.size();
     const size_t init_size = buffer.mpi_bufs.init_idcs.size();
     mptr_sum += mptr_size;
@@ -158,6 +159,74 @@ json CommCompPatterns::StatsCompSummary() const {
   j["mcol_max(r)"] = mcol_max;
   j["init_max(r)"] = init_max;
 
+  return j;
+}
+
+json CommCompPatterns::StatsDiffSummary() const {
+  size_t wsum = 0, rsum = 0;
+  size_t wmin = -1u, rmin = -1u;
+  size_t wmax = 0, rmax = 0;
+  size_t wmin_sum = 0, rmin_sum = 0;
+  size_t wmax_sum = 0, rmax_sum = 0;
+  for (int k = 0; k < phase; k++) {
+    size_t phase_wsum = 0, phase_rsum = 0;
+    size_t phase_wmin = -1u, phase_rmin = -1u;
+    size_t phase_wmax = 0, phase_rmax = 0;
+    for (const auto &bi : bufs) {
+      for (const auto &bj : bufs) {
+        if (&bi != &bj) {
+          const size_t begin_wi = bi.mcsr.mptr.phase_begin.at(k);
+          const size_t end_wi = bi.mcsr.mptr.phase_begin.at(k + 1);
+          const size_t begin_wj = bj.mcsr.mptr.phase_begin.at(k);
+          const size_t end_wj = bj.mcsr.mptr.phase_begin.at(k + 1);
+          const size_t begin_ri = bi.mcsr.mptr.at(begin_wi);
+          const size_t end_ri = bi.mcsr.mptr.at(end_wi);
+          const size_t begin_rj = bj.mcsr.mptr.at(begin_wj);
+          const size_t end_rj = bj.mcsr.mptr.at(end_wj);
+          const size_t wri = end_wi - begin_wi;
+          const size_t wrj = end_wj - begin_wj;
+          const size_t rdi = end_ri - begin_ri;
+          const size_t rdj = end_rj - begin_rj;
+          const size_t wdiff = wri < wrj ? wrj - wri : wri - wrj; // abs diff
+          const size_t rdiff = rdi < rdj ? rdj - rdi : rdi - rdj; // abs diff
+
+          phase_wsum += wdiff;
+          phase_rsum += rdiff;
+          phase_wmin = phase_wmin > wdiff ? wdiff : phase_wmin;
+          phase_rmin = phase_rmin > rdiff ? rdiff : phase_rmin;
+          phase_wmax = phase_wmax < wdiff ? wdiff : phase_wmax;
+          phase_rmax = phase_rmax < rdiff ? rdiff : phase_rmax;
+        }
+      }
+    }
+    wsum += phase_wsum;
+    rsum += phase_rsum;
+    wmin = wmin > phase_wmin ? phase_wmin : wmin;
+    rmin = rmin > phase_rmin ? phase_rmin : rmin;
+    wmax = wmax < phase_wmax ? phase_wmax : wmax;
+    rmax = rmax < phase_rmax ? phase_rmax : rmax;
+    wmin_sum += phase_wmin;
+    rmin_sum += phase_rmin;
+    wmax_sum += phase_wmax;
+    rmax_sum += phase_rmax;
+  }
+
+  const double ndiffs = bufs.size() * (bufs.size() - 1);
+  const double nphase = phase;
+  json j;
+  j["write_sum"] = wsum;
+  j["read_sum"] = rsum;
+  j["write_min"] = wmin;
+  j["read_min"] = rmin;
+  j["write_max"] = wmax;
+  j["read_max"] = rmax;
+  j["write_avg"] = double(wsum) / ndiffs;
+  j["read_avg"] = double(rsum) / ndiffs;
+  j["avg_wmin"] = double(wmin_sum) / nphase;
+  j["avg_rmin"] = double(rmin_sum) / nphase;
+  j["avg_wmax"] = double(wmax_sum) / nphase;
+  j["avg_rmax"] = double(rmax_sum) / nphase;
+  // {min,max}avg?
   return j;
 }
 
@@ -227,7 +296,6 @@ void CommCompPatterns::ProcAllPhases2() {
       std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
-      std::cout << "Second branch" << std::endl;
       const auto hist_idx = phase % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
