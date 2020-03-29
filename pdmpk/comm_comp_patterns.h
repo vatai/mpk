@@ -170,7 +170,10 @@ private:
   /// `level[idx]-1`.
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
 
-  /// Called in @ref CommCompPatterns::NewPartitionLabels.
+  /// Using the `lapjv()` algorithm find the optimal assignment of
+  /// labels to partitions, and set @ref PdmpkBuffers::partitions to
+  /// the optimal partition labels.  Called in @ref
+  /// CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
   /// Code executed before each phase.
