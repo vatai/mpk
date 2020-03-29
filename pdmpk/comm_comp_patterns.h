@@ -158,6 +158,10 @@ private:
   /// @param min_level Minimum level in the current phase.
   void NewPartitionLabels(const size_t &min_level);
 
+  /// Optimize labels of new partitioning obtained from the graph partitioning
+  /// algorithm.
+  void OptimizeLabels(const size_t &min_level);
+
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
   /// @param idx The index of the vertex processed.

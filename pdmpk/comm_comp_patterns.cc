@@ -369,7 +369,11 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
       pdmpk_bufs.MetisFixVertex(idx);
     }
   }
+  OptimizeLabels(min_level);
+  partition_history.push_back(pdmpk_bufs.partitions);
+}
 
+void CommCompPatterns::OptimizeLabels(const size_t &min_level) {
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
@@ -387,7 +391,6 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   }
   FindLabelPermutation();
   comm_table.clear();
-  partition_history.push_back(pdmpk_bufs.partitions);
 }
 
 bool CommCompPatterns::OptimizeVertex(const idx_t &idx, const level_t &lbelow) {
