@@ -30,4 +30,5 @@ mpk-paper*
 *_minted*
 ltximg
 *.pdf
-*.tex
+*.synctex.gz
+*.aux
