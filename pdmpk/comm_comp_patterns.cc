@@ -238,8 +238,10 @@ void CommCompPatterns::ProcAllPhases0() {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
-    if (old_level_sum == level_sum)
+    if (old_level_sum == level_sum) {
+      is_finished = pdmpk_bufs.IsFinished();
       break;
+    }
     old_level_sum = level_sum;
     NewPartitionLabels(min_level);
     ProcPhase(min_level);
@@ -261,8 +263,10 @@ void CommCompPatterns::ProcAllPhases1() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
-      if (old_level_sum == level_sum)
+      if (old_level_sum == level_sum) {
+        is_finished = pdmpk_bufs.IsFinished();
         break;
+      }
       old_level_sum = level_sum;
       NewPartitionLabels(min_level);
     } else {
@@ -288,8 +292,10 @@ void CommCompPatterns::ProcAllPhases2() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
-      if (old_level_sum == level_sum)
+      if (old_level_sum == level_sum) {
+        is_finished = pdmpk_bufs.IsFinished();
         break;
+      }
       old_level_sum = level_sum;
       NewPartitionLabels(min_level);
     } else {
