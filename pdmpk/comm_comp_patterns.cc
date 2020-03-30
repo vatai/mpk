@@ -264,10 +264,8 @@ void CommCompPatterns::ProcAllPhases1() {
       if (old_level_sum == level_sum)
         break;
       old_level_sum = level_sum;
-      std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
-      std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_history.back();
       partition_history.pop_back();
     }
@@ -293,7 +291,6 @@ void CommCompPatterns::ProcAllPhases2() {
       if (old_level_sum == level_sum)
         break;
       old_level_sum = level_sum;
-      std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
       const auto hist_idx = phase % partition_history.size();
@@ -317,10 +314,8 @@ void CommCompPatterns::ProcAllPhases3() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
-      std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
-      std::cout << "Second branch" << std::endl;
       pdmpk_bufs.partitions = partition_history.back();
       partition_history.pop_back();
     }
@@ -342,10 +337,8 @@ void CommCompPatterns::ProcAllPhases4() {
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
-      std::cout << "First branch" << std::endl;
       NewPartitionLabels(min_level);
     } else {
-      std::cout << "Second branch" << std::endl;
       const auto hist_idx = phase % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
@@ -360,7 +353,6 @@ void CommCompPatterns::ProcAllPhases4() {
 }
 
 void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
-  // pdmpk_bufs.DebugPrintReport(std::cout, phase);
   pdmpk_bufs.UpdateWeights(min_level);
   pdmpk_bufs.MetisPartitionWithWeights();
 
