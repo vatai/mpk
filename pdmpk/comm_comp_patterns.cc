@@ -31,10 +31,12 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       pdmpk_bufs{args, csr},           //
       pdmpk_count{args, csr},          //
       phase{0},                        //
-      mirror_func_registry{
-          &CommCompPatterns::ProcAllPhases0, &CommCompPatterns::ProcAllPhases1,
-          &CommCompPatterns::ProcAllPhases2, &CommCompPatterns::ProcAllPhases3,
-          &CommCompPatterns::ProcAllPhases4} {
+      mirror_func_registry{&CommCompPatterns::ProcAllPhases0,
+                           &CommCompPatterns::ProcAllPhases1,
+                           &CommCompPatterns::ProcAllPhases2,
+                           &CommCompPatterns::ProcAllPhases3,
+                           &CommCompPatterns::ProcAllPhases4,
+                           &CommCompPatterns::ProcAllPhases5} {
   assert(args.mirror_method < mirror_func_registry.size());
 
   pdmpk_bufs.MetisPartition();
@@ -347,6 +349,35 @@ void CommCompPatterns::ProcAllPhases4() {
     } else {
       const auto hist_idx = phase % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
+    }
+    ProcPhase(min_level);
+    is_finished = pdmpk_bufs.IsFinished();
+  }
+  if (not is_finished) {
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__
+              << ": Couldn't finish (probably got stuck)." << std::endl;
+    exit(1);
+  }
+}
+
+void CommCompPatterns::ProcAllPhases5() {
+  bool is_finished = pdmpk_bufs.IsFinished();
+  size_t old_level_sum = 0;
+  while (not is_finished and not partition_history.empty()) {
+    phase++;
+    const auto min_level = pdmpk_bufs.MinLevel();
+    const auto level_sum = pdmpk_bufs.ExactLevelSum();
+    DbgPhaseSummary(min_level, level_sum);
+    if (2 * min_level < 3 * args.nlevel) {
+      if (old_level_sum == level_sum) {
+        is_finished = pdmpk_bufs.IsFinished();
+        break;
+      }
+      old_level_sum = level_sum;
+      NewPartitionLabels(min_level);
+    } else {
+      pdmpk_bufs.partitions = partition_history.back();
+      partition_history.pop_back();
     }
     ProcPhase(min_level);
     is_finished = pdmpk_bufs.IsFinished();

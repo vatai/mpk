@@ -16,7 +16,7 @@ set(CTEST_CUSTOM_PRE_TEST ../scripts/gen_matrices.sh)
 foreach(size 10 100)
   foreach(npart 4 8)
     foreach(nlevel 10 20)
-      foreach(mirror 2 4)
+      foreach(mirror 2 4 5)
         foreach(weight 0)
       add_test(NAME m5p_${size}_${npart}_${nlevel}_m${mirror}w${weight}
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh m5p ${size} ${npart} ${nlevel} ${mirror} ${weight})
@@ -29,7 +29,7 @@ endforeach(size)
 foreach(mtx GHS_psdef/bmw7st_1.tar.gz Rothberg/cfd2.tar.gz Rothberg/gearbox.tar.gz Ronis/xenon2.tar.gz)
   foreach(npart 4 8)
     foreach(nlevel 10 20)
-      foreach(mirror 2 4)
+      foreach(mirror 2 4 5)
         foreach(weight 0)
           add_test(NAME "${mtx}_${npart}_${nlevel}_m${mirror}w${weight}"
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/get_test.sh

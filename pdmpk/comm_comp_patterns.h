@@ -150,6 +150,10 @@ private:
   /// `level_sum` check).
   void ProcAllPhases4();
 
+  /// Process all phases: mirror after `min_level` is above `3/4 *
+  /// nlevel`.
+  void ProcAllPhases5();
+
   /// Generate and optimize partition label assignment using @ref
   /// PdmpkBuffers::MetisPartitionWithWeights @ref
   /// CommCompPatterns::OptimizeVertex and @ref
