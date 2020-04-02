@@ -11,6 +11,7 @@ NPART=${2:-4}
 NLEVEL=${3:-10}
 MIRROR=${4:-0}
 WEIGHT=${5:-0}
+shift 5
 
 PREFIX=${PREFIX:=../apps}
 
@@ -22,11 +23,6 @@ EXEC=$PREFIX/exec
 TEST=$PREFIX/check
 echo "$0: Processing $MATRIX with $NPART partitions upto level $NLEVEL (mirror $MIRROR, weight $WEIGHT)"
 
-echo $PREP --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 1
-$PREP --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 1
-
-echo $MPIRUN -n $NPART $EXEC --matrix $MATRIX --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 2
-$MPIRUN -n $NPART $EXEC --matrix $MATRIX --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 2
-
-echo $TEST --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 3
-$TEST --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT || exit 3
+$PREP --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT $* || exit 1
+$MPIRUN -n $NPART $EXEC --matrix $MATRIX --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT $* || exit 2
+$TEST --matrix $MATRIX --npart $NPART --nlevel $NLEVEL --mirror $MIRROR --weight $WEIGHT $* || exit 3
