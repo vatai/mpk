@@ -26,8 +26,8 @@ Args::Args(int argc, char *argv[])
       keepfiles(false) {
   METIS_SetDefaultOptions(default_opt);
   METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
-  opt[METIS_OPTION_CONTIG] = 0;
+  // opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
+  // opt[METIS_OPTION_CONTIG] = 0;
   // opt[METIS_OPTION_MINCONN] = 1;
   GetEnvArgs();
   ReadArgs(argc, argv);
