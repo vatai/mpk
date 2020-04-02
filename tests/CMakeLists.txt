@@ -17,7 +17,7 @@ foreach(size 10 100)
   foreach(npart 4 8)
     foreach(nlevel 10 20)
       foreach(mirror 2 4 5)
-        foreach(weight 0)
+        foreach(weight 0 2)
       add_test(NAME m5p_${size}_${npart}_${nlevel}_m${mirror}w${weight}
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh m5p ${size} ${npart} ${nlevel} ${mirror} ${weight})
         endforeach(weight)

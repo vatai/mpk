@@ -18,7 +18,8 @@ PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
       csr{csr},                 //
       args{args},               //
       update_func_registry{&PdmpkBuffers::UpdateWeights0,
-                           &PdmpkBuffers::UpdateWeights1},
+                           &PdmpkBuffers::UpdateWeights1,
+                           &PdmpkBuffers::UpdateWeights2},
       update_weights_func{update_func_registry[args.weight_update_method]} {
   assert(args.weight_update_method < update_func_registry.size());
 }
@@ -103,6 +104,21 @@ void PdmpkBuffers::UpdateWeights1(const level_t &min) {
         weights[t] *= weights[t];
       } else {
         weights[t] = 1;
+      }
+    }
+  }
+}
+
+void PdmpkBuffers::UpdateWeights2(const level_t &min) {
+  for (int i = 0; i < csr.n; i++) {
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      const auto j = csr.col[t];
+      const auto m = levels[i] < levels[j] ? levels[i] : levels[j];
+      weights[t] = (args.nlevel - m + min) + 1;
+      if (not partials[t]) {
+        weights[t] = 1ul << weights[t];
+      } else {
+        weights[t] = weights[t];
       }
     }
   }
