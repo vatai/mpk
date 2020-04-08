@@ -17,9 +17,9 @@ PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
       weights(csr.nnz),         //
       csr{csr},                 //
       args{args},               //
-      update_func_registry{&PdmpkBuffers::UpdateWeights0,
-                           &PdmpkBuffers::UpdateWeights1,
-                           &PdmpkBuffers::UpdateWeights2},
+      update_func_registry{
+          &PdmpkBuffers::UpdateWeights0, &PdmpkBuffers::UpdateWeights1,
+          &PdmpkBuffers::UpdateWeights2, &PdmpkBuffers::UpdateWeights3},
       update_weights_func{update_func_registry[args.weight_update_method]} {
   assert(args.weight_update_method < update_func_registry.size());
 }
@@ -121,6 +121,30 @@ void PdmpkBuffers::UpdateWeights2(const level_t &min) {
         weights[t] = weights[t];
       }
     }
+  }
+}
+
+void PdmpkBuffers::UpdateWeights3(const level_t &min) {
+  const size_t num_edges = csr.ptr[csr.n];
+  assert(num_edges > 0);
+  for (int i = 0; i < csr.n; i++) {
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      const auto j = csr.col[t];
+      const auto m = levels[i] < levels[j] ? levels[i] : levels[j];
+      const auto e =
+          levels[i] < levels[j] ? PartialCompleted(i) : PartialCompleted(j);
+      const auto d = levels[i] - levels[j];
+      // assert(d == -1 or d == 0 or d == 1); // NOT TURE FOR CFD2 matrix
+      const size_t w = args.nlevel - m + min;
+      if (not partials[t] and m == min) {
+        weights[t] = w * (1 << int(w * e));
+      } else {
+        weights[t] = w * w + 1;
+      }
+    }
+  }
+  for (const auto &wt : weights) {
+    assert(wt > 0);
   }
 }
 
