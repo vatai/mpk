@@ -467,7 +467,6 @@ void CommCompPatterns::FindLabelPermutation() {
 }
 
 void CommCompPatterns::ProcPhase(const size_t &min_level) {
-  InitPhase();
   // `was_active_level` is true, if there was progress made at a
   // level. If no progress is made, the next level is processed.
   bool was_active_level = true;
@@ -475,6 +474,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
+    InitPhase();
     was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
     // where progress will be made, and set `was_active` to true
@@ -488,8 +488,8 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
         }
       }
     }
+    FinalizePhase();
   }
-  FinalizePhase();
 }
 
 void CommCompPatterns::InitPhase() {
