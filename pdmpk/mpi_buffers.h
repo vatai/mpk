@@ -33,10 +33,6 @@ public:
   /// Get `sbuf` size form `sendcount` and `sdispls`.
   size_t RbufSize(const int &phase) const;
 
-  /// Allocate additional npart elements to {send,recv}counts and
-  /// {s,r}displs.
-  void ResizeMpiBufs();
-
   /// Dump the contents to a binary `fstream`.
   void DumpToOFS(std::ofstream &ofs) const;
 
@@ -65,4 +61,8 @@ public:
   /// `MpiBuffers`.
 private:
   MpiBuffers();
+
+  /// Allocate additional npart elements to {send,recv}counts and
+  /// {s,r}displs.
+  void ResizeMpiBufs();
 };
