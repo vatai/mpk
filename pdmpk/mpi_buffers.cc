@@ -8,12 +8,12 @@
 
 MpiBuffers::MpiBuffers(const idx_t &npart) : npart{npart} {}
 
-void MpiBuffers::FillDispls(const int &phase) {
-  size_t offset = npart * phase;
-  auto scount = sendcounts.data() + offset;
-  auto rcount = recvcounts.data() + offset;
-  auto sdispl = sdispls.data() + offset;
-  auto rdispl = rdispls.data() + offset;
+void MpiBuffers::FillDispls() {
+  const size_t offset = sendcounts.size() - npart;
+  const auto scount = sendcounts.data() + offset;
+  const auto rcount = recvcounts.data() + offset;
+  const auto sdispl = sdispls.data() + offset;
+  const auto rdispl = rdispls.data() + offset;
   sdispl[0] = 0;
   rdispl[0] = 0;
   for (idx_t i = 1; i < npart; i++) {

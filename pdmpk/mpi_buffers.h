@@ -19,9 +19,10 @@ public:
   /// @param npart number of partitions.
   MpiBuffers(const idx_t &npart);
 
-  /// Fill displacement buffers (`sdispls` and `rdispls`) from the
-  /// count buffers (`sendcount` and `recvcount`).
-  void FillDispls(const int &phase);
+  /// Fill the last `npart` number of entries in the displacement
+  /// buffers (`sdispls` and `rdispls`) from the data in the count
+  /// buffers (`sendcount` and `recvcount`).
+  void FillDispls();
 
   /// Get `rbuf` size from `recvcount` and `rdispls`.
   size_t SbufSize(const int &phase) const;

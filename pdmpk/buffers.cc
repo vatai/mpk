@@ -36,7 +36,7 @@ void Buffers::PhaseInit() {
 
 void Buffers::PhaseFinalize(const int &phase) {
   // Fill displacement buffers from count buffers.
-  mpi_bufs.FillDispls(phase);
+  mpi_bufs.FillDispls();
   const auto sbuf_size = mpi_bufs.SbufSize(phase);
 
   if (max_sbuf_size < sbuf_size) {
