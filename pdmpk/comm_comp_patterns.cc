@@ -4,7 +4,6 @@
 
 #include "args.h"
 #include "metis.h"
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -603,12 +602,7 @@ void CommCompPatterns::FinalizePhase() {
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
-    auto &init_idcs = buffer.mpi_bufs.init_idcs;
-    std::sort(std::begin(init_idcs) + init_idcs.phase_begin[phase],
-              std::end(init_idcs),
-              [](const sidx_tidx_t &a, const sidx_tidx_t &b) {
-                return a.second < b.second;
-              });
+    buffer.mpi_bufs.SortInitIdcs();
   }
   DbgMbufChecks();
 }

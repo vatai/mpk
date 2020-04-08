@@ -1,6 +1,7 @@
 //  Author: Emil VATAI <emil.vatai@gmail.com>
 //  Date: 2019-10-19
 
+#include <algorithm>
 #include <fstream>
 
 #include "mpi_buffers.h"
@@ -20,6 +21,14 @@ void MpiBuffers::FillDispls() {
     sdispl[i] = sdispl[i - 1] + scount[i - 1];
     rdispl[i] = rdispl[i - 1] + rcount[i - 1];
   }
+}
+
+void MpiBuffers::SortInitIdcs() {
+  std::sort(std::begin(init_idcs) + init_idcs.phase_begin.back(),
+            std::end(init_idcs),
+            [](const sidx_tidx_t &a, const sidx_tidx_t &b) {
+              return a.second < b.second;
+            });
 }
 
 size_t MpiBuffers::SbufSize(const int &phase) const {

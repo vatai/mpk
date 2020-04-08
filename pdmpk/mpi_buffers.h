@@ -24,6 +24,9 @@ public:
   /// buffers (`sendcount` and `recvcount`).
   void FillDispls();
 
+  /// Sort @ref MpiBuffers::init_idcs;
+  void SortInitIdcs();
+
   /// Get `rbuf` size from `recvcount` and `rdispls`.
   size_t SbufSize(const int &phase) const;
 
