@@ -25,14 +25,19 @@ public:
 
   /// Get `rbuf` size from `recvcount` and `rdispls`.
   size_t SbufSize(const int &phase) const;
+
   /// Get `sbuf` size form `sendcount` and `sdispls`.
   size_t RbufSize(const int &phase) const;
+
   /// Allocate {send,recv}counts and {s,r}displs.
   void AllocMpiBufs();
+
   /// Dump the contents to a binary `fstream`.
   void DumpToOFS(std::ofstream &ofs) const;
+
   /// Load the contents from a binary `fstream`.
   void LoadFromIFS(std::ifstream &ifs);
+
   /// Dump to a txt file.
   void DumpToTxt(std::ofstream &ofs) const;
 
