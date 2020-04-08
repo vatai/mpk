@@ -37,7 +37,6 @@ void Buffers::PhaseInit() {
 void Buffers::PhaseFinalize(const int &phase) {
   // Fill displacement buffers from count buffers.
   mpi_bufs.FillDispls(phase);
-  const auto rbuf_size = mpi_bufs.RbufSize(phase);
   const auto sbuf_size = mpi_bufs.SbufSize(phase);
 
   if (max_sbuf_size < sbuf_size) {
@@ -48,7 +47,7 @@ void Buffers::PhaseFinalize(const int &phase) {
   mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() + sbuf_size);
 
   // Update `mbuf_idx`.
-  mbuf_idx += rbuf_size;
+  mbuf_idx += mpi_bufs.RbufSize(phase);
 }
 
 void Buffers::DoComp(const int &phase) {
