@@ -26,7 +26,7 @@ Buffers::Buffers(const Args &args)
       args{args} {}
 
 void Buffers::PhaseInit() {
-  mpi_bufs.AllocMpiBufs();
+  mpi_bufs.ResizeMpiBufs();
   mpi_bufs.sbuf_idcs.rec_phase_begin();
   mpi_bufs.init_idcs.rec_phase_begin();
 

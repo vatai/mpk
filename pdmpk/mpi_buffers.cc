@@ -32,7 +32,7 @@ size_t MpiBuffers::RbufSize(const int &phase) const {
   return recvcounts[idx] + rdispls[idx];
 }
 
-void MpiBuffers::AllocMpiBufs() {
+void MpiBuffers::ResizeMpiBufs() {
   const auto size = recvcounts.size() + npart;
   recvcounts.resize(size);
   sendcounts.resize(size);
