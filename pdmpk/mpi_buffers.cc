@@ -9,7 +9,13 @@
 
 MpiBuffers::MpiBuffers(const idx_t &npart) : npart{npart} {}
 
-void MpiBuffers::FillDispls() {
+void MpiBuffers::PhaseInit() {
+  ResizeMpiBufs();
+  sbuf_idcs.rec_phase_begin();
+  init_idcs.rec_phase_begin();
+}
+
+void MpiBuffers::PhaseFinalize() {
   const size_t offset = sendcounts.size() - npart;
   const auto scount = sendcounts.data() + offset;
   const auto rcount = recvcounts.data() + offset;

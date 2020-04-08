@@ -19,10 +19,14 @@ public:
   /// @param npart number of partitions.
   MpiBuffers(const idx_t &npart);
 
+  /// Call @ref MpiBuffers::ResizeMpiBufs, and `rec_phase_begin` for
+  /// `sbuf_idcs` and `init_idcs`.
+  void PhaseInit();
+
   /// Fill the last `npart` number of entries in the displacement
   /// buffers (`sdispls` and `rdispls`) from the data in the count
   /// buffers (`sendcount` and `recvcount`).
-  void FillDispls();
+  void PhaseFinalize();
 
   /// Sort @ref MpiBuffers::init_idcs;
   void SortInitIdcs();
