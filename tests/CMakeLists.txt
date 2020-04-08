@@ -16,8 +16,8 @@ set(CTEST_CUSTOM_PRE_TEST ../scripts/gen_matrices.sh)
 
 set(nparts 4 8)
 set(nlevels 10 20)
-set(mirrors 2 4 5)
-set(weights 0 2)
+set(mirrors 5)
+set(weights 3)
 
 foreach(type m5p m9p)
   foreach(size 10 100)
