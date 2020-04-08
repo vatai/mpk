@@ -47,8 +47,8 @@ CommCompPatterns::CommCompPatterns(const Args &args)
     bufs[part].home_idcs.push_back(0);
     FinalizeVertex({idx, 0}, part);
   }
-  phase = 0;
-  ProcPhase(phase);
+  phase = -1;
+  ProcPhase(0);
   (this->*mirror_func_registry[args.mirror_method])();
 
   Epilogue();
@@ -62,7 +62,6 @@ void CommCompPatterns::Epilogue() {
     const auto &home_part = home_partition[idx];
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
-      phase++;
       InitPhase();
       FinalizePhase();
       break;
@@ -235,7 +234,6 @@ void CommCompPatterns::ProcAllPhases0() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -259,7 +257,6 @@ void CommCompPatterns::ProcAllPhases1() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -288,7 +285,6 @@ void CommCompPatterns::ProcAllPhases2() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -316,7 +312,6 @@ void CommCompPatterns::ProcAllPhases2() {
 void CommCompPatterns::ProcAllPhases3() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -339,7 +334,6 @@ void CommCompPatterns::ProcAllPhases3() {
 void CommCompPatterns::ProcAllPhases4() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -363,7 +357,6 @@ void CommCompPatterns::ProcAllPhases5() {
   bool is_finished = pdmpk_bufs.IsFinished();
   size_t old_level_sum = 0;
   while (not is_finished and not partition_history.empty()) {
-    phase++;
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
     DbgPhaseSummary(min_level, level_sum);
@@ -500,6 +493,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
 }
 
 void CommCompPatterns::InitPhase() {
+  phase++;
   for (auto &buffer : bufs) {
     buffer.PhaseInit();
   }
