@@ -134,7 +134,7 @@ void PdmpkBuffers::UpdateWeights3(const level_t &min) {
       const auto e =
           levels[i] < levels[j] ? PartialCompleted(i) : PartialCompleted(j);
       const auto d = levels[i] - levels[j];
-      // assert(d == -1 or d == 0 or d == 1); // NOT TURE FOR CFD2 matrix
+      assert(d == -1 or d == 0 or d == 1); // NOT TURE FOR CFD2 matrix
       const size_t w = args.nlevel - m + min;
       if (not partials[t] and m == min) {
         weights[t] = w * (1 << int(w * e));
