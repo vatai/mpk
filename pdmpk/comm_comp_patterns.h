@@ -181,7 +181,7 @@ private:
   void FindLabelPermutation();
 
   /// Code executed before each phase.
-  void InitPhase();
+  void PreBatch();
 
   /// Generate one phase.
   void ProcPhase(const size_t &min_level);
@@ -220,7 +220,7 @@ private:
   void FinalizeVertex(const idx_lvl_t &idx_lvl, const idx_t &part);
 
   /// Code executed after each phase.
-  void FinalizePhase();
+  void PostBatch();
 
   /// Update the send count on the source partition, and the receive
   /// count on the target partition using @ref

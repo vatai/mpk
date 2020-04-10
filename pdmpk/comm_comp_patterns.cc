@@ -62,8 +62,8 @@ void CommCompPatterns::Epilogue() {
     const auto &home_part = home_partition[idx];
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
-      InitPhase();
-      FinalizePhase();
+      PreBatch();
+      PostBatch();
       break;
     }
   }
@@ -474,7 +474,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
   // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
-    InitPhase();
+    PreBatch();
     was_active_level = false;
     // NOTE1: Starting from `min_level` ensures, we start from a level
     // where progress will be made, and set `was_active` to true
@@ -488,11 +488,11 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
         }
       }
     }
-    FinalizePhase();
+    PostBatch();
   }
 }
 
-void CommCompPatterns::InitPhase() {
+void CommCompPatterns::PreBatch() {
   phase++;
 
   for (auto &buffer : bufs) {
@@ -574,7 +574,7 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
   mbuf_idx++;
 }
 
-void CommCompPatterns::FinalizePhase() {
+void CommCompPatterns::PostBatch() {
   UpdateMpiCountBuffers();
 
   for (auto &buffer : bufs)
