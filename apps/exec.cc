@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   buf.DbgCheck();
   buf.LoadInput();
 
-  const size_t size = buf.mbuf.phase_begin.size();
+  const size_t size = buf.GetNumPhases();
   Timing timing(size);
   buf.Exec(&timing);
   timing.CollectData();

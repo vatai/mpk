@@ -84,6 +84,9 @@ public:
   /// @param rank MPI rank.
   void CleanUp(const int &rank) const;
 
+  /// Return the number of phases.
+  int GetNumPhases() const;
+
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
   MpiBuffers mpi_bufs;

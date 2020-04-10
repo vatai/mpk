@@ -100,16 +100,16 @@ void Buffers::SendHome() {
 }
 
 void Buffers::Exec(Timing *timing) {
-  const auto nphases = mbuf.phase_begin.size();
+  const auto nphases = GetNumPhases();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
-  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
   timing->StartDoComp(0);
   DoComp(0);
   timing->StopDoComp(0);
 
-  for (size_t phase = 1; phase < nphases; phase++) {
+  for (int phase = 1; phase < nphases; phase++) {
     timing->StartDoComm(phase);
     DoComm(phase);
     timing->StopDoComm(phase);
@@ -213,3 +213,5 @@ void Buffers::CleanUp(const int &rank) const {
     std::remove(args.Filename("mbuf.txt", rank).c_str());
   }
 }
+
+int Buffers::GetNumPhases() const { return mbuf.phase_begin.size(); }
