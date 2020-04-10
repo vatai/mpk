@@ -43,7 +43,11 @@ int main(int argc, char *argv[]) {
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();
-  buf.Exec();
+
+  const size_t size = buf.mbuf.phase_begin.size();
+  Timing timing(size);
+  buf.Exec(&timing);
+  timing.CollectData();
 
   buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);

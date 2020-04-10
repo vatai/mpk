@@ -49,12 +49,16 @@ target_link_libraries(pdmpk_buffers PUBLIC coverage_config)
 add_library(lapjv OBJECT lapjv.h lapjv.c)
 target_link_libraries(lapjv PUBLIC coverage_config)
 
+add_library(timing OBJECT timing.h timing.cc)
+target_link_libraries(timing PUBLIC coverage_config)
+
 add_library(results OBJECT results.h results.cc)
 target_link_libraries(results PUBLIC coverage_config)
 
 add_library(buffers buffers.h buffers.cc
   $<TARGET_OBJECTS:mpi_buffers>
   $<TARGET_OBJECTS:results>
+  $<TARGET_OBJECTS:timing>
   $<TARGET_OBJECTS:mcsr>)
 target_link_libraries(buffers MPI::MPI_CXX coverage_config)
 

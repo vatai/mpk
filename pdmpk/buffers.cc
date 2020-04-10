@@ -13,6 +13,7 @@
 
 #include "buffers.h"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 #include "utils.hpp"
 
@@ -98,18 +99,29 @@ void Buffers::SendHome() {
   }
 }
 
-void Buffers::Exec() {
+void Buffers::Exec(Timing *timing) {
   const auto nphases = mbuf.phase_begin.size();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
 
+  timing->StartDoComp(0);
   DoComp(0);
+  timing->StopDoComp(0);
+
   for (size_t phase = 1; phase < nphases; phase++) {
+    timing->StartDoComm(phase);
     DoComm(phase);
+    timing->StopDoComm(phase);
+
+    timing->StartDoComp(phase);
     DoComp(phase);
+    timing->StopDoComp(phase);
   }
+
+  timing->StartDoComm(0);
   SendHome();
+  timing->StopDoComm(0);
 }
 
 void Buffers::LoadInput() {

@@ -20,6 +20,7 @@
 #include "mpi_buffers.h"
 #include "phased_vector.hpp"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 
 /// The main buffers containing information/patterns how to perform
@@ -38,7 +39,7 @@ public:
   void PhaseFinalize(const int &phase);
 
   /// Execute the computations and communication for all phases.
-  void Exec();
+  void Exec(Timing *timing);
 
   /// Load the values of the input vector based on the
   void LoadInput();
