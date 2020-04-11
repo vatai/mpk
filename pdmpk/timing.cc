@@ -37,6 +37,7 @@ void Timing::CollectData() {
     SendVector(comm_start_time, 0);
     SendVector(comm_end_time, 0);
   } else {
+    InitSummary();
     for (int r = 1; r < world_size; r++) {
       RecvVector(&comp_start_recv, r);
       RecvVector(&comp_end_recv, r);
