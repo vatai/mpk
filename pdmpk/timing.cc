@@ -61,6 +61,16 @@ void Timing::RecvVector(std::vector<double> *vec, const int rank) {
            &status);
 }
 
-void Timing::InitSummary() {}
+void Timing::InitSummary() {
+  const double total = comm_end_time[0] - comp_start_time[0];
+  max_total_time = total;
+  sum_total_time = total;
+  count = 1;
+}
 
-void Timing::UpdateSummary() {}
+void Timing::UpdateSummary() {
+  const double total = comm_end_time[0] - comp_start_time[0];
+  max_total_time = max_total_time > total ? total : max_total_time;
+  sum_total_time += total;
+  count++;
+}

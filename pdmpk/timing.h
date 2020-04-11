@@ -82,7 +82,12 @@ private:
   /// MPI process.
   std::vector<double> comm_end_recv;
 
-  /// Store the maximum of the per phase durations.  0th is the total
-  /// time maximal duration.
-  std::vector<double> max_time;
+  /// Sum of durations of each execution.
+  double sum_total_time;
+
+  /// Count of each execution.
+  int count;
+
+  /// Maintain the maximum of each execution.
+  double max_total_time;
 };
