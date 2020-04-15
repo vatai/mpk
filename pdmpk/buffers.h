@@ -125,9 +125,9 @@ public:
   /// the partitions (store ind Buffers).
   Results results;
 
-  /// Indices from the last phase which where the corresponding value
-  /// appears in the first phase.  This values should be the same
-  /// because all vertices are "sent home".
+  /// mbuf indices (from the last phase) where the corresponding value
+  /// appears in the first phase, i.e. `mbuf[i] = mbuf[home_idcs[i]]`
+  /// (@see Buffers::SendHome).
   std::vector<idx_t> home_idcs;
 
   /// @todo(vatai): Delete this.
