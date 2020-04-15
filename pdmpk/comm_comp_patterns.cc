@@ -497,7 +497,7 @@ void CommCompPatterns::PreBatch() {
   phase++;
 
   for (auto &buffer : bufs) {
-    buffer.PhaseInit();
+    buffer.PreBatch();
   }
 
   for (idx_t idx = 0; idx < csr.n; idx++) {
@@ -505,6 +505,25 @@ void CommCompPatterns::PreBatch() {
       SendHome(idx);
     }
   }
+}
+
+void CommCompPatterns::PostBatch() {
+  UpdateMpiCountBuffers();
+
+  for (auto &buffer : bufs)
+    buffer.PostBatch(phase);
+
+  for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
+       iter++)
+    ProcCommDict(iter);
+
+  comm_dict.clear();
+
+  // Sort `init_idcs`.
+  for (auto &buffer : bufs) {
+    buffer.mpi_bufs.SortInitIdcs();
+  }
+  DbgMbufChecks();
 }
 
 bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
@@ -573,25 +592,6 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
   auto &mbuf_idx = bufs[part].mbuf_idx;
   store_part[idx_lvl] = {part, mbuf_idx};
   mbuf_idx++;
-}
-
-void CommCompPatterns::PostBatch() {
-  UpdateMpiCountBuffers();
-
-  for (auto &buffer : bufs)
-    buffer.PhaseFinalize(phase);
-
-  for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
-       iter++)
-    ProcCommDict(iter);
-
-  comm_dict.clear();
-
-  // Sort `init_idcs`.
-  for (auto &buffer : bufs) {
-    buffer.mpi_bufs.SortInitIdcs();
-  }
-  DbgMbufChecks();
 }
 
 void CommCompPatterns::UpdateMpiCountBuffers() {

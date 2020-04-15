@@ -180,8 +180,11 @@ private:
   /// CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
-  /// Code executed before each phase.
+  /// Code executed before each batch.
   void PreBatch();
+
+  /// Code executed after each batch.
+  void PostBatch();
 
   /// Generate one phase.
   void ProcPhase(const size_t &min_level);
@@ -218,9 +221,6 @@ private:
   /// @param part the partition where the vertex can be found can be
   /// found.
   void FinalizeVertex(const idx_lvl_t &idx_lvl, const idx_t &part);
-
-  /// Code executed after each phase.
-  void PostBatch();
 
   /// Update the send count on the source partition, and the receive
   /// count on the target partition using @ref

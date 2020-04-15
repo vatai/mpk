@@ -25,13 +25,13 @@ Buffers::Buffers(const Args &args)
       results(args),        //
       args{args} {}
 
-void Buffers::PhaseInit() {
+void Buffers::PreBatch() {
   mpi_bufs.PhaseInit();
   mcsr.mptr.rec_phase_begin();
   mbuf.phase_begin.push_back(mbuf_idx);
 }
 
-void Buffers::PhaseFinalize(const int &phase) {
+void Buffers::PostBatch(const int &phase) {
   // Fill displacement buffers from count buffers.
   mpi_bufs.FillDispls();
   const auto sbuf_size = mpi_bufs.SbufSize(phase);

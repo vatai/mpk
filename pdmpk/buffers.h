@@ -31,11 +31,11 @@ public:
   /// @param args Arguments passed to the program.
   Buffers(const Args &args);
 
-  /// Code executed before each phase for a single buffer.
-  void PhaseInit();
+  /// Code executed before each batch for a single buffer.
+  void PreBatch();
 
-  /// Code executed after each phase for a single buffer.
-  void PhaseFinalize(const int &phase);
+  /// Code executed after each batch for a single buffer.
+  void PostBatch(const int &phase);
 
   /// Execute the computations and communication for all phases.
   void Exec();
