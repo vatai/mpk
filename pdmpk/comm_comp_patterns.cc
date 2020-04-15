@@ -45,6 +45,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   for (int idx = 0; idx < csr.n; idx++) {
     const auto part = pdmpk_bufs.partitions[idx];
     bufs[part].home_idcs.push_back(0);
+    bufs[part].original_idcs.push_back(idx);
     FinalizeVertex({idx, 0}, part);
   }
   phase = -1;

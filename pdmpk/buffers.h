@@ -130,6 +130,10 @@ public:
   /// (@see Buffers::SendHome).
   std::vector<idx_t> home_idcs;
 
+  /// Indices of the original vector, which are sent to the current
+  /// @ref Buffers (when the algorithm starts).
+  std::vector<idx_t> original_idcs;
+
   /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx; ///< Debug data.
 
