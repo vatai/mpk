@@ -89,7 +89,7 @@ private:
   /// updated indices are on the target partition). @see ProcCommDict
   typedef std::map<SrcType, std::set<idx_t>> Backpatch;
 
-  /// In each phase, collect the communication as a map from (source,
+  /// In each batch, collect the communication as a map from (source,
   /// target) pairs to a @ref Backpatch.
   typedef std::map<src_tgt_t, Backpatch> CommDict;
   CommDict comm_dict; ///< @see CommDict.
@@ -127,9 +127,9 @@ private:
 
   /// Construct a Json object describing the minimum, maximum, average
   /// and sum of "differences".  Differences are differences of
-  /// computation in one phase between partitions. The idea is that if
+  /// computation in one batch between partitions. The idea is that if
   /// one partition has more computation than the other (in a single
-  /// phase) that is a bad thing, and we'd like to measure that.
+  /// batch) that is a bad thing, and we'd like to measure that.
   json StatsDiffSummary() const;
 
   /// Process all phases: without any mirroring.
@@ -252,8 +252,8 @@ private:
   /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t &src_tgt) const;
 
-  /// The current phase set at the beginning of each phase.
-  int phase;
+  /// The current batch set at the beginning of each batch.
+  int batch;
 
   //// @todo(vatai): Remove debug DbgPhaseSummary().
   ///

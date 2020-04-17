@@ -29,7 +29,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       csr{args.mtxname},               //
       pdmpk_bufs{args, csr},           //
       pdmpk_count{args, csr},          //
-      phase{0},                        //
+      batch{0},                        //
       mirror_func_registry{&CommCompPatterns::ProcAllPhases0,
                            &CommCompPatterns::ProcAllPhases1,
                            &CommCompPatterns::ProcAllPhases2,
@@ -48,7 +48,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
     bufs[part].original_idcs.push_back(idx);
     FinalizeVertex({idx, 0}, part);
   }
-  phase = -1;
+  batch = -1;
   ProcPhase(0);
   (this->*mirror_func_registry[args.mirror_method])();
 
@@ -87,7 +87,7 @@ void CommCompPatterns::Epilogue() {
 void CommCompPatterns::Stats() const {
   json stats;
   stats["args"] = args.ToJson();
-  stats["num_phases"] = phase;
+  stats["num_batches"] = batch;
   stats["comm_summary"] = StatsCommSummary();
   stats["comp_summary"] = StatsCompSummary();
   stats["diff_summary"] = StatsDiffSummary();
@@ -97,13 +97,13 @@ void CommCompPatterns::Stats() const {
 }
 
 json CommCompPatterns::StatsCommSummary() const {
-  const double count = bufs.size() * phase;
+  const double count = bufs.size() * batch;
   size_t rsum = 0;
   size_t ssum = 0;
   size_t min = bufs[0].mpi_bufs.RbufSize(0);
   size_t max = bufs[0].mpi_bufs.RbufSize(0);
   for (const auto &buffer : bufs) {
-    for (int i = 0; i < phase; i++) {
+    for (int i = 0; i < batch; i++) {
       const auto rs = buffer.mpi_bufs.RbufSize(i);
       rsum += rs;
       ssum += buffer.mpi_bufs.SbufSize(i);
@@ -169,10 +169,10 @@ json CommCompPatterns::StatsDiffSummary() const {
   size_t wmax = 0, rmax = 0;
   size_t wmin_sum = 0, rmin_sum = 0;
   size_t wmax_sum = 0, rmax_sum = 0;
-  for (int k = 0; k < phase; k++) {
-    size_t phase_wsum = 0, phase_rsum = 0;
-    size_t phase_wmin = -1u, phase_rmin = -1u;
-    size_t phase_wmax = 0, phase_rmax = 0;
+  for (int k = 0; k < batch; k++) {
+    size_t batch_wsum = 0, batch_rsum = 0;
+    size_t batch_wmin = -1u, batch_rmin = -1u;
+    size_t batch_wmax = 0, batch_rmax = 0;
     for (const auto &bi : bufs) {
       for (const auto &bj : bufs) {
         if (&bi != &bj) {
@@ -191,29 +191,29 @@ json CommCompPatterns::StatsDiffSummary() const {
           const size_t wdiff = wri < wrj ? wrj - wri : wri - wrj; // abs diff
           const size_t rdiff = rdi < rdj ? rdj - rdi : rdi - rdj; // abs diff
 
-          phase_wsum += wdiff;
-          phase_rsum += rdiff;
-          phase_wmin = phase_wmin > wdiff ? wdiff : phase_wmin;
-          phase_rmin = phase_rmin > rdiff ? rdiff : phase_rmin;
-          phase_wmax = phase_wmax < wdiff ? wdiff : phase_wmax;
-          phase_rmax = phase_rmax < rdiff ? rdiff : phase_rmax;
+          batch_wsum += wdiff;
+          batch_rsum += rdiff;
+          batch_wmin = batch_wmin > wdiff ? wdiff : batch_wmin;
+          batch_rmin = batch_rmin > rdiff ? rdiff : batch_rmin;
+          batch_wmax = batch_wmax < wdiff ? wdiff : batch_wmax;
+          batch_rmax = batch_rmax < rdiff ? rdiff : batch_rmax;
         }
       }
     }
-    wsum += phase_wsum;
-    rsum += phase_rsum;
-    wmin = wmin > phase_wmin ? phase_wmin : wmin;
-    rmin = rmin > phase_rmin ? phase_rmin : rmin;
-    wmax = wmax < phase_wmax ? phase_wmax : wmax;
-    rmax = rmax < phase_rmax ? phase_rmax : rmax;
-    wmin_sum += phase_wmin;
-    rmin_sum += phase_rmin;
-    wmax_sum += phase_wmax;
-    rmax_sum += phase_rmax;
+    wsum += batch_wsum;
+    rsum += batch_rsum;
+    wmin = wmin > batch_wmin ? batch_wmin : wmin;
+    rmin = rmin > batch_rmin ? batch_rmin : rmin;
+    wmax = wmax < batch_wmax ? batch_wmax : wmax;
+    rmax = rmax < batch_rmax ? batch_rmax : rmax;
+    wmin_sum += batch_wmin;
+    rmin_sum += batch_rmin;
+    wmax_sum += batch_wmax;
+    rmax_sum += batch_rmax;
   }
 
   const double ndiffs = bufs.size() * (bufs.size() - 1);
-  const double nphase = phase;
+  const double nbatch = batch;
   json j;
   j["write_sum"] = wsum;
   j["read_sum"] = rsum;
@@ -223,10 +223,10 @@ json CommCompPatterns::StatsDiffSummary() const {
   j["read_max"] = rmax;
   j["write_avg"] = double(wsum) / ndiffs;
   j["read_avg"] = double(rsum) / ndiffs;
-  j["avg_wmin"] = double(wmin_sum) / nphase;
-  j["avg_rmin"] = double(rmin_sum) / nphase;
-  j["avg_wmax"] = double(wmax_sum) / nphase;
-  j["avg_rmax"] = double(rmax_sum) / nphase;
+  j["avg_wmin"] = double(wmin_sum) / nbatch;
+  j["avg_rmin"] = double(rmin_sum) / nbatch;
+  j["avg_wmax"] = double(wmax_sum) / nbatch;
+  j["avg_rmax"] = double(rmax_sum) / nbatch;
   // {min,max}avg?
   return j;
 }
@@ -297,7 +297,7 @@ void CommCompPatterns::ProcAllPhases2() {
       old_level_sum = level_sum;
       NewPartitionLabels(min_level);
     } else {
-      const auto hist_idx = phase % partition_history.size();
+      const auto hist_idx = batch % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
     ProcPhase(min_level);
@@ -341,7 +341,7 @@ void CommCompPatterns::ProcAllPhases4() {
     if (min_level == 0) {
       NewPartitionLabels(min_level);
     } else {
-      const auto hist_idx = phase % partition_history.size();
+      const auto hist_idx = batch % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
     ProcPhase(min_level);
@@ -494,7 +494,7 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
 }
 
 void CommCompPatterns::PreBatch() {
-  phase++;
+  batch++;
 
   for (auto &buffer : bufs) {
     buffer.PreBatch();
@@ -510,8 +510,9 @@ void CommCompPatterns::PreBatch() {
 void CommCompPatterns::PostBatch() {
   UpdateMpiCountBuffers();
 
-  for (auto &buffer : bufs)
-    buffer.PostBatch(phase);
+  for (auto &buffer : bufs) {
+    buffer.PostBatch(batch);
+  }
 
   for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
        iter++)
@@ -600,8 +601,8 @@ void CommCompPatterns::UpdateMpiCountBuffers() {
     const size_t &size = iter.second.size();
     const auto src = src_tgt_part.first;
     const auto tgt = src_tgt_part.second;
-    bufs[tgt].mpi_bufs.recvcounts[phase * args.npart + src] += size;
-    bufs[src].mpi_bufs.sendcounts[phase * args.npart + tgt] += size;
+    bufs[tgt].mpi_bufs.recvcounts[batch * args.npart + src] += size;
+    bufs[src].mpi_bufs.sendcounts[batch * args.npart + tgt] += size;
   }
 }
 
@@ -611,11 +612,11 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto &src_type_mapto_tgt_index_set = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[batch] //
                                 + SrcSendBase(src_tgt);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[batch]        //
                                 + tgt_buf.mcsr.mptr.size()             //
-                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
+                                - tgt_buf.mcsr.mptr.phase_begin[batch] //
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &map_iter : src_type_mapto_tgt_index_set) {
@@ -657,12 +658,12 @@ void CommCompPatterns::SendHome(const idx_t &idx) {
 
 idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.first]
-      .mpi_bufs.sdispls[phase * args.npart + src_tgt.second];
+      .mpi_bufs.sdispls[batch * args.npart + src_tgt.second];
 }
 
 idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.second]
-      .mpi_bufs.rdispls[phase * args.npart + src_tgt.first];
+      .mpi_bufs.rdispls[batch * args.npart + src_tgt.first];
 }
 
 void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
@@ -670,7 +671,7 @@ void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
 #ifndef NDEBUG
   const auto count = std::count(std::begin(pdmpk_bufs.levels),
                                 std::end(pdmpk_bufs.levels), min_level);
-  std::cout << "Phase: " << phase << ", "
+  std::cout << "Batch: " << batch << ", "
             << "ExactLevelSum(): " << level_sum << "; "
             << "min_level: " << min_level << ", "
             << "count: " << count << std::endl;
@@ -685,13 +686,13 @@ void CommCompPatterns::DbgAsserts() const {
   }
   /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
   for (auto b : bufs) {
-    for (auto phase = 1; phase < this->phase; phase++) {
-      auto mbd = b.mbuf.phase_begin[phase] - b.mbuf.phase_begin[phase - 1];
-      auto mpd = b.mcsr.mptr.phase_begin[phase] //
-                 - b.mcsr.mptr.phase_begin[phase - 1];
-      auto rbs = b.mpi_bufs.RbufSize(phase - 1);
+    for (auto batch = 1; batch < this->batch; batch++) {
+      auto mbd = b.mbuf.phase_begin[batch] - b.mbuf.phase_begin[batch - 1];
+      auto mpd = b.mcsr.mptr.phase_begin[batch] //
+                 - b.mcsr.mptr.phase_begin[batch - 1];
+      auto rbs = b.mpi_bufs.RbufSize(batch - 1);
       if (mbd != mpd + rbs) {
-        std::cout << "phase: " << phase << ", "
+        std::cout << "batch: " << batch << ", "
                   << "mbd: " << mbd << ", "
                   << "mpd: " << mpd << ", "
                   << "rbs: " << rbs << std::endl;
@@ -708,7 +709,7 @@ void CommCompPatterns::DbgMbufChecks() const {
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
     // Check init_idcs.
-    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[phase];
+    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[batch];
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
       if (pair.first >= mbuf_idx) {
@@ -718,7 +719,7 @@ void CommCompPatterns::DbgMbufChecks() const {
       assert(pair.second < mbuf_idx);
     }
     // Check sbuf_idcs.
-    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[phase];
+    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[batch];
          i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
       auto value = buffer.mpi_bufs.sbuf_idcs[i];
       assert(value < mbuf_idx);
