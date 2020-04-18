@@ -468,20 +468,15 @@ void CommCompPatterns::FindLabelPermutation() {
 }
 
 void CommCompPatterns::ProcPhase(const size_t &min_level) {
-  // `was_active_level` is true, if there was progress made at a
-  // level. If no progress is made, the next level is processed.
   bool was_active_level = true;
-  // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
-  // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
     PreBatch();
     was_active_level = false;
-    // NOTE1: Starting from `min_level` ensures, we start from a level
-    // where progress will be made, and set `was_active` to true
-    // i.e. starting from level 0, might be a problem if all vertices
-    // have level >0, because then, the first round would leave
-    // `was_active` as false, and would terminate prematurely.
+    // Starting from `min_level` is important because it ensures, we
+    // start from a level where progress will be made, and
+    // `was_active` will not be set immediately to false and terminate
+    // prematurely.
     for (int idx = 0; idx < csr.n; idx++) {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (ProcVertex(idx, lbelow)) {
