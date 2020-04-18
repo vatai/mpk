@@ -382,7 +382,7 @@ void CommCompPatterns::ProcAllPhases5() {
   }
 }
 
-void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
+void CommCompPatterns::NewPartitionLabels(const level_t &min_level) {
   pdmpk_bufs.UpdateWeights(min_level);
   pdmpk_bufs.MetisPartitionWithWeights();
 
@@ -395,7 +395,7 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   partition_history.push_back(pdmpk_bufs.partitions);
 }
 
-void CommCompPatterns::OptimizeLabels(const size_t &min_level) {
+void CommCompPatterns::OptimizeLabels(const level_t &min_level) {
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
@@ -467,7 +467,7 @@ void CommCompPatterns::FindLabelPermutation() {
   }
 }
 
-void CommCompPatterns::ProcPhase(const size_t &min_level) {
+void CommCompPatterns::ProcPhase(const level_t &min_level) {
   bool was_active_level = true;
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
@@ -545,7 +545,7 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
   return retval;
 }
 
-void CommCompPatterns::AddToInit(const idx_t &idx, const idx_t &level) {
+void CommCompPatterns::AddToInit(const idx_t &idx, const level_t &level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;

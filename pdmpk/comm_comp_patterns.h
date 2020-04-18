@@ -160,11 +160,11 @@ private:
   /// CommCompPatterns::FindLabelPermutation.
   ///
   /// @param min_level Minimum level in the current phase.
-  void NewPartitionLabels(const size_t &min_level);
+  void NewPartitionLabels(const level_t &min_level);
 
   /// Optimize labels of new partitioning obtained from the graph partitioning
   /// algorithm.
-  void OptimizeLabels(const size_t &min_level);
+  void OptimizeLabels(const level_t &min_level);
 
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
@@ -187,7 +187,7 @@ private:
   void PostBatch();
 
   /// Generate one phase.
-  void ProcPhase(const size_t &min_level);
+  void ProcPhase(const level_t &min_level);
 
   /// Process one vertex.
   ///
@@ -202,7 +202,7 @@ private:
   ///
   /// @param level the level which the vertex tries to achieve
   /// (i.e. `lbelow + 1`).
-  void AddToInit(const idx_t &idx, const idx_t &level);
+  void AddToInit(const idx_t &idx, const level_t &level);
 
   /// Process adjacent vertex.
   ///
