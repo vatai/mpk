@@ -575,9 +575,7 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
 }
 
 void CommCompPatterns::FinalizePhase() {
-  // Fill sendcount and recv count.
-  for (const auto &iter : comm_dict) // CHECK
-    UpdateMPICountBuffers(iter.first, iter.second.size());
+  UpdateMpiCountBuffers();
 
   for (auto &buffer : bufs)
     buffer.PhaseFinalize(phase);
@@ -595,12 +593,15 @@ void CommCompPatterns::FinalizePhase() {
   DbgMbufChecks();
 }
 
-void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
-                                             const size_t &size) {
-  const auto src = src_tgt_part.first;
-  const auto tgt = src_tgt_part.second;
-  bufs[tgt].mpi_bufs.recvcounts[phase * args.npart + src] += size;
-  bufs[src].mpi_bufs.sendcounts[phase * args.npart + tgt] += size;
+void CommCompPatterns::UpdateMpiCountBuffers() {
+  for (const auto &iter : comm_dict) {
+    const src_tgt_t &src_tgt_part = iter.first;
+    const size_t &size = iter.second.size();
+    const auto src = src_tgt_part.first;
+    const auto tgt = src_tgt_part.second;
+    bufs[tgt].mpi_bufs.recvcounts[phase * args.npart + src] += size;
+    bufs[src].mpi_bufs.sendcounts[phase * args.npart + tgt] += size;
+  }
 }
 
 void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {

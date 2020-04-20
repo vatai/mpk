@@ -223,13 +223,9 @@ private:
   void FinalizePhase();
 
   /// Update the send count on the source partition, and the receive
-  /// count on the target partition.
-  ///
-  /// @param src_tgt_part (Source partition, target partition) pair.
-  ///
-  /// @param size The size of the by which the given entry should be
-  /// increased.
-  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t &size);
+  /// count on the target partition using @ref
+  /// CommCompPatterns::comm_dict.
+  void UpdateMpiCountBuffers();
 
   /// Process one element/iterator of @ref CommDict. The key of a
   /// CommDict determines the source and target partitions, the @ref
