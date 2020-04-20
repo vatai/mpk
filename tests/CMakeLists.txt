@@ -1,8 +1,15 @@
 configure_file(./CTestCustom.cmake.in ${CMAKE_BINARY_DIR}/CTestCustom.cmake)
 
-# add_test(NAME m5p_4_4_4  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh" m5p 4 4 4)
-# add_test(NAME m5p_4_4_10 COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh" m5p 4 4 10)
-# add_test(NAME m5p_5_4_4  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh" m5p 5 4 4)
+set(type m5p)
+set(size 4)
+set(npart 4)
+set(nlevel 4)
+set(mirror 5)
+set(weight 3)
+
+add_test(NAME ${type}_${size}_${npart}_${nlevel}_m${mirror}w${weight}
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_test.sh
+  ${type} ${size} ${npart} ${nlevel} ${mirror} ${weight} --keepfiles)
 
 # Partitioning algorithm search log:
 #
