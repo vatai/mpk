@@ -18,6 +18,7 @@
 #include "args.h"
 #include "mcsr.h"
 #include "mpi_buffers.h"
+#include "phase_descriptor.h"
 #include "phased_vector.hpp"
 #include "results.h"
 #include "typedefs.h"
@@ -134,11 +135,8 @@ public:
   /// @ref Buffers (when the algorithm starts).
   std::vector<idx_t> original_idcs;
 
-  /// Phase descriptors, containing: minimum and maximum levels (of
-  /// batches) in a phase.  This data is used in the beginning (?) of
-  /// each phase: tells how many receives/MPI_waits there are in the
-  /// beginning of a phase.
-  std::vector<std::pair<level_t, level_t>> phase_descriptors;
+  /// The @ref PhaseDescriptor for each phase.
+  std::vector<PhaseDescriptor> phase_descriptors;
 
   /// @todo(vatai): Delete this.
   std::vector<size_t> dbg_idx; ///< Debug data.
