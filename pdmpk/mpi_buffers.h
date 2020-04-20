@@ -26,7 +26,7 @@ public:
   /// Fill the last `npart` number of entries in the displacement
   /// buffers (`sdispls` and `rdispls`) from the data in the count
   /// buffers (`sendcount` and `recvcount`).
-  void PhaseFinalize();
+  void FillDispls();
 
   /// Sort @ref MpiBuffers::init_idcs;
   void SortInitIdcs();
