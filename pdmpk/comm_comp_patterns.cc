@@ -50,6 +50,13 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   batch = -1;
   ProcPhase(0);
+  /// @todo(vatai): fix buffer buffer.phase_descriptors.back().  For
+  /// now, setting mid = bottom (= 0) might be sufficient, but
+  /// definitely should be fixed (see todo in @ref
+  /// Buffers::LoadInput).
+  for (auto &buffer : bufs) {
+    buffer.phase_descriptors.back().UpdateMid(0);
+  }
   (this->*mirror_func_registry[args.mirror_method])();
 
   Epilogue();
@@ -64,7 +71,8 @@ void CommCompPatterns::Epilogue() {
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
       PreBatch();
-      PostBatch();
+      /// @todo(vatai): Verify the correct PostBatch parameter.
+      PostBatch(args.nlevel - 1);
       break;
     }
   }
@@ -468,6 +476,10 @@ void CommCompPatterns::FindLabelPermutation() {
 }
 
 void CommCompPatterns::ProcPhase(const level_t &min_level) {
+  /// @todo(vatai): [EASY] Put this loop in a separate method?
+  for (auto &buffer : bufs) { // PrePhase()
+    buffer.phase_descriptors.emplace_back();
+  }
   bool was_active_level = true;
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
@@ -484,7 +496,7 @@ void CommCompPatterns::ProcPhase(const level_t &min_level) {
         }
       }
     }
-    PostBatch();
+    PostBatch(lbelow);
   }
 }
 
@@ -502,18 +514,22 @@ void CommCompPatterns::PreBatch() {
   }
 }
 
-void CommCompPatterns::PostBatch() {
+void CommCompPatterns::PostBatch(const level_t &lbelow) {
+  // Fill sendcount and recv count.
   UpdateMpiCountBuffers();
-
   for (auto &buffer : bufs) {
     buffer.PostBatch(batch);
   }
-
+  /// @todo(vatai): Decide if part_was vectors should be class members
+  /// and accessed by ProcVertex et al.
+  std::vector<bool> part_was_src(args.npart, false);
   for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
-       iter++)
+       iter++) {
+    part_was_src[iter->first.first] = true;
     ProcCommDict(iter);
-
+  }
   comm_dict.clear();
+  UpdatePdMid(lbelow, part_was_src);
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
@@ -529,8 +545,11 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
-      if (retval == false)
+      if (retval == false) {
         bufs[cur_part].mcsr.NextMcolIdxToMptr();
+      }
+      bufs[cur_part].phase_descriptors.back().UpdateBottom(lbelow);
+      bufs[cur_part].phase_descriptors.back().UpdateTop(lbelow);
       ProcAdjacent(idx, lbelow, t);
       retval = true;
     }
@@ -647,6 +666,16 @@ void CommCompPatterns::SendHome(const idx_t &idx) {
     const auto &[src_part, mbuf_idx] = iter->second;
     if (src_part != tgt_part) {
       comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+    }
+  }
+}
+
+void CommCompPatterns::UpdatePdMid(const level_t &lbelow,
+                                   const std::vector<bool> &was_src) {
+  const size_t size = args.npart;
+  for (size_t i = 0; i < size; i++) {
+    if (was_src[i]) {
+      bufs[i].phase_descriptors.back().UpdateMid(0);
     }
   }
 }
