@@ -36,7 +36,9 @@ public:
   void PreBatch();
 
   /// Code executed after each batch for a single buffer.
-  void PostBatch(const int &phase);
+  ///
+  /// @param batch The index of the batch processed.
+  void PostBatch(const int &batch);
 
   /// Execute the computations and communication for all phases.
   void Exec();

@@ -31,10 +31,10 @@ void Buffers::PreBatch() {
   mbuf.phase_begin.push_back(mbuf_idx);
 }
 
-void Buffers::PostBatch(const int &phase) {
+void Buffers::PostBatch(const int &batch) {
   // Fill displacement buffers from count buffers.
   mpi_bufs.FillDispls();
-  const auto sbuf_size = mpi_bufs.SbufSize(phase);
+  const auto sbuf_size = mpi_bufs.SbufSize(batch);
 
   if (max_sbuf_size < sbuf_size) {
     max_sbuf_size = sbuf_size;
@@ -44,7 +44,7 @@ void Buffers::PostBatch(const int &phase) {
   mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() + sbuf_size);
 
   // Update `mbuf_idx`.
-  mbuf_idx += mpi_bufs.RbufSize(phase);
+  mbuf_idx += mpi_bufs.RbufSize(batch);
 }
 
 void Buffers::DoComp(const int &phase) {
