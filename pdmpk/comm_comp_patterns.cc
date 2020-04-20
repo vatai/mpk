@@ -522,14 +522,14 @@ void CommCompPatterns::PostBatch(const level_t &lbelow) {
   }
   /// @todo(vatai): Decide if part_was vectors should be class members
   /// and accessed by ProcVertex et al.
-  std::vector<bool> part_was_src(args.npart, false);
+  std::vector<bool> needs_wait(args.npart, false);
   for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
        iter++) {
-    part_was_src[iter->first.first] = true;
+    needs_wait[iter->first.second] = true; // tgt
     ProcCommDict(iter);
   }
   comm_dict.clear();
-  UpdatePdMid(lbelow, part_was_src);
+  UpdatePdMid(lbelow, needs_wait);
 
   // Sort `init_idcs`.
   for (auto &buffer : bufs) {
@@ -548,8 +548,7 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
       if (retval == false) {
         bufs[cur_part].mcsr.NextMcolIdxToMptr();
       }
-      bufs[cur_part].phase_descriptors.back().UpdateBottom(lbelow);
-      bufs[cur_part].phase_descriptors.back().UpdateTop(lbelow);
+      bufs[cur_part].phase_descriptors.back().Update(lbelow);
       ProcAdjacent(idx, lbelow, t);
       retval = true;
     }
@@ -671,10 +670,10 @@ void CommCompPatterns::SendHome(const idx_t &idx) {
 }
 
 void CommCompPatterns::UpdatePdMid(const level_t &lbelow,
-                                   const std::vector<bool> &was_src) {
+                                   const std::vector<bool> &needs_wait) {
   const size_t size = args.npart;
   for (size_t i = 0; i < size; i++) {
-    if (was_src[i]) {
+    if (needs_wait[i]) {
       bufs[i].phase_descriptors.back().UpdateMid(lbelow);
     }
   }
