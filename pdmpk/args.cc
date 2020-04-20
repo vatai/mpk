@@ -71,7 +71,7 @@ void Args::ReadArgs(int argc, char *argv[]) {
       {"PFACTOR", required_argument, 0, 'P'},
       {"UFACTOR", required_argument, 0, 'u'},
       // others
-      {"keepfiles", required_argument, 0, 'K'},
+      {"keepfiles", no_argument, 0, 'K'},
       {0, 0, 0, 0} // last element must be all 0s
   };
   int option_index = 0;
