@@ -675,7 +675,7 @@ void CommCompPatterns::UpdatePdMid(const level_t &lbelow,
   const size_t size = args.npart;
   for (size_t i = 0; i < size; i++) {
     if (was_src[i]) {
-      bufs[i].phase_descriptors.back().UpdateMid(0);
+      bufs[i].phase_descriptors.back().UpdateMid(lbelow);
     }
   }
 }
