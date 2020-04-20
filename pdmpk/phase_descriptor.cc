@@ -20,6 +20,6 @@ void PhaseDescriptor::UpdateTop(const level_t &lbelow) {
 }
 
 std::ostream &operator<<(std::ostream &os, const PhaseDescriptor &pd) {
-  os << "(" << pd.bottom << ", " << pd.mid << ", " << pd.top << "), ";
+  os << "(" << pd.bottom << ", " << pd.mid << ", " << pd.top << ")";
   return os;
 }
