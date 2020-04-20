@@ -243,6 +243,11 @@ private:
   /// @param iter Iterator representing one element in @ref CommDict.
   void ProcCommDict(const CommDict::const_iterator &iter);
 
+  /// Send a vertex to it's home partition.
+  ///
+  /// @param idx Index of the vertex to send.
+  void SendHome(const idx_t &idx);
+
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t &src_tgt) const;

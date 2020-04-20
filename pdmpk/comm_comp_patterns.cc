@@ -494,20 +494,14 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
 
 void CommCompPatterns::InitPhase() {
   phase++;
+
   for (auto &buffer : bufs) {
     buffer.PhaseInit();
   }
 
   for (idx_t idx = 0; idx < csr.n; idx++) {
     if (pdmpk_bufs.levels[idx] == args.nlevel) {
-      const auto &iter = store_part.find({idx, args.nlevel});
-      if (iter != store_part.end()) {
-        const auto &tgt_part = home_partition[idx];
-        const auto &[src_part, mbuf_idx] = iter->second;
-        if (src_part != tgt_part) {
-          comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
-        }
-      }
+      SendHome(idx);
     }
   }
 }
@@ -645,6 +639,17 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
 
     src_mpi_buf.sbuf_idcs[src_send_baseidx + idx] = map_iter.first.src_mbuf_idx;
     idx++;
+  }
+}
+
+void CommCompPatterns::SendHome(const idx_t &idx) {
+  const auto &iter = store_part.find({idx, args.nlevel});
+  if (iter != store_part.end()) {
+    const auto &tgt_part = home_partition[idx];
+    const auto &[src_part, mbuf_idx] = iter->second;
+    if (src_part != tgt_part) {
+      comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+    }
   }
 }
 
