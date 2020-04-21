@@ -720,6 +720,22 @@ static void DbgAssertMbufRbufIsMptr(const Buffers &buffer) {
   }
 }
 
+/// Assert sum of (pd.top - pd.bottom) (forall pd phase_descriptors)
+/// is the number of all batches.
+static void DbgAssertPd(const Buffers &buffer) {
+  size_t sum = 0;
+  for (const auto &pd : buffer.phase_descriptors) {
+    const auto diff = pd.top - pd.bottom;
+    sum += diff ? diff : 0;
+  }
+  if (sum != buffer.mbuf.phase_begin.size()) {
+    std::cout << "pd_sum: " << sum << ", "
+              << "phase_begin.size(): " << buffer.mbuf.phase_begin.size()
+              << std::endl;
+  }
+  assert(sum == buffer.mbuf.phase_begin.size());
+}
+
 void CommCompPatterns::DbgAsserts() const {
 #ifndef NDEBUG
   /// Check all vertices reach `nlevels`.
@@ -728,6 +744,7 @@ void CommCompPatterns::DbgAsserts() const {
   }
   for (auto buffer : bufs) {
     DbgAssertMbufRbufIsMptr(buffer);
+    DbgAssertPd(buffer);
   }
 #endif
 }

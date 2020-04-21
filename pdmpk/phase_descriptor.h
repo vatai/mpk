@@ -9,10 +9,11 @@
 /// which `bottom <= level and level < top`, but only levels `bottom
 /// <= level < mid` are checking if the data arrived.
 class PhaseDescriptor {
+public:
   level_t bottom; ///< Phase and receiving starts at this level.
   level_t mid;    ///< Receiving stops before this level.
   level_t top;    ///< Phase stops before this level.
-public:
+
   /// Constructor.
   PhaseDescriptor();
 
