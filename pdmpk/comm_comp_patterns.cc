@@ -701,27 +701,33 @@ void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
 #endif
 }
 
+/// Assert mbuf + rbuf = mptr size (for each buffer and phase).
+static void DbgAssertMbufRbufIsMptr(const Buffers &buffer) {
+  const size_t size = buffer.mbuf.size();
+  for (size_t batch = 1; batch < size; batch++) {
+    auto mbd =
+        buffer.mbuf.phase_begin[batch] - buffer.mbuf.phase_begin[batch - 1];
+    auto mpd = buffer.mcsr.mptr.phase_begin[batch] -
+               buffer.mcsr.mptr.phase_begin[batch - 1];
+    auto rbs = buffer.mpi_bufs.RbufSize(batch - 1);
+    if (mbd != mpd + rbs) {
+      std::cout << "batch: " << batch << ", "
+                << "mbd: " << mbd << ", "
+                << "mpd: " << mpd << ", "
+                << "rbs: " << rbs << std::endl;
+    }
+    assert(mbd == mpd + rbs);
+  }
+}
+
 void CommCompPatterns::DbgAsserts() const {
 #ifndef NDEBUG
   /// Check all vertices reach `nlevels`.
   for (auto level : pdmpk_bufs.levels) {
     assert(level == args.nlevel);
   }
-  /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
-  for (auto b : bufs) {
-    for (auto batch = 1; batch < this->batch; batch++) {
-      auto mbd = b.mbuf.phase_begin[batch] - b.mbuf.phase_begin[batch - 1];
-      auto mpd = b.mcsr.mptr.phase_begin[batch] //
-                 - b.mcsr.mptr.phase_begin[batch - 1];
-      auto rbs = b.mpi_bufs.RbufSize(batch - 1);
-      if (mbd != mpd + rbs) {
-        std::cout << "batch: " << batch << ", "
-                  << "mbd: " << mbd << ", "
-                  << "mpd: " << mpd << ", "
-                  << "rbs: " << rbs << std::endl;
-      }
-      assert(mbd == mpd + rbs);
-    }
+  for (auto buffer : bufs) {
+    DbgAssertMbufRbufIsMptr(buffer);
   }
 #endif
 }
