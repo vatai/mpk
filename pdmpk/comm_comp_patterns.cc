@@ -70,6 +70,9 @@ void CommCompPatterns::Epilogue() {
     const auto &home_part = home_partition[idx];
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
+      for (auto &buffer : bufs) { // PrePhase()
+        buffer.phase_descriptors.emplace_back();
+      }
       PreBatch();
       /// @todo(vatai): Verify the correct PostBatch parameter.
       PostBatch(args.nlevel - 1);
@@ -529,11 +532,14 @@ void CommCompPatterns::PostBatch(const level_t &lbelow) {
     ProcCommDict(iter);
   }
   comm_dict.clear();
-  UpdatePdMid(lbelow, needs_wait);
-
-  // Sort `init_idcs`.
-  for (auto &buffer : bufs) {
-    buffer.mpi_bufs.SortInitIdcs();
+  const size_t size = args.npart;
+  for (size_t i = 0; i < size; i++) {
+    bufs[i].phase_descriptors.back().UpdateBottom(lbelow);
+    bufs[i].phase_descriptors.back().UpdateTop(lbelow);
+    if (needs_wait[i]) {
+      bufs[i].phase_descriptors.back().UpdateMid(lbelow);
+    }
+    bufs[i].mpi_bufs.SortInitIdcs();
   }
   DbgMbufChecks();
 }
@@ -548,7 +554,6 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
       if (retval == false) {
         bufs[cur_part].mcsr.NextMcolIdxToMptr();
       }
-      bufs[cur_part].phase_descriptors.back().Update(lbelow);
       ProcAdjacent(idx, lbelow, t);
       retval = true;
     }
@@ -669,16 +674,6 @@ void CommCompPatterns::SendHome(const idx_t &idx) {
   }
 }
 
-void CommCompPatterns::UpdatePdMid(const level_t &lbelow,
-                                   const std::vector<bool> &needs_wait) {
-  const size_t size = args.npart;
-  for (size_t i = 0; i < size; i++) {
-    if (needs_wait[i]) {
-      bufs[i].phase_descriptors.back().UpdateMid(lbelow);
-    }
-  }
-}
-
 idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.first]
       .mpi_bufs.sdispls[batch * args.npart + src_tgt.second];
@@ -728,12 +723,12 @@ static void DbgAssertPd(const Buffers &buffer) {
     const auto diff = pd.top - pd.bottom;
     sum += diff ? diff : 0;
   }
-  if (sum != buffer.mbuf.phase_begin.size()) {
+  const size_t nbatches = buffer.mbuf.phase_begin.size();
+  if (sum != nbatches) {
     std::cout << "pd_sum: " << sum << ", "
-              << "phase_begin.size(): " << buffer.mbuf.phase_begin.size()
-              << std::endl;
+              << "nbatches: " << nbatches << std::endl;
   }
-  assert(sum == buffer.mbuf.phase_begin.size());
+  assert(sum == nbatches);
 }
 
 void CommCompPatterns::DbgAsserts() const {

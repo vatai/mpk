@@ -246,14 +246,6 @@ private:
   /// @param idx Index of the vertex to send.
   void SendHome(const idx_t &idx);
 
-  /// Update the phase descriptors in all buffers.
-  ///
-  /// @param lbelow Level of the batch processed.
-  ///
-  /// @param was_src A vector of boolean values indicating which
-  /// partition will receive data in this batch.
-  void UpdatePdMid(const level_t &lbelow, const std::vector<bool> &was_src);
-
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t &src_tgt) const;

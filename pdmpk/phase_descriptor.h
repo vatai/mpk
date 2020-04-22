@@ -17,16 +17,21 @@ public:
   /// Constructor.
   PhaseDescriptor();
 
-  /// Update `bottom` and `top` members: `bottom` becomes `lbelow` if
-  /// `bottom` was 0, `top` becomes `max(top, lbelow + 1)`.
+  /// Update `bottom`: set it to `lbelow` if `bottom` is the same as
+  /// when initialised,
   ///
   /// @param lbelow Level of the batch processed.
-  void Update(const level_t &lbelow);
+  void UpdateBottom(const level_t &lbelow);
 
-  /// Update mid: set it to `max(lbelow + 1, mid)`.
+  /// Update `mid`: set it to `max(lbelow + 1, mid)`.
   ///
   /// @param lbelow Level of the batch processed.
   void UpdateMid(const level_t &lbelow);
+
+  /// Update `top`: set it to `max(top, lbelow + 1)`.
+  ///
+  /// @param lbelow Level of the batch processed.
+  void UpdateTop(const level_t &lbelow);
 
   /// Output operator.
   friend std::ostream &operator<<(std::ostream &os, const PhaseDescriptor &pd);
