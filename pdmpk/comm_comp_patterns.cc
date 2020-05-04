@@ -55,7 +55,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   /// definitely should be fixed (see todo in @ref
   /// Buffers::LoadInput).
   for (auto &buffer : bufs) {
-    buffer.phase_descriptors.back().UpdateMid(0);
+    buffer.phase_descriptors.back().UpdateMid(-1);
   }
   (this->*mirror_func_registry[args.mirror_method])();
 

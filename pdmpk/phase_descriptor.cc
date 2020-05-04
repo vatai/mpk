@@ -5,7 +5,7 @@
 #include "typedefs.h"
 #include <ostream>
 
-PhaseDescriptor::PhaseDescriptor() : bottom(-1), mid(-1), top(-1) {}
+PhaseDescriptor::PhaseDescriptor() : bottom(-1), mid(0), top(-1) {}
 
 void PhaseDescriptor::UpdateBottom(const level_t &lbelow) {
   if (bottom == -1) {
