@@ -115,20 +115,14 @@ void Buffers::AsyncExec() {
   size_t batch = 0;
   for (const auto pd : phase_descriptors) {
     for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
-      if (batch != 0) {
-        AsyncDoComm(batch);
-        MPI_Status status;
-        MPI_Wait(&requests[0], &status);
-      }
+      AsyncDoComm(batch);
+      MPI_Status status;
+      MPI_Wait(&requests[0], &status);
       DoComp(batch);
       batch++;
     }
     for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
-      if (batch != 0) {
-        AsyncDoComm(batch);
-        MPI_Status status;
-        MPI_Wait(&requests[0], &status);
-      }
+      AsyncDoComm(batch);
       DoComp(batch);
       batch++;
     }
