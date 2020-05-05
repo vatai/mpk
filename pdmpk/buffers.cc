@@ -115,6 +115,8 @@ void Buffers::AsyncExec() {
   DoComp(0);
   for (size_t phase = 1; phase < nphases; phase++) {
     AsyncDoComm(phase);
+    MPI_Status status;
+    MPI_Wait(&requests[0], &status);
     DoComp(phase);
   }
   SendHome();
@@ -139,8 +141,6 @@ void Buffers::AsyncDoComm(const int &phase) {
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
   MPI_Ialltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, rbuf, recvcounts,
                  rdispls, MPI_DOUBLE, MPI_COMM_WORLD, &requests[0]);
-  MPI_Status status;
-  MPI_Wait(&requests[0], &status);
 }
 
 void Buffers::SendHome() {
