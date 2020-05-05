@@ -137,8 +137,10 @@ void Buffers::AsyncDoComm(const int &phase) {
   const auto rdispls = mpi_bufs.rdispls.data() + offset;
 
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
-  MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
-                rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
+  MPI_Ialltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, rbuf, recvcounts,
+                 rdispls, MPI_DOUBLE, MPI_COMM_WORLD, &requests[0]);
+  MPI_Status status;
+  MPI_Wait(&requests[0], &status);
 }
 
 void Buffers::SendHome() {
