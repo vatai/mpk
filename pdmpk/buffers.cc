@@ -112,12 +112,17 @@ void Buffers::AsyncExec() {
   // in the Epilogue() to make processing the same.
   assert(mcsr.mptr.phase_begin.size() == nphases + 1);
 
-  DoComp(0);
-  for (size_t phase = 1; phase < nphases; phase++) {
-    AsyncDoComm(phase);
-    MPI_Status status;
-    MPI_Wait(&requests[0], &status);
-    DoComp(phase);
+  size_t batch = 0;
+  for (const auto pd : phase_descriptors) {
+    for (level_t lvl = pd.bottom; lvl < pd.top; lvl++) {
+      if (batch != 0) {
+        AsyncDoComm(batch);
+        MPI_Status status;
+        MPI_Wait(&requests[0], &status);
+      }
+      DoComp(batch);
+      batch++;
+    }
   }
   SendHome();
 }
