@@ -106,6 +106,27 @@ void Buffers::Exec() {
   SendHome();
 }
 
+void Buffers::AsyncDoComm(const int &phase) {
+  const auto scount = mpi_bufs.SbufSize(phase);
+
+  // fill_sbuf()
+  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
+  for (size_t i = 0; i < scount; i++) {
+    sbuf[i] = mbuf[sbuf_idcs[i]];
+  }
+
+  // call mpi()
+  const auto offset = mpi_bufs.npart * phase;
+  const auto sendcounts = mpi_bufs.sendcounts.data() + offset;
+  const auto recvcounts = mpi_bufs.recvcounts.data() + offset;
+  const auto sdispls = mpi_bufs.sdispls.data() + offset;
+  const auto rdispls = mpi_bufs.rdispls.data() + offset;
+
+  auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
+  MPI_Alltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, //
+                rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
+}
+
 void Buffers::SendHome() {
   const auto size = home_idcs.size();
   for (size_t i = 0; i < size; i++) {
