@@ -54,7 +54,7 @@ public:
   void AsyncExec();
 
   /// Async execute the communication for one phase.
-  void AsyncDoComm(const int &phase);
+  void AsyncDoComm(const int &phase, const level_t &lvl);
 
   /// Send calculated vertices "home", where the corresponding input
   /// vector values were in the initial phase (so calling exec again

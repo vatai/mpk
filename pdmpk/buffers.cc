@@ -115,14 +115,14 @@ void Buffers::AsyncExec() {
   size_t batch = 0;
   for (const auto pd : phase_descriptors) {
     for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
-      AsyncDoComm(batch);
+      AsyncDoComm(batch, lvl);
       MPI_Status status;
-      MPI_Wait(&requests[0], &status);
+      MPI_Wait(&requests[lvl], &status);
       DoComp(batch);
       batch++;
     }
     for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
-      AsyncDoComm(batch);
+      AsyncDoComm(batch, lvl);
       DoComp(batch);
       batch++;
     }
@@ -130,7 +130,7 @@ void Buffers::AsyncExec() {
   SendHome();
 }
 
-void Buffers::AsyncDoComm(const int &phase) {
+void Buffers::AsyncDoComm(const int &phase, const level_t &lvl) {
   const auto scount = mpi_bufs.SbufSize(phase);
 
   // fill_sbuf()
@@ -148,7 +148,7 @@ void Buffers::AsyncDoComm(const int &phase) {
 
   auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
   MPI_Ialltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, rbuf, recvcounts,
-                 rdispls, MPI_DOUBLE, MPI_COMM_WORLD, &requests[0]);
+                 rdispls, MPI_DOUBLE, MPI_COMM_WORLD, &requests[lvl]);
 }
 
 void Buffers::SendHome() {
