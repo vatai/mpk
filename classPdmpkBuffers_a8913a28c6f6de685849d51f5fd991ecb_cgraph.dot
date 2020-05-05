@@ -1,0 +1,12 @@
+digraph "PdmpkBuffers::IncLevel"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node29 [label="PdmpkBuffers::IncLevel",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node29 -> Node30 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node30 [label="PdmpkBuffers::PartialIsFull",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a7c38880f269bb49392056f2cc3cc771b",tooltip="Check if a vertex is one above the level as specified by PdmpkBuffers::levels, that is..."];
+  Node29 -> Node31 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node31 [label="PdmpkBuffers::PartialReset",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#ace2f4e8df39d75ad0651751420a345cc",tooltip="Clear (set to 0) all bits of a vertex. "];
+}

@@ -1,0 +1,18 @@
+digraph "PdmpkBuffers::MinLevel"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node58 [label="PdmpkBuffers::MinLevel",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node58 -> Node59 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node59 [label="CommCompPatterns::ProcAll\lPhasesNoMirror",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a614c8e8e0ad910fd4360004df278e7fa",tooltip="Process all phases: without any mirroring. "];
+  Node59 -> Node60 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node60 [label="CommCompPatterns::CommComp\lPatterns",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aeab3ee34a4bc59364ebfebb0d1a8277b",tooltip="Construct and fill all the buffers in a CommCompPatterns object. "];
+  Node58 -> Node61 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node61 [label="CommCompPatterns::ProcAll\lPhasesMinAboveHalf",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a023a495de3fa6fcf9c40ff6dd298fcbd",tooltip="Process all phases: mirror after min_level is above the half. "];
+  Node61 -> Node60 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node58 -> Node62 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node62 [label="CommCompPatterns::ProcAll\lPhasesMinAboveZero",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a163e416673b4e19d15636c63dbb8ab43",tooltip="Process all phases: mirror after min_level is above 0. "];
+  Node62 -> Node60 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

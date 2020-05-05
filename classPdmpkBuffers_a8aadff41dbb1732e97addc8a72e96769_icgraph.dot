@@ -1,0 +1,30 @@
+digraph "PdmpkBuffers::PartialIsEmpty"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node68 [label="PdmpkBuffers::PartialIsEmpty",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node68 -> Node69 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node69 [label="CommCompPatterns::Optimize\lVertex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aca6ef6922d3f839dfb934edccbd443ed",tooltip="Called in CommCompPatterns::NewPartitionLabels. "];
+  Node69 -> Node70 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node70 [label="CommCompPatterns::NewPartition\lLabels",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a645aad5ba785a49c8d4f7a050632b447",tooltip="Generate and optimize partition label assignment using PdmpkBuffers::MetisPartitionWithWeights CommCo..."];
+  Node70 -> Node71 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node71 [label="CommCompPatterns::ProcAll\lPhasesNoMirror",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a614c8e8e0ad910fd4360004df278e7fa",tooltip="Process all phases: without any mirroring. "];
+  Node71 -> Node72 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node72 [label="CommCompPatterns::CommComp\lPatterns",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aeab3ee34a4bc59364ebfebb0d1a8277b",tooltip="Construct and fill all the buffers in a CommCompPatterns object. "];
+  Node70 -> Node73 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node73 [label="CommCompPatterns::ProcAll\lPhasesMinAboveHalf",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a023a495de3fa6fcf9c40ff6dd298fcbd",tooltip="Process all phases: mirror after min_level is above the half. "];
+  Node73 -> Node72 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node70 -> Node74 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node74 [label="CommCompPatterns::ProcAll\lPhasesMinAboveZero",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a163e416673b4e19d15636c63dbb8ab43",tooltip="Process all phases: mirror after min_level is above 0. "];
+  Node74 -> Node72 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node68 -> Node75 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node75 [label="CommCompPatterns::ProcVertex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a980e9643b0785e440b3d173159e7c16f",tooltip="Process one vertex. "];
+  Node75 -> Node76 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node76 [label="CommCompPatterns::ProcPhase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a2f7400085165a143330af2d57a3973f3",tooltip="Generate one phase. "];
+  Node76 -> Node72 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node76 -> Node71 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node76 -> Node73 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node76 -> Node74 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

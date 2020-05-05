@@ -1,0 +1,20 @@
+digraph "PdmpkBuffers::ExactLevel"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node16 [label="PdmpkBuffers::ExactLevel",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node16 -> Node17 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 [label="PdmpkBuffers::ExactLevelSum",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#ac39a9cfd641669f230a65e5ab7e6fb42",tooltip="Find the exact sum of levels including partial results. "];
+  Node17 -> Node18 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node18 [label="CommCompPatterns::ProcAll\lPhasesNoMirror",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a614c8e8e0ad910fd4360004df278e7fa",tooltip="Process all phases: without any mirroring. "];
+  Node18 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node19 [label="CommCompPatterns::CommComp\lPatterns",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aeab3ee34a4bc59364ebfebb0d1a8277b",tooltip="Construct and fill all the buffers in a CommCompPatterns object. "];
+  Node17 -> Node20 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node20 [label="CommCompPatterns::ProcAll\lPhasesMinAboveHalf",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a023a495de3fa6fcf9c40ff6dd298fcbd",tooltip="Process all phases: mirror after min_level is above the half. "];
+  Node20 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 -> Node21 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node21 [label="CommCompPatterns::ProcAll\lPhasesMinAboveZero",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a163e416673b4e19d15636c63dbb8ab43",tooltip="Process all phases: mirror after min_level is above 0. "];
+  Node21 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

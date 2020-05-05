@@ -1,0 +1,32 @@
+digraph "PdmpkBuffers::PartialReset"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node89 [label="PdmpkBuffers::PartialReset",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node89 -> Node90 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node90 [label="PdmpkBuffers::IncLevel",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8913a28c6f6de685849d51f5fd991ecb",tooltip="Increase level of a vertex if it is needed. "];
+  Node90 -> Node91 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node91 [label="CommCompPatterns::Optimize\lVertex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aca6ef6922d3f839dfb934edccbd443ed",tooltip="Called in CommCompPatterns::NewPartitionLabels. "];
+  Node91 -> Node92 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node92 [label="CommCompPatterns::NewPartition\lLabels",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a645aad5ba785a49c8d4f7a050632b447",tooltip="Generate and optimize partition label assignment using PdmpkBuffers::MetisPartitionWithWeights CommCo..."];
+  Node92 -> Node93 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node93 [label="CommCompPatterns::ProcAll\lPhasesNoMirror",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a614c8e8e0ad910fd4360004df278e7fa",tooltip="Process all phases: without any mirroring. "];
+  Node93 -> Node94 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node94 [label="CommCompPatterns::CommComp\lPatterns",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aeab3ee34a4bc59364ebfebb0d1a8277b",tooltip="Construct and fill all the buffers in a CommCompPatterns object. "];
+  Node92 -> Node95 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node95 [label="CommCompPatterns::ProcAll\lPhasesMinAboveHalf",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a023a495de3fa6fcf9c40ff6dd298fcbd",tooltip="Process all phases: mirror after min_level is above the half. "];
+  Node95 -> Node94 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node92 -> Node96 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node96 [label="CommCompPatterns::ProcAll\lPhasesMinAboveZero",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a163e416673b4e19d15636c63dbb8ab43",tooltip="Process all phases: mirror after min_level is above 0. "];
+  Node96 -> Node94 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node90 -> Node97 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node97 [label="CommCompPatterns::ProcVertex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a980e9643b0785e440b3d173159e7c16f",tooltip="Process one vertex. "];
+  Node97 -> Node98 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node98 [label="CommCompPatterns::ProcPhase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a2f7400085165a143330af2d57a3973f3",tooltip="Generate one phase. "];
+  Node98 -> Node94 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node98 -> Node93 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node98 -> Node95 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node98 -> Node96 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

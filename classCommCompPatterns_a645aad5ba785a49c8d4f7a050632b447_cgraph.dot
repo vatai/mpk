@@ -1,0 +1,26 @@
+digraph "CommCompPatterns::NewPartitionLabels"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node79 [label="CommCompPatterns::NewPartition\lLabels",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node79 -> Node80 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node80 [label="PdmpkBuffers::UpdateWeights",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8b7ff48f5cbcf90c51d3aea97a68c791",tooltip="Update the edge weights based on the levels by calling the selected method. "];
+  Node79 -> Node81 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node81 [label="PdmpkBuffers::MetisPartition\lWithWeights",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#ab452543d0d515bd62909dae2ae8bdf0b",tooltip="Repartition the graph/matrix into partitions using PdmpkBuffers::weights. "];
+  Node79 -> Node82 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node82 [label="CommCompPatterns::Optimize\lVertex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#aca6ef6922d3f839dfb934edccbd443ed",tooltip="Called in CommCompPatterns::NewPartitionLabels. "];
+  Node82 -> Node83 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node83 [label="PdmpkBuffers::PartialIsEmpty",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8aadff41dbb1732e97addc8a72e96769",tooltip="Check if a vertex is at the level as specified by PdmpkBuffers::levels. "];
+  Node82 -> Node84 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node84 [label="PdmpkBuffers::CanAdd",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#adbb2368bd2b8d511041feab738474c1a",tooltip="Check if an adjacent vertex can be added. "];
+  Node82 -> Node85 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node85 [label="PdmpkBuffers::IncLevel",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8913a28c6f6de685849d51f5fd991ecb",tooltip="Increase level of a vertex if it is needed. "];
+  Node85 -> Node86 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node86 [label="PdmpkBuffers::PartialIsFull",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a7c38880f269bb49392056f2cc3cc771b",tooltip="Check if a vertex is one above the level as specified by PdmpkBuffers::levels, that is..."];
+  Node85 -> Node87 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node87 [label="PdmpkBuffers::PartialReset",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#ace2f4e8df39d75ad0651751420a345cc",tooltip="Clear (set to 0) all bits of a vertex. "];
+  Node79 -> Node88 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node88 [label="CommCompPatterns::FindLabel\lPermutation",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a60a48a5c3d009533e43733fb09ddf280",tooltip="Called in CommCompPatterns::NewPartitionLabels. "];
+}

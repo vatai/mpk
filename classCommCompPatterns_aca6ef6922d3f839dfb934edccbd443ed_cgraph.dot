@@ -1,0 +1,18 @@
+digraph "CommCompPatterns::OptimizeVertex"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node94 [label="CommCompPatterns::Optimize\lVertex",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node94 -> Node95 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node95 [label="PdmpkBuffers::PartialIsEmpty",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8aadff41dbb1732e97addc8a72e96769",tooltip="Check if a vertex is at the level as specified by PdmpkBuffers::levels. "];
+  Node94 -> Node96 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node96 [label="PdmpkBuffers::CanAdd",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#adbb2368bd2b8d511041feab738474c1a",tooltip="Check if an adjacent vertex can be added. "];
+  Node94 -> Node97 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node97 [label="PdmpkBuffers::IncLevel",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a8913a28c6f6de685849d51f5fd991ecb",tooltip="Increase level of a vertex if it is needed. "];
+  Node97 -> Node98 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node98 [label="PdmpkBuffers::PartialIsFull",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a7c38880f269bb49392056f2cc3cc771b",tooltip="Check if a vertex is one above the level as specified by PdmpkBuffers::levels, that is..."];
+  Node97 -> Node99 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node99 [label="PdmpkBuffers::PartialReset",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#ace2f4e8df39d75ad0651751420a345cc",tooltip="Clear (set to 0) all bits of a vertex. "];
+}

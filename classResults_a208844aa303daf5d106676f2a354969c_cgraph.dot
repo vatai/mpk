@@ -1,0 +1,12 @@
+digraph "Results::DumpTxt"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node8 [label="Results::DumpTxt",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node8 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="Args::Filename",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structArgs.html#aff027a269cf379ef43b568a4473a80ed",tooltip="Generate filename based on arguments. "];
+  Node8 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="Utils::DumpTxt",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$namespaceUtils.html#a8f7ef82e6166b486ca72dba1186fb61e",tooltip="Dump/save vector to file stream as text. "];
+}

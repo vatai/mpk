@@ -1,0 +1,10 @@
+digraph "PdmpkBuffers::UpdateWeightsOriginal"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node106 [label="PdmpkBuffers::UpdateWeights\lOriginal",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node106 -> Node107 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node107 [label="PdmpkBuffers::PartialCompleted",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classPdmpkBuffers.html#a2dbbdb874cd2950a8b6cf719e658a65c",tooltip="Calculate the amount a partial vertex is computed: computed neighbours/all neighbours. "];
+}

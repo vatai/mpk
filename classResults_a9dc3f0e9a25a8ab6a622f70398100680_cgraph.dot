@@ -1,0 +1,12 @@
+digraph "Results::Load"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node20 [label="Results::Load",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node20 -> Node21 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node21 [label="Args::Filename",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structArgs.html#aff027a269cf379ef43b568a4473a80ed",tooltip="Generate filename based on arguments. "];
+  Node20 -> Node22 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node22 [label="Utils::LoadVec",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$namespaceUtils.html#ac9c057b695ce4189d1263da4ed791896",tooltip="Load vector froum file stream,. "];
+}

@@ -1,0 +1,14 @@
+digraph "Csr::Csr"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="Csr::Csr",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node0 -> Node1 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="Csr::MtxCheckBanner",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCsr.html#a050e4353d28dcbf41a12fee1a8a9c7c3",tooltip="Verify the header (first line) of the .mtx file, and set the proper variables such as symmetric or pa..."];
+  Node0 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="Csr::MtxFillSize",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCsr.html#aed3a02549e296f1b71881109cc0746e4",tooltip="Allocate the ptr, col and val vectors. "];
+  Node0 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="Csr::MtxFillVectors",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCsr.html#a23efdb70e21f1920c247f2556877f839",tooltip="Fill the ptr, col and val vectors from file. "];
+}

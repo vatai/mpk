@@ -1,0 +1,22 @@
+digraph "CommCompPatterns::Epilogue"
+{
+ // INTERACTIVE_SVG=YES
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node61 [label="CommCompPatterns::Epilogue",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node61 -> Node62 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node62 [label="CommCompPatterns::InitPhase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a755d36cec41563a76c3f5560e4881e63",tooltip="Code executed before each phase. "];
+  Node61 -> Node63 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node63 [label="CommCompPatterns::Finalize\lPhase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#ad8142dd9236304fd8ac25dc6a2514a05",tooltip="Code executed after each phase. "];
+  Node63 -> Node64 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node64 [label="CommCompPatterns::Update\lMPICountBuffers",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a1f863fe418b25e08d31e0c9bf2ed33b7",tooltip="Update the send count on the source partition, and the receive count on the target partition..."];
+  Node63 -> Node65 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node65 [label="CommCompPatterns::ProcCommDict",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#adf0e62cb8f5b4272cb9acb9c74e7ade6",tooltip="Process one element/iterator of CommDict. "];
+  Node65 -> Node66 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node66 [label="CommCompPatterns::SrcSendBase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a3d776059f831816b56c1b98e2581d1c6",tooltip="Return the base (0th index) of the subinterval of send buffer in the source buffer. "];
+  Node65 -> Node67 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node67 [label="CommCompPatterns::TgtRecvBase",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a772665118ad2517205c2e077fa6e88bd",tooltip="Return the base (0th index) of the subinterval of receive buffer in the target buffer. "];
+  Node63 -> Node68 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node68 [label="CommCompPatterns::DbgMbuf\lChecks",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classCommCompPatterns.html#a6cf53b9b2d6cf34ca6cd4b620b439eb1"];
+}
