@@ -10,6 +10,7 @@ PhaseDescriptor::PhaseDescriptor() : bottom(-1), mid(0), top(-1) {}
 void PhaseDescriptor::UpdateBottom(const level_t &lbelow) {
   if (bottom == -1) {
     bottom = lbelow;
+    mid = lbelow;
   }
 }
 
