@@ -13,4 +13,4 @@ add_executable(check check.cc
   $<TARGET_OBJECTS:args>
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:results>)
-target_link_libraries(check PUBLIC ${METIS} coverage_config)
+target_link_libraries(check PUBLIC ${METIS} MPI::MPI_CXX coverage_config)
