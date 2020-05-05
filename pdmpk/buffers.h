@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <map>
+#include <mpi.h>
 #include <utility>
 #include <vector>
 
@@ -147,6 +148,12 @@ public:
   std::vector<size_t> dbg_idx; ///< Debug data.
 
 private:
-  const Args &args; ///< Arguments passed to the main program.
-  Buffers();        ///< Disabled default constructor.
+  /// Arguments passed to the main program.
+  const Args &args;
+
+  /// Disabled default constructor.
+  Buffers();
+
+  /// MPI request objects to synchronise communication.
+  std::vector<MPI_Request> requests;
 };

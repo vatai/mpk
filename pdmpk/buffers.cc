@@ -23,7 +23,8 @@ Buffers::Buffers(const Args &args)
       max_sbuf_size{0},     //
       mbuf_idx{0},          //
       results(args),        //
-      args{args} {}
+      args{args},           //
+      requests(args.nlevel + 1) {}
 
 void Buffers::PreBatch() {
   mpi_bufs.PhaseInit();
