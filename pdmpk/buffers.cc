@@ -48,6 +48,20 @@ void Buffers::PostBatch(const int &batch) {
   mbuf_idx += mpi_bufs.RbufSize(batch);
 }
 
+void Buffers::Exec() {
+  const auto nphases = mbuf.phase_begin.size();
+  // mcsr.mptr has one more "phase_begin"s because there is one added
+  // in the Epilogue() to make processing the same.
+  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
+
+  DoComp(0);
+  for (size_t phase = 1; phase < nphases; phase++) {
+    DoComm(phase);
+    DoComp(phase);
+  }
+  SendHome();
+}
+
 void Buffers::DoComp(const int &phase) {
   auto mcount = mcsr.mptr.phase_begin[phase + 1] - //
                 mcsr.mptr.phase_begin[phase];
@@ -92,7 +106,7 @@ void Buffers::DoComm(const int &phase) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
-void Buffers::Exec() {
+void Buffers::AsyncExec() {
   const auto nphases = mbuf.phase_begin.size();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.

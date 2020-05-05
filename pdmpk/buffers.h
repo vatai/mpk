@@ -50,6 +50,9 @@ public:
   /// Execute the communication for one phase.
   void DoComm(const int &phase);
 
+  /// Async execute the computations and communication for all phases.
+  void AsyncExec();
+
   /// Async execute the communication for one phase.
   void AsyncDoComm(const int &phase);
 
