@@ -43,19 +43,22 @@ public:
   /// Execute the computations and communication for all phases.
   void Exec();
 
-  /// Load the values of the input vector based on the
-  void LoadInput();
-
   /// Execute the computation for one phase.
   void DoComp(const int &phase);
 
   /// Execute the communication for one phase.
   void DoComm(const int &phase);
 
+  /// Async execute the communication for one phase.
+  void AsyncDoComm(const int &phase);
+
   /// Send calculated vertices "home", where the corresponding input
   /// vector values were in the initial phase (so calling exec again
   /// would continue calculating further powers).
   void SendHome();
+
+  /// Load the values of the input vector based on the
+  void LoadInput();
 
   /// Store @ref Buffers to disk which should be loaded using @ref
   /// Buffers::Load.
