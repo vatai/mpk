@@ -114,7 +114,7 @@ void Buffers::AsyncExec() {
 
   DoComp(0);
   for (size_t phase = 1; phase < nphases; phase++) {
-    DoComm(phase);
+    AsyncDoComm(phase);
     DoComp(phase);
   }
   SendHome();
