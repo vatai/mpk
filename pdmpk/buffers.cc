@@ -24,7 +24,7 @@ Buffers::Buffers(const Args &args)
       mbuf_idx{0},          //
       results(args),        //
       args{args},           //
-      requests(args.nlevel + 1) {}
+      requests(args.nlevel) {}
 
 void Buffers::PreBatch() {
   mpi_bufs.PhaseInit();
