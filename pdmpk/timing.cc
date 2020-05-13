@@ -11,7 +11,10 @@ using json = nlohmann::json;
 
 Timing::Timing(const Args &args) : count{0}, args{args} {}
 
-void Timing::StartGlobal() { global_time = MPI_Wtime(); }
+void Timing::StartGlobal() {
+  count++;
+  global_time = MPI_Wtime();
+}
 
 void Timing::StopGlobal() { global_sum += MPI_Wtime() - global_time; }
 
