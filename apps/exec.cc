@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   buf.DbgCheck();
   buf.LoadInput();
 
-  Timing timing;
+  Timing timing(args);
   buf.Exec(&timing);
   timing.CollectData();
 

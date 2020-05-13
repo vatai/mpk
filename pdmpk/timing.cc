@@ -5,7 +5,7 @@
 #include <iostream>
 #include <mpi.h>
 
-Timing::Timing() : count(0) {}
+Timing::Timing(const Args &args) : count{0}, args{args} {}
 
 void Timing::StartGlobal() { global_time = MPI_Wtime(); }
 

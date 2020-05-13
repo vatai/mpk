@@ -5,11 +5,15 @@
 
 #include <vector>
 
+#include "args.h"
+
 /// Timing data with methods to process them.
 class Timing {
 public:
   /// Constructor initialising all timing data.
-  Timing();
+  ///
+  /// @param args Args object with global variables.
+  Timing(const Args &args);
 
   /// Start global timer.
   void StartGlobal();
@@ -36,6 +40,9 @@ public:
   int count;
 
 private:
+  /// Constructor initialising all timing data.
+  Timing();
+
   /// Stores wall time executing the everything.
   double global_time;
 
@@ -53,4 +60,7 @@ private:
 
   /// Sums time spent on @ref Buffers::DoComm.
   double comm_sum;
+
+  /// Arguments passed from the command line.
+  const Args args;
 };
