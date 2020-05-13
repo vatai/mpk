@@ -37,13 +37,13 @@ void Timing::CollectData() {
     SendVector(comm_start_time, 0);
     SendVector(comm_end_time, 0);
   } else {
-    InitSummary();
+    CollectInit();
     for (int r = 1; r < world_size; r++) {
       RecvVector(&comp_start_recv, r);
       RecvVector(&comp_end_recv, r);
       RecvVector(&comm_start_recv, r);
       RecvVector(&comm_end_recv, r);
-      UpdateSummary();
+      CollectUpdate();
       std::cout << "Recv times from " << r << std::endl;
     }
   }
@@ -61,14 +61,14 @@ void Timing::RecvVector(std::vector<double> *vec, const int rank) {
            &status);
 }
 
-void Timing::InitSummary() {
+void Timing::CollectInit() {
   const double total = comm_end_time[0] - comp_start_time[0];
   max_total_time = total;
   sum_total_time = total;
   count = 1;
 }
 
-void Timing::UpdateSummary() {
+void Timing::CollectUpdate() {
   const double total = comm_end_time[0] - comp_start_time[0];
   max_total_time = max_total_time > total ? total : max_total_time;
   sum_total_time += total;

@@ -46,11 +46,11 @@ private:
 
   /// Initialise summary data from measurements of the current
   /// (usually `rank == 0`) process.
-  void InitSummary();
+  void CollectInit();
 
   /// Update summary data after receiving the a new set of
   /// measurements from another MPI process.
-  void UpdateSummary();
+  void CollectUpdate();
 
   /// Starting time of @ref Buffers::DoComp call for each phase.
   std::vector<double> comp_start_time;
