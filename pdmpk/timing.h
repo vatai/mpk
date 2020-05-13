@@ -44,10 +44,6 @@ private:
   /// @param rank Source MPI rank.
   void RecvVector(std::vector<double> *vec, const int rank);
 
-  /// Initialise summary data from measurements of the current
-  /// (usually `rank == 0`) process.
-  void CollectInit();
-
   /// Update summary data after receiving the a new set of
   /// measurements from another MPI process.
   void CollectUpdate();

@@ -37,7 +37,6 @@ void Timing::CollectData() {
     SendVector(comm_start_time, 0);
     SendVector(comm_end_time, 0);
   } else {
-    CollectInit();
     for (int r = 1; r < world_size; r++) {
       RecvVector(&comp_start_recv, r);
       RecvVector(&comp_end_recv, r);
@@ -59,13 +58,6 @@ void Timing::RecvVector(std::vector<double> *vec, const int rank) {
   MPI_Status status;
   MPI_Recv(vec->data(), vec->size(), MPI_DOUBLE, rank, 0, MPI_COMM_WORLD,
            &status);
-}
-
-void Timing::CollectInit() {
-  const double total = comm_end_time[0] - comp_start_time[0];
-  max_total_time = total;
-  sum_total_time = total;
-  count = 1;
 }
 
 void Timing::CollectUpdate() {
