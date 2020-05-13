@@ -36,6 +36,9 @@ public:
   /// Collect all the data using MPI communication.
   void CollectData();
 
+  /// Dump the measured times into a JSON file.
+  void DumpJson() const;
+
   /// Count of each execution.
   int count;
 

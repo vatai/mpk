@@ -2,8 +2,12 @@
 // Date: 2020-04-10
 
 #include "timing.h"
+#include <fstream>
 #include <iostream>
 #include <mpi.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 Timing::Timing(const Args &args) : count{0}, args{args} {}
 
@@ -45,4 +49,14 @@ void Timing::CollectData() {
     comp_sum /= world_size;
     comm_sum /= world_size;
   }
+}
+
+void Timing::DumpJson() const {
+  json times;
+  times["global_avg"] = global_sum;
+  times["comp_avg"] = comp_sum;
+  times["comm_avg"] = comm_sum;
+
+  std::ofstream of(args.Filename("times.json"));
+  of << times.dump() << std::endl;
 }
