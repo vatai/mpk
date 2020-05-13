@@ -105,23 +105,23 @@ void Buffers::Exec(Timing *timing) {
   // in the Epilogue() to make processing the same.
   assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
-  timing->StartDoComp(0);
+  timing->StartDoComp();
   DoComp(0);
-  timing->StopDoComp(0);
+  timing->StopDoComp();
 
   for (int phase = 1; phase < nphases; phase++) {
-    timing->StartDoComm(phase);
+    timing->StartDoComm();
     DoComm(phase);
-    timing->StopDoComm(phase);
+    timing->StopDoComm();
 
-    timing->StartDoComp(phase);
+    timing->StartDoComp();
     DoComp(phase);
-    timing->StopDoComp(phase);
+    timing->StopDoComp();
   }
 
-  timing->StartDoComm(0);
+  timing->StartDoComm();
   SendHome();
-  timing->StopDoComm(0);
+  timing->StopDoComm();
 }
 
 void Buffers::LoadInput() {

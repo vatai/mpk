@@ -8,82 +8,49 @@
 /// Timing data with methods to process them.
 class Timing {
 public:
-  /// Constructor initialising all data members.
-  Timing(const size_t &size);
+  /// Constructor initialising all timing data.
+  Timing();
+
+  /// Start global timer.
+  void StartGlobal();
+
+  /// Stop global timer.
+  void StopGlobal();
 
   /// Call before @ref Buffers::DoComp.
-  void StartDoComp(const size_t &phase);
+  void StartDoComp();
 
   /// Call after @ref Buffers::DoComp.
-  void StopDoComp(const size_t &phase);
+  void StopDoComp();
 
   /// Call before @ref Buffers::DoComm.
-  void StartDoComm(const size_t &phase);
+  void StartDoComm();
 
   /// Call after @ref Buffers::DoComm.
-  void StopDoComm(const size_t &phase);
+  void StopDoComm();
 
   /// Collect all the data using MPI communication.
   void CollectData();
 
-private:
-  /// Constructor initialising all timing data.
-  Timing();
-
-  /// Call MPI send on a given vector.
-  ///
-  /// @param vec Send data from here.
-  ///
-  /// @param rank Target MPI rank.
-  void SendVector(const std::vector<double> &vec, const int rank) const;
-
-  /// Call MPI receive on a given vector.
-  ///
-  /// @param vec Copy received data here.
-  ///
-  /// @param rank Source MPI rank.
-  void RecvVector(std::vector<double> *vec, const int rank);
-
-  /// Update summary data after receiving the a new set of
-  /// measurements from another MPI process.
-  void CollectUpdate();
-
-  /// Starting time of @ref Buffers::DoComp call for each phase.
-  std::vector<double> comp_start_time;
-
-  /// End time of @ref Buffers::DoComp call for each phase.
-  std::vector<double> comp_end_time;
-
-  /// Starting time of @ref Buffers::DoComm call for each phase.  0th
-  /// element is the last (sendhome).
-  std::vector<double> comm_start_time;
-
-  /// End time of @ref Buffers::DoComm call for each phase.  0th
-  /// element is the last (sendhome).
-  std::vector<double> comm_end_time;
-
-  /// Receive buffers for @ref Timing::comp_start_time from another
-  /// MPI process.
-  std::vector<double> comp_start_recv;
-
-  /// Receive buffers for @ref Timing::comp_end_time from another
-  /// MPI process.
-  std::vector<double> comp_end_recv;
-
-  /// Receive buffers for @ref Timing::comm_start_time from another
-  /// MPI process.
-  std::vector<double> comm_start_recv;
-
-  /// Receive buffers for @ref Timing::comm_end_time from another
-  /// MPI process.
-  std::vector<double> comm_end_recv;
-
-  /// Sum of durations of each execution.
-  double sum_total_time;
-
   /// Count of each execution.
   int count;
 
-  /// Maintain the maximum of each execution.
-  double max_total_time;
+private:
+  /// Stores wall time executing the everything.
+  double global_time;
+
+  /// Sums time executing the everything.
+  double global_sum;
+
+  /// Stores wall time before @ref Buffers::DoComp.
+  double comp_time;
+
+  /// Sums time spent on @ref Buffers::DoComp.
+  double comp_sum;
+
+  /// Stores wall time before @ref Buffers::DoComm.
+  double comm_time;
+
+  /// Sums time spent on @ref Buffers::DoComm.
+  double comm_sum;
 };
