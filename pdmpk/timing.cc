@@ -59,6 +59,7 @@ void Timing::DumpJson() const {
   times["global_avg"] = global_sum;
   times["comp_avg"] = comp_sum;
   times["comm_avg"] = comm_sum;
+  times["count"] = count;
 
   std::ofstream of(args.Filename("times.json"));
   of << times.dump() << std::endl;
