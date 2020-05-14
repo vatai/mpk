@@ -31,12 +31,12 @@ void Timing::CollectData() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
   double tmp;
+  global_sum /= count;
+  comp_sum /= count;
+  comm_sum /= count;
   if (rank > 0) {
-    global_sum /= count;
     MPI_Send(&global_sum, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-    comp_sum /= count;
     MPI_Send(&comp_sum, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-    comm_sum /= count;
     MPI_Send(&comm_sum, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
   } else {
     for (int r = 1; r < world_size; r++) {
