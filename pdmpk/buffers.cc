@@ -107,7 +107,7 @@ void Buffers::DoComm(const int &phase) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
-void Buffers::AsyncExec() {
+void Buffers::AsyncExec(Timing *timing) {
   const auto nphases = GetNumPhases();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
