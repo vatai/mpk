@@ -9,9 +9,9 @@
 #include <string>
 #include <unistd.h>
 
-#include "args.h"
-#include "buffers.h"
-#include "utils.hpp"
+#include "../pdmpk/args.h"
+#include "../pdmpk/buffers.h"
+#include "../pdmpk/utils.hpp"
 
 /// @page pdmpk_exec pdmpk_exec
 ///
@@ -27,14 +27,14 @@ int main(int argc, char *argv[]) {
   assert(npart == args.npart);
 
   // MPI debuging:
-  // - start with: $ gdb pdmpk_exec PID
+  // - start with: $ gdb ./exec PID
   // - up # go up in the stack
   // - up # two times
   // - set var i = 1
   // - continue
   // if (rank == 3) {
-  //   int i = 1;
   //   std::cout << "PID " << getpid() << " ready for attach" << std::endl;
+  //   int i = 0;
   //   while (0 == i)
   //     sleep(5);
   // }
@@ -43,13 +43,16 @@ int main(int argc, char *argv[]) {
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();
-  buf.Exec();
 
-  buf.DumpMbufTxt(rank);
+  Timing timing(args);
+  buf.Exec(&timing);
+  timing.CollectData();
+  timing.DumpJson();
 
   buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);
   buf.results.DumpTxt(rank);
+  buf.CleanUp(rank);
 
   MPI_Finalize();
 

@@ -21,21 +21,28 @@
   };                                                                           \
   break;
 
-Args::Args(int &argc, char *argv[])
-    : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0} {
+Args::Args(int argc, char *argv[])
+    : npart{0}, nlevel{0}, mirror_method{1}, weight_update_method{0},
+      keepfiles(false) {
   METIS_SetDefaultOptions(default_opt);
   METIS_SetDefaultOptions(opt);
-  opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
-  opt[METIS_OPTION_CONTIG] = 0;
+  // opt[METIS_OPTION_UFACTOR] = 1000; // originally 1000
+  // opt[METIS_OPTION_CONTIG] = 0;
   // opt[METIS_OPTION_MINCONN] = 1;
+  GetEnvArgs();
+  ReadArgs(argc, argv);
+}
 
+void Args::GetEnvArgs() {
   if (const char *ompi_npart = std::getenv("PMI_SIZE")) {
     npart = std::stoi(ompi_npart);
   };
   if (const char *ompi_npart = std::getenv("OMPI_COMM_WORLD_SIZE")) {
     npart = std::stoi(ompi_npart);
   };
+}
 
+void Args::ReadArgs(int argc, char *argv[]) {
   struct option long_options[] = {
       {"matrix", required_argument, 0, 'm'},
       {"npart", required_argument, 0, 'n'},
@@ -63,6 +70,8 @@ Args::Args(int &argc, char *argv[])
       // ---
       {"PFACTOR", required_argument, 0, 'P'},
       {"UFACTOR", required_argument, 0, 'u'},
+      // others
+      {"keepfiles", required_argument, 0, 'K'},
       {0, 0, 0, 0} // last element must be all 0s
   };
   int option_index = 0;
@@ -73,7 +82,8 @@ Args::Args(int &argc, char *argv[])
                          "t:o:y:i:r:"
                          "s:p:b:e:d:"
                          "c:h:g:C:R:"
-                         "P:u:",
+                         "P:u:"
+                         "K",
                          long_options, &option_index);
     if (c == -1)
       break;
@@ -165,8 +175,10 @@ Args::Args(int &argc, char *argv[])
     case 'u':
       opt[METIS_OPTION_UFACTOR] = std::stoi(optarg);
       break;
-      // ----  ----
-
+    // ---- other ----
+    case 'K':
+      keepfiles = true;
+      break;
     case '?':
       exit(1);
     default:
@@ -196,7 +208,26 @@ std::string Args::Filename(const std::string &suffix, const int &rank) const {
       ss << "-k" << k << "v" << opt[k];
     }
   }
-  ss << "-b" << GIT_BRANCH << "-c" << GIT_COMMIT_HASH;
+  ss << "-" << GIT_BRANCH << "-" << GIT_COMMIT_HASH;
   ss << "." << suffix;
   return ss.str();
+}
+
+json Args::ToJson() const {
+  json j;
+  std::string name = mtxname;
+  name.erase(0, name.find_last_of('/') + 1);
+  j["matrix"] = name;
+  j["npart"] = npart;
+  j["nlevel"] = nlevel;
+  j["mirror_method"] = mirror_method;
+  j["weight_update_method"] = weight_update_method;
+  std::map<idx_t, idx_t> active_ops;
+  for (size_t k = 0; k < METIS_NOPTIONS; k++) {
+    if (default_opt[k] != opt[k]) {
+      active_ops[k] = opt[k];
+    }
+  }
+  j["metis_opts"] = active_ops;
+  return j;
 }

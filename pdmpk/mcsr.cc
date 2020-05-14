@@ -11,7 +11,7 @@ size_t Mcsr::MptrSize(const int &phase) const {
 
 void Mcsr::NextMcolIdxToMptr() { mptr.push_back(mcol.size()); }
 
-void Mcsr::DumpToOFS(std::ofstream &ofs) {
+void Mcsr::DumpToOFS(std::ofstream &ofs) const {
   Utils::DumpVec(mptr, ofs);
   Utils::DumpVec(mptr.phase_begin, ofs);
   Utils::DumpVec(mcol, ofs);
@@ -25,7 +25,7 @@ void Mcsr::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &mval);
 }
 
-void Mcsr::DumpToTxt(std::ofstream &ofs) {
+void Mcsr::DumpToTxt(std::ofstream &ofs) const {
   Utils::DumpTxt("mptr", mptr, ofs);
   Utils::DumpTxt("mptr.phase_begin", mptr.phase_begin, ofs);
   Utils::DumpTxt("mcol", mcol, ofs);

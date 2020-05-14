@@ -1,6 +1,7 @@
 //  Author: Emil VATAI <emil.vatai@gmail.com>
 //  Date: 2019-10-19
 
+#include <algorithm>
 #include <fstream>
 
 #include "mpi_buffers.h"
@@ -8,18 +9,32 @@
 
 MpiBuffers::MpiBuffers(const idx_t &npart) : npart{npart} {}
 
-void MpiBuffers::FillDispls(const int &phase) {
-  size_t offset = npart * phase;
-  auto scount = sendcounts.data() + offset;
-  auto rcount = recvcounts.data() + offset;
-  auto sdispl = sdispls.data() + offset;
-  auto rdispl = rdispls.data() + offset;
+void MpiBuffers::PhaseInit() {
+  ResizeMpiBufs();
+  sbuf_idcs.rec_phase_begin();
+  init_idcs.rec_phase_begin();
+}
+
+void MpiBuffers::PhaseFinalize() {
+  const size_t offset = sendcounts.size() - npart;
+  const auto scount = sendcounts.data() + offset;
+  const auto rcount = recvcounts.data() + offset;
+  const auto sdispl = sdispls.data() + offset;
+  const auto rdispl = rdispls.data() + offset;
   sdispl[0] = 0;
   rdispl[0] = 0;
   for (idx_t i = 1; i < npart; i++) {
     sdispl[i] = sdispl[i - 1] + scount[i - 1];
     rdispl[i] = rdispl[i - 1] + rcount[i - 1];
   }
+}
+
+void MpiBuffers::SortInitIdcs() {
+  std::sort(std::begin(init_idcs) + init_idcs.phase_begin.back(),
+            std::end(init_idcs),
+            [](const sidx_tidx_t &a, const sidx_tidx_t &b) {
+              return a.second < b.second;
+            });
 }
 
 size_t MpiBuffers::SbufSize(const int &phase) const {
@@ -32,7 +47,7 @@ size_t MpiBuffers::RbufSize(const int &phase) const {
   return recvcounts[idx] + rdispls[idx];
 }
 
-void MpiBuffers::AllocMpiBufs() {
+void MpiBuffers::ResizeMpiBufs() {
   const auto size = recvcounts.size() + npart;
   recvcounts.resize(size);
   sendcounts.resize(size);
@@ -40,7 +55,7 @@ void MpiBuffers::AllocMpiBufs() {
   sdispls.resize(size);
 }
 
-void MpiBuffers::DumpToOFS(std::ofstream &ofs) {
+void MpiBuffers::DumpToOFS(std::ofstream &ofs) const {
   Utils::DumpVec(sendcounts, ofs);
   Utils::DumpVec(sdispls, ofs);
   Utils::DumpVec(recvcounts, ofs);
@@ -62,7 +77,7 @@ void MpiBuffers::LoadFromIFS(std::ifstream &ifs) {
   Utils::LoadVec(ifs, &init_idcs.phase_begin);
 }
 
-void MpiBuffers::DumpToTxt(std::ofstream &ofs) {
+void MpiBuffers::DumpToTxt(std::ofstream &ofs) const {
   Utils::DumpTxt("sendcounts", sendcounts, ofs);
   Utils::DumpTxt("sdispls   ", sdispls, ofs);
   Utils::DumpTxt("recvcounts", recvcounts, ofs);

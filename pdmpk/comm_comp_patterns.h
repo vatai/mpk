@@ -7,10 +7,10 @@
 #pragma once
 
 #include <map>
+#include <metis.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
-
-#include <metis.h>
 
 #include "args.h"
 #include "buffers.h"
@@ -113,14 +113,46 @@ private:
   /// - gathers information on how to collect the results.
   void Epilogue();
 
+  /// Construct a Json object describing the minimum, maximum, average
+  /// and sum of communication.
+  ///
+  /// @returns Json object describing the communication summary.
+  json StatsCommSummary() const;
+
+  /// Construct a Json object describing the minimum, maximum, average and sum
+  /// of computation.
+  ///
+  /// @returns Json object describing the computation summary.
+  json StatsCompSummary() const;
+
+  /// Construct a Json object describing the minimum, maximum, average
+  /// and sum of "differences".  Differences are differences of
+  /// computation in one phase between partitions. The idea is that if
+  /// one partition has more computation than the other (in a single
+  /// phase) that is a bad thing, and we'd like to measure that.
+  json StatsDiffSummary() const;
+
   /// Process all phases: without any mirroring.
-  void ProcAllPhasesNoMirror();
+  void ProcAllPhases0();
 
-  /// Process all phases: mirror after min_level is above the half.
-  void ProcAllPhasesMinAboveHalf();
+  /// Process all phases: mirror after `min_level` is above
+  /// `nlevel/2`.
+  void ProcAllPhases1();
 
-  /// Process all phases: mirror after min_level is above 0.
-  void ProcAllPhasesMinAboveZero();
+  /// Process all phases: mirror after `min_level` is above 0.
+  void ProcAllPhases2();
+
+  /// Process all phases: mirror after `min_level` is above `nlevel/2`
+  /// (no `level_sum` check).
+  void ProcAllPhases3();
+
+  /// Process all phases: mirror after `min_level` is above 0 (no
+  /// `level_sum` check).
+  void ProcAllPhases4();
+
+  /// Process all phases: mirror after `min_level` is above `3/4 *
+  /// nlevel`.
+  void ProcAllPhases5();
 
   /// Generate and optimize partition label assignment using @ref
   /// PdmpkBuffers::MetisPartitionWithWeights @ref
@@ -130,6 +162,10 @@ private:
   /// @param min_level Minimum level in the current phase.
   void NewPartitionLabels(const size_t &min_level);
 
+  /// Optimize labels of new partitioning obtained from the graph partitioning
+  /// algorithm.
+  void OptimizeLabels(const size_t &min_level);
+
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
   /// @param idx The index of the vertex processed.
@@ -138,7 +174,10 @@ private:
   /// `level[idx]-1`.
   bool OptimizeVertex(const idx_t &idx, const level_t &lbelow);
 
-  /// Called in @ref CommCompPatterns::NewPartitionLabels.
+  /// Using the `lapjv()` algorithm find the optimal assignment of
+  /// labels to partitions, and set @ref PdmpkBuffers::partitions to
+  /// the optimal partition labels.  Called in @ref
+  /// CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
   /// Code executed before each phase.

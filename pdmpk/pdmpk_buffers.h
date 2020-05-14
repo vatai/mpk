@@ -64,6 +64,7 @@ public:
   ///
   /// @return True iff all partial bits of vertex `idx` are 1.
   bool PartialIsFull(const idx_t &idx) const;
+
   /// Check if a vertex is at the level as specified by @ref
   /// PdmpkBuffers::levels.
   ///
@@ -71,10 +72,12 @@ public:
   ///
   /// @return True iff all partial bits of vertex `idx` are 0.
   bool PartialIsEmpty(const idx_t &idx) const;
+
   /// Clear (set to 0) all bits of a vertex.
   ///
   /// @param idx Index of the vertex which is to be cleared.
   void PartialReset(const idx_t &idx);
+
   /// Calculate the amount a partial vertex is computed: computed
   /// neighbours/all neighbours.
   ///
@@ -82,13 +85,20 @@ public:
   ///
   /// @return A double with value between 0 and 1.
   double PartialCompleted(const idx_t &idx) const;
+
   /// Since all the vertices are initially at level = 0,
   /// partition is done without any weights input.
   /// METIS_PartGraphKway outputs by updating partitions.data()
   void MetisPartition();
+
   /// Repartition the graph/matrix into partitions using @ref
   /// PdmpkBuffers::weights.
   void MetisPartitionWithWeights();
+
+  /// Fix Metis partitioning of `idx`.
+  ///
+  /// @param idx The index of the vertex which needs fixing.
+  void MetisFixVertex(idx_t idx);
 
   /// Function called in @ref DebugPrintReport.
   void DebugPrintLevels(std::ostream &os);
@@ -143,11 +153,23 @@ private:
   /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
-  void UpdateWeightsOriginal(const level_t &min);
+  void UpdateWeights0(const level_t &min);
 
   /// The weight update function, which uses the partials.  @see
   /// PdmpkBuffers::UpdateWeightsFunc.
   ///
   /// @param min Minimum of levels in the current phase.
-  void UpdateWeightsSimple(const level_t &min);
+  void UpdateWeights1(const level_t &min);
+
+  /// The weight update function, which uses the partials.  @see
+  /// PdmpkBuffers::UpdateWeightsFunc.
+  ///
+  /// @param min Minimum of levels in the current phase.
+  void UpdateWeights2(const level_t &min);
+
+  /// The weight update function, which uses the partials.  @see
+  /// PdmpkBuffers::UpdateWeightsFunc.
+  ///
+  /// @param min Minimum of levels in the current phase.
+  void UpdateWeights3(const level_t &min);
 };

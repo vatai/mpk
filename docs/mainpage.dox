@@ -55,8 +55,8 @@
 ///
 /// To run the program by hand do something like this:
 ///
-///     ./pdmpk_prep m5p4.loop.mtx 4 4 # second 4 is nlevels
-///     mpirun -n 4 ./pdmpk_exec m5p4.loop.mtx
+///     ./apps/prep m5p4.loop.mtx 4 4 # second 4 is nlevels
+///     mpirun -n 4 ./apps/exec m5p4.loop.mtx
 ///
 /// `orterun` is OpenMPI version of `mpirun` if it is in conflict with
 /// Intel's `mpirun`.
@@ -81,7 +81,7 @@
 ///     NLEVEL_ITER="10 20" NPART_ITER="8" ../scripts/batch_proc.sh \
 ///     ../matrices/xenon2.mtx
 ///
-/// @see @ref pdmpk_prep @see @ref pdmpk_exec @see @ref pdmpk_test
+/// @see @ref pdmpk_prep @see @ref pdmpk_exec @see @ref pdmpk_check
 ///
 /// @todo(vatai): Implement communication optimisation.
 ///

@@ -19,22 +19,32 @@ public:
   /// @param npart number of partitions.
   MpiBuffers(const idx_t &npart);
 
-  /// Fill displacement buffers (`sdispls` and `rdispls`) from the
-  /// count buffers (`sendcount` and `recvcount`).
-  void FillDispls(const int &phase);
+  /// Call @ref MpiBuffers::ResizeMpiBufs, and `rec_phase_begin` for
+  /// `sbuf_idcs` and `init_idcs`.
+  void PhaseInit();
+
+  /// Fill the last `npart` number of entries in the displacement
+  /// buffers (`sdispls` and `rdispls`) from the data in the count
+  /// buffers (`sendcount` and `recvcount`).
+  void PhaseFinalize();
+
+  /// Sort @ref MpiBuffers::init_idcs;
+  void SortInitIdcs();
 
   /// Get `rbuf` size from `recvcount` and `rdispls`.
   size_t SbufSize(const int &phase) const;
+
   /// Get `sbuf` size form `sendcount` and `sdispls`.
   size_t RbufSize(const int &phase) const;
-  /// Allocate {send,recv}counts and {s,r}displs.
-  void AllocMpiBufs();
+
   /// Dump the contents to a binary `fstream`.
-  void DumpToOFS(std::ofstream &ofs);
+  void DumpToOFS(std::ofstream &ofs) const;
+
   /// Load the contents from a binary `fstream`.
   void LoadFromIFS(std::ifstream &ifs);
+
   /// Dump to a txt file.
-  void DumpToTxt(std::ofstream &ofs);
+  void DumpToTxt(std::ofstream &ofs) const;
 
   std::vector<int> sendcounts; ///< MPI send count array.
   std::vector<int> recvcounts; ///< MPI recieve count array.
@@ -55,4 +65,8 @@ public:
   /// `MpiBuffers`.
 private:
   MpiBuffers();
+
+  /// Allocate additional npart elements to {send,recv}counts and
+  /// {s,r}displs.
+  void ResizeMpiBufs();
 };

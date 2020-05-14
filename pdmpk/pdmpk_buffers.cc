@@ -17,11 +17,11 @@ PdmpkBuffers::PdmpkBuffers(const Args &args, const Csr &csr)
       weights(csr.nnz),         //
       csr{csr},                 //
       args{args},               //
-      update_func_registry{&PdmpkBuffers::UpdateWeightsOriginal,
-                           &PdmpkBuffers::UpdateWeightsSimple},
+      update_func_registry{
+          &PdmpkBuffers::UpdateWeights0, &PdmpkBuffers::UpdateWeights1,
+          &PdmpkBuffers::UpdateWeights2, &PdmpkBuffers::UpdateWeights3},
       update_weights_func{update_func_registry[args.weight_update_method]} {
-  const size_t idx = args.weight_update_method;
-  assert(idx < update_func_registry.size());
+  assert(args.weight_update_method < update_func_registry.size());
 }
 
 level_t PdmpkBuffers::MinLevel() const {
@@ -72,13 +72,12 @@ void PdmpkBuffers::IncLevel(const idx_t &idx) {
 }
 
 void PdmpkBuffers::UpdateWeights(const level_t &min) {
-  // std::invoke(update_weights_func, this);
   assert(update_weights_func ==
          update_func_registry[args.weight_update_method]);
   (this->*update_weights_func)(min);
 }
 
-void PdmpkBuffers::UpdateWeightsOriginal(const level_t &min) {
+void PdmpkBuffers::UpdateWeights0(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     int li = levels[i];
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
@@ -95,7 +94,7 @@ void PdmpkBuffers::UpdateWeightsOriginal(const level_t &min) {
   }
 }
 
-void PdmpkBuffers::UpdateWeightsSimple(const level_t &min) {
+void PdmpkBuffers::UpdateWeights1(const level_t &min) {
   for (int i = 0; i < csr.n; i++) {
     for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
       const auto j = csr.col[t];
@@ -107,6 +106,45 @@ void PdmpkBuffers::UpdateWeightsSimple(const level_t &min) {
         weights[t] = 1;
       }
     }
+  }
+}
+
+void PdmpkBuffers::UpdateWeights2(const level_t &min) {
+  for (int i = 0; i < csr.n; i++) {
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      const auto j = csr.col[t];
+      const auto m = levels[i] < levels[j] ? levels[i] : levels[j];
+      weights[t] = (args.nlevel - m + min) + 1;
+      if (not partials[t]) {
+        weights[t] = 1ul << weights[t];
+      } else {
+        weights[t] = weights[t];
+      }
+    }
+  }
+}
+
+void PdmpkBuffers::UpdateWeights3(const level_t &min) {
+  const size_t num_edges = csr.ptr[csr.n];
+  assert(num_edges > 0);
+  for (int i = 0; i < csr.n; i++) {
+    for (int t = csr.ptr[i]; t < csr.ptr[i + 1]; t++) {
+      const auto j = csr.col[t];
+      const auto m = levels[i] < levels[j] ? levels[i] : levels[j];
+      const auto e =
+          levels[i] < levels[j] ? PartialCompleted(i) : PartialCompleted(j);
+      const auto d = levels[i] - levels[j];
+      assert(d == -1 or d == 0 or d == 1); // NOT TURE FOR CFD2 matrix
+      const size_t w = args.nlevel - m + min;
+      if (not partials[t] and m == min) {
+        weights[t] = w * (1 << int(w * e));
+      } else {
+        weights[t] = w * w + 1;
+      }
+    }
+  }
+  for (const auto &wt : weights) {
+    assert(wt > 0);
   }
 }
 
@@ -161,6 +199,15 @@ void PdmpkBuffers::MetisPartitionWithWeights() {
   METIS_PartGraphKway(&n, &nconstr, ptr, col, NULL, NULL, weights.data(), &np,
                       NULL, NULL, const_cast<idx_t *>(args.opt), &retval,
                       partitions.data());
+}
+
+void PdmpkBuffers::MetisFixVertex(idx_t idx) {
+  for (int t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
+    const auto j = csr.col[t];
+    if (partials[t] == false) {
+      partitions[j] = partitions[idx];
+    }
+  }
 }
 
 void PdmpkBuffers::DebugPrintLevels(std::ostream &os) {

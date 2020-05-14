@@ -1,24 +1,69 @@
+/// @author Emil VATAI <emil.vatai@gmail.com>
+/// @date 2020-04-10
+
 #pragma once
-#include <mpi.h>
 
-#define DECLARE_TIMING(s)                                                      \
-  double timeStart_##s;                                                        \
-  double timeDiff_##s;                                                         \
-  double timeTally_##s = 0;                                                    \
-  int countTally_##s = 0
+#include <vector>
 
-#define START_TIMING(s) timeStart_##s = MPI_Wtime()
+#include "args.h"
 
-#define STOP_TIMING(s)                                                         \
-  timeDiff_##s = (double)(MPI_Wtime() - timeStart_##s);                        \
-  timeTally_##s += timeDiff_##s;                                               \
-  countTally_##s++
+/// Timing data with methods to process them.
+class Timing {
+public:
+  /// Constructor initialising all timing data.
+  ///
+  /// @param args Args object with global variables.
+  Timing(const Args &args);
 
-#define GET_TIMING(s) (double)(timeDiff_##s / MPI_Wtime())
+  /// Start global timer.
+  void StartGlobal();
 
-#define GET_AVERAGE_TIMING(s)                                                  \
-  (double)(countTally_##s ? (double)(timeTally_##s / countTally_##s) : 0)
+  /// Stop global timer.
+  void StopGlobal();
 
-#define CLEAR_AVERAGE_TIMING(s)                                                \
-  timeTally_##s = 0;                                                           \
-  countTally_##s = 0
+  /// Call before @ref Buffers::DoComp.
+  void StartDoComp();
+
+  /// Call after @ref Buffers::DoComp.
+  void StopDoComp();
+
+  /// Call before @ref Buffers::DoComm.
+  void StartDoComm();
+
+  /// Call after @ref Buffers::DoComm.
+  void StopDoComm();
+
+  /// Collect all the data using MPI communication.
+  void CollectData();
+
+  /// Dump the measured times into a JSON file.
+  void DumpJson() const;
+
+  /// Count of each execution.
+  int count;
+
+private:
+  /// Constructor initialising all timing data.
+  Timing();
+
+  /// Stores wall time executing the everything.
+  double global_time;
+
+  /// Sums time executing the everything.
+  double global_sum;
+
+  /// Stores wall time before @ref Buffers::DoComp.
+  double comp_time;
+
+  /// Sums time spent on @ref Buffers::DoComp.
+  double comp_sum;
+
+  /// Stores wall time before @ref Buffers::DoComm.
+  double comm_time;
+
+  /// Sums time spent on @ref Buffers::DoComm.
+  double comm_sum;
+
+  /// Arguments passed from the command line.
+  const Args args;
+};

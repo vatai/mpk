@@ -20,6 +20,7 @@
 #include "mpi_buffers.h"
 #include "phased_vector.hpp"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 
 /// The main buffers containing information/patterns how to perform
@@ -38,7 +39,7 @@ public:
   void PhaseFinalize(const int &phase);
 
   /// Execute the computations and communication for all phases.
-  void Exec();
+  void Exec(Timing *timing);
 
   /// Load the values of the input vector based on the
   void LoadInput();
@@ -56,19 +57,35 @@ public:
 
   /// Store @ref Buffers to disk which should be loaded using @ref
   /// Buffers::Load.
-  void Dump(const int &rank);
+  ///
+  /// @param rank MPI rank.
+  void Dump(const int &rank) const;
 
   /// Load @ref Buffers from disk saved using @ref Buffers::Dump.
+  ///
+  /// @param rank MPI rank.
   void Load(const int &rank);
 
   /// Store @ref Buffers to disk in `.txt` format.
-  void DumpTxt(const int &rank);
+  ///
+  /// @param rank MPI rank.
+  void DumpTxt(const int &rank) const;
 
   /// Store @ref Buffers::mbuf to disk in `.txt` format.
-  void DumpMbufTxt(const int &rank);
+  ///
+  /// @param rank MPI rank.
+  void DumpMbufTxt(const int &rank) const;
 
   /// Check @ref Buffers invariants.
-  void DbgCheck();
+  void DbgCheck() const;
+
+  /// Delete created files
+  ///
+  /// @param rank MPI rank.
+  void CleanUp(const int &rank) const;
+
+  /// Return the number of phases.
+  int GetNumPhases() const;
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.

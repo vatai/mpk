@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <metis.h>
@@ -12,6 +13,7 @@
 
 #include "buffers.h"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 #include "utils.hpp"
 
@@ -25,18 +27,14 @@ Buffers::Buffers(const Args &args)
       args{args} {}
 
 void Buffers::PhaseInit() {
-  mpi_bufs.AllocMpiBufs();
-  mpi_bufs.sbuf_idcs.rec_phase_begin();
-  mpi_bufs.init_idcs.rec_phase_begin();
-
+  mpi_bufs.PhaseInit();
   mcsr.mptr.rec_phase_begin();
   mbuf.phase_begin.push_back(mbuf_idx);
 }
 
 void Buffers::PhaseFinalize(const int &phase) {
   // Fill displacement buffers from count buffers.
-  mpi_bufs.FillDispls(phase);
-  const auto rbuf_size = mpi_bufs.RbufSize(phase);
+  mpi_bufs.PhaseFinalize();
   const auto sbuf_size = mpi_bufs.SbufSize(phase);
 
   if (max_sbuf_size < sbuf_size) {
@@ -47,7 +45,7 @@ void Buffers::PhaseFinalize(const int &phase) {
   mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() + sbuf_size);
 
   // Update `mbuf_idx`.
-  mbuf_idx += rbuf_size;
+  mbuf_idx += mpi_bufs.RbufSize(phase);
 }
 
 void Buffers::DoComp(const int &phase) {
@@ -61,6 +59,7 @@ void Buffers::DoComp(const int &phase) {
     double tmp = 0.0;
     const auto &pair = mpi_bufs.init_idcs[init_idx];
     if (mpi_bufs.init_idcs.size() > 0 and
+        init_idx < mpi_bufs.init_idcs.phase_begin[phase + 1] and
         mbuf.phase_begin[phase] + mi == (size_t)pair.second) {
       tmp = mbuf[pair.first];
       init_idx++;
@@ -100,18 +99,29 @@ void Buffers::SendHome() {
   }
 }
 
-void Buffers::Exec() {
-  const auto nphases = mbuf.phase_begin.size();
+void Buffers::Exec(Timing *timing) {
+  const auto nphases = GetNumPhases();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
-  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
+  timing->StartDoComp();
   DoComp(0);
-  for (size_t phase = 1; phase < nphases; phase++) {
+  timing->StopDoComp();
+
+  for (int phase = 1; phase < nphases; phase++) {
+    timing->StartDoComm();
     DoComm(phase);
+    timing->StopDoComm();
+
+    timing->StartDoComp();
     DoComp(phase);
+    timing->StopDoComp();
   }
+
+  timing->StartDoComm();
   SendHome();
+  timing->StopDoComm();
 }
 
 void Buffers::LoadInput() {
@@ -120,7 +130,7 @@ void Buffers::LoadInput() {
     mbuf[i] = 1.0;
 }
 
-void Buffers::Dump(const int &rank) {
+void Buffers::Dump(const int &rank) const {
   std::ofstream file(args.Filename("buf.bin", rank), std::ios::binary);
   file.write((char *)&max_sbuf_size, sizeof(max_sbuf_size));
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
@@ -148,7 +158,7 @@ void Buffers::Load(const int &rank) {
   mcsr.LoadFromIFS(file);
 }
 
-void Buffers::DumpTxt(const int &rank) {
+void Buffers::DumpTxt(const int &rank) const {
   std::ofstream file(args.Filename("buf.txt", rank));
   // mbuf_idx
   file << "max_sbuf_size: " << max_sbuf_size << std::endl;
@@ -162,7 +172,7 @@ void Buffers::DumpTxt(const int &rank) {
   mcsr.DumpToTxt(file);
 }
 
-void Buffers::DumpMbufTxt(const int &rank) {
+void Buffers::DumpMbufTxt(const int &rank) const {
   std::ofstream file(args.Filename("mbuf.txt", rank));
 
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
@@ -171,7 +181,7 @@ void Buffers::DumpMbufTxt(const int &rank) {
   mpi_bufs.DumpToTxt(file);
 }
 
-void Buffers::DbgCheck() {
+void Buffers::DbgCheck() const {
   // mpi_bufs !!!!!
   // mpi_bufs.init_idcs; // !!!
   // mpi_bufs.sbuf_idcs; // !!!
@@ -195,3 +205,13 @@ void Buffers::DbgCheck() {
   // mbuf
   // sbuf
 }
+
+void Buffers::CleanUp(const int &rank) const {
+  if (not args.keepfiles) {
+    std::remove(args.Filename("buf.bin", rank).c_str());
+    std::remove(args.Filename("buf.txt", rank).c_str());
+    std::remove(args.Filename("mbuf.txt", rank).c_str());
+  }
+}
+
+int Buffers::GetNumPhases() const { return mbuf.phase_begin.size(); }

@@ -8,7 +8,7 @@
 # Optional input variables
 NLEVEL_ITER=${NLEVEL_ITER:="10"}
 NPART_ITER=${NPART_ITER:="4"}
-PREFIX=${PREFIX:=../pdmpk}
+PREFIX=${PREFIX:=../apps}
 MPIRUN=${MPIRUN:=mpirun --oversubscribe}
 $MPIRUN 2>&1 | grep "unrecognized argument oversubscribe" >/dev/null && MPIRUN=mpirun
 
@@ -16,9 +16,9 @@ function single_run() {
     local MATRIX=$1
     local NPART=$2
     local NLEVEL=$3
-    local PREP=$PREFIX/pdmpk_prep
-    local EXEC=$PREFIX/pdmpk_exec
-    local TEST=$PREFIX/pdmpk_test
+    local PREP=$PREFIX/prep
+    local EXEC=$PREFIX/exec
+    local TEST=$PREFIX/check
     echo $0: Processing $MATRIX with $NPART partitions upto level $NLEVEL
     $PREP --matrix $MATRIX --npart $NPART --nlevel $NLEVEL || exit 1
     $MPIRUN -n $NPART $EXEC --matrix $MATRIX --nlevel $NLEVEL || exit 2
