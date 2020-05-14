@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
   Timing timing(args);
   buf.Exec(&timing);
   timing.CollectData();
+  timing.DumpJson();
 
   buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);
