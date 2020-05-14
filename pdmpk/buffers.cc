@@ -13,6 +13,7 @@
 
 #include "buffers.h"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 #include "utils.hpp"
 
@@ -48,14 +49,14 @@ void Buffers::PostBatch(const int &batch) {
   mbuf_idx += mpi_bufs.RbufSize(batch);
 }
 
-void Buffers::Exec() {
-  const auto nphases = mbuf.phase_begin.size();
+void Buffers::Exec(Timing *timing) {
+  const auto nphases = GetNumPhases();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
-  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
   DoComp(0);
-  for (size_t phase = 1; phase < nphases; phase++) {
+  for (int phase = 1; phase < nphases; phase++) {
     DoComm(phase);
     DoComp(phase);
   }
@@ -107,10 +108,10 @@ void Buffers::DoComm(const int &phase) {
 }
 
 void Buffers::AsyncExec() {
-  const auto nphases = mbuf.phase_begin.size();
+  const auto nphases = GetNumPhases();
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
-  assert(mcsr.mptr.phase_begin.size() == nphases + 1);
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
   size_t batch = 0;
   for (const auto pd : phase_descriptors) {
@@ -254,3 +255,5 @@ void Buffers::CleanUp(const int &rank) const {
     std::remove(args.Filename("mbuf.txt", rank).c_str());
   }
 }
+
+int Buffers::GetNumPhases() const { return mbuf.phase_begin.size(); }

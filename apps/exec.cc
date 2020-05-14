@@ -43,7 +43,11 @@ int main(int argc, char *argv[]) {
   buf.Load(rank);
   buf.DbgCheck();
   buf.LoadInput();
-  buf.AsyncExec();
+
+  Timing timing(args);
+  buf.Exec(&timing);
+  timing.CollectData();
+  timing.DumpJson();
 
   buf.results.FillVal(buf.mbuf);
   buf.results.Dump(rank);

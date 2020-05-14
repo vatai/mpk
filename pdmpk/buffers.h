@@ -22,6 +22,7 @@
 #include "phase_descriptor.h"
 #include "phased_vector.hpp"
 #include "results.h"
+#include "timing.h"
 #include "typedefs.h"
 
 /// The main buffers containing information/patterns how to perform
@@ -42,7 +43,7 @@ public:
   void PostBatch(const int &batch);
 
   /// Execute the computations and communication for all phases.
-  void Exec();
+  void Exec(Timing *timing);
 
   /// Execute the computation for one phase.
   void DoComp(const int &phase);
@@ -92,6 +93,9 @@ public:
   ///
   /// @param rank MPI rank.
   void CleanUp(const int &rank) const;
+
+  /// Return the number of phases.
+  int GetNumPhases() const;
 
   /// MPI related buffers: {send,recv}counts, {s,r}displs, sbuf_idcs,
   /// init_idcs.
