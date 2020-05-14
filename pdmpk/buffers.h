@@ -52,7 +52,7 @@ public:
   void DoComm(const int &phase);
 
   /// Async execute the computations and communication for all phases.
-  void AsyncExec();
+  void AsyncExec(Timing *timing);
 
   /// Async execute the communication for one phase.
   void AsyncDoComm(const int &phase, const level_t &lvl);
