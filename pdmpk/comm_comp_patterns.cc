@@ -29,7 +29,7 @@ CommCompPatterns::CommCompPatterns(const Args &args)
       csr{args.mtxname},               //
       pdmpk_bufs{args, csr},           //
       pdmpk_count{args, csr},          //
-      phase{0},                        //
+      batch{0},                        //
       mirror_func_registry{&CommCompPatterns::ProcAllPhases0,
                            &CommCompPatterns::ProcAllPhases1,
                            &CommCompPatterns::ProcAllPhases2,
@@ -45,10 +45,18 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   for (int idx = 0; idx < csr.n; idx++) {
     const auto part = pdmpk_bufs.partitions[idx];
     bufs[part].home_idcs.push_back(0);
+    bufs[part].original_idcs.push_back(idx);
     FinalizeVertex({idx, 0}, part);
   }
-  phase = -1;
+  batch = -1;
   ProcPhase(0);
+  /// @todo(vatai): fix buffer buffer.phase_descriptors.back().  For
+  /// now, setting mid = bottom (= 0) might be sufficient, but
+  /// definitely should be fixed (see todo in @ref
+  /// Buffers::LoadInput).
+  for (auto &buffer : bufs) {
+    buffer.phase_descriptors.back().UpdateMid(-1);
+  }
   (this->*mirror_func_registry[args.mirror_method])();
 
   Epilogue();
@@ -62,8 +70,12 @@ void CommCompPatterns::Epilogue() {
     const auto &home_part = home_partition[idx];
     const auto &eff_part = store_part.at({idx, args.nlevel}).first;
     if (home_part != eff_part) {
-      InitPhase();
-      FinalizePhase();
+      for (auto &buffer : bufs) { // PrePhase()
+        buffer.phase_descriptors.emplace_back();
+      }
+      PreBatch();
+      /// @todo(vatai): Verify the correct PostBatch parameter.
+      PostBatch(args.nlevel - 1);
       break;
     }
   }
@@ -86,7 +98,7 @@ void CommCompPatterns::Epilogue() {
 void CommCompPatterns::Stats() const {
   json stats;
   stats["args"] = args.ToJson();
-  stats["num_phases"] = phase;
+  stats["num_batches"] = batch;
   stats["comm_summary"] = StatsCommSummary();
   stats["comp_summary"] = StatsCompSummary();
   stats["diff_summary"] = StatsDiffSummary();
@@ -96,13 +108,13 @@ void CommCompPatterns::Stats() const {
 }
 
 json CommCompPatterns::StatsCommSummary() const {
-  const double count = bufs.size() * phase;
+  const double count = bufs.size() * batch;
   size_t rsum = 0;
   size_t ssum = 0;
   size_t min = bufs[0].mpi_bufs.RbufSize(0);
   size_t max = bufs[0].mpi_bufs.RbufSize(0);
   for (const auto &buffer : bufs) {
-    for (int i = 0; i < phase; i++) {
+    for (int i = 0; i < batch; i++) {
       const auto rs = buffer.mpi_bufs.RbufSize(i);
       rsum += rs;
       ssum += buffer.mpi_bufs.SbufSize(i);
@@ -168,10 +180,10 @@ json CommCompPatterns::StatsDiffSummary() const {
   size_t wmax = 0, rmax = 0;
   size_t wmin_sum = 0, rmin_sum = 0;
   size_t wmax_sum = 0, rmax_sum = 0;
-  for (int k = 0; k < phase; k++) {
-    size_t phase_wsum = 0, phase_rsum = 0;
-    size_t phase_wmin = -1u, phase_rmin = -1u;
-    size_t phase_wmax = 0, phase_rmax = 0;
+  for (int k = 0; k < batch; k++) {
+    size_t batch_wsum = 0, batch_rsum = 0;
+    size_t batch_wmin = -1u, batch_rmin = -1u;
+    size_t batch_wmax = 0, batch_rmax = 0;
     for (const auto &bi : bufs) {
       for (const auto &bj : bufs) {
         if (&bi != &bj) {
@@ -190,29 +202,29 @@ json CommCompPatterns::StatsDiffSummary() const {
           const size_t wdiff = wri < wrj ? wrj - wri : wri - wrj; // abs diff
           const size_t rdiff = rdi < rdj ? rdj - rdi : rdi - rdj; // abs diff
 
-          phase_wsum += wdiff;
-          phase_rsum += rdiff;
-          phase_wmin = phase_wmin > wdiff ? wdiff : phase_wmin;
-          phase_rmin = phase_rmin > rdiff ? rdiff : phase_rmin;
-          phase_wmax = phase_wmax < wdiff ? wdiff : phase_wmax;
-          phase_rmax = phase_rmax < rdiff ? rdiff : phase_rmax;
+          batch_wsum += wdiff;
+          batch_rsum += rdiff;
+          batch_wmin = batch_wmin > wdiff ? wdiff : batch_wmin;
+          batch_rmin = batch_rmin > rdiff ? rdiff : batch_rmin;
+          batch_wmax = batch_wmax < wdiff ? wdiff : batch_wmax;
+          batch_rmax = batch_rmax < rdiff ? rdiff : batch_rmax;
         }
       }
     }
-    wsum += phase_wsum;
-    rsum += phase_rsum;
-    wmin = wmin > phase_wmin ? phase_wmin : wmin;
-    rmin = rmin > phase_rmin ? phase_rmin : rmin;
-    wmax = wmax < phase_wmax ? phase_wmax : wmax;
-    rmax = rmax < phase_rmax ? phase_rmax : rmax;
-    wmin_sum += phase_wmin;
-    rmin_sum += phase_rmin;
-    wmax_sum += phase_wmax;
-    rmax_sum += phase_rmax;
+    wsum += batch_wsum;
+    rsum += batch_rsum;
+    wmin = wmin > batch_wmin ? batch_wmin : wmin;
+    rmin = rmin > batch_rmin ? batch_rmin : rmin;
+    wmax = wmax < batch_wmax ? batch_wmax : wmax;
+    rmax = rmax < batch_rmax ? batch_rmax : rmax;
+    wmin_sum += batch_wmin;
+    rmin_sum += batch_rmin;
+    wmax_sum += batch_wmax;
+    rmax_sum += batch_rmax;
   }
 
   const double ndiffs = bufs.size() * (bufs.size() - 1);
-  const double nphase = phase;
+  const double nbatch = batch;
   json j;
   j["write_sum"] = wsum;
   j["read_sum"] = rsum;
@@ -222,10 +234,10 @@ json CommCompPatterns::StatsDiffSummary() const {
   j["read_max"] = rmax;
   j["write_avg"] = double(wsum) / ndiffs;
   j["read_avg"] = double(rsum) / ndiffs;
-  j["avg_wmin"] = double(wmin_sum) / nphase;
-  j["avg_rmin"] = double(rmin_sum) / nphase;
-  j["avg_wmax"] = double(wmax_sum) / nphase;
-  j["avg_rmax"] = double(rmax_sum) / nphase;
+  j["avg_wmin"] = double(wmin_sum) / nbatch;
+  j["avg_rmin"] = double(rmin_sum) / nbatch;
+  j["avg_wmax"] = double(wmax_sum) / nbatch;
+  j["avg_rmax"] = double(rmax_sum) / nbatch;
   // {min,max}avg?
   return j;
 }
@@ -296,7 +308,7 @@ void CommCompPatterns::ProcAllPhases2() {
       old_level_sum = level_sum;
       NewPartitionLabels(min_level);
     } else {
-      const auto hist_idx = phase % partition_history.size();
+      const auto hist_idx = batch % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
     ProcPhase(min_level);
@@ -340,7 +352,7 @@ void CommCompPatterns::ProcAllPhases4() {
     if (min_level == 0) {
       NewPartitionLabels(min_level);
     } else {
-      const auto hist_idx = phase % partition_history.size();
+      const auto hist_idx = batch % partition_history.size();
       pdmpk_bufs.partitions = partition_history[hist_idx];
     }
     ProcPhase(min_level);
@@ -381,7 +393,7 @@ void CommCompPatterns::ProcAllPhases5() {
   }
 }
 
-void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
+void CommCompPatterns::NewPartitionLabels(const level_t &min_level) {
   pdmpk_bufs.UpdateWeights(min_level);
   pdmpk_bufs.MetisPartitionWithWeights();
 
@@ -394,7 +406,7 @@ void CommCompPatterns::NewPartitionLabels(const size_t &min_level) {
   partition_history.push_back(pdmpk_bufs.partitions);
 }
 
-void CommCompPatterns::OptimizeLabels(const size_t &min_level) {
+void CommCompPatterns::OptimizeLabels(const level_t &min_level) {
   pdmpk_count.partitions = pdmpk_bufs.partitions;
   pdmpk_count.partials = pdmpk_bufs.partials;
   pdmpk_count.levels = pdmpk_bufs.levels;
@@ -466,21 +478,20 @@ void CommCompPatterns::FindLabelPermutation() {
   }
 }
 
-void CommCompPatterns::ProcPhase(const size_t &min_level) {
-  InitPhase();
-  // `was_active_level` is true, if there was progress made at a
-  // level. If no progress is made, the next level is processed.
+void CommCompPatterns::ProcPhase(const level_t &min_level) {
+  /// @todo(vatai): [EASY] Put this loop in a separate method?
+  for (auto &buffer : bufs) { // PrePhase()
+    buffer.phase_descriptors.emplace_back();
+  }
   bool was_active_level = true;
-  // lbelow + 1 = level: we calculate idx at level=lbelow + 1, from
-  // vertices col[t] from level=lbelow.
   for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
+    PreBatch();
     was_active_level = false;
-    // NOTE1: Starting from `min_level` ensures, we start from a level
-    // where progress will be made, and set `was_active` to true
-    // i.e. starting from level 0, might be a problem if all vertices
-    // have level >0, because then, the first round would leave
-    // `was_active` as false, and would terminate prematurely.
+    // Starting from `min_level` is important because it ensures, we
+    // start from a level where progress will be made, and
+    // `was_active` will not be set immediately to false and terminate
+    // prematurely.
     for (int idx = 0; idx < csr.n; idx++) {
       if (pdmpk_bufs.levels[idx] == lbelow) {
         if (ProcVertex(idx, lbelow)) {
@@ -488,28 +499,49 @@ void CommCompPatterns::ProcPhase(const size_t &min_level) {
         }
       }
     }
+    PostBatch(lbelow);
   }
-  FinalizePhase();
 }
 
-void CommCompPatterns::InitPhase() {
-  phase++;
+void CommCompPatterns::PreBatch() {
+  batch++;
+
   for (auto &buffer : bufs) {
-    buffer.PhaseInit();
+    buffer.PreBatch();
   }
 
   for (idx_t idx = 0; idx < csr.n; idx++) {
     if (pdmpk_bufs.levels[idx] == args.nlevel) {
-      const auto &iter = store_part.find({idx, args.nlevel});
-      if (iter != store_part.end()) {
-        const auto &tgt_part = home_partition[idx];
-        const auto &[src_part, mbuf_idx] = iter->second;
-        if (src_part != tgt_part) {
-          comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
-        }
-      }
+      SendHome(idx);
     }
   }
+}
+
+void CommCompPatterns::PostBatch(const level_t &lbelow) {
+  // Fill sendcount and recv count.
+  UpdateMpiCountBuffers();
+  for (auto &buffer : bufs) {
+    buffer.PostBatch(batch);
+  }
+  /// @todo(vatai): Decide if part_was vectors should be class members
+  /// and accessed by ProcVertex et al.
+  std::vector<bool> needs_wait(args.npart, false);
+  for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
+       iter++) {
+    needs_wait[iter->first.second] = true; // tgt
+    ProcCommDict(iter);
+  }
+  comm_dict.clear();
+  const size_t size = args.npart;
+  for (size_t i = 0; i < size; i++) {
+    bufs[i].phase_descriptors.back().UpdateBottom(lbelow);
+    bufs[i].phase_descriptors.back().UpdateTop(lbelow);
+    if (needs_wait[i]) {
+      bufs[i].phase_descriptors.back().UpdateMid(lbelow);
+    }
+    bufs[i].mpi_bufs.SortInitIdcs();
+  }
+  DbgMbufChecks();
 }
 
 bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
@@ -519,8 +551,9 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
 
   for (idx_t t = csr.ptr[idx]; t < csr.ptr[idx + 1]; t++) {
     if (pdmpk_bufs.CanAdd(idx, lbelow, t)) {
-      if (retval == false)
+      if (retval == false) {
         bufs[cur_part].mcsr.NextMcolIdxToMptr();
+      }
       ProcAdjacent(idx, lbelow, t);
       retval = true;
     }
@@ -535,7 +568,7 @@ bool CommCompPatterns::ProcVertex(const idx_t &idx, const level_t &lbelow) {
   return retval;
 }
 
-void CommCompPatterns::AddToInit(const idx_t &idx, const idx_t &level) {
+void CommCompPatterns::AddToInit(const idx_t &idx, const level_t &level) {
   const auto src_part_idx = store_part.at({idx, level});
   const auto src_part = src_part_idx.first;
   const auto src_idx = src_part_idx.second;
@@ -580,33 +613,15 @@ void CommCompPatterns::FinalizeVertex(const idx_lvl_t &idx_lvl,
   mbuf_idx++;
 }
 
-void CommCompPatterns::FinalizePhase() {
-  // Fill sendcount and recv count.
-  for (const auto &iter : comm_dict) // CHECK
-    UpdateMPICountBuffers(iter.first, iter.second.size());
-
-  for (auto &buffer : bufs)
-    buffer.PhaseFinalize(phase);
-
-  for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
-       iter++)
-    ProcCommDict(iter);
-
-  comm_dict.clear();
-
-  // Sort `init_idcs`.
-  for (auto &buffer : bufs) {
-    buffer.mpi_bufs.SortInitIdcs();
+void CommCompPatterns::UpdateMpiCountBuffers() {
+  for (const auto &iter : comm_dict) {
+    const src_tgt_t &src_tgt_part = iter.first;
+    const size_t &size = iter.second.size();
+    const auto src = src_tgt_part.first;
+    const auto tgt = src_tgt_part.second;
+    bufs[tgt].mpi_bufs.recvcounts[batch * args.npart + src] += size;
+    bufs[src].mpi_bufs.sendcounts[batch * args.npart + tgt] += size;
   }
-  DbgMbufChecks();
-}
-
-void CommCompPatterns::UpdateMPICountBuffers(const src_tgt_t &src_tgt_part,
-                                             const size_t &size) {
-  const auto src = src_tgt_part.first;
-  const auto tgt = src_tgt_part.second;
-  bufs[tgt].mpi_bufs.recvcounts[phase * args.npart + src] += size;
-  bufs[src].mpi_bufs.sendcounts[phase * args.npart + tgt] += size;
 }
 
 void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
@@ -615,11 +630,11 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   auto &tgt_buf = bufs[src_tgt.second];
   const auto &src_type_mapto_tgt_index_set = iter->second;
 
-  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[phase] //
+  const auto src_send_baseidx = src_mpi_buf.sbuf_idcs.phase_begin[batch] //
                                 + SrcSendBase(src_tgt);
-  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[phase]        //
+  const auto tgt_recv_baseidx = tgt_buf.mbuf.phase_begin[batch]        //
                                 + tgt_buf.mcsr.mptr.size()             //
-                                - tgt_buf.mcsr.mptr.phase_begin[phase] //
+                                - tgt_buf.mcsr.mptr.phase_begin[batch] //
                                 + TgtRecvBase(src_tgt);
   size_t idx = 0;
   for (const auto &map_iter : src_type_mapto_tgt_index_set) {
@@ -648,14 +663,25 @@ void CommCompPatterns::ProcCommDict(const CommDict::const_iterator &iter) {
   }
 }
 
+void CommCompPatterns::SendHome(const idx_t &idx) {
+  const auto &iter = store_part.find({idx, args.nlevel});
+  if (iter != store_part.end()) {
+    const auto &tgt_part = home_partition[idx];
+    const auto &[src_part, mbuf_idx] = iter->second;
+    if (src_part != tgt_part) {
+      comm_dict[{src_part, tgt_part}][{mbuf_idx, kFinished}].insert(idx);
+    }
+  }
+}
+
 idx_t CommCompPatterns::SrcSendBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.first]
-      .mpi_bufs.sdispls[phase * args.npart + src_tgt.second];
+      .mpi_bufs.sdispls[batch * args.npart + src_tgt.second];
 }
 
 idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
   return bufs[src_tgt.second]
-      .mpi_bufs.rdispls[phase * args.npart + src_tgt.first];
+      .mpi_bufs.rdispls[batch * args.npart + src_tgt.first];
 }
 
 void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
@@ -663,11 +689,46 @@ void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
 #ifndef NDEBUG
   const auto count = std::count(std::begin(pdmpk_bufs.levels),
                                 std::end(pdmpk_bufs.levels), min_level);
-  std::cout << "Phase: " << phase << ", "
+  std::cout << "Batch: " << batch << ", "
             << "ExactLevelSum(): " << level_sum << "; "
             << "min_level: " << min_level << ", "
             << "count: " << count << std::endl;
 #endif
+}
+
+/// Assert mbuf + rbuf = mptr size (for each buffer and phase).
+static void DbgAssertMbufRbufIsMptr(const Buffers &buffer) {
+  const size_t size = buffer.mbuf.size();
+  for (size_t batch = 1; batch < size; batch++) {
+    auto mbd =
+        buffer.mbuf.phase_begin[batch] - buffer.mbuf.phase_begin[batch - 1];
+    auto mpd = buffer.mcsr.mptr.phase_begin[batch] -
+               buffer.mcsr.mptr.phase_begin[batch - 1];
+    auto rbs = buffer.mpi_bufs.RbufSize(batch - 1);
+    if (mbd != mpd + rbs) {
+      std::cout << "batch: " << batch << ", "
+                << "mbd: " << mbd << ", "
+                << "mpd: " << mpd << ", "
+                << "rbs: " << rbs << std::endl;
+    }
+    assert(mbd == mpd + rbs);
+  }
+}
+
+/// Assert sum of (pd.top - pd.bottom) (forall pd phase_descriptors)
+/// is the number of all batches.
+static void DbgAssertPd(const Buffers &buffer) {
+  size_t sum = 0;
+  for (const auto &pd : buffer.phase_descriptors) {
+    const auto diff = pd.top - pd.bottom;
+    sum += diff ? diff : 0;
+  }
+  const size_t nbatches = buffer.mbuf.phase_begin.size();
+  if (sum != nbatches) {
+    std::cout << "pd_sum: " << sum << ", "
+              << "nbatches: " << nbatches << std::endl;
+  }
+  assert(sum == nbatches);
 }
 
 void CommCompPatterns::DbgAsserts() const {
@@ -676,21 +737,9 @@ void CommCompPatterns::DbgAsserts() const {
   for (auto level : pdmpk_bufs.levels) {
     assert(level == args.nlevel);
   }
-  /// Assert mbuf + rbuf = mptr size (for each buffer and phase).
-  for (auto b : bufs) {
-    for (auto phase = 1; phase < this->phase; phase++) {
-      auto mbd = b.mbuf.phase_begin[phase] - b.mbuf.phase_begin[phase - 1];
-      auto mpd = b.mcsr.mptr.phase_begin[phase] //
-                 - b.mcsr.mptr.phase_begin[phase - 1];
-      auto rbs = b.mpi_bufs.RbufSize(phase - 1);
-      if (mbd != mpd + rbs) {
-        std::cout << "phase: " << phase << ", "
-                  << "mbd: " << mbd << ", "
-                  << "mpd: " << mpd << ", "
-                  << "rbs: " << rbs << std::endl;
-      }
-      assert(mbd == mpd + rbs);
-    }
+  for (auto buffer : bufs) {
+    DbgAssertMbufRbufIsMptr(buffer);
+    DbgAssertPd(buffer);
   }
 #endif
 }
@@ -701,7 +750,7 @@ void CommCompPatterns::DbgMbufChecks() const {
   for (auto buffer : bufs) {
     auto mbuf_idx = buffer.mbuf_idx;
     // Check init_idcs.
-    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[phase];
+    for (auto i = buffer.mpi_bufs.init_idcs.phase_begin[batch];
          i < buffer.mpi_bufs.init_idcs.size(); i++) {
       auto pair = buffer.mpi_bufs.init_idcs[i];
       if (pair.first >= mbuf_idx) {
@@ -711,7 +760,7 @@ void CommCompPatterns::DbgMbufChecks() const {
       assert(pair.second < mbuf_idx);
     }
     // Check sbuf_idcs.
-    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[phase];
+    for (auto i = buffer.mpi_bufs.sbuf_idcs.phase_begin[batch];
          i < buffer.mpi_bufs.sbuf_idcs.size(); i++) {
       auto value = buffer.mpi_bufs.sbuf_idcs[i];
       assert(value < mbuf_idx);

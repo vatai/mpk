@@ -9,7 +9,7 @@
 
 # Optional input variables
 TYPE_ITER=${TYPE_ITER:="m5p m9p"}
-SIZE_ITER=${SIZE_ITER:="10 100"}
+SIZE_ITER=${SIZE_ITER:="4 10 100"}
 OUTPUTDIR=${1:-$(dirname $0)/../matrices}
 PREFIX=${PREFIX:=$(dirname $0)/../mpk2}
 

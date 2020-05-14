@@ -49,6 +49,9 @@ target_link_libraries(pdmpk_buffers PUBLIC coverage_config)
 add_library(lapjv OBJECT lapjv.h lapjv.c)
 target_link_libraries(lapjv PUBLIC coverage_config)
 
+add_library(phase_descriptor OBJECT phase_descriptor.h phase_descriptor.cc)
+target_link_libraries(phase_descriptor PUBLIC coverage_config)
+
 add_library(timing OBJECT timing.h timing.cc)
 target_link_libraries(timing PUBLIC coverage_config)
 
@@ -56,14 +59,15 @@ add_library(results OBJECT results.h results.cc)
 target_link_libraries(results PUBLIC coverage_config)
 
 add_library(buffers buffers.h buffers.cc
+  $<TARGET_OBJECTS:phase_descriptor>
   $<TARGET_OBJECTS:mpi_buffers>
   $<TARGET_OBJECTS:results>
   $<TARGET_OBJECTS:timing>
   $<TARGET_OBJECTS:mcsr>)
-target_link_libraries(buffers MPI::MPI_CXX coverage_config)
+target_link_libraries(buffers PUBLIC MPI::MPI_CXX coverage_config)
 
 add_library(comm_comp_patterns comm_comp_patterns.h comm_comp_patterns.cc
   $<TARGET_OBJECTS:csr>
   $<TARGET_OBJECTS:pdmpk_buffers>
   $<TARGET_OBJECTS:lapjv>)
-target_link_libraries(comm_comp_patterns PUBLIC buffers ${METIS} coverage_config)
+target_link_libraries(comm_comp_patterns PUBLIC MPI::MPI_CXX buffers ${METIS} coverage_config)

@@ -24,18 +24,19 @@ Buffers::Buffers(const Args &args)
       max_sbuf_size{0},     //
       mbuf_idx{0},          //
       results(args),        //
-      args{args} {}
+      args{args},           //
+      requests(args.nlevel) {}
 
-void Buffers::PhaseInit() {
+void Buffers::PreBatch() {
   mpi_bufs.PhaseInit();
   mcsr.mptr.rec_phase_begin();
   mbuf.phase_begin.push_back(mbuf_idx);
 }
 
-void Buffers::PhaseFinalize(const int &phase) {
+void Buffers::PostBatch(const int &batch) {
   // Fill displacement buffers from count buffers.
-  mpi_bufs.PhaseFinalize();
-  const auto sbuf_size = mpi_bufs.SbufSize(phase);
+  mpi_bufs.FillDispls();
+  const auto sbuf_size = mpi_bufs.SbufSize(batch);
 
   if (max_sbuf_size < sbuf_size) {
     max_sbuf_size = sbuf_size;
@@ -45,7 +46,21 @@ void Buffers::PhaseFinalize(const int &phase) {
   mpi_bufs.sbuf_idcs.resize(mpi_bufs.sbuf_idcs.size() + sbuf_size);
 
   // Update `mbuf_idx`.
-  mbuf_idx += mpi_bufs.RbufSize(phase);
+  mbuf_idx += mpi_bufs.RbufSize(batch);
+}
+
+void Buffers::Exec(Timing *timing) {
+  const auto nphases = GetNumPhases();
+  // mcsr.mptr has one more "phase_begin"s because there is one added
+  // in the Epilogue() to make processing the same.
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
+
+  DoComp(0);
+  for (int phase = 1; phase < nphases; phase++) {
+    DoComm(phase);
+    DoComp(phase);
+  }
+  SendHome();
 }
 
 void Buffers::DoComp(const int &phase) {
@@ -92,6 +107,51 @@ void Buffers::DoComm(const int &phase) {
                 rbuf, recvcounts, rdispls, MPI_DOUBLE, MPI_COMM_WORLD);
 }
 
+void Buffers::AsyncExec() {
+  const auto nphases = GetNumPhases();
+  // mcsr.mptr has one more "phase_begin"s because there is one added
+  // in the Epilogue() to make processing the same.
+  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
+
+  size_t batch = 0;
+  for (const auto pd : phase_descriptors) {
+    for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
+      AsyncDoComm(batch, lvl);
+      MPI_Status status;
+      MPI_Wait(&requests[lvl], &status);
+      DoComp(batch);
+      batch++;
+    }
+    for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
+      AsyncDoComm(batch, lvl);
+      DoComp(batch);
+      batch++;
+    }
+  }
+  SendHome();
+}
+
+void Buffers::AsyncDoComm(const int &phase, const level_t &lvl) {
+  const auto scount = mpi_bufs.SbufSize(phase);
+
+  // fill_sbuf()
+  const auto sbuf_idcs = mpi_bufs.sbuf_idcs.get_ptr(phase);
+  for (size_t i = 0; i < scount; i++) {
+    sbuf[i] = mbuf[sbuf_idcs[i]];
+  }
+
+  // call mpi()
+  const auto offset = mpi_bufs.npart * phase;
+  const auto sendcounts = mpi_bufs.sendcounts.data() + offset;
+  const auto recvcounts = mpi_bufs.recvcounts.data() + offset;
+  const auto sdispls = mpi_bufs.sdispls.data() + offset;
+  const auto rdispls = mpi_bufs.rdispls.data() + offset;
+
+  auto rbuf = mbuf.get_ptr(phase) + mcsr.MptrSize(phase);
+  MPI_Ialltoallv(sbuf.data(), sendcounts, sdispls, MPI_DOUBLE, rbuf, recvcounts,
+                 rdispls, MPI_DOUBLE, MPI_COMM_WORLD, &requests[lvl]);
+}
+
 void Buffers::SendHome() {
   const auto size = home_idcs.size();
   for (size_t i = 0; i < size; i++) {
@@ -99,23 +159,9 @@ void Buffers::SendHome() {
   }
 }
 
-void Buffers::Exec(Timing *timing) {
-  const auto nphases = GetNumPhases();
-  // mcsr.mptr has one more "phase_begin"s because there is one added
-  // in the Epilogue() to make processing the same.
-  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
-
-  DoComp(0);
-
-  for (int phase = 1; phase < nphases; phase++) {
-    DoComm(phase);
-    DoComp(phase);
-  }
-  SendHome();
-}
-
 void Buffers::LoadInput() {
   // Load vector!
+  /// @todo(vatai): Implement this using original_idcs
   for (size_t i = 0; i < mbuf.phase_begin[0]; i++)
     mbuf[i] = 1.0;
 }
@@ -126,6 +172,8 @@ void Buffers::Dump(const int &rank) const {
   file.write((char *)&mbuf_idx, sizeof(mbuf_idx));
   Utils::DumpVec(mbuf.phase_begin, file);
   Utils::DumpVec(home_idcs, file);
+  Utils::DumpVec(original_idcs, file);
+  Utils::DumpVec(phase_descriptors, file);
   Utils::DumpVec(results.mbuf_idcs, file);
   results.Dump(rank);
   mpi_bufs.DumpToOFS(file);
@@ -142,6 +190,8 @@ void Buffers::Load(const int &rank) {
 
   Utils::LoadVec(file, &mbuf.phase_begin);
   Utils::LoadVec(file, &home_idcs);
+  Utils::LoadVec(file, &original_idcs);
+  Utils::LoadVec(file, &phase_descriptors);
   Utils::LoadVec(file, &results.mbuf_idcs);
   results.Load(rank);
   mpi_bufs.LoadFromIFS(file);
@@ -155,6 +205,8 @@ void Buffers::DumpTxt(const int &rank) const {
   file << "mbuf_idx: " << mbuf_idx << std::endl;
   Utils::DumpTxt("mbuf.phase_begin", mbuf.phase_begin, file);
   Utils::DumpTxt("home_idcs", home_idcs, file);
+  Utils::DumpTxt("original_idcs", original_idcs, file);
+  Utils::DumpTxt("phase_descriptors", phase_descriptors, file);
   Utils::DumpTxt("result.mbuf_idcs", results.mbuf_idcs, file);
   results.DumpTxt(rank);
   Utils::DumpTxt("dbg_idx", dbg_idx, file);

@@ -79,4 +79,7 @@ add_executable(lapjv_test
 target_link_libraries(lapjv_test gtest_main)
 add_test(NAME lapjv_test COMMAND lapjv_test)
 
+add_executable(mpi_double_wait mpi_double_wait.cc)
+target_link_libraries(mpi_double_wait MPI::MPI_CXX)
+
 gtest_discover_tests(lapjv_test)

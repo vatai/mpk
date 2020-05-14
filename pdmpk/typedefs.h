@@ -13,7 +13,7 @@
 
 #include <metis.h>
 
-typedef unsigned short level_t;
+typedef short level_t;
 
 /// (source index, target index) pair.
 typedef std::pair<idx_t, idx_t> sidx_tidx_t;

@@ -89,7 +89,7 @@ private:
   /// updated indices are on the target partition). @see ProcCommDict
   typedef std::map<SrcType, std::set<idx_t>> Backpatch;
 
-  /// In each phase, collect the communication as a map from (source,
+  /// In each batch, collect the communication as a map from (source,
   /// target) pairs to a @ref Backpatch.
   typedef std::map<src_tgt_t, Backpatch> CommDict;
   CommDict comm_dict; ///< @see CommDict.
@@ -127,9 +127,9 @@ private:
 
   /// Construct a Json object describing the minimum, maximum, average
   /// and sum of "differences".  Differences are differences of
-  /// computation in one phase between partitions. The idea is that if
+  /// computation in one batch between partitions. The idea is that if
   /// one partition has more computation than the other (in a single
-  /// phase) that is a bad thing, and we'd like to measure that.
+  /// batch) that is a bad thing, and we'd like to measure that.
   json StatsDiffSummary() const;
 
   /// Process all phases: without any mirroring.
@@ -160,11 +160,11 @@ private:
   /// CommCompPatterns::FindLabelPermutation.
   ///
   /// @param min_level Minimum level in the current phase.
-  void NewPartitionLabels(const size_t &min_level);
+  void NewPartitionLabels(const level_t &min_level);
 
   /// Optimize labels of new partitioning obtained from the graph partitioning
   /// algorithm.
-  void OptimizeLabels(const size_t &min_level);
+  void OptimizeLabels(const level_t &min_level);
 
   /// Called in @ref CommCompPatterns::NewPartitionLabels.
   ///
@@ -180,11 +180,16 @@ private:
   /// CommCompPatterns::NewPartitionLabels.
   void FindLabelPermutation();
 
-  /// Code executed before each phase.
-  void InitPhase();
+  /// Code executed before each batch.
+  void PreBatch();
+
+  /// Code executed after each batch.
+  ///
+  /// @param lbelow Level of the processed batch.
+  void PostBatch(const level_t &lbelow);
 
   /// Generate one phase.
-  void ProcPhase(const size_t &min_level);
+  void ProcPhase(const level_t &min_level);
 
   /// Process one vertex.
   ///
@@ -199,7 +204,7 @@ private:
   ///
   /// @param level the level which the vertex tries to achieve
   /// (i.e. `lbelow + 1`).
-  void AddToInit(const idx_t &idx, const idx_t &level);
+  void AddToInit(const idx_t &idx, const level_t &level);
 
   /// Process adjacent vertex.
   ///
@@ -219,17 +224,10 @@ private:
   /// found.
   void FinalizeVertex(const idx_lvl_t &idx_lvl, const idx_t &part);
 
-  /// Code executed after each phase.
-  void FinalizePhase();
-
   /// Update the send count on the source partition, and the receive
-  /// count on the target partition.
-  ///
-  /// @param src_tgt_part (Source partition, target partition) pair.
-  ///
-  /// @param size The size of the by which the given entry should be
-  /// increased.
-  void UpdateMPICountBuffers(const src_tgt_t &src_tgt_part, const size_t &size);
+  /// count on the target partition using @ref
+  /// CommCompPatterns::comm_dict.
+  void UpdateMpiCountBuffers();
 
   /// Process one element/iterator of @ref CommDict. The key of a
   /// CommDict determines the source and target partitions, the @ref
@@ -243,6 +241,11 @@ private:
   /// @param iter Iterator representing one element in @ref CommDict.
   void ProcCommDict(const CommDict::const_iterator &iter);
 
+  /// Send a vertex to it's home partition.
+  ///
+  /// @param idx Index of the vertex to send.
+  void SendHome(const idx_t &idx);
+
   /// Return the base (0th index) of the subinterval of send buffer in
   /// the source buffer.
   idx_t SrcSendBase(const sidx_tidx_t &src_tgt) const;
@@ -251,8 +254,8 @@ private:
   /// in the target buffer.
   idx_t TgtRecvBase(const sidx_tidx_t &src_tgt) const;
 
-  /// The current phase set at the beginning of each phase.
-  int phase;
+  /// The current batch set at the beginning of each batch.
+  int batch;
 
   //// @todo(vatai): Remove debug DbgPhaseSummary().
   ///
