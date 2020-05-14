@@ -124,21 +124,36 @@ void Buffers::AsyncExec(Timing *timing) {
   assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
 
   size_t batch = 0;
+  timing->StartGlobal();
   for (const auto pd : phase_descriptors) {
     for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
+
+      timing->StartDoComm();
       AsyncDoComm(batch, lvl);
       MPI_Status status;
       MPI_Wait(&requests[lvl], &status);
+      timing->StopDoComm();
+
+      timing->StartDoComp();
       DoComp(batch);
+      timing->StopDoComp();
       batch++;
     }
     for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
+      timing->StartDoComm();
       AsyncDoComm(batch, lvl);
+      timing->StopDoComm();
+
+      timing->StartDoComp();
       DoComp(batch);
+      timing->StopDoComp();
       batch++;
     }
   }
+  timing->StartDoComm();
   SendHome();
+  timing->StopDoComm();
+  timing->StopGlobal();
 }
 
 void Buffers::AsyncDoComm(const int &phase, const level_t &lvl) {
