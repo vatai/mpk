@@ -118,42 +118,37 @@ void Buffers::DoComm(const int &phase) {
 }
 
 void Buffers::AsyncExec(Timing *timing) {
-  const auto nphases = GetNumPhases();
-  // mcsr.mptr has one more "phase_begin"s because there is one added
-  // in the Epilogue() to make processing the same.
-  assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
-
+  // for (int phase = 1; phase < nphases; phase++) {
+  //   DoComp(phase - 1);
+  //   DoComm(phase);
+  // }
+  // DoComp(nphases - 1);
+  // SendHome();
+  const size_t nphases = phase_descriptors.size();
   size_t batch = 0;
-  timing->StartGlobal();
-  for (const auto pd : phase_descriptors) {
+  for (size_t i = 0; i < nphases; i++) {
+    const auto &pd = phase_descriptors[i];
+    const auto &ppd = phase_descriptors[i - 1];
+    for (level_t lvl = ppd.mid; lvl < ppd.top; lvl++) {
+      DoComp(batch);
+      AsyncDoComm(batch, lvl);
+      batch++;
+    }
     for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
-
-      timing->StartDoComm();
       AsyncDoComm(batch, lvl);
       MPI_Status status;
       MPI_Wait(&requests[lvl], &status);
-      timing->StopDoComm();
-
-      timing->StartDoComp();
       DoComp(batch);
-      timing->StopDoComp();
-      batch++;
-    }
-    for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
-      timing->StartDoComm();
-      AsyncDoComm(batch, lvl);
-      timing->StopDoComm();
-
-      timing->StartDoComp();
-      DoComp(batch);
-      timing->StopDoComp();
       batch++;
     }
   }
-  timing->StartDoComm();
+  const auto &pd = phase_descriptors[nphases - 1];
+  for (level_t lvl = pd.mid; lvl < pd.top; lvl++) {
+    DoComp(batch);
+    AsyncDoComm(batch, lvl);
+    batch++;
+  }
   SendHome();
-  timing->StopDoComm();
-  timing->StopGlobal();
 }
 
 void Buffers::AsyncDoComm(const int &phase, const level_t &lvl) {
