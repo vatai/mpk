@@ -129,12 +129,19 @@ void Buffers::AsyncExec(Timing *timing) {
   for (size_t i = 0; i < nphases; i++) {
     const auto &pd = phase_descriptors[i];
     const auto &ppd = phase_descriptors[i - 1];
+    assert(ppd.bottom <= pd.bottom);
     for (level_t lvl = ppd.mid; lvl < ppd.top; lvl++) {
+      if (i == 0) { // no "pulling" in phase i == 0
+        assert(mpi_bufs.SbufSize(batch) == 0);
+      }
       DoComp(batch);
       AsyncDoComm(batch, lvl);
       batch++;
     }
     for (level_t lvl = pd.bottom; lvl < pd.mid; lvl++) {
+      if (i == 0) { // no "pulling" in phase i == 0
+        assert(mpi_bufs.SbufSize(batch) == 0);
+      }
       AsyncDoComm(batch, lvl);
       MPI_Status status;
       MPI_Wait(&requests[lvl], &status);
