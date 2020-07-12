@@ -22,7 +22,7 @@
 
 /// "Infinitesimaly" small value, under which we consider two floats
 /// equal.
-const double kEpsilon = 1e-09;
+const double kEpsilon = 1e-10;
 
 /// Calculate the cosine of vectors `v1` and `v2`.
 ///
@@ -79,6 +79,16 @@ int main(int argc, char *argv[]) {
             << std::endl;
   std::cout << argv[0] << ": for " << args.mtxname << " finished" << std::endl;
   std::cout << argv[0] << ": Cos(): " << cos << std::endl;
-  // return max < kEpsilon ? 0 : 1;
-  return !(1 - kEpsilon < cos and cos < 1 + kEpsilon);
+
+  // ---
+  std::cout << argv[0] << ": 1. - kEpsilon: " << (1. - kEpsilon) << std::endl;
+  std::cout << argv[0] << ": (1. - kEpsilon <= cos): " << (1. - kEpsilon <= cos)
+            << std::endl;
+  std::cout << argv[0] << ": 1. + kEpsilon: " << (1. + kEpsilon) << std::endl;
+  std::cout << argv[0] << ": (cos <= 1. + kEpsilon): " << (cos <= 1. + kEpsilon)
+            << std::endl;
+  // ---
+  int rv = !((1. - kEpsilon <= cos) and (cos <= 1. + kEpsilon));
+  std::cout << argv[0] << ": rv: " << rv << std::endl;
+  return rv;
 }

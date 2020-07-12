@@ -54,7 +54,7 @@ void Buffers::Exec(Timing *timing) {
   // mcsr.mptr has one more "phase_begin"s because there is one added
   // in the Epilogue() to make processing the same.
   assert((int)mcsr.mptr.phase_begin.size() == nphases + 1);
-
+  ///
   timing->StartGlobal();
   timing->StartDoComp();
   DoComp(0);
@@ -142,6 +142,8 @@ void Buffers::AsyncExec(Timing *timing) {
       if (lvl < ppd.mid) {
         MPI_Status status;
         MPI_Wait(&requests[lvl], &status);
+      } else {
+        assert(mpi_bufs.RbufSize(batch) == 0);
       }
       DoComp(batch); ///// COMP, lvl + 1
 
@@ -162,6 +164,8 @@ void Buffers::AsyncExec(Timing *timing) {
     if (lvl < pd.mid) {
       MPI_Status status;
       MPI_Wait(&requests[lvl], &status);
+    } else {
+      assert(mpi_bufs.RbufSize(batch) == 0);
     }
     DoComp(batch);
     batch++;
