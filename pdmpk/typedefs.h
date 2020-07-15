@@ -1,9 +1,6 @@
 /// @author Emil VATAI <emil.vatai@gmail.com>
 /// @date 2019-12-01
 
-/// @todo(vatai): Make these types more verbose using `struct`s. Also
-/// it might be a good idea to stick to bla_bla_map naming
-/// conventions.
 #pragma once
 
 #include <map>
