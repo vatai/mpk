@@ -241,7 +241,6 @@ void CommCompPatterns::ProcAllPhases0() {
   while (not is_finished) {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (old_level_sum == level_sum) {
       is_finished = pdmpk_bufs.IsFinished();
       break;
@@ -264,7 +263,6 @@ void CommCompPatterns::ProcAllPhases1() {
   while (not is_finished and not partition_history.empty()) {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       if (old_level_sum == level_sum) {
         is_finished = pdmpk_bufs.IsFinished();
@@ -292,7 +290,6 @@ void CommCompPatterns::ProcAllPhases2() {
   while (not is_finished and not partition_history.empty()) {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
       if (old_level_sum == level_sum) {
         is_finished = pdmpk_bufs.IsFinished();
@@ -318,8 +315,6 @@ void CommCompPatterns::ProcAllPhases3() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
     const auto min_level = pdmpk_bufs.MinLevel();
-    const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (min_level < args.nlevel / 2) {
       NewPartitionLabels(min_level);
     } else {
@@ -340,8 +335,6 @@ void CommCompPatterns::ProcAllPhases4() {
   bool is_finished = pdmpk_bufs.IsFinished();
   while (not is_finished and not partition_history.empty()) {
     const auto min_level = pdmpk_bufs.MinLevel();
-    const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (min_level == 0) {
       NewPartitionLabels(min_level);
     } else {
@@ -364,7 +357,6 @@ void CommCompPatterns::ProcAllPhases5() {
   while (not is_finished and not partition_history.empty()) {
     const auto min_level = pdmpk_bufs.MinLevel();
     const auto level_sum = pdmpk_bufs.ExactLevelSum();
-    DbgPhaseSummary(min_level, level_sum);
     if (2 * min_level < 3 * args.nlevel) {
       if (old_level_sum == level_sum) {
         is_finished = pdmpk_bufs.IsFinished();
@@ -477,7 +469,8 @@ void CommCompPatterns::ProcPhase(const level_t &min_level) {
     buffer.phase_descriptors.emplace_back();
   }
   bool was_active_level = true;
-  for (int lbelow = min_level; was_active_level and lbelow < args.nlevel;
+  int lbelow;
+  for (lbelow = min_level; was_active_level and lbelow < args.nlevel;
        lbelow++) {
     PreBatch();
     was_active_level = false;
@@ -494,6 +487,8 @@ void CommCompPatterns::ProcPhase(const level_t &min_level) {
     }
     PostBatch(lbelow);
   }
+  const auto level_sum = pdmpk_bufs.ExactLevelSum();
+  DbgPhaseSummary(min_level, lbelow, level_sum);
 }
 
 void CommCompPatterns::PreBatch() {
@@ -669,6 +664,7 @@ idx_t CommCompPatterns::TgtRecvBase(const sidx_tidx_t &src_tgt) const {
 }
 
 void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
+                                       const level_t &max_level,
                                        const size_t &level_sum) const {
 #ifndef NDEBUG
   const auto count = std::count(std::begin(pdmpk_bufs.levels),
@@ -676,6 +672,7 @@ void CommCompPatterns::DbgPhaseSummary(const level_t &min_level,
   std::cout << "Batch: " << batch << ", "
             << "ExactLevelSum(): " << level_sum << "; "
             << "min_level: " << min_level << ", "
+            << "max_level: " << max_level << ", "
             << "count: " << count << std::endl;
 #endif
 }
