@@ -50,13 +50,6 @@ CommCompPatterns::CommCompPatterns(const Args &args)
   }
   batch = -1;
   ProcPhase(0);
-  /// @todo(vatai): fix buffer buffer.phase_descriptors.back().  For
-  /// now, setting mid = bottom (= 0) might be sufficient, but
-  /// definitely should be fixed (see todo in @ref
-  /// Buffers::LoadInput).
-  for (auto &buffer : bufs) {
-    buffer.phase_descriptors.back().UpdateMid(-1);
-  }
   (this->*mirror_func_registry[args.mirror_method])();
 
   Epilogue();
@@ -523,22 +516,13 @@ void CommCompPatterns::PostBatch(const level_t &lbelow) {
   for (auto &buffer : bufs) {
     buffer.PostBatch(batch);
   }
-  /// @todo(vatai): Decide if part_was vectors should be class members
-  /// and accessed by ProcVertex et al.
-  std::vector<bool> needs_wait(args.npart, false);
   for (CommDict::const_iterator iter = begin(comm_dict); iter != end(comm_dict);
        iter++) {
-    needs_wait[iter->first.second] = true; // tgt
     ProcCommDict(iter);
   }
   comm_dict.clear();
   const size_t size = args.npart;
   for (size_t i = 0; i < size; i++) {
-    bufs[i].phase_descriptors.back().UpdateBottom(lbelow);
-    bufs[i].phase_descriptors.back().UpdateTop(lbelow);
-    if (needs_wait[i]) {
-      bufs[i].phase_descriptors.back().UpdateMid(lbelow);
-    }
     bufs[i].mpi_bufs.SortInitIdcs();
   }
   DbgMbufChecks();
@@ -728,7 +712,7 @@ static void DbgAssertPd(const Buffers &buffer) {
     std::cout << "pd_sum: " << sum << ", "
               << "nbatches: " << nbatches << std::endl;
   }
-  assert(sum == nbatches);
+  // assert(sum == nbatches);
 }
 
 void CommCompPatterns::DbgAsserts() const {

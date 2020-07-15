@@ -136,33 +136,33 @@ void Buffers::AsyncExec(Timing *timing) {
 
     // DoComp(phase - 1); DoComm(phase);
     for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
-      if (i == 1) { // no "pulling" in phase i == 0
-        assert(mpi_bufs.SbufSize(batch) == 0);
-      }
-      if (lvl < ppd.mid) {
-        MPI_Status status;
-        MPI_Wait(&requests[lvl], &status);
-      }
-      DoComp(batch); ///// COMP, lvl + 1
+      // if (i == 1) { // no "pulling" in phase i == 0
+      //   assert(mpi_bufs.SbufSize(batch) == 0);
+      // }
+      // if (lvl < ppd.mid) {
+      //   MPI_Status status;
+      //   MPI_Wait(&requests[lvl], &status);
+      // }
+      // DoComp(batch); ///// COMP, lvl + 1
 
-      // vatai: (I think) lvl is the "source" level.
-      if (npd.bottom <= lvl and lvl < npd.top) {
-        const size_t nbatch = batch + psize - lvl_delta;
-        AsyncDoComm(nbatch, lvl);
-      }
-      batch++;
+      // // vatai: (I think) lvl is the "source" level.
+      // if (npd.bottom <= lvl and lvl < npd.top) {
+      //   const size_t nbatch = batch + psize - lvl_delta;
+      //   AsyncDoComm(nbatch, lvl);
+      // }
+      // batch++;
     }
     for (level_t lvl = 0; lvl < npd.top - ppd.top; lvl++) {
-      const size_t nbatch = batch + psize - lvl_delta + lvl;
-      AsyncDoComm(nbatch, ppd.top + lvl);
+      // const size_t nbatch = batch + psize - lvl_delta + lvl;
+      // AsyncDoComm(nbatch, ppd.top + lvl);
     }
   }
   const auto &pd = phase_descriptors[nphases - 1];
   for (level_t lvl = pd.bottom; lvl < pd.top; lvl++) {
-    if (lvl < pd.mid) {
-      MPI_Status status;
-      MPI_Wait(&requests[lvl], &status);
-    }
+    // if (lvl < pd.mid) {
+    //   MPI_Status status;
+    //   MPI_Wait(&requests[lvl], &status);
+    // }
     DoComp(batch);
     batch++;
   }
