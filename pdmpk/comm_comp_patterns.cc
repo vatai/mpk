@@ -65,6 +65,8 @@ void CommCompPatterns::Epilogue() {
     if (home_part != eff_part) {
       for (auto &buffer : bufs) { // PrePhase()
         buffer.phase_descriptors.emplace_back();
+        buffer.phase_descriptors.back().bottom = args.nlevel - 1;
+        buffer.phase_descriptors.back().top = args.nlevel;
       }
       PreBatch();
       /// @todo(vatai): Verify the correct PostBatch parameter.
@@ -488,6 +490,11 @@ void CommCompPatterns::ProcPhase(const level_t &min_level) {
     PostBatch(lbelow);
   }
   const auto level_sum = pdmpk_bufs.ExactLevelSum();
+  for (size_t i = 0; i < args.npart; i++) {
+    bufs[i].phase_descriptors.back().bottom = min_level;
+    bufs[i].phase_descriptors.back().top = lbelow;
+  }
+
   DbgPhaseSummary(min_level, lbelow, level_sum);
 }
 
@@ -701,15 +708,14 @@ static void DbgAssertMbufRbufIsMptr(const Buffers &buffer) {
 static void DbgAssertPd(const Buffers &buffer) {
   size_t sum = 0;
   for (const auto &pd : buffer.phase_descriptors) {
-    const auto diff = pd.top - pd.bottom;
-    sum += diff ? diff : 0;
+    sum += pd.top - pd.bottom;
   }
   const size_t nbatches = buffer.mbuf.phase_begin.size();
   if (sum != nbatches) {
     std::cout << "pd_sum: " << sum << ", "
               << "nbatches: " << nbatches << std::endl;
   }
-  // assert(sum == nbatches);
+  assert(sum == nbatches);
 }
 
 void CommCompPatterns::DbgAsserts() const {
