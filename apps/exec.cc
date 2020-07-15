@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
   buf.LoadInput();
 
   Timing timing(args);
-  buf.AsyncExec(&timing);
+  buf.Exec(&timing);
   timing.CollectData();
   timing.DumpJson();
 
