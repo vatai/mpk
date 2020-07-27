@@ -70,7 +70,7 @@ void CommCompPatterns::Epilogue() {
       }
       PreBatch();
       /// @todo(vatai): Verify the correct PostBatch parameter.
-      PostBatch(args.nlevel - 1);
+      PostBatch();
       break;
     }
   }
@@ -487,10 +487,10 @@ void CommCompPatterns::ProcPhase(const level_t &min_level) {
         }
       }
     }
-    PostBatch(lbelow);
+    PostBatch();
   }
   const auto level_sum = pdmpk_bufs.ExactLevelSum();
-  for (size_t i = 0; i < args.npart; i++) {
+  for (int i = 0; i < args.npart; i++) {
     bufs[i].phase_descriptors.back().bottom = min_level;
     bufs[i].phase_descriptors.back().top = lbelow;
   }
@@ -512,7 +512,7 @@ void CommCompPatterns::PreBatch() {
   }
 }
 
-void CommCompPatterns::PostBatch(const level_t &lbelow) {
+void CommCompPatterns::PostBatch() {
   // Fill sendcount and recv count.
   UpdateMpiCountBuffers();
   for (auto &buffer : bufs) {

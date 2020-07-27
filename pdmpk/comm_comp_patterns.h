@@ -184,9 +184,7 @@ private:
   void PreBatch();
 
   /// Code executed after each batch.
-  ///
-  /// @param lbelow Level of the processed batch.
-  void PostBatch(const level_t &lbelow);
+  void PostBatch();
 
   /// Generate one phase.
   void ProcPhase(const level_t &min_level);
