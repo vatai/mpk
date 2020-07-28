@@ -123,9 +123,13 @@ void Buffers::AsyncExec(Timing *timing) {
   for (size_t i = 1; i < nphases; i++) {
     const auto &ppd = phase_descriptors[i - 1];
     for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
-      AsyncDoComm(batch, lvl);
+      AsyncDoComm(batch - ppd.bottom + lvl, lvl);
+    }
+    for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
       MPI_Status status;
       MPI_Wait(&requests[lvl], &status);
+    }
+    for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
       DoComp(batch);
       batch++;
     }
