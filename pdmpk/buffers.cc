@@ -122,24 +122,25 @@ void Buffers::AsyncExec(Timing *timing) {
   size_t batch = 0;
   for (size_t i = 1; i < nphases; i++) {
     const auto &ppd = phase_descriptors[i - 1];
-    for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
-      AsyncDoComm(batch - ppd.bottom + lvl, lvl);
-    }
-    for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
-      MPI_Status status;
-      MPI_Wait(&requests[lvl], &status);
-    }
+    const auto &npd = phase_descriptors[i];
     for (level_t lvl = ppd.bottom; lvl < ppd.top; lvl++) {
       DoComp(batch);
       batch++;
     }
+    for (level_t lvl = npd.bottom; lvl < npd.top; lvl++) {
+      AsyncDoComm(batch - npd.bottom + lvl, lvl);
+    }
+    for (level_t lvl = npd.bottom; lvl < npd.top; lvl++) {
+      MPI_Status status;
+      MPI_Wait(&requests[lvl], &status);
+    }
   }
   const auto &pd = phase_descriptors[nphases - 1];
   for (level_t lvl = pd.bottom; lvl < pd.top; lvl++) {
+    DoComp(batch);
     AsyncDoComm(batch, lvl);
     MPI_Status status;
     MPI_Wait(&requests[lvl], &status);
-    DoComp(batch);
     batch++;
   }
   SendHome();
