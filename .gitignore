@@ -32,3 +32,6 @@ ltximg
 *.pdf
 *.synctex.gz
 *.aux
+
+.ccls-cache
+build
