@@ -25,6 +25,7 @@ input/*/
 
 check.m
 bin
+build
 mpk-paper*
 
 *_minted*
