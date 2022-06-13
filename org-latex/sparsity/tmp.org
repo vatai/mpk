@@ -1,0 +1,28 @@
+:PROPERTIES:
+:header-args:latex: :headers '("\\usepackage{tikz}") :fit yes :imoutoptions -geometry 400 :iminoptions -density 600
+:header-args:latex+: :results output silent :imagemagick yes
+:END:
+
+* Foo
+#+header: :file ./img/contour.svg
+#+begin_src latex
+\begin{tikzpicture}
+\draw[->] (-3,0) -- (-2,0) arc[radius=0.5cm,start angle=-180,end angle=0] (-1,0) -- (1,0) arc[radius=0.5cm,start angle=180,end angle=0] (2,0) -- (3,0);
+\filldraw (-1.5,0) circle[radius=1mm];
+\filldraw[blue] (1.5,0) circle[radius=1mm];
+\end{tikzpicture}
+#+end_src
+
+[[./img/contour.svg]]
+
+#+header: :file ./img/contour2.svg
+#+begin_src latex
+\begin{tikzpicture}
+\draw[->] (-3,0) -- (-2,0) arc[radius=0.5cm,start angle=-180,end angle=0] (-1,0) -- (1,0) arc[radius=0.5cm,start angle=180,end angle=0] (2,0) -- (3,0);
+\filldraw[pink] (-1.5,0) circle[radius=1mm];
+\filldraw (1.5,0) circle[radius=1mm];
+\end{tikzpicture}
+#+end_src
+
+
+[[./img/contour2.svg]]
