@@ -53,7 +53,7 @@ add_library(phase_descriptor OBJECT phase_descriptor.h phase_descriptor.cc)
 target_link_libraries(phase_descriptor PUBLIC coverage_config)
 
 add_library(timing OBJECT timing.h timing.cc)
-target_link_libraries(timing PUBLIC coverage_config)
+target_link_libraries(timing PUBLIC MPI::MPI_CXX coverage_config)
 
 add_library(results OBJECT results.h results.cc)
 target_link_libraries(results PUBLIC coverage_config)
